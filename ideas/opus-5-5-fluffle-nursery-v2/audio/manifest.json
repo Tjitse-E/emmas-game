@@ -3431,14 +3431,14 @@
    "generated": "2026-10-10T12:58:13"
   },
   "pom-hi": {
-   "hash": "5d2e9189a9f8774719c881181c2ab77ddf76800f80e5fa73d3058845dc2d0e45",
+   "hash": "2ad84e9a63f6d782a70eb08022da2a8643bb15a103acf8893501d8938605bb2b",
    "speaker": "fluffle",
-   "text": "[cheerful] Bibba-bippo! Eep-eep!",
+   "text": "[cheerful] Mimmi-wubbo! Eep-eep!",
    "file": "pom-hi.mp3",
    "model": "eleven_v3",
    "seed": 7,
-   "duration_ms": 2063,
-   "generated": "2026-10-10T12:58:15"
+   "duration_ms": 3411,
+   "generated": "2026-10-10T14:43:29"
   },
   "pom-bye": {
    "hash": "63e6cdc936c7030cefb4e20238c0e38c2c9deba5c0ca0874f442daaa28043790",
@@ -3451,5 +3451,5 @@
    "generated": "2026-10-10T11:55:49"
   }
  },
- "updated": "2026-10-10T12:58:42"
+ "updated": "2026-10-10T14:43:29"
 }
