@@ -31,5 +31,10 @@ Each `README.md` covers:
 | opus-5-5: Queen Emma's Letters | [opus-5-5-queen-emmas-letters](ideas/opus-5-5-queen-emmas-letters/) | Short sentences with tricky words, read to act | Counting and take away within 10 | rejected | Unclear what to do, she did not get it. |
 | opus-5-5: Unicorn Egg Nest | [opus-5-5-unicorn-egg-nest](ideas/opus-5-5-unicorn-egg-nest/) | Name the foal, read the hide-and-seek signs | Number bonds to 10, dice patterns | chosen | 1st. Likes the role play, fantasy, naming and nursing. |
 | opus-5-5: Moonbeam Stables | [opus-5-5-moonbeam-stables](ideas/opus-5-5-moonbeam-stables/) | Read pony names on the fence | Counting on ten-frames, same, adding on | rejected | Too easy, felt like no maths and no reading. |
+| opus-5-5: Unicorn Egg Nest v2 | [opus-5-5-unicorn-egg-nest-v2](ideas/opus-5-5-unicorn-egg-nest-v2/) | Spell the baby's name from its spoken sounds, read wish words and name signs | Number bonds to 10 with moon cups and stones | mockup | |
+| opus-5-5: Pippa's Word Wand v2 | [opus-5-5-pippas-word-wand-v2](ideas/opus-5-5-pippas-word-wand-v2/) | Spell the word a visitor says, read notes and a tea-party sentence | Counting on and bonds to 10 with number stones | mockup | |
+| opus-5-5: Fluffle Nursery v2 | [opus-5-5-fluffle-nursery-v2](ideas/opus-5-5-fluffle-nursery-v2/) | Read the baby's written wishes, build its name | Exact plates to fill a ten-frame tummy, bath-jug bonds to 10 | mockup | |
 
 Status values: `idea`, `mockup`, `chosen`, `rejected`, `building`.
+
+Emma picks a v2 game from the picture menu at [index.html](index.html). The v2 plan, designs and build decisions are in [docs/v2/](docs/v2/).

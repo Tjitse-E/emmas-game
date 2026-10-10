@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Listening Sheet</title>
+<style>
+  :root {
+    --bg: #f7f4ee; --card: #ffffff; --ink: #222; --muted: #6b6475; --line: #e4ded3;
+    --play: #ffcf5a; --playing: #7bd389; --warn: #c2410c; --chip: #efe9ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17151c; --card: #221f29; --ink: #eee; --muted: #a39cb0; --line: #34303d;
+      --play: #c99a1c; --playing: #2f8a43; --warn: #fb923c; --chip: #332b47; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.45 system-ui, -apple-system, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 26px; margin: 8px 0 4px; }
+  .intro { color: var(--muted); margin: 0 0 16px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  nav a { padding: 10px 14px; border-radius: 12px; background: var(--chip); color: var(--ink); text-decoration: none; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; margin-bottom: 20px; }
+  h2 { font-size: 21px; margin: 6px 0 10px; }
+  .row { display: grid; grid-template-columns: 72px 1fr; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .row:first-of-type { border-top: 0; }
+  button.play { width: 72px; height: 72px; border: 0; border-radius: 50%; background: var(--play); color: #222; font-size: 28px; touch-action: manipulation; }
+  button.play.on { background: var(--playing); }
+  button.small { min-width: 64px; height: 64px; border: 0; border-radius: 14px; background: var(--chip); color: var(--ink); font-size: 16px; padding: 0 12px; }
+  .text { font-size: 19px; overflow-wrap: anywhere; }
+  .meta { color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+  .flag { color: var(--warn); font-weight: 600; }
+  .takes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .tool { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .empty { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Listening sheet</h1>
+  <p class="intro">Every generated clip, grouped by game. Tap a yellow button to listen. Letter sounds show every take; the chosen take is marked.</p>
+  <nav id="nav"></nav>
+  <div id="groups"><p class="empty">Loading…</p></div>
+</main>
+<script src="audio.js"></script>
+<script>
+(function () {
+  // Paths are relative to this page (shared/review.html). The repo root is served over HTTP.
+  var KNOWN = ['opus-5-5-unicorn-egg-nest-v2', 'opus-5-5-pippas-word-wand-v2', 'opus-5-5-fluffle-nursery-v2'];
+  EmmaAudio.init({ base: '', phonics: 'audio/phonics/' });
+  var unlocked = false;
+  function unlock() { if (!unlocked) { EmmaAudio.unlock(); unlocked = true; } }
+  document.addEventListener('pointerdown', unlock, true);
+
+  var current = null;
+  function playButton(url, label) {
+    var b = document.createElement('button');
+    b.className = 'play';
+    b.textContent = label || '▶';
+    b.setAttribute('aria-label', 'Play');
+    b.addEventListener('click', function () {
+      unlock();
+      if (current) current.classList.remove('on');
+      current = b;
+      b.classList.add('on');
+      EmmaAudio.playUrl(url).then(function () { b.classList.remove('on'); });
+    });
+    return b;
+  }
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function getJSON(url) {
+    return fetch(url, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  }
+
+  // The picture menu keeps its clips in menu-audio/ in the repo root. Games keep theirs in ideas/<dir>/audio/.
+  function clipBase(dir) { return dir === 'menu' ? '../menu-audio/' : '../ideas/' + dir + '/audio/'; }
+
+  // Find game folders: the directory listing of ideas/ when the server gives one, plus the known names.
+  function findGames() {
+    return fetch('../ideas/', { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; })
+      .then(function (html) {
+        var found = [];
+        var re = /href="([^"\/]+-v2)\/?"/g, m;
+        while ((m = re.exec(html))) if (found.indexOf(m[1]) < 0) found.push(decodeURIComponent(m[1]));
+        KNOWN.forEach(function (k) { if (found.indexOf(k) < 0) found.push(k); });
+        return ['menu'].concat(found.sort());
+      });
+  }
+
+  function gameSection(dir, lines, manifest) {
+    var sec = el('section');
+    sec.id = dir;
+    var clips = (manifest && manifest.clips) || {};
+    var list = (lines && lines.lines) || [];
+    var made = list.filter(function (l) { return clips[l.id]; }).length;
+    sec.appendChild(el('h2', null, dir + ' (' + made + ' of ' + list.length + ' clips)'));
+    if (!list.length) { sec.appendChild(el('p', 'empty', 'No lines.json yet.')); return sec; }
+    var tool = el('div', 'tool');
+    var all = el('button', 'small', 'Play all');
+    all.addEventListener('click', function () {
+      unlock();
+      var ids = list.filter(function (l) { return clips[l.id]; }).map(function (l) { return l.id; });
+      (function next(i) {
+        if (i >= ids.length) return;
+        EmmaAudio.playUrl(clipBase(dir) + ids[i] + '.mp3').then(function () { setTimeout(function () { next(i + 1); }, 250); });
+      })(0);
+    });
+    var stop = el('button', 'small', 'Stop');
+    stop.addEventListener('click', function () { EmmaAudio.stop(); });
+    tool.appendChild(all); tool.appendChild(stop);
+    sec.appendChild(tool);
+    list.forEach(function (l) {
+      var row = el('div', 'row');
+      var c = clips[l.id];
+      var url = clipBase(dir) + (c && c.file ? c.file : l.id + '.mp3');
+      row.appendChild(c ? playButton(url) : el('span', 'flag', 'not made'));
+      var info = el('div');
+      info.appendChild(el('div', 'text', l.text));
+      var meta = l.speaker + ' · ' + l.id + (c && c.duration_ms ? ' · ' + (c.duration_ms / 1000).toFixed(1) + ' s' : '');
+      if (l.note) meta += ' · ' + l.note;
+      info.appendChild(el('div', 'meta', meta));
+      if (c && c.text && c.text !== l.text) info.appendChild(el('div', 'flag', 'lines.json changed since this clip was made'));
+      if (c && c.stt && !c.stt.match) info.appendChild(el('div', 'flag', 'Speech-to-text heard: ' + c.stt.text));
+      row.appendChild(info);
+      sec.appendChild(row);
+    });
+    return sec;
+  }
+
+  function phonicsSection(index) {
+    var sec = el('section');
+    sec.id = 'phonics';
+    var sounds = (index && index.sounds) || {};
+    var keys = Object.keys(sounds);
+    sec.appendChild(el('h2', null, 'Letter sounds (' + keys.length + ')'));
+    keys.forEach(function (g) {
+      var s = sounds[g];
+      var row = el('div', 'row');
+      row.appendChild(playButton('audio/phonics/' + s.file));
+      var info = el('div');
+      info.appendChild(el('div', 'text', g + (s.same_as ? '  (same clip as ' + s.same_as + ')' : '')));
+      var meta = s.id + ' · ' + (s.sustain ? 'long sound' : 'short sound');
+      if (s.method) meta += ' · ' + s.method + ', take ' + s.chosen;
+      info.appendChild(el('div', 'meta', meta));
+      if (s.sustain) {
+        var hb = el('button', 'small', 'Hold');
+        var h = null;
+        hb.addEventListener('pointerdown', function () { unlock(); h = EmmaAudio.hold(g); });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { hb.addEventListener(ev, function () { if (h) { h.stop(); h = null; } }); });
+        var holdRow = el('div', 'takes'); holdRow.appendChild(hb); info.appendChild(holdRow);
+      }
+      if (s.takes && s.takes.length > 1) {
+        var takes = el('div', 'takes');
+        s.takes.forEach(function (t) {
+          var label = (t.n === s.chosen ? '✓ ' : '') + (t.text || (t.parts || []).join('+'));
+          var b = el('button', 'small', label);
+          b.title = t.method + ' cut ' + JSON.stringify(t.cut_ms) + ' heard ' + JSON.stringify(t.stt);
+          b.addEventListener('click', function () { unlock(); EmmaAudio.playUrl('audio/phonics/' + t.file); });
+          takes.appendChild(b);
+        });
+        info.appendChild(takes);
+      }
+      row.appendChild(info);
+      sec.appendChild(row);
+    });
+    return sec;
+  }
+
+  Promise.all([findGames(), getJSON('audio/phonics/index.json')]).then(function (r) {
+    var games = r[0], index = r[1];
+    return Promise.all(games.map(function (dir) {
+      return Promise.all([getJSON(clipBase(dir) + 'lines.json'), getJSON(clipBase(dir) + 'manifest.json')])
+        .then(function (x) { return { dir: dir, lines: x[0], manifest: x[1] }; });
+    })).then(function (gs) {
+      var root = document.getElementById('groups');
+      var nav = document.getElementById('nav');
+      root.textContent = '';
+      var add = function (id, label, node) {
+        root.appendChild(node);
+        var a = el('a', null, label); a.href = '#' + id; nav.appendChild(a);
+      };
+      add('phonics', 'Letter sounds', phonicsSection(index));
+      gs.forEach(function (g) {
+        if (!g.lines && !g.manifest) return;
+        add(g.dir, g.dir.replace(/^opus-5-5-/, ''), gameSection(g.dir, g.lines, g.manifest));
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>

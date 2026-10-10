@@ -1,0 +1,2420 @@
+{
+ "clips": {
+  "goal-play": {
+   "hash": "70d090b0fbfca4661e4217c58c67ff903f5f024207c39a11bda003d53360ae01",
+   "speaker": "narrator",
+   "text": "Tap Play to make magic!",
+   "file": "goal-play.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2300,
+   "generated": "2026-10-10T11:50:51",
+   "stt": {
+    "hash": "70d090b0fbfca4661e4217c58c67ff903f5f024207c39a11bda003d53360ae01",
+    "text": "Tap play to make magic",
+    "match": true
+   }
+  },
+  "goal-colour": {
+   "hash": "03f8cf6de7566aeadf00daf8b9ff5cc2d675b8af977ecb957c570bcf1fbcf73b",
+   "speaker": "narrator",
+   "text": "What colour is it? Tap one.",
+   "file": "goal-colour.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2224,
+   "generated": "2026-10-10T11:50:49",
+   "stt": {
+    "hash": "03f8cf6de7566aeadf00daf8b9ff5cc2d675b8af977ecb957c570bcf1fbcf73b",
+    "text": "What color is it? Tap one",
+    "match": false
+   }
+  },
+  "goal-wheel": {
+   "hash": "3b1a6551cf6350a83b50260a08b009dfa73824402cb6e938f29f3365877bad0a",
+   "speaker": "narrator",
+   "text": "Tap a gem to change it. Then slide your finger along the wand.",
+   "file": "goal-wheel.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 4254,
+   "generated": "2026-10-10T11:50:50",
+   "stt": {
+    "hash": "3b1a6551cf6350a83b50260a08b009dfa73824402cb6e938f29f3365877bad0a",
+    "text": "Tap a gem to change it, then slide your finger along the wand",
+    "match": true
+   }
+  },
+  "goal-heart": {
+   "hash": "84498ea1c7d1b627405283bfdbcedf72281f2ba8ca2914a0d583bb28d8255c69",
+   "speaker": "narrator",
+   "text": "Tap the heart, or the round arrow.",
+   "file": "goal-heart.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2540,
+   "generated": "2026-10-10T11:50:49",
+   "stt": {
+    "hash": "84498ea1c7d1b627405283bfdbcedf72281f2ba8ca2914a0d583bb28d8255c69",
+    "text": "Tap the heart or the round arrow",
+    "match": true
+   }
+  },
+  "goal-gems": {
+   "hash": "d818573185080a46a3965b66c2b78521156872dea87a0f43417ca4735c511043",
+   "speaker": "narrator",
+   "text": "Put the gems on the wand.",
+   "file": "goal-gems.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1751,
+   "generated": "2026-10-10T11:50:50",
+   "stt": {
+    "hash": "d818573185080a46a3965b66c2b78521156872dea87a0f43417ca4735c511043",
+    "text": "Put the gems on the wand",
+    "match": true
+   }
+  },
+  "goal-slide": {
+   "hash": "3342bc45ea8dfb189b7034c1b0f79c41d18c7abc9f9701b55a510f4d677212fc",
+   "speaker": "narrator",
+   "text": "Now slide your finger along the wand.",
+   "file": "goal-slide.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2475,
+   "generated": "2026-10-10T11:50:52",
+   "stt": {
+    "hash": "3342bc45ea8dfb189b7034c1b0f79c41d18c7abc9f9701b55a510f4d677212fc",
+    "text": "Now slide your finger along the wand",
+    "match": true
+   }
+  },
+  "goal-star": {
+   "hash": "749538aefb44f3876ceb5a9bd4e67dbbf9ca762278e25ae7227f0e1e863663ac",
+   "speaker": "narrator",
+   "text": "Slide all the way to the star.",
+   "file": "goal-star.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2163,
+   "generated": "2026-10-10T11:50:51",
+   "stt": {
+    "hash": "749538aefb44f3876ceb5a9bd4e67dbbf9ca762278e25ae7227f0e1e863663ac",
+    "text": "Slide all the way to the star",
+    "match": true
+   }
+  },
+  "goal-number": {
+   "hash": "78413ecdfba481a56eba23efba0bc754dbc7059ae805292e78d5d04d07619d34",
+   "speaker": "narrator",
+   "text": "Put a number on your wand.",
+   "file": "goal-number.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1726,
+   "generated": "2026-10-10T11:50:51",
+   "stt": {
+    "hash": "78413ecdfba481a56eba23efba0bc754dbc7059ae805292e78d5d04d07619d34",
+    "text": "Put a number on your wand",
+    "match": true
+   }
+  },
+  "goal-count": {
+   "hash": "40f114c3c3248e44b2bdf357d4f2c924a798e7371eaddc0e621c594f8bbde6d6",
+   "speaker": "narrator",
+   "text": "Tap them to count.",
+   "file": "goal-count.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1371,
+   "generated": "2026-10-10T11:50:51",
+   "stt": {
+    "hash": "40f114c3c3248e44b2bdf357d4f2c924a798e7371eaddc0e621c594f8bbde6d6",
+    "text": "Tap them to count",
+    "match": true
+   }
+  },
+  "goal-two": {
+   "hash": "4062cb13a73ad80c535e0ce6c78337db456491d90be0c8065b6034278ccff198",
+   "speaker": "narrator",
+   "text": "Is it this one, or this one?",
+   "file": "goal-two.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2470,
+   "generated": "2026-10-10T11:50:52",
+   "stt": {
+    "hash": "4062cb13a73ad80c535e0ce6c78337db456491d90be0c8065b6034278ccff198",
+    "text": "Is it this one or this one?",
+    "match": true
+   }
+  },
+  "goal-shelf": {
+   "hash": "d8f6cd501bc2fe5c951ff54515df30e83b369531206410b18b5bfe1435f124a5",
+   "speaker": "narrator",
+   "text": "On the shelf.",
+   "file": "goal-shelf.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1043,
+   "generated": "2026-10-10T11:50:52",
+   "stt": {
+    "hash": "d8f6cd501bc2fe5c951ff54515df30e83b369531206410b18b5bfe1435f124a5",
+    "text": "On the shelf",
+    "match": true
+   }
+  },
+  "goal-note": {
+   "hash": "258f9826e20249f9e229b66050b5d2a3a4053d400634cd0ef4a1f7fb19a3aea7",
+   "speaker": "narrator",
+   "text": "Slide under the note. Then give Sizzle the right thing.",
+   "file": "goal-note.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3737,
+   "generated": "2026-10-10T11:50:59",
+   "stt": {
+    "hash": "258f9826e20249f9e229b66050b5d2a3a4053d400634cd0ef4a1f7fb19a3aea7",
+    "text": "Slide under the note, then give Sizzle the right thing",
+    "match": true
+   }
+  },
+  "goal-queen-note": {
+   "hash": "16cb9ed5b6163a315ccecc3b3052d3e11a1a5b383915d94c1dafc855f6057bb1",
+   "speaker": "narrator",
+   "text": "The Queen sent you a note. Do what it says!",
+   "file": "goal-queen-note.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3120,
+   "generated": "2026-10-10T11:50:53",
+   "stt": {
+    "hash": "16cb9ed5b6163a315ccecc3b3052d3e11a1a5b383915d94c1dafc855f6057bb1",
+    "text": "The Queen sent you a note. Do what it says",
+    "match": true
+   }
+  },
+  "goal-read": {
+   "hash": "09d73afcf2392666674d5068478cc1d0ee587171f05ff32d055aff7878a64d53",
+   "speaker": "narrator",
+   "text": "Read the note. Slide under a word to hear its sounds.",
+   "file": "goal-read.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3946,
+   "generated": "2026-10-10T11:50:53",
+   "stt": {
+    "hash": "09d73afcf2392666674d5068478cc1d0ee587171f05ff32d055aff7878a64d53",
+    "text": "Read the note. Slide under a word to hear its sounds",
+    "match": true
+   }
+  },
+  "goal-scroll": {
+   "hash": "4422333584494fe24701deb4a2e7d14537bd36a356d712c81ed5216835e6fbf0",
+   "speaker": "narrator",
+   "text": "Do you want to try? Tap the scroll, or wave bye bye.",
+   "file": "goal-scroll.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3673,
+   "generated": "2026-10-10T11:50:53",
+   "stt": {
+    "hash": "4422333584494fe24701deb4a2e7d14537bd36a356d712c81ed5216835e6fbf0",
+    "text": "Do you want to try? Tap the scroll or wave bye-bye",
+    "match": true
+   }
+  },
+  "goal-choice": {
+   "hash": "60510a3aab29657f44d29d4f26002e1633400bebcab0ddd628814408d316a8f0",
+   "speaker": "narrator",
+   "text": "Do you want to make more magic? Tap the wand. Or tap the moon for bedtime.",
+   "file": "goal-choice.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 5354,
+   "generated": "2026-10-10T11:50:55",
+   "stt": {
+    "hash": "60510a3aab29657f44d29d4f26002e1633400bebcab0ddd628814408d316a8f0",
+    "text": "Do you want to make more magic? Tap the wand or tap the moon for bedtime",
+    "match": true
+   }
+  },
+  "goal-newday": {
+   "hash": "0dff730338e89071b1f97d772f4810a89a5de77d262e754dec995d45e09852f3",
+   "speaker": "narrator",
+   "text": "Tap the sun for a new day!",
+   "file": "goal-newday.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2146,
+   "generated": "2026-10-10T11:50:54",
+   "stt": {
+    "hash": "0dff730338e89071b1f97d772f4810a89a5de77d262e754dec995d45e09852f3",
+    "text": "Tap the sun for a new day",
+    "match": true
+   }
+  },
+  "goal-close": {
+   "hash": "ff3fdad71308141b3a36a1ac2ad60d09251fd0f8a55ab0c3245cafdcc12dad58",
+   "speaker": "narrator",
+   "text": "Tap the cross to close your book.",
+   "file": "goal-close.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2014,
+   "generated": "2026-10-10T12:31:28",
+   "stt": {
+    "hash": "ff3fdad71308141b3a36a1ac2ad60d09251fd0f8a55ab0c3245cafdcc12dad58",
+    "text": "Tap the cross to close your book",
+    "match": true
+   }
+  },
+  "need-bobbin-hungry": {
+   "hash": "650c5919a260c9a1c4c15139310f207ceea692063ae6fb8dc5ed52a5e3366a1d",
+   "speaker": "narrator",
+   "text": "Your Bobbin is hungry. What does it want?",
+   "file": "need-bobbin-hungry.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2955,
+   "generated": "2026-10-10T11:50:55",
+   "stt": {
+    "hash": "650c5919a260c9a1c4c15139310f207ceea692063ae6fb8dc5ed52a5e3366a1d",
+    "text": "Your bobbin is hungry. What does it want?",
+    "match": true
+   }
+  },
+  "need-bobbin-cold": {
+   "hash": "ec508151294cf9dab83dcfeb2bb9429cc317bcfb5106cae9f1b0887d4c31e37b",
+   "speaker": "narrator",
+   "text": "Your Bobbin is cold. What does it want?",
+   "file": "need-bobbin-cold.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2833,
+   "generated": "2026-10-10T11:50:55",
+   "stt": {
+    "hash": "ec508151294cf9dab83dcfeb2bb9429cc317bcfb5106cae9f1b0887d4c31e37b",
+    "text": "Your bobbin is cold. What does it want?",
+    "match": true
+   }
+  },
+  "need-bobbin-thirsty": {
+   "hash": "bd9bc3b13f36fbc00cc8d027422149ce3f6c5a544428aba3acdf71f0eb52955b",
+   "speaker": "narrator",
+   "text": "Your Bobbin is thirsty. What does it want?",
+   "file": "need-bobbin-thirsty.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3036,
+   "generated": "2026-10-10T11:50:56",
+   "stt": {
+    "hash": "bd9bc3b13f36fbc00cc8d027422149ce3f6c5a544428aba3acdf71f0eb52955b",
+    "text": "Your bobbin is thirsty. What does it want?",
+    "match": true
+   }
+  },
+  "need-duck-cold": {
+   "hash": "34e032cdddb8f59baea175438a138970f1b315b6fc644431748c2ca780870f72",
+   "speaker": "narrator",
+   "text": "The ducklings are cold. What do they need?",
+   "file": "need-duck-cold.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2849,
+   "generated": "2026-10-10T11:50:56",
+   "stt": {
+    "hash": "34e032cdddb8f59baea175438a138970f1b315b6fc644431748c2ca780870f72",
+    "text": "The ducklings are cold. What do they need?",
+    "match": true
+   }
+  },
+  "need-duck-hungry": {
+   "hash": "fd8f5e3c5978c583310b1e63f8348a3d872afdfa731c29c786225d5dd2a81ecc",
+   "speaker": "narrator",
+   "text": "The ducklings are hungry. What do they need?",
+   "file": "need-duck-hungry.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2761,
+   "generated": "2026-10-10T11:50:57",
+   "stt": {
+    "hash": "fd8f5e3c5978c583310b1e63f8348a3d872afdfa731c29c786225d5dd2a81ecc",
+    "text": "The ducklings are hungry. What do they need?",
+    "match": true
+   }
+  },
+  "need-duck-thirsty": {
+   "hash": "985fe0f3deaa311858b340ab97264cd37552071f3cd2bdcd03fd656a7f75a608",
+   "speaker": "narrator",
+   "text": "The ducklings are thirsty. What do they need?",
+   "file": "need-duck-thirsty.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2936,
+   "generated": "2026-10-10T11:50:57",
+   "stt": {
+    "hash": "985fe0f3deaa311858b340ab97264cd37552071f3cd2bdcd03fd656a7f75a608",
+    "text": "The ducklings are thirsty. What do they need?",
+    "match": true
+   }
+  },
+  "need-goat-hungry": {
+   "hash": "fca6e73ae7f091cb072c8904ebd9496fb3d9257235cd6df086df07b579eadb60",
+   "speaker": "narrator",
+   "text": "Grandpa Goat is hungry. What does he need?",
+   "file": "need-goat-hungry.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3158,
+   "generated": "2026-10-10T11:50:57",
+   "stt": {
+    "hash": "fca6e73ae7f091cb072c8904ebd9496fb3d9257235cd6df086df07b579eadb60",
+    "text": "Grandpa Goat is hungry. What does he need?",
+    "match": true
+   }
+  },
+  "need-goat-thirsty": {
+   "hash": "dce3bc8fb41ad47be45ccbf860569edc8d1373cbd69e5defbd9af60a8e158ec1",
+   "speaker": "narrator",
+   "text": "Grandpa Goat is thirsty. What does he need?",
+   "file": "need-goat-thirsty.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3337,
+   "generated": "2026-10-10T11:50:58",
+   "stt": {
+    "hash": "dce3bc8fb41ad47be45ccbf860569edc8d1373cbd69e5defbd9af60a8e158ec1",
+    "text": "Grandpa Goat is thirsty. What does he need?",
+    "match": true
+   }
+  },
+  "need-dot": {
+   "hash": "caf29a73ac4357af61211afae8d0eae6fe0bc29d1263e2d670b568edb78c39a2",
+   "speaker": "narrator",
+   "text": "Dot wants something. It is very tricky!",
+   "file": "need-dot.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3437,
+   "generated": "2026-10-10T11:50:58",
+   "stt": {
+    "hash": "caf29a73ac4357af61211afae8d0eae6fe0bc29d1263e2d670b568edb78c39a2",
+    "text": "Dot wants something. It is very tricky",
+    "match": true
+   }
+  },
+  "help-not-it": {
+   "hash": "32f05dbc65dba09a8319c26b813463e736763a0e6155b8097c50fc8c14758301",
+   "speaker": "narrator",
+   "text": "That is not it. Listen again.",
+   "file": "help-not-it.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2569,
+   "generated": "2026-10-10T11:50:58",
+   "stt": {
+    "hash": "32f05dbc65dba09a8319c26b813463e736763a0e6155b8097c50fc8c14758301",
+    "text": "That is not it. Listen again",
+    "match": true
+   }
+  },
+  "help-hmm": {
+   "hash": "e3747cd3051d5092b0a65e96bc5ec2ae348e46678895a24823fb0f3a6637059f",
+   "speaker": "narrator",
+   "text": "Hmm. Listen again.",
+   "file": "help-hmm.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1784,
+   "generated": "2026-10-10T11:50:58",
+   "stt": {
+    "hash": "e3747cd3051d5092b0a65e96bc5ec2ae348e46678895a24823fb0f3a6637059f",
+    "text": "Hmm. Listen again",
+    "match": true
+   }
+  },
+  "help-listen": {
+   "hash": "7972284bc12facf4b26672b46f7e6cf76db63353a9cab34cbb5111caed553e51",
+   "speaker": "narrator",
+   "text": "Listen.",
+   "file": "help-listen.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 604,
+   "generated": "2026-10-10T11:50:59",
+   "stt": {
+    "hash": "7972284bc12facf4b26672b46f7e6cf76db63353a9cab34cbb5111caed553e51",
+    "text": "Listen",
+    "match": true
+   }
+  },
+  "help-some": {
+   "hash": "536b4d982fe9034f8aa54cfe08e1e1af74566e8adcad99cb3317e03cee3bd63e",
+   "speaker": "narrator",
+   "text": "Some gems are right! Listen.",
+   "file": "help-some.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2250,
+   "generated": "2026-10-10T11:50:59",
+   "stt": {
+    "hash": "536b4d982fe9034f8aa54cfe08e1e1af74566e8adcad99cb3317e03cee3bd63e",
+    "text": "Some gems are right. Listen",
+    "match": true
+   }
+  },
+  "help-sound": {
+   "hash": "57609c1a432ee031a4453eb147a430b21cd4fc4a9d23f99de0f6d1561f35baba",
+   "speaker": "narrator",
+   "text": "Listen for this sound.",
+   "file": "help-sound.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1454,
+   "generated": "2026-10-10T11:51:05",
+   "stt": {
+    "hash": "57609c1a432ee031a4453eb147a430b21cd4fc4a9d23f99de0f6d1561f35baba",
+    "text": "Listen for this sound",
+    "match": true
+   }
+  },
+  "sizzle-goal": {
+   "hash": "b7273154195d37d7dd61af1a6f82aef1513cd2fe02b1643dac79a919148bba3c",
+   "speaker": "narrator",
+   "text": "Sizzle wants something. It is on his note.",
+   "file": "sizzle-goal.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2965,
+   "generated": "2026-10-10T11:51:00",
+   "stt": {
+    "hash": "b7273154195d37d7dd61af1a6f82aef1513cd2fe02b1643dac79a919148bba3c",
+    "text": "Sizzle wants something. It is on his note",
+    "match": true
+   }
+  },
+  "note-yes": {
+   "hash": "17387e3a05433686331bb70756b973e75ff71e2f65c5d4b95a7f73db3e19c5ef",
+   "speaker": "narrator",
+   "text": "Yes! You read the note!",
+   "file": "note-yes.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1966,
+   "generated": "2026-10-10T11:51:00",
+   "stt": {
+    "hash": "17387e3a05433686331bb70756b973e75ff71e2f65c5d4b95a7f73db3e19c5ef",
+    "text": "Yes, you read the note",
+    "match": true
+   }
+  },
+  "note-no": {
+   "hash": "52a32bf6c6dec53c7e0d5faf960938480118ba4eada4030b7d6b152b3ba56514",
+   "speaker": "narrator",
+   "text": "Oh no! Read the note again.",
+   "file": "note-no.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2604,
+   "generated": "2026-10-10T11:51:00",
+   "stt": {
+    "hash": "52a32bf6c6dec53c7e0d5faf960938480118ba4eada4030b7d6b152b3ba56514",
+    "text": "Oh no. Read the note again",
+    "match": true
+   }
+  },
+  "note-this": {
+   "hash": "e9c771648781a245a38ac5fa87b5e568e6a05f16c92553f2e765cce34745f478",
+   "speaker": "narrator",
+   "text": "The note says this one.",
+   "file": "note-this.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1465,
+   "generated": "2026-10-10T11:51:01",
+   "stt": {
+    "hash": "e9c771648781a245a38ac5fa87b5e568e6a05f16c92553f2e765cce34745f478",
+    "text": "The note says this one",
+    "match": true
+   }
+  },
+  "scroll-offer": {
+   "hash": "365af585dbbf56e666408bd4bb5898291ad5b33a61d1bb4daae2c4e193d2d27f",
+   "speaker": "narrator",
+   "text": "Look! Dot has a Golden Scroll.",
+   "file": "scroll-offer.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2595,
+   "generated": "2026-10-10T11:51:01",
+   "stt": {
+    "hash": "365af585dbbf56e666408bd4bb5898291ad5b33a61d1bb4daae2c4e193d2d27f",
+    "text": "Look, Dot has a golden scroll",
+    "match": true
+   }
+  },
+  "party-pets": {
+   "hash": "2ff5c1c9e01983a7cf9f423a127ef95dd81e9c80f0b2035e70824b189ab6281d",
+   "speaker": "narrator",
+   "text": "The Queen's pets: a pig, a dog and a cat.",
+   "file": "party-pets.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3861,
+   "generated": "2026-10-10T11:51:02",
+   "stt": {
+    "hash": "2ff5c1c9e01983a7cf9f423a127ef95dd81e9c80f0b2035e70824b189ab6281d",
+    "text": "The Queen's pets, a pig, a dog, and a cat",
+    "match": true
+   }
+  },
+  "party-wrong-pig": {
+   "hash": "8d9500db7b4d4fd5a1d2d6d41d8e0d178a2d843bad20b792e5ae9dff62839762",
+   "speaker": "narrator",
+   "text": "That is the pig. Read the note again.",
+   "file": "party-wrong-pig.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2855,
+   "generated": "2026-10-10T11:51:02",
+   "stt": {
+    "hash": "8d9500db7b4d4fd5a1d2d6d41d8e0d178a2d843bad20b792e5ae9dff62839762",
+    "text": "That is the pig. Read the note again",
+    "match": true
+   }
+  },
+  "party-wrong-dog": {
+   "hash": "ab93f08248ca85a34d508ede57c804dc335bc6d124abf5814e8bcb87494d8c91",
+   "speaker": "narrator",
+   "text": "That is the dog. Read the note again.",
+   "file": "party-wrong-dog.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3031,
+   "generated": "2026-10-10T11:51:02",
+   "stt": {
+    "hash": "ab93f08248ca85a34d508ede57c804dc335bc6d124abf5814e8bcb87494d8c91",
+    "text": "That is the dog. Read the note again",
+    "match": true
+   }
+  },
+  "party-wrong-cat": {
+   "hash": "66f26f033bde539eb8e1289cc69397827e7b7a5c3cf5bc4e33aa44274aa65861",
+   "speaker": "narrator",
+   "text": "That is the cat. Read the note again.",
+   "file": "party-wrong-cat.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2847,
+   "generated": "2026-10-10T11:51:03",
+   "stt": {
+    "hash": "66f26f033bde539eb8e1289cc69397827e7b7a5c3cf5bc4e33aa44274aa65861",
+    "text": "That is the cat. Read the note again",
+    "match": true
+   }
+  },
+  "party-wrong-thing": {
+   "hash": "71369d2419cdca1a28ddd0f5ed9259c267bb1a7a899ccbc88c4e30df47986968",
+   "speaker": "narrator",
+   "text": "Not that thing. Read the note again.",
+   "file": "party-wrong-thing.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2753,
+   "generated": "2026-10-10T11:51:03",
+   "stt": {
+    "hash": "71369d2419cdca1a28ddd0f5ed9259c267bb1a7a899ccbc88c4e30df47986968",
+    "text": "Not that thing. Read the note again",
+    "match": true
+   }
+  },
+  "party-yes": {
+   "hash": "bdfdff8aac28029b767b81794837242d3fb17c5087d301f6d0e61f76896c4ca8",
+   "speaker": "narrator",
+   "text": "Yes! You did what the note says!",
+   "file": "party-yes.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2613,
+   "generated": "2026-10-10T11:51:04",
+   "stt": {
+    "hash": "bdfdff8aac28029b767b81794837242d3fb17c5087d301f6d0e61f76896c4ca8",
+    "text": "Yes, you did what the note says",
+    "match": true
+   }
+  },
+  "party-made": {
+   "hash": "abc86251cb1be58c148a09ca32f2930fa8a106b72764cfa2ce4b9564d72298b1",
+   "speaker": "narrator",
+   "text": "Look at all the things you made today!",
+   "file": "party-made.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2446,
+   "generated": "2026-10-10T11:51:04",
+   "stt": {
+    "hash": "abc86251cb1be58c148a09ca32f2930fa8a106b72764cfa2ce4b9564d72298b1",
+    "text": "Look at all the things you made today",
+    "match": true
+   }
+  },
+  "book-new": {
+   "hash": "d31eb9dd7fec6265c3fbbd1af817074171530ed158a7036fa3b29cc9fe45f6c0",
+   "speaker": "narrator",
+   "text": "Look! New stickers for your book!",
+   "file": "book-new.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2356,
+   "generated": "2026-10-10T11:51:04",
+   "stt": {
+    "hash": "d31eb9dd7fec6265c3fbbd1af817074171530ed158a7036fa3b29cc9fe45f6c0",
+    "text": "Look, new stickers for your book",
+    "match": true
+   }
+  },
+  "book-shiny": {
+   "hash": "3400034a5b3fbaa682b5329d18a5f1e16715fadf31ee3f4c89738e6e1467dfdb",
+   "speaker": "narrator",
+   "text": "First try! A shiny sticker!",
+   "file": "book-shiny.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2646,
+   "generated": "2026-10-10T11:51:05",
+   "stt": {
+    "hash": "3400034a5b3fbaa682b5329d18a5f1e16715fadf31ee3f4c89738e6e1467dfdb",
+    "text": "First try, a shiny sticker",
+    "match": true
+   }
+  },
+  "book-rare": {
+   "hash": "d740bfdd91dfac78f98ce40f378d7667526be6046127593cc9a2b086854a3c88",
+   "speaker": "narrator",
+   "text": "A rare unicorn sticker!",
+   "file": "book-rare.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2240,
+   "generated": "2026-10-10T11:51:05",
+   "stt": {
+    "hash": "d740bfdd91dfac78f98ce40f378d7667526be6046127593cc9a2b086854a3c88",
+    "text": "A rare unicorn sticker",
+    "match": true
+   }
+  },
+  "grow": {
+   "hash": "2da5bb27ad7b877a2c8adfec992655e242db53c57812f6044e07ece9b42f8155",
+   "speaker": "narrator",
+   "text": "Look! Your Bobbin is growing!",
+   "file": "grow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2181,
+   "generated": "2026-10-10T11:51:05",
+   "stt": {
+    "hash": "2da5bb27ad7b877a2c8adfec992655e242db53c57812f6044e07ece9b42f8155",
+    "text": "Look, your bobbin is growing",
+    "match": true
+   }
+  },
+  "num-one": {
+   "hash": "dce3c44520cacf3536a2782cb4d8702aa1d5cdf2659aaaaeb4f7c405b2252937",
+   "speaker": "narrator",
+   "text": "One.",
+   "file": "num-one.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 550,
+   "generated": "2026-10-10T11:51:05",
+   "stt": {
+    "hash": "dce3c44520cacf3536a2782cb4d8702aa1d5cdf2659aaaaeb4f7c405b2252937",
+    "text": "One",
+    "match": true
+   }
+  },
+  "num-more-one": {
+   "hash": "5368814dcf243b566c553986e3d5b6df46977d5ff7ebc62bc17273919664f66b",
+   "speaker": "narrator",
+   "text": "One more duckling is coming!",
+   "file": "num-more-one.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1706,
+   "generated": "2026-10-10T11:51:06",
+   "stt": {
+    "hash": "5368814dcf243b566c553986e3d5b6df46977d5ff7ebc62bc17273919664f66b",
+    "text": "One more duckling is coming",
+    "match": true
+   }
+  },
+  "num-more-two": {
+   "hash": "e1aef6927ccd1e7987033dcf7c1f59c85d678813696d7df5d19f5858d409b597",
+   "speaker": "narrator",
+   "text": "Two more ducklings are coming!",
+   "file": "num-more-two.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1735,
+   "generated": "2026-10-10T11:51:06",
+   "stt": {
+    "hash": "e1aef6927ccd1e7987033dcf7c1f59c85d678813696d7df5d19f5858d409b597",
+    "text": "Two more ducklings are coming",
+    "match": true
+   }
+  },
+  "num-tray": {
+   "hash": "31e47175c9934725df6c561b33635fa7354ad1ec20880879e9b070456705c5db",
+   "speaker": "narrator",
+   "text": "Look at the number on the bag. The tray has ten holes. How many more nuts will fill it?",
+   "file": "num-tray.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 5743,
+   "generated": "2026-10-10T11:51:09",
+   "stt": {
+    "hash": "31e47175c9934725df6c561b33635fa7354ad1ec20880879e9b070456705c5db",
+    "text": "Look at the number on the bag. The tray has 10 holes. How many more nuts will fill it?",
+    "match": true
+   }
+  },
+  "num-duck-hat": {
+   "hash": "79822535b787a92261211f73b0a6724e7000bfc4d383bfb7560bc864f7d6fbc7",
+   "speaker": "narrator",
+   "text": "Every duckling needs a hat. How many hats?",
+   "file": "num-duck-hat.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3146,
+   "generated": "2026-10-10T11:51:07",
+   "stt": {
+    "hash": "79822535b787a92261211f73b0a6724e7000bfc4d383bfb7560bc864f7d6fbc7",
+    "text": "Every duckling needs a hat. How many hats?",
+    "match": true
+   }
+  },
+  "duck-few-hat": {
+   "hash": "0a6557d1b210832608aa38b25178ffa4dae9bbbb6ef56595ecd004593d4141ed",
+   "speaker": "narrator",
+   "text": "Oh no! A duckling has no hat.",
+   "file": "duck-few-hat.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2976,
+   "generated": "2026-10-10T11:51:07",
+   "stt": {
+    "hash": "0a6557d1b210832608aa38b25178ffa4dae9bbbb6ef56595ecd004593d4141ed",
+    "text": "Oh no, a duckling has no hat",
+    "match": true
+   }
+  },
+  "duck-many-hat": {
+   "hash": "06263f1206e878a44fcc6241343c8ff884b6a9eb512b24816f05215df20f25e1",
+   "speaker": "narrator",
+   "text": "Oops! Too many hats.",
+   "file": "duck-many-hat.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1970,
+   "generated": "2026-10-10T11:51:07",
+   "stt": {
+    "hash": "06263f1206e878a44fcc6241343c8ff884b6a9eb512b24816f05215df20f25e1",
+    "text": "Oops, too many hats",
+    "match": true
+   }
+  },
+  "duck-done-hat": {
+   "hash": "ef3767e13997a23e6156d75fdc4372fdd6c257744451b7f82cacf8b3da75249e",
+   "speaker": "narrator",
+   "text": "Every duckling has a hat!",
+   "file": "duck-done-hat.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1888,
+   "generated": "2026-10-10T11:51:08",
+   "stt": {
+    "hash": "ef3767e13997a23e6156d75fdc4372fdd6c257744451b7f82cacf8b3da75249e",
+    "text": "Every duckling has a hat",
+    "match": true
+   }
+  },
+  "num-duck-rug": {
+   "hash": "9a5ee492ea464a4449717bdfeafb785d1f2a7854c3611efd520647f4de17d4b5",
+   "speaker": "narrator",
+   "text": "Every duckling needs a rug. How many rugs?",
+   "file": "num-duck-rug.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3301,
+   "generated": "2026-10-10T11:51:08",
+   "stt": {
+    "hash": "9a5ee492ea464a4449717bdfeafb785d1f2a7854c3611efd520647f4de17d4b5",
+    "text": "Every duckling needs a rug. How many rugs?",
+    "match": true
+   }
+  },
+  "duck-few-rug": {
+   "hash": "a546cb414b8fc5cb0fd681198dc3e3c9bd00cdc81cde829fd06ffe21a3fee57a",
+   "speaker": "narrator",
+   "text": "Oh no! A duckling has no rug.",
+   "file": "duck-few-rug.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2969,
+   "generated": "2026-10-10T11:51:08",
+   "stt": {
+    "hash": "a546cb414b8fc5cb0fd681198dc3e3c9bd00cdc81cde829fd06ffe21a3fee57a",
+    "text": "Oh no, a duckling has no rug",
+    "match": true
+   }
+  },
+  "duck-many-rug": {
+   "hash": "a7e28d909157b241bea6054a318f9bf179584c52330e60085f338f4ab636be64",
+   "speaker": "narrator",
+   "text": "Oops! Too many rugs.",
+   "file": "duck-many-rug.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2063,
+   "generated": "2026-10-10T11:51:15",
+   "stt": {
+    "hash": "a7e28d909157b241bea6054a318f9bf179584c52330e60085f338f4ab636be64",
+    "text": "Oops, too many rugs",
+    "match": true
+   }
+  },
+  "duck-done-rug": {
+   "hash": "72a76058da9434359470f2aecc511f1e75da0e531ab7c8610c84d826247aa384",
+   "speaker": "narrator",
+   "text": "Every duckling has a rug!",
+   "file": "duck-done-rug.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1833,
+   "generated": "2026-10-10T11:51:09",
+   "stt": {
+    "hash": "72a76058da9434359470f2aecc511f1e75da0e531ab7c8610c84d826247aa384",
+    "text": "Every duckling has a rug",
+    "match": true
+   }
+  },
+  "num-duck-bun": {
+   "hash": "1f827eae7171b0fa2eca539cff08fa65276b6b1b6e146293e11ea76d935054f4",
+   "speaker": "narrator",
+   "text": "Every duckling needs a bun. How many buns?",
+   "file": "num-duck-bun.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3234,
+   "generated": "2026-10-10T11:51:09",
+   "stt": {
+    "hash": "1f827eae7171b0fa2eca539cff08fa65276b6b1b6e146293e11ea76d935054f4",
+    "text": "Every duckling needs a bun. How many buns?",
+    "match": true
+   }
+  },
+  "duck-few-bun": {
+   "hash": "c34701de25094cf18f893f2b8f2abbc1be4f9f7632a195174d2625dd254a5290",
+   "speaker": "narrator",
+   "text": "Oh no! A duckling has no bun.",
+   "file": "duck-few-bun.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3047,
+   "generated": "2026-10-10T11:51:10",
+   "stt": {
+    "hash": "c34701de25094cf18f893f2b8f2abbc1be4f9f7632a195174d2625dd254a5290",
+    "text": "Oh no, a duckling has no bun",
+    "match": true
+   }
+  },
+  "duck-many-bun": {
+   "hash": "f6383d2f86d053d46128b092378bb1cb33a134d8e14ac359aa16eef782aab3e6",
+   "speaker": "narrator",
+   "text": "Oops! Too many buns.",
+   "file": "duck-many-bun.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2061,
+   "generated": "2026-10-10T11:51:10",
+   "stt": {
+    "hash": "f6383d2f86d053d46128b092378bb1cb33a134d8e14ac359aa16eef782aab3e6",
+    "text": "Oops, too many buns",
+    "match": true
+   }
+  },
+  "duck-done-bun": {
+   "hash": "4ed5eb89ee49c87aca366b2ab1f3377e165d60f955e92f65775db671f3975796",
+   "speaker": "narrator",
+   "text": "Every duckling has a bun!",
+   "file": "duck-done-bun.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1856,
+   "generated": "2026-10-10T11:51:10",
+   "stt": {
+    "hash": "4ed5eb89ee49c87aca366b2ab1f3377e165d60f955e92f65775db671f3975796",
+    "text": "Every duckling has a bun",
+    "match": true
+   }
+  },
+  "num-duck-cup": {
+   "hash": "519d4d9c39e37aa63324dc27c0006ab9ba754d745a381b40773427053034e452",
+   "speaker": "narrator",
+   "text": "Every duckling needs a cup. How many cups?",
+   "file": "num-duck-cup.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3136,
+   "generated": "2026-10-10T11:51:11",
+   "stt": {
+    "hash": "519d4d9c39e37aa63324dc27c0006ab9ba754d745a381b40773427053034e452",
+    "text": "Every duckling needs a cup. How many cups?",
+    "match": true
+   }
+  },
+  "duck-few-cup": {
+   "hash": "542b58031ef7f77462447a888340622bbdc137bbfbad31bb76f85e02a1d55b63",
+   "speaker": "narrator",
+   "text": "Oh no! A duckling has no cup.",
+   "file": "duck-few-cup.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3001,
+   "generated": "2026-10-10T11:51:11",
+   "stt": {
+    "hash": "542b58031ef7f77462447a888340622bbdc137bbfbad31bb76f85e02a1d55b63",
+    "text": "Oh no, a duckling has no cup",
+    "match": true
+   }
+  },
+  "duck-many-cup": {
+   "hash": "e8d800fc52974b629ffec672aa8fe1a93c4fd01d0afdec326ae3ba011676f2fe",
+   "speaker": "narrator",
+   "text": "Oops! Too many cups.",
+   "file": "duck-many-cup.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1996,
+   "generated": "2026-10-10T11:51:11",
+   "stt": {
+    "hash": "e8d800fc52974b629ffec672aa8fe1a93c4fd01d0afdec326ae3ba011676f2fe",
+    "text": "Oops, too many cups",
+    "match": true
+   }
+  },
+  "duck-done-cup": {
+   "hash": "c63a25b4592d3cf9168e1c12a64a948c7b63fe9c7580c33abca2f2ff55d63e6f",
+   "speaker": "narrator",
+   "text": "Every duckling has a cup!",
+   "file": "duck-done-cup.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1694,
+   "generated": "2026-10-10T11:51:12",
+   "stt": {
+    "hash": "c63a25b4592d3cf9168e1c12a64a948c7b63fe9c7580c33abca2f2ff55d63e6f",
+    "text": "Every duckling has a cup",
+    "match": true
+   }
+  },
+  "goat-few": {
+   "hash": "c8ed0aa00cbdd2068aa0ac11075eb2e98b5753288ecb15432645bcc775d7a29f",
+   "speaker": "narrator",
+   "text": "There is an empty hole.",
+   "file": "goat-few.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1662,
+   "generated": "2026-10-10T11:51:12",
+   "stt": {
+    "hash": "c8ed0aa00cbdd2068aa0ac11075eb2e98b5753288ecb15432645bcc775d7a29f",
+    "text": "There is an empty hole",
+    "match": true
+   }
+  },
+  "goat-many": {
+   "hash": "098e95caf28a3b25705234683427f5cad8152c0ec5b2bc3e032bc4d78a87215f",
+   "speaker": "narrator",
+   "text": "Oops! Too many nuts.",
+   "file": "goat-many.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2061,
+   "generated": "2026-10-10T11:51:12",
+   "stt": {
+    "hash": "098e95caf28a3b25705234683427f5cad8152c0ec5b2bc3e032bc4d78a87215f",
+    "text": "Oops, too many nuts",
+    "match": true
+   }
+  },
+  "goat-done": {
+   "hash": "ef5b27ae871fc3434b4211892e873007dc898b163a198810f27abfd1dc300a8d",
+   "speaker": "narrator",
+   "text": "The tray is full!",
+   "file": "goat-done.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1338,
+   "generated": "2026-10-10T11:51:13",
+   "stt": {
+    "hash": "ef5b27ae871fc3434b4211892e873007dc898b163a198810f27abfd1dc300a8d",
+    "text": "The tray is full",
+    "match": true
+   }
+  },
+  "word-bun-ask": {
+   "hash": "d1ab2aea9a2f03e240ca8167f28d2959052f6120f2710322da78808ed9236d8e",
+   "speaker": "narrator",
+   "text": "A bun. Bun.",
+   "file": "word-bun-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1918,
+   "generated": "2026-10-10T11:51:13",
+   "stt": {
+    "hash": "d1ab2aea9a2f03e240ca8167f28d2959052f6120f2710322da78808ed9236d8e",
+    "text": "A bun. Bun",
+    "match": true
+   }
+  },
+  "word-bun": {
+   "hash": "1e21078d7f654dc9f0cf97aadfd8555904143202e568cc9b16badd099322a0fa",
+   "speaker": "narrator",
+   "text": "A bun!",
+   "file": "word-bun.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1120,
+   "generated": "2026-10-10T11:51:13",
+   "stt": {
+    "hash": "1e21078d7f654dc9f0cf97aadfd8555904143202e568cc9b16badd099322a0fa",
+    "text": "A bun",
+    "match": true
+   }
+  },
+  "word-nut-ask": {
+   "hash": "d55fb06abf5cc4fa6f41e483d89f19d9814fd68614ca6cb5d2af45bd4f151739",
+   "speaker": "narrator",
+   "text": "A nut. Nut.",
+   "file": "word-nut-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1969,
+   "generated": "2026-10-10T11:51:14",
+   "stt": {
+    "hash": "d55fb06abf5cc4fa6f41e483d89f19d9814fd68614ca6cb5d2af45bd4f151739",
+    "text": "A nut. Nut",
+    "match": true
+   }
+  },
+  "word-nut": {
+   "hash": "17daaeeb717801aa7c1aaccca9deaf6f5cc6a12ca7e5f44a382a60ba8ef45589",
+   "speaker": "narrator",
+   "text": "A nut!",
+   "file": "word-nut.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 823,
+   "generated": "2026-10-10T11:51:14",
+   "stt": {
+    "hash": "17daaeeb717801aa7c1aaccca9deaf6f5cc6a12ca7e5f44a382a60ba8ef45589",
+    "text": "A nut?",
+    "match": true
+   }
+  },
+  "word-hat-ask": {
+   "hash": "57307d5f8aeb4678e217c87d9393793b820c373dbb1ed20cefd73f00b315f10a",
+   "speaker": "narrator",
+   "text": "A hat. Hat.",
+   "file": "word-hat-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1971,
+   "generated": "2026-10-10T11:51:14",
+   "stt": {
+    "hash": "57307d5f8aeb4678e217c87d9393793b820c373dbb1ed20cefd73f00b315f10a",
+    "text": "A hat. Hat",
+    "match": true
+   }
+  },
+  "word-hat": {
+   "hash": "13c6d60110eb544740ee05be2edaa0b4fd401377fbadb4317365c5fa8931d399",
+   "speaker": "narrator",
+   "text": "A hat!",
+   "file": "word-hat.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 809,
+   "generated": "2026-10-10T11:51:15",
+   "stt": {
+    "hash": "13c6d60110eb544740ee05be2edaa0b4fd401377fbadb4317365c5fa8931d399",
+    "text": "A hat?",
+    "match": true
+   }
+  },
+  "word-rug-ask": {
+   "hash": "59ae917902b74d6b315ad03553a178383d918ff7dd24070c0dae85555d296108",
+   "speaker": "narrator",
+   "text": "A rug. Rug.",
+   "file": "word-rug-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1847,
+   "generated": "2026-10-10T11:51:17",
+   "stt": {
+    "hash": "59ae917902b74d6b315ad03553a178383d918ff7dd24070c0dae85555d296108",
+    "text": "A rug. Rug",
+    "match": true
+   }
+  },
+  "word-rug": {
+   "hash": "1db184701a3c2567a3a20bdd6563e395de4d0c99dedc5e3d30aeb90ce8b8044f",
+   "speaker": "narrator",
+   "text": "A rug!",
+   "file": "word-rug.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 843,
+   "generated": "2026-10-10T11:51:15",
+   "stt": {
+    "hash": "1db184701a3c2567a3a20bdd6563e395de4d0c99dedc5e3d30aeb90ce8b8044f",
+    "text": "A rug",
+    "match": true
+   }
+  },
+  "word-cup-ask": {
+   "hash": "c99493d07b07e11c07f7f903061c0ac1e113fba5fc161611e47bb24fc9dc74df",
+   "speaker": "narrator",
+   "text": "A cup. Cup.",
+   "file": "word-cup-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1840,
+   "generated": "2026-10-10T11:51:16",
+   "stt": {
+    "hash": "c99493d07b07e11c07f7f903061c0ac1e113fba5fc161611e47bb24fc9dc74df",
+    "text": "A cup. Cup",
+    "match": true
+   }
+  },
+  "word-cup": {
+   "hash": "859ab3fbd395b9c6b55c9a1aa56ce26673bbe32134990ea672b5630baef0beb5",
+   "speaker": "narrator",
+   "text": "A cup!",
+   "file": "word-cup.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 774,
+   "generated": "2026-10-10T11:51:16",
+   "stt": {
+    "hash": "859ab3fbd395b9c6b55c9a1aa56ce26673bbe32134990ea672b5630baef0beb5",
+    "text": "A cup",
+    "match": true
+   }
+  },
+  "word-mug-ask": {
+   "hash": "28ec48792df518cc478c1f335c4be50ba180472effe257f5ff7a21a6d00df16b",
+   "speaker": "narrator",
+   "text": "A mug. Mug.",
+   "file": "word-mug-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1931,
+   "generated": "2026-10-10T11:51:16",
+   "stt": {
+    "hash": "28ec48792df518cc478c1f335c4be50ba180472effe257f5ff7a21a6d00df16b",
+    "text": "A mug. Mug",
+    "match": true
+   }
+  },
+  "word-mug": {
+   "hash": "5c270edf21aebb351ce05d3be6d632b80481beb87fd294fb136d8cd9b254be99",
+   "speaker": "narrator",
+   "text": "A mug!",
+   "file": "word-mug.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 832,
+   "generated": "2026-10-10T11:51:16",
+   "stt": {
+    "hash": "5c270edf21aebb351ce05d3be6d632b80481beb87fd294fb136d8cd9b254be99",
+    "text": "A mug",
+    "match": true
+   }
+  },
+  "word-mat-ask": {
+   "hash": "87d98fc0cb355f620f178f2fd68145f230b1eef103233110415c8caf0a2f830a",
+   "speaker": "narrator",
+   "text": "A mat. Mat.",
+   "file": "word-mat-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1936,
+   "generated": "2026-10-10T11:51:17",
+   "stt": {
+    "hash": "87d98fc0cb355f620f178f2fd68145f230b1eef103233110415c8caf0a2f830a",
+    "text": "A mat. Mat",
+    "match": true
+   }
+  },
+  "word-mat": {
+   "hash": "7f49916961c0c723d51a9b782523bf7855a8a89b59bf665799a536aa9cced375",
+   "speaker": "narrator",
+   "text": "A mat!",
+   "file": "word-mat.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 817,
+   "generated": "2026-10-10T11:51:17",
+   "stt": {
+    "hash": "7f49916961c0c723d51a9b782523bf7855a8a89b59bf665799a536aa9cced375",
+    "text": "A mat?",
+    "match": true
+   }
+  },
+  "word-pot-ask": {
+   "hash": "a6c8c3537847f7841d168e4ff941d6fea375410aea5a4d699f2fe65bfc160b7c",
+   "speaker": "narrator",
+   "text": "A pot. Pot.",
+   "file": "word-pot-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1971,
+   "generated": "2026-10-10T11:51:19",
+   "stt": {
+    "hash": "a6c8c3537847f7841d168e4ff941d6fea375410aea5a4d699f2fe65bfc160b7c",
+    "text": "A pot. Pot",
+    "match": true
+   }
+  },
+  "word-pot": {
+   "hash": "d3bb72d5b24ed33c6a2fbd3800ddab892bc87156697729b1dd6178bd8fffa7b9",
+   "speaker": "narrator",
+   "text": "A pot!",
+   "file": "word-pot.mp3",
+   "model": "eleven_v4",
+   "seed": 101,
+   "duration_ms": 847,
+   "generated": "2026-10-10T11:52:42",
+   "stt": {
+    "hash": "d3bb72d5b24ed33c6a2fbd3800ddab892bc87156697729b1dd6178bd8fffa7b9",
+    "text": "A pot",
+    "match": true
+   }
+  },
+  "word-pen-ask": {
+   "hash": "8bebef9d877bd723737474e32ec34d3859515bf75ee5c2c956653eab21cc78dd",
+   "speaker": "narrator",
+   "text": "A pen. Pen.",
+   "file": "word-pen-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1902,
+   "generated": "2026-10-10T11:51:18",
+   "stt": {
+    "hash": "8bebef9d877bd723737474e32ec34d3859515bf75ee5c2c956653eab21cc78dd",
+    "text": "A pen. Pen",
+    "match": true
+   }
+  },
+  "word-pen": {
+   "hash": "073f96d85c78e29ae3211bb87861b460fe124bd7c4755a40e74b4c90a0e2bc17",
+   "speaker": "narrator",
+   "text": "A pen!",
+   "file": "word-pen.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 805,
+   "generated": "2026-10-10T11:51:18",
+   "stt": {
+    "hash": "073f96d85c78e29ae3211bb87861b460fe124bd7c4755a40e74b4c90a0e2bc17",
+    "text": "A pen",
+    "match": true
+   }
+  },
+  "word-net-ask": {
+   "hash": "7dc5db4eaa60ed5ddc5961c5c427401c38156015b69d4db9b94e58a2453c9536",
+   "speaker": "narrator",
+   "text": "A net. Net.",
+   "file": "word-net-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1980,
+   "generated": "2026-10-10T11:51:18",
+   "stt": {
+    "hash": "7dc5db4eaa60ed5ddc5961c5c427401c38156015b69d4db9b94e58a2453c9536",
+    "text": "A net. Net",
+    "match": true
+   }
+  },
+  "word-net": {
+   "hash": "2cdb077e0fbaf75987ef3ad786133c6ca4979bcd20178e04d6cbe4792729ce85",
+   "speaker": "narrator",
+   "text": "A net!",
+   "file": "word-net.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 809,
+   "generated": "2026-10-10T11:51:19",
+   "stt": {
+    "hash": "2cdb077e0fbaf75987ef3ad786133c6ca4979bcd20178e04d6cbe4792729ce85",
+    "text": "A net?",
+    "match": true
+   }
+  },
+  "word-bed-ask": {
+   "hash": "9b716d1ef3efe4327a0c653c00b1f7e1e5dd8010e59e5cee5666c5e6d1fd0436",
+   "speaker": "narrator",
+   "text": "A bed. Bed.",
+   "file": "word-bed-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1888,
+   "generated": "2026-10-10T11:51:19",
+   "stt": {
+    "hash": "9b716d1ef3efe4327a0c653c00b1f7e1e5dd8010e59e5cee5666c5e6d1fd0436",
+    "text": "A bed. Bed",
+    "match": true
+   }
+  },
+  "word-bed": {
+   "hash": "90a00f77d75b60d1cf4d205f5ef2ff00166b0ee07b1577985c5a38efb2e04605",
+   "speaker": "narrator",
+   "text": "A bed!",
+   "file": "word-bed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 917,
+   "generated": "2026-10-10T11:51:19",
+   "stt": {
+    "hash": "90a00f77d75b60d1cf4d205f5ef2ff00166b0ee07b1577985c5a38efb2e04605",
+    "text": "A bed",
+    "match": true
+   }
+  },
+  "word-log-ask": {
+   "hash": "b7af88021dd72475b4acd7a378e9e573e3ef4471c1d5ffa52e93809339c366ef",
+   "speaker": "narrator",
+   "text": "A log. Log.",
+   "file": "word-log-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1969,
+   "generated": "2026-10-10T11:51:20",
+   "stt": {
+    "hash": "b7af88021dd72475b4acd7a378e9e573e3ef4471c1d5ffa52e93809339c366ef",
+    "text": "A log. Log",
+    "match": true
+   }
+  },
+  "word-log": {
+   "hash": "4a216e5fe24454d2473659a2052192f826e87aaaebfdbe59ce43ab0624c56fa5",
+   "speaker": "narrator",
+   "text": "A log!",
+   "file": "word-log.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 898,
+   "generated": "2026-10-10T11:51:20",
+   "stt": {
+    "hash": "4a216e5fe24454d2473659a2052192f826e87aaaebfdbe59ce43ab0624c56fa5",
+    "text": "A log",
+    "match": true
+   }
+  },
+  "word-bus-ask": {
+   "hash": "7f751b2152f0574f537aee8da406062861fc3aa9b10adc6edc1623a0662e8a71",
+   "speaker": "narrator",
+   "text": "A bus. Bus.",
+   "file": "word-bus-ask.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2105,
+   "generated": "2026-10-10T11:51:22",
+   "stt": {
+    "hash": "7f751b2152f0574f537aee8da406062861fc3aa9b10adc6edc1623a0662e8a71",
+    "text": "A bus. Bus",
+    "match": true
+   }
+  },
+  "word-bus": {
+   "hash": "cd4cb951d6424744a724e6cb884e8a06b514b49c0a68ad5f320d59894a834e3f",
+   "speaker": "narrator",
+   "text": "A bus!",
+   "file": "word-bus.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 927,
+   "generated": "2026-10-10T11:51:20",
+   "stt": {
+    "hash": "cd4cb951d6424744a724e6cb884e8a06b514b49c0a68ad5f320d59894a834e3f",
+    "text": "A bus",
+    "match": true
+   }
+  },
+  "word-pup": {
+   "hash": "de5dcda0918a8e90e776ad7dc6bf2428426ac9752c19b4fc6ba69b08f3756e67",
+   "speaker": "narrator",
+   "text": "A pup!",
+   "file": "word-pup.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 847,
+   "generated": "2026-10-10T11:51:20",
+   "stt": {
+    "hash": "de5dcda0918a8e90e776ad7dc6bf2428426ac9752c19b4fc6ba69b08f3756e67",
+    "text": "A pup",
+    "match": true
+   }
+  },
+  "word-cap": {
+   "hash": "ae17206566ff9f8b290542d35b047c86f9ff932fd41bbebe635bad1e03bc618b",
+   "speaker": "narrator",
+   "text": "A cap!",
+   "file": "word-cap.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 816,
+   "generated": "2026-10-10T11:51:20",
+   "stt": {
+    "hash": "ae17206566ff9f8b290542d35b047c86f9ff932fd41bbebe635bad1e03bc618b",
+    "text": "A cap",
+    "match": true
+   }
+  },
+  "word-cub": {
+   "hash": "fc63bae39286841bcf23716bce2d83925d920ce0681328cf7364c2939a86bdd4",
+   "speaker": "narrator",
+   "text": "A cub!",
+   "file": "word-cub.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 858,
+   "generated": "2026-10-10T11:51:21",
+   "stt": {
+    "hash": "fc63bae39286841bcf23716bce2d83925d920ce0681328cf7364c2939a86bdd4",
+    "text": "A cub",
+    "match": true
+   }
+  },
+  "word-jug": {
+   "hash": "c545260c10f91b9a10fc63506306259690f0cf6f5f1a405726c6d0d5906d807d",
+   "speaker": "narrator",
+   "text": "A jug!",
+   "file": "word-jug.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 836,
+   "generated": "2026-10-10T11:51:21",
+   "stt": {
+    "hash": "c545260c10f91b9a10fc63506306259690f0cf6f5f1a405726c6d0d5906d807d",
+    "text": "A jug",
+    "match": true
+   }
+  },
+  "word-bug": {
+   "hash": "2201124bb2522641f5968e510aef0767567d4aa62112b0082f2da5f87fdcafd7",
+   "speaker": "narrator",
+   "text": "A bug!",
+   "file": "word-bug.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 902,
+   "generated": "2026-10-10T11:51:21",
+   "stt": {
+    "hash": "2201124bb2522641f5968e510aef0767567d4aa62112b0082f2da5f87fdcafd7",
+    "text": "A bug",
+    "match": true
+   }
+  },
+  "word-sun": {
+   "hash": "0159caaf25df778d978d9f84654b6830ea366ed660b6420b66dec5f97ffddc9f",
+   "speaker": "narrator",
+   "text": "A sun!",
+   "file": "word-sun.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 882,
+   "generated": "2026-10-10T11:51:22",
+   "stt": {
+    "hash": "0159caaf25df778d978d9f84654b6830ea366ed660b6420b66dec5f97ffddc9f",
+    "text": "A son",
+    "match": false
+   }
+  },
+  "word-hut": {
+   "hash": "56c26aa864dacb58866defe858d24aea144a5b5833bd38dc21bc383dbedf3afd",
+   "speaker": "narrator",
+   "text": "A hut!",
+   "file": "word-hut.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 823,
+   "generated": "2026-10-10T11:51:22",
+   "stt": {
+    "hash": "56c26aa864dacb58866defe858d24aea144a5b5833bd38dc21bc383dbedf3afd",
+    "text": "A hut",
+    "match": true
+   }
+  },
+  "word-cat": {
+   "hash": "47eb07f3ecf0b3a16711896c616abf5103d5dee38f8af19a4c753d80c5b00d76",
+   "speaker": "narrator",
+   "text": "A cat!",
+   "file": "word-cat.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 879,
+   "generated": "2026-10-10T11:51:24",
+   "stt": {
+    "hash": "47eb07f3ecf0b3a16711896c616abf5103d5dee38f8af19a4c753d80c5b00d76",
+    "text": "A cat?",
+    "match": true
+   }
+  },
+  "word-pig": {
+   "hash": "c51683223b256b49e02d5e4a68183f99a2414706657993b3a6cec9799063c0f8",
+   "speaker": "narrator",
+   "text": "A pig!",
+   "file": "word-pig.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 877,
+   "generated": "2026-10-10T11:51:23",
+   "stt": {
+    "hash": "c51683223b256b49e02d5e4a68183f99a2414706657993b3a6cec9799063c0f8",
+    "text": "A pig",
+    "match": true
+   }
+  },
+  "word-dog": {
+   "hash": "afab9a36859d6850cd99e4280b2f0739e0fb283f94b9df464f07b2f2f88678bb",
+   "speaker": "narrator",
+   "text": "A dog!",
+   "file": "word-dog.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 885,
+   "generated": "2026-10-10T11:51:23",
+   "stt": {
+    "hash": "afab9a36859d6850cd99e4280b2f0739e0fb283f94b9df464f07b2f2f88678bb",
+    "text": "A dog",
+    "match": true
+   }
+  },
+  "word-put": {
+   "hash": "43fb77a8fee634ca7fde954a6fd15e9161e7b8e02bd07d65ec68a7d3842e4d90",
+   "speaker": "narrator",
+   "text": "Put.",
+   "file": "word-put.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 522,
+   "generated": "2026-10-10T11:51:23",
+   "stt": {
+    "hash": "43fb77a8fee634ca7fde954a6fd15e9161e7b8e02bd07d65ec68a7d3842e4d90",
+    "text": "Put",
+    "match": true
+   }
+  },
+  "word-the": {
+   "hash": "601ce3ae4ccaa48c85bafbee6314f293a640cc572ae9b48ff6e8f29de04673a4",
+   "speaker": "narrator",
+   "text": "The.",
+   "file": "word-the.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 501,
+   "generated": "2026-10-10T11:51:23",
+   "stt": {
+    "hash": "601ce3ae4ccaa48c85bafbee6314f293a640cc572ae9b48ff6e8f29de04673a4",
+    "text": "The",
+    "match": true
+   }
+  },
+  "name-bip": {
+   "hash": "252b3b2952a0c47b4bf7a6b81c86e110d649d576d0c73e98857f33bcbf39a9d3",
+   "speaker": "narrator",
+   "text": "Bip!",
+   "file": "name-bip.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 594,
+   "generated": "2026-10-10T11:51:23",
+   "stt": {
+    "hash": "252b3b2952a0c47b4bf7a6b81c86e110d649d576d0c73e98857f33bcbf39a9d3",
+    "text": "Bip",
+    "match": true
+   }
+  },
+  "name-bip-like": {
+   "hash": "68d0add058cd2a5e8bd5b837c15c936f9a8042a752ad36fa79a06152c39455c4",
+   "speaker": "narrator",
+   "text": "Do you like the name Bip?",
+   "file": "name-bip-like.mp3",
+   "model": "eleven_v4",
+   "seed": 101,
+   "duration_ms": 1603,
+   "generated": "2026-10-10T11:52:42",
+   "stt": {
+    "hash": "68d0add058cd2a5e8bd5b837c15c936f9a8042a752ad36fa79a06152c39455c4",
+    "text": "Do you like the name Bip?",
+    "match": true
+   }
+  },
+  "name-bip-hello": {
+   "hash": "e32bc0b58438bc319b2caad85806b158ec943768790a83aa5e8e70b3efda2a52",
+   "speaker": "narrator",
+   "text": "Hello, Bip!",
+   "file": "name-bip-hello.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 863,
+   "generated": "2026-10-10T11:51:24",
+   "stt": {
+    "hash": "e32bc0b58438bc319b2caad85806b158ec943768790a83aa5e8e70b3efda2a52",
+    "text": "Hello, Bipp",
+    "match": false
+   }
+  },
+  "name-bip-missed": {
+   "hash": "2f8d4446beaad803d5c50044e18388e014ff2339491f03f98240e0f34d016308",
+   "speaker": "narrator",
+   "text": "Bip is so happy to see you!",
+   "file": "name-bip-missed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2511,
+   "generated": "2026-10-10T11:53:05",
+   "stt": {
+    "hash": "2f8d4446beaad803d5c50044e18388e014ff2339491f03f98240e0f34d016308",
+    "text": "Bip is so happy to see you",
+    "match": true
+   }
+  },
+  "name-bip-night": {
+   "hash": "246ce6122d5b9e8a6c9740463cbbb18a6c315127c60b51217ccc2efbe57d974d",
+   "speaker": "narrator",
+   "text": "Night night, Bip.",
+   "file": "name-bip-night.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1271,
+   "generated": "2026-10-10T11:51:25",
+   "stt": {
+    "hash": "246ce6122d5b9e8a6c9740463cbbb18a6c315127c60b51217ccc2efbe57d974d",
+    "text": "Night night, Bip",
+    "match": true
+   }
+  },
+  "name-bop": {
+   "hash": "a570bd6d20ced4a60c4d6f87ed0523232191e2b7cd4a48dac8079275c054e3e7",
+   "speaker": "narrator",
+   "text": "Bop!",
+   "file": "name-bop.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 607,
+   "generated": "2026-10-10T11:51:25",
+   "stt": {
+    "hash": "a570bd6d20ced4a60c4d6f87ed0523232191e2b7cd4a48dac8079275c054e3e7",
+    "text": "Bop",
+    "match": true
+   }
+  },
+  "name-bop-like": {
+   "hash": "76680a455b043162a287b9dcf0d44978f169be3b13072b53f16f3f081c5c2cfa",
+   "speaker": "narrator",
+   "text": "Do you like the name Bop?",
+   "file": "name-bop-like.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1760,
+   "generated": "2026-10-10T11:51:25",
+   "stt": {
+    "hash": "76680a455b043162a287b9dcf0d44978f169be3b13072b53f16f3f081c5c2cfa",
+    "text": "Do you like the name Bop?",
+    "match": true
+   }
+  },
+  "name-bop-hello": {
+   "hash": "2f92006c6b38cf15c60b3b04ff5647e664c53566c503eacaa120e697cc629dab",
+   "speaker": "narrator",
+   "text": "Hello, Bop!",
+   "file": "name-bop-hello.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 840,
+   "generated": "2026-10-10T11:51:27",
+   "stt": {
+    "hash": "2f92006c6b38cf15c60b3b04ff5647e664c53566c503eacaa120e697cc629dab",
+    "text": "Hello, Bop",
+    "match": true
+   }
+  },
+  "name-bop-missed": {
+   "hash": "74c8a817336c19dbbe0be9b1b69c3e04243e907abc92992b4006a52983bf8738",
+   "speaker": "narrator",
+   "text": "Bop is so happy to see you!",
+   "file": "name-bop-missed.mp3",
+   "model": "eleven_v4",
+   "seed": 303,
+   "duration_ms": 2504,
+   "generated": "2026-10-10T11:53:33",
+   "stt": {
+    "hash": "74c8a817336c19dbbe0be9b1b69c3e04243e907abc92992b4006a52983bf8738",
+    "text": "Bob is so happy to see you",
+    "match": false
+   }
+  },
+  "name-bop-night": {
+   "hash": "2b7499a01ec3bde1b6cd2e7e4946ef302b7bdade7f1b38cec5c4aeeccbc3b420",
+   "speaker": "narrator",
+   "text": "Night night, Bop.",
+   "file": "name-bop-night.mp3",
+   "model": "eleven_v4",
+   "seed": 303,
+   "duration_ms": 1075,
+   "generated": "2026-10-10T11:53:33",
+   "stt": {
+    "hash": "2b7499a01ec3bde1b6cd2e7e4946ef302b7bdade7f1b38cec5c4aeeccbc3b420",
+    "text": "Night night, Bob",
+    "match": false
+   }
+  },
+  "name-fip": {
+   "hash": "c4e36ffd6f507fa7a47d2e1fdcef62ea25013985e2930b8a96a8964d65b4e61e",
+   "speaker": "narrator",
+   "text": "Fip!",
+   "file": "name-fip.mp3",
+   "model": "eleven_v4",
+   "seed": 101,
+   "duration_ms": 633,
+   "generated": "2026-10-10T11:52:42",
+   "stt": {
+    "hash": "c4e36ffd6f507fa7a47d2e1fdcef62ea25013985e2930b8a96a8964d65b4e61e",
+    "text": "FIP",
+    "match": true
+   }
+  },
+  "name-fip-like": {
+   "hash": "63af2fe5efc15b31dd2aaedba425f5d2f55c08126ab4636ed43811206689e2db",
+   "speaker": "narrator",
+   "text": "Do you like the name Fip?",
+   "file": "name-fip-like.mp3",
+   "model": "eleven_v4",
+   "seed": 202,
+   "duration_ms": 1595,
+   "generated": "2026-10-10T11:53:07",
+   "stt": {
+    "hash": "63af2fe5efc15b31dd2aaedba425f5d2f55c08126ab4636ed43811206689e2db",
+    "text": "Do you like the name Phipps?",
+    "match": false
+   }
+  },
+  "name-fip-hello": {
+   "hash": "d0a0dd08d7f84ba51ea61f23f1320a1c11d3ed54f669e0897f552487f884cdee",
+   "speaker": "narrator",
+   "text": "Hello, Fip!",
+   "file": "name-fip-hello.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 924,
+   "generated": "2026-10-10T11:51:26",
+   "stt": {
+    "hash": "d0a0dd08d7f84ba51ea61f23f1320a1c11d3ed54f669e0897f552487f884cdee",
+    "text": "Hello, Fip",
+    "match": true
+   }
+  },
+  "name-fip-missed": {
+   "hash": "74fef14fe11d11018cc77b72bc55d19bf94448bb9f025d5eb3e899a745273779",
+   "speaker": "narrator",
+   "text": "Fip is so happy to see you!",
+   "file": "name-fip-missed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2535,
+   "generated": "2026-10-10T11:53:06",
+   "stt": {
+    "hash": "74fef14fe11d11018cc77b72bc55d19bf94448bb9f025d5eb3e899a745273779",
+    "text": "Fip is so happy to see you",
+    "match": true
+   }
+  },
+  "name-fip-night": {
+   "hash": "9c0652269d078b8a0a35ecb2f1aed9c3b7d045821db1c3db7fbd392fadc6a59a",
+   "speaker": "narrator",
+   "text": "Night night, Fip.",
+   "file": "name-fip-night.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1170,
+   "generated": "2026-10-10T11:51:27",
+   "stt": {
+    "hash": "9c0652269d078b8a0a35ecb2f1aed9c3b7d045821db1c3db7fbd392fadc6a59a",
+    "text": "Night night, Fip",
+    "match": true
+   }
+  },
+  "name-fop": {
+   "hash": "99be373a279d80af726d269a9645088250ff00ac85c2482006bbe6b3cea866a8",
+   "speaker": "narrator",
+   "text": "Fop!",
+   "file": "name-fop.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 717,
+   "generated": "2026-10-10T11:51:29",
+   "stt": {
+    "hash": "99be373a279d80af726d269a9645088250ff00ac85c2482006bbe6b3cea866a8",
+    "text": "Fop",
+    "match": true
+   }
+  },
+  "name-fop-like": {
+   "hash": "e412b9f9570f137ddbcd5edeb4e8fe37e18624d639faf37ef2b8830002bd96d9",
+   "speaker": "narrator",
+   "text": "Do you like the name Fop?",
+   "file": "name-fop-like.mp3",
+   "model": "eleven_v4",
+   "seed": 101,
+   "duration_ms": 1741,
+   "generated": "2026-10-10T11:52:43",
+   "stt": {
+    "hash": "e412b9f9570f137ddbcd5edeb4e8fe37e18624d639faf37ef2b8830002bd96d9",
+    "text": "Do you like the name Fop?",
+    "match": true
+   }
+  },
+  "name-fop-hello": {
+   "hash": "3fb082226be4c2f0cab66233394eaf09a3c8e0ac9f14e307a02ab27584d1038a",
+   "speaker": "narrator",
+   "text": "Hello, Fop!",
+   "file": "name-fop-hello.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1175,
+   "generated": "2026-10-10T11:51:28",
+   "stt": {
+    "hash": "3fb082226be4c2f0cab66233394eaf09a3c8e0ac9f14e307a02ab27584d1038a",
+    "text": "Hello, fop",
+    "match": true
+   }
+  },
+  "name-fop-missed": {
+   "hash": "dc31eea8663d3b3c4e9105a40128233ad66acd8d00721e6dc361625d6c8802db",
+   "speaker": "narrator",
+   "text": "Fop is so happy to see you!",
+   "file": "name-fop-missed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2523,
+   "generated": "2026-10-10T11:53:06",
+   "stt": {
+    "hash": "dc31eea8663d3b3c4e9105a40128233ad66acd8d00721e6dc361625d6c8802db",
+    "text": "Fop is so happy to see you",
+    "match": true
+   }
+  },
+  "name-fop-night": {
+   "hash": "44b24aaa6474d458f7543e5ca1f5df41198edf2ae206db5149883c784f2e88a4",
+   "speaker": "narrator",
+   "text": "Night night, Fop.",
+   "file": "name-fop-night.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1094,
+   "generated": "2026-10-10T11:51:29",
+   "stt": {
+    "hash": "44b24aaa6474d458f7543e5ca1f5df41198edf2ae206db5149883c784f2e88a4",
+    "text": "Night night, Fop",
+    "match": true
+   }
+  },
+  "name-tip": {
+   "hash": "ded6c6276b841bdf25cd8f632ae15243145553361f377621b91e3441fefaf6ba",
+   "speaker": "narrator",
+   "text": "Tip!",
+   "file": "name-tip.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 552,
+   "generated": "2026-10-10T11:51:28",
+   "stt": {
+    "hash": "ded6c6276b841bdf25cd8f632ae15243145553361f377621b91e3441fefaf6ba",
+    "text": "Tip",
+    "match": true
+   }
+  },
+  "name-tip-like": {
+   "hash": "7ce3965d53f2ba84ca3865916b713c00162538b1b0ba3da95fc0acaeb059bb20",
+   "speaker": "narrator",
+   "text": "Do you like the name Tip?",
+   "file": "name-tip-like.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1681,
+   "generated": "2026-10-10T11:51:29",
+   "stt": {
+    "hash": "7ce3965d53f2ba84ca3865916b713c00162538b1b0ba3da95fc0acaeb059bb20",
+    "text": "Do you like the name Tip?",
+    "match": true
+   }
+  },
+  "name-tip-hello": {
+   "hash": "c7225d2686ffa7c33e0f3ee7ee14fd09e80d9dc798cd09b1b74156a617feaa2c",
+   "speaker": "narrator",
+   "text": "Hello, Tip!",
+   "file": "name-tip-hello.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1065,
+   "generated": "2026-10-10T11:51:29",
+   "stt": {
+    "hash": "c7225d2686ffa7c33e0f3ee7ee14fd09e80d9dc798cd09b1b74156a617feaa2c",
+    "text": "Hello, Tip?",
+    "match": true
+   }
+  },
+  "name-tip-missed": {
+   "hash": "6d51a9ff043469dcc0632294211526b7012ec8e40311ad378a62537d2fee0495",
+   "speaker": "narrator",
+   "text": "Tip is so happy to see you!",
+   "file": "name-tip-missed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2520,
+   "generated": "2026-10-10T11:53:06",
+   "stt": {
+    "hash": "6d51a9ff043469dcc0632294211526b7012ec8e40311ad378a62537d2fee0495",
+    "text": "Tip is so happy to see you",
+    "match": true
+   }
+  },
+  "name-tip-night": {
+   "hash": "0ea532fa55396a583137eca22d53c3ca31d1e268fd57d2bc44f88e24fd47ee59",
+   "speaker": "narrator",
+   "text": "Night night, Tip.",
+   "file": "name-tip-night.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1114,
+   "generated": "2026-10-10T11:51:30",
+   "stt": {
+    "hash": "0ea532fa55396a583137eca22d53c3ca31d1e268fd57d2bc44f88e24fd47ee59",
+    "text": "Night night, Tip",
+    "match": true
+   }
+  },
+  "name-top": {
+   "hash": "9be8817b30a46b803993e0226dbf51fa5d3a8031fa73e26772d0e7e6b68d32f7",
+   "speaker": "narrator",
+   "text": "Top!",
+   "file": "name-top.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 579,
+   "generated": "2026-10-10T11:51:29",
+   "stt": {
+    "hash": "9be8817b30a46b803993e0226dbf51fa5d3a8031fa73e26772d0e7e6b68d32f7",
+    "text": "Top",
+    "match": true
+   }
+  },
+  "name-top-like": {
+   "hash": "dd450f2414896315f0965fc30429270f3c8d4dbacff05f69f837b539f6db0ace",
+   "speaker": "narrator",
+   "text": "Do you like the name Top?",
+   "file": "name-top-like.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1662,
+   "generated": "2026-10-10T11:51:32",
+   "stt": {
+    "hash": "dd450f2414896315f0965fc30429270f3c8d4dbacff05f69f837b539f6db0ace",
+    "text": "Do you like the name Top?",
+    "match": true
+   }
+  },
+  "name-top-hello": {
+   "hash": "e40b8eb6886a57beb2ddae12f0be561533d89086aca4c5884a4cb183135b4141",
+   "speaker": "narrator",
+   "text": "Hello, Top!",
+   "file": "name-top-hello.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 959,
+   "generated": "2026-10-10T11:51:30",
+   "stt": {
+    "hash": "e40b8eb6886a57beb2ddae12f0be561533d89086aca4c5884a4cb183135b4141",
+    "text": "Hello, Top",
+    "match": true
+   }
+  },
+  "name-top-missed": {
+   "hash": "20e492a22be6da3733fe693c7d3a323c7b70ce1672503ce010c7116db27f1034",
+   "speaker": "narrator",
+   "text": "Top is so happy to see you!",
+   "file": "name-top-missed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2523,
+   "generated": "2026-10-10T11:53:07",
+   "stt": {
+    "hash": "20e492a22be6da3733fe693c7d3a323c7b70ce1672503ce010c7116db27f1034",
+    "text": "Top is so happy to see you",
+    "match": true
+   }
+  },
+  "name-top-night": {
+   "hash": "03d077b5fc1485f7a07dc58c63fab65ef06fe7b7426b108da261fbbed1027a99",
+   "speaker": "narrator",
+   "text": "Night night, Top.",
+   "file": "name-top-night.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1192,
+   "generated": "2026-10-10T11:51:30",
+   "stt": {
+    "hash": "03d077b5fc1485f7a07dc58c63fab65ef06fe7b7426b108da261fbbed1027a99",
+    "text": "Night-night, Top",
+    "match": true
+   }
+  },
+  "pippa-hello": {
+   "hash": "86f0b4d9713ed9644119ac985aeea9b9a90f1888470ed9dc468c5763c105cc87",
+   "speaker": "pippa",
+   "text": "Hello, Princess Emma! I am Princess Pippa. This magic wand is for you!",
+   "file": "pippa-hello.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 6157,
+   "generated": "2026-10-10T11:51:32"
+  },
+  "pippa-basket": {
+   "hash": "60957256b28f73e33c55fa379a5b7982bcf4ab8a1aea9661a854b74a6b3af32b",
+   "speaker": "pippa",
+   "text": "Oh! Something is in my sock basket!",
+   "file": "pippa-basket.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2348,
+   "generated": "2026-10-10T11:51:31"
+  },
+  "pippa-bobbin": {
+   "hash": "811f4e339b06afc139692d43f2ab7c85ddffe7012563886f297c69eedb11d39e",
+   "speaker": "pippa",
+   "text": "A baby Bobbin! It is so fluffy!",
+   "file": "pippa-bobbin.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2583,
+   "generated": "2026-10-10T11:51:32"
+  },
+  "pippa-name": {
+   "hash": "654d358a7e5a7535e333735afe07a2cb0e69da10a6ba0dbc6abec802d8b945ea",
+   "speaker": "pippa",
+   "text": "It needs a name. Let's make one with your wand!",
+   "file": "pippa-name.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2575,
+   "generated": "2026-10-10T11:51:33"
+  },
+  "pippa-watch": {
+   "hash": "85c77d67d9d5ae15fcc20e81ced776740aa5ff546deb85b70cb6ae6f9f9d3260",
+   "speaker": "pippa",
+   "text": "Watch me first!",
+   "file": "pippa-watch.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1195,
+   "generated": "2026-10-10T11:51:33"
+  },
+  "pippa-first": {
+   "hash": "747c0efcccab4dcb74186192f338ce4c7a6f90fafcad2abeb060f1f09ee32b8f",
+   "speaker": "pippa",
+   "text": "What is the first sound?",
+   "file": "pippa-first.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1367,
+   "generated": "2026-10-10T11:51:33"
+  },
+  "pippa-here": {
+   "hash": "29f8b4b4ee0119258a32bb079a352a96b27fcb418cc0d1a8fc9e20bda74ecd04",
+   "speaker": "pippa",
+   "text": "Here it is!",
+   "file": "pippa-here.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 742,
+   "generated": "2026-10-10T11:51:48"
+  },
+  "pippa-next": {
+   "hash": "4d67e51579ada5469047d16361e6f7f98a4d88f12b6bd622e9813344e099da25",
+   "speaker": "pippa",
+   "text": "Next sound?",
+   "file": "pippa-next.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 812,
+   "generated": "2026-10-10T11:51:34"
+  },
+  "pippa-last": {
+   "hash": "da863390027578e41e3c5a35675a39dc8dc19b5384e7e50e49b6445eb4f687a0",
+   "speaker": "pippa",
+   "text": "Last sound?",
+   "file": "pippa-last.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 896,
+   "generated": "2026-10-10T11:51:34"
+  },
+  "pippa-slide": {
+   "hash": "7aa2da0b82e1370fcc0b2ad67e96efa7676e4a17c927ed8458ebf5284e2d1c78",
+   "speaker": "pippa",
+   "text": "Now I slide.",
+   "file": "pippa-slide.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 896,
+   "generated": "2026-10-10T11:51:34"
+  },
+  "pippa-turn": {
+   "hash": "83a85e9137723af42556f0c741c2b2595966d39c876f6483dabb0439e3669dd9",
+   "speaker": "pippa",
+   "text": "Now it is your turn, Princess Emma!",
+   "file": "pippa-turn.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2010,
+   "generated": "2026-10-10T11:51:35"
+  },
+  "pippa-knock": {
+   "hash": "02e235f89ca2ceeb6a49a6c2b1223f8b173290f70c31f3578927bf509e176d2e",
+   "speaker": "pippa",
+   "text": "Knock knock! Who is it?",
+   "file": "pippa-knock.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1384,
+   "generated": "2026-10-10T11:51:35"
+  },
+  "pippa-duck": {
+   "hash": "693c6bb045351345e6f6aa185c7a7e97c96524ae3e1f14fe6bbc0d09dc1a2aea",
+   "speaker": "pippa",
+   "text": "It is Mrs Duck and her ducklings!",
+   "file": "pippa-duck.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1902,
+   "generated": "2026-10-10T11:51:35"
+  },
+  "pippa-goat": {
+   "hash": "28f6e8da5faed1c1e510db6ea9a187ca8716174d60b6d56ebd6fd4b94da46d0d",
+   "speaker": "pippa",
+   "text": "It is Grandpa Goat!",
+   "file": "pippa-goat.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1368,
+   "generated": "2026-10-10T11:51:36"
+  },
+  "pippa-sizzle": {
+   "hash": "d5f170d6f94652b633dc73bdc2cc440e0ada56d747fae6eb78ce5d98cfdf6842",
+   "speaker": "pippa",
+   "text": "Look! It is Sizzle the baby dragon!",
+   "file": "pippa-sizzle.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2459,
+   "generated": "2026-10-10T11:51:36"
+  },
+  "pippa-dot": {
+   "hash": "24e684608c74a5b11780d8acb96583e117a0eb7a466970d0040a635fdb67bbfc",
+   "speaker": "pippa",
+   "text": "Oh! It is Dot the unicorn foal!",
+   "file": "pippa-dot.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2542,
+   "generated": "2026-10-10T11:51:36"
+  },
+  "pippa-onetoo": {
+   "hash": "c7454b9eda47155d80319eb1b271901d53275ac702194e550c98710fe9391a2c",
+   "speaker": "pippa",
+   "text": "Your Bobbin wants one too. Watch me!",
+   "file": "pippa-onetoo.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1970,
+   "generated": "2026-10-10T11:51:37"
+  },
+  "pippa-nowyou": {
+   "hash": "7f90decdc84c343d2f625f0e902bb8a6cbb60e20f5224e37146e6ec20bde01c2",
+   "speaker": "pippa",
+   "text": "Now you!",
+   "file": "pippa-nowyou.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 699,
+   "generated": "2026-10-10T11:51:37"
+  },
+  "pippa-thanks": {
+   "hash": "abdf786a95e7e5a11b2d0d9c805ce0b08cf39f2e5837e18395c8dafe8d7a243b",
+   "speaker": "pippa",
+   "text": "They say thank you, Princess Emma!",
+   "file": "pippa-thanks.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1628,
+   "generated": "2026-10-10T11:51:37"
+  },
+  "pippa-party": {
+   "hash": "4706e3b77b6c3c851eae2a4b04e502a37231b45e76d3be89f73479e48de803e1",
+   "speaker": "pippa",
+   "text": "The Queen is having a tea party! Let's go!",
+   "file": "pippa-party.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2405,
+   "generated": "2026-10-10T11:51:38"
+  },
+  "pippa-morning": {
+   "hash": "549aaf3546d1cfef75dfbb8b30c403d2895292564b2c8ae3328605fff1af9ca5",
+   "speaker": "pippa",
+   "text": "Good morning, Princess Emma!",
+   "file": "pippa-morning.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1178,
+   "generated": "2026-10-10T11:51:38"
+  },
+  "queen-welcome": {
+   "hash": "0dae1605d352c651176e6ba97307073ead052da3ee3a91cf4ab5fc6ba1606eca",
+   "speaker": "queen",
+   "text": "Welcome to my tea party!",
+   "file": "queen-welcome.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1606,
+   "generated": "2026-10-10T11:51:38"
+  },
+  "queen-giggle": {
+   "hash": "796d7a19b27c68cf5a980121e0d89c474471652fb7dbef0e12a1bfba7867a607",
+   "speaker": "queen",
+   "text": "Oh, how funny!",
+   "file": "queen-giggle.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1049,
+   "generated": "2026-10-10T11:51:39"
+  },
+  "queen-thanks": {
+   "hash": "5920699969f04f16b4cbbc6667ce289cd4a87fb0c74043a0d9be7290a835791f",
+   "speaker": "queen",
+   "text": "Thank you, Princess Emma! Here is a crown for you.",
+   "file": "queen-thanks.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 3001,
+   "generated": "2026-10-10T11:51:39"
+  },
+  "dot-hello": {
+   "hash": "120ea67a15bc1401e3fef2985c62f4ee309a6212b327b961ed1ead68a4cfe576",
+   "speaker": "foal",
+   "text": "[giggles] Hello! Look!",
+   "file": "dot-hello.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 2428,
+   "generated": "2026-10-10T11:51:39"
+  },
+  "dot-yay": {
+   "hash": "d52c33e0adcc6502240312e9c2f51b8233441e311f96b18e85d0733106eb4c7d",
+   "speaker": "foal",
+   "text": "[giggles] Yay!",
+   "file": "dot-yay.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 2503,
+   "generated": "2026-10-10T11:51:40"
+  },
+  "dot-bye": {
+   "hash": "067382c893aa017f372e6bb74af85f3202d7861252773874e381f3d9a2ebf205",
+   "speaker": "foal",
+   "text": "Bye bye! [giggles]",
+   "file": "dot-bye.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 3520,
+   "generated": "2026-10-10T11:51:41"
+  },
+  "bob-pop": {
+   "hash": "eaaf233d18e300f2b587af9051819fd1b0e142455fc7651834843bc8801c150e",
+   "speaker": "fluffle",
+   "text": "[gasps] Pibbi? [giggles]",
+   "file": "bob-pop.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 2362,
+   "generated": "2026-10-10T11:51:41"
+  },
+  "bob-happy": {
+   "hash": "4c87e5023d6a933d03b424bebde1a1b2c4ac29c1b1de91c6c5677c0cd4d0d484",
+   "speaker": "fluffle",
+   "text": "[giggles] Mimmi bobba!",
+   "file": "bob-happy.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 2241,
+   "generated": "2026-10-10T11:51:42"
+  },
+  "bob-yum": {
+   "hash": "b9873d3b9a63556a645024f2bf1ca14acab0dc26d0fabfb57746464aae3260a3",
+   "speaker": "fluffle",
+   "text": "Mmm! Pibbo pibbo! [giggles]",
+   "file": "bob-yum.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 2385,
+   "generated": "2026-10-10T11:54:52"
+  },
+  "bob-sleepy": {
+   "hash": "bbfaedaf8e11bc1ef7043a2456390b6f8d97ad522fb2d471de2db53da879e8a3",
+   "speaker": "fluffle",
+   "text": "[yawns] Mimmi... nunu...",
+   "file": "bob-sleepy.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 3744,
+   "generated": "2026-10-10T11:51:42"
+  },
+  "bob-wake": {
+   "hash": "72a80ab92fe742a7f88e74d6f4da0e09cf6dc2b8cd807f7916f8475a5e4c87c3",
+   "speaker": "fluffle",
+   "text": "[coos] Pibbo bibbi! [giggles]",
+   "file": "bob-wake.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 2550,
+   "generated": "2026-10-10T11:54:32"
+  },
+  "bob-giggle": {
+   "hash": "7e8252fd6d7a17fea7ae95f58e2becfee77188f7ffa20ee97ebfcf09d0af9887",
+   "speaker": "fluffle",
+   "text": "[giggles] Hihihi!",
+   "file": "bob-giggle.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1165,
+   "generated": "2026-10-10T11:51:43"
+  }
+ },
+ "updated": "2026-10-10T12:31:33"
+}

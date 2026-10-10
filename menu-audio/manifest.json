@@ -1,0 +1,65 @@
+{
+ "clips": {
+  "menu-welcome": {
+   "hash": "2219f7579c37f1ade80818a147464b8fbeb5b68bff327aa6578baf6389a00caf",
+   "speaker": "narrator",
+   "text": "Hello, Emma! Which game do you want to play? Tap a picture.",
+   "file": "menu-welcome.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3661,
+   "generated": "2026-10-10T13:49:30",
+   "stt": {
+    "hash": "2219f7579c37f1ade80818a147464b8fbeb5b68bff327aa6578baf6389a00caf",
+    "text": "Hello, Emma. Which game do you want to play? Tap a picture",
+    "match": true
+   }
+  },
+  "menu-unicorn-egg-nest": {
+   "hash": "b97cbe7594bcf6b4e3ae0ab1c00355b7a5bc3d23db338f4115c5f5d6f28eaee7",
+   "speaker": "narrator",
+   "text": "Unicorn Egg Nest!",
+   "file": "menu-unicorn-egg-nest.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1549,
+   "generated": "2026-10-10T13:49:30",
+   "stt": {
+    "hash": "b97cbe7594bcf6b4e3ae0ab1c00355b7a5bc3d23db338f4115c5f5d6f28eaee7",
+    "text": "Unicorn egg nest",
+    "match": true
+   }
+  },
+  "menu-pippas-word-wand": {
+   "hash": "44b26d2a23c7c4b99fa8a822fbeb9712a45a05bc0a6a30942f8ba303e26c5b3e",
+   "speaker": "narrator",
+   "text": "Pippa's Word Wand!",
+   "file": "menu-pippas-word-wand.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1671,
+   "generated": "2026-10-10T13:49:32",
+   "stt": {
+    "hash": "44b26d2a23c7c4b99fa8a822fbeb9712a45a05bc0a6a30942f8ba303e26c5b3e",
+    "text": "Pippa's Word Wand",
+    "match": true
+   }
+  },
+  "menu-fluffle-nursery": {
+   "hash": "d74d2070fbbc938b1631b058cde63e9722a1b552edd9aa953beb353939f8e533",
+   "speaker": "narrator",
+   "text": "Fluffle Nursery!",
+   "file": "menu-fluffle-nursery.mp3",
+   "model": "eleven_v4",
+   "seed": 23,
+   "duration_ms": 1162,
+   "generated": "2026-10-10T13:49:44",
+   "stt": {
+    "hash": "d74d2070fbbc938b1631b058cde63e9722a1b552edd9aa953beb353939f8e533",
+    "text": "Fuffle Nursery",
+    "match": false
+   }
+  }
+ },
+ "updated": "2026-10-10T13:49:45"
+}

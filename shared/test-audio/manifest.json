@@ -1,0 +1,25 @@
+{
+ "clips": {
+  "word-bun": {
+   "hash": "debaf3df6b91b1c8933d4955c54f71203a7707ad52657aaf75319b206cd11f55",
+   "speaker": "narrator",
+   "text": "Bun.",
+   "file": "word-bun.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 624,
+   "generated": "2026-10-10T11:28:12"
+  },
+  "goal-make-bun": {
+   "hash": "63aca30dae1a453995785289a25043296f3189da204e9d64bbd4962d1b78e06a",
+   "speaker": "narrator",
+   "text": "Can you make the word bun?",
+   "file": "goal-make-bun.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1862,
+   "generated": "2026-10-10T11:28:12"
+  }
+ },
+ "updated": "2026-10-10T11:28:12"
+}

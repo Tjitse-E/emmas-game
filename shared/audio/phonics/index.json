@@ -1,0 +1,1976 @@
+{
+ "note": "Pure British phonics sounds, voice Elizabeth (eleven_v4). Made by scripts/generate-phonics.py. Keyed by grapheme. Aliases (ss ff ll zz c ck) use the file of their main sound.",
+ "updated": "2026-10-10T11:26:54",
+ "sounds": {
+  "s": {
+   "id": "snd-s",
+   "file": "snd-s.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "respell",
+   "duration_ms": 1000,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/s-1.mp3",
+     "method": "respell",
+     "text": "Sssss.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      940
+     ],
+     "metrics": {
+      "ms": 1000,
+      "sound_ms": 900,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "aa8438873461cd210646b0935742b9e362a8b8fb90d41a6df424105aef34a1bf:(40, 940)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "m": {
+   "id": "snd-m",
+   "file": "snd-m.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "respell",
+   "duration_ms": 1000,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/m-1.mp3",
+     "method": "respell",
+     "text": "Mmmmm.",
+     "parts": null,
+     "cut_ms": [
+      50,
+      950
+     ],
+     "metrics": {
+      "ms": 1000,
+      "sound_ms": 890,
+      "voiced_ms": 850,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "222ba9ac7651a47c32f98ec348373abebc1c90a16dd3c86a7bb751239223aa19:(50, 950)",
+     "stt": "Mm-hmm.",
+     "score": 0.0
+    }
+   ]
+  },
+  "n": {
+   "id": "snd-n",
+   "file": "snd-n.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "respell",
+   "duration_ms": 1000,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/n-1.mp3",
+     "method": "respell",
+     "text": "Nnnnn.",
+     "parts": null,
+     "cut_ms": [
+      60,
+      960
+     ],
+     "metrics": {
+      "ms": 1000,
+      "sound_ms": 890,
+      "voiced_ms": 850,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "056322bd411ef630db1bf2ec5474ab56d418eb7ba8b1b0340c596baee59141a5:(60, 960)",
+     "stt": "Hmm.",
+     "score": 0.0
+    }
+   ]
+  },
+  "f": {
+   "id": "snd-f",
+   "file": "snd-f.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "respell",
+   "duration_ms": 1000,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/f-1.mp3",
+     "method": "respell",
+     "text": "Fffff.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      930
+     ],
+     "metrics": {
+      "ms": 1000,
+      "sound_ms": 890,
+      "voiced_ms": 20,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "35d049629c98efea8be242bed1ade89985d3546d62d531d30c27b572eaa9dea1:(30, 930)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "v": {
+   "id": "snd-v",
+   "file": "snd-v.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "respell",
+   "duration_ms": 1000,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/v-1.mp3",
+     "method": "respell",
+     "text": "Vvvvv.",
+     "parts": null,
+     "cut_ms": [
+      50,
+      950
+     ],
+     "metrics": {
+      "ms": 1000,
+      "sound_ms": 890,
+      "voiced_ms": 430,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "61496790b2b9167e9a7de5d98450ded663916de1d6ed47447facfc0f5ff9b2e3:(50, 950)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "z": {
+   "id": "snd-z",
+   "file": "snd-z.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "respell",
+   "duration_ms": 1000,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/z-1.mp3",
+     "method": "respell",
+     "text": "Zzzzz.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      930
+     ],
+     "metrics": {
+      "ms": 1000,
+      "sound_ms": 890,
+      "voiced_ms": 90,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "1792156158652c422c7d4a5ac45952057605b01bf8af8a5d544967d7e1a1b4f1:(30, 930)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "sh": {
+   "id": "snd-sh",
+   "file": "snd-sh.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "respell",
+   "duration_ms": 1000,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/sh-1.mp3",
+     "method": "respell",
+     "text": "Shhhhh.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      930
+     ],
+     "metrics": {
+      "ms": 1000,
+      "sound_ms": 900,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "8d952d968f95776cfcde8d8dbbb69ddcd9e68114d197446abc0cadc371479472:(30, 930)",
+     "stt": "Shh",
+     "score": 0.0
+    }
+   ]
+  },
+  "th": {
+   "id": "snd-th",
+   "file": "snd-th.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "respell",
+   "duration_ms": 1000,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/th-1.mp3",
+     "method": "respell",
+     "text": "Thhhh.",
+     "parts": null,
+     "cut_ms": [
+      20,
+      920
+     ],
+     "metrics": {
+      "ms": 1000,
+      "sound_ms": 890,
+      "voiced_ms": 90,
+      "open_ms": 0,
+      "wobble": 1
+     },
+     "stt_key": "489fa7e4e4677e1decef81e5baae7fbdf441a0cac7867eef9c2bc5d8785654d7:(20, 920)",
+     "stt": "",
+     "score": 15.0
+    }
+   ]
+  },
+  "l": {
+   "id": "snd-l",
+   "file": "snd-l.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 2,
+   "method": "sonorant",
+   "duration_ms": 640,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/l-1.mp3",
+     "method": "respell",
+     "text": "Lllll.",
+     "parts": null,
+     "cut_ms": [
+      80,
+      780
+     ],
+     "metrics": {
+      "ms": 800,
+      "sound_ms": 690,
+      "voiced_ms": 660,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "7448211895c688b66b1bf0e737333ce25befd4e94e7e5036ad16fba3baf9d99c:(80, 780)",
+     "stt": "Ew.",
+     "score": 100.0
+    },
+    {
+     "n": 2,
+     "file": "takes/l-2.mp3",
+     "method": "sonorant",
+     "text": "Llllleg.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      570
+     ],
+     "metrics": {
+      "ms": 640,
+      "sound_ms": 540,
+      "voiced_ms": 540,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "166c87a4005f08acb01a140f019e62808358a6b11bdca4ef4ecab1a777689b72:(30, 570)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 3,
+     "file": "takes/l-3.mp3",
+     "method": "sonorant",
+     "text": "Lllllip.",
+     "parts": null,
+     "cut_ms": [
+      60,
+      700
+     ],
+     "metrics": {
+      "ms": 740,
+      "sound_ms": 630,
+      "voiced_ms": 610,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "295362f3c13de34d4df558b610f7c863d5ab24242f88a8837bced279c785bfc8:(60, 700)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "r": {
+   "id": "snd-r",
+   "file": "snd-r.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "chosen": 5,
+   "method": "sonorant",
+   "duration_ms": 220,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/r-1.mp3",
+     "method": "respell",
+     "text": "Rrrrr.",
+     "parts": null,
+     "cut_ms": [
+      20,
+      590
+     ],
+     "metrics": {
+      "ms": 670,
+      "sound_ms": 560,
+      "voiced_ms": 490,
+      "open_ms": 80,
+      "wobble": 3
+     },
+     "stt_key": "08b3aa18ec5fe201279d3b91e303cfb2d27c0159d716878dd8294ce2851252e1:(20, 590)",
+     "stt": "",
+     "score": 85.0
+    },
+    {
+     "n": 2,
+     "file": "takes/r-2.mp3",
+     "method": "sonorant",
+     "text": "Rrrrred.",
+     "parts": null,
+     "cut_ms": [
+      90,
+      490
+     ],
+     "metrics": {
+      "ms": 500,
+      "sound_ms": 400,
+      "voiced_ms": 370,
+      "open_ms": 80,
+      "wobble": 5
+     },
+     "stt_key": "fd8d79d7458c53dcd97cfc7913d36b40fee7e89283b4848c2a41a0376a47b7ea:(90, 490)",
+     "stt": "",
+     "score": 115.0
+    },
+    {
+     "n": 3,
+     "file": "takes/r-3.mp3",
+     "method": "sonorant",
+     "text": "Rrrrrat.",
+     "parts": null,
+     "cut_ms": [
+      90,
+      470
+     ],
+     "metrics": {
+      "ms": 480,
+      "sound_ms": 380,
+      "voiced_ms": 330,
+      "open_ms": 100,
+      "wobble": 5
+     },
+     "stt_key": "d5b6e7b8fc157e4a2a1d46146cf97d6d3fdb7407e99cfdad564526c4605f6acb:(90, 470)",
+     "stt": "",
+     "score": 125.0
+    },
+    {
+     "n": 4,
+     "file": "takes/r-4.mp3",
+     "method": "sonorant",
+     "text": "Red.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      150
+     ],
+     "metrics": {
+      "ms": 210,
+      "sound_ms": 110,
+      "voiced_ms": 110,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "747ec845eeef2d2b131409c8e5825247fa2ee4049b55c2812fab1fcdbaa4c46e:(40, 150)",
+     "stt": "",
+     "score": 40.0
+    },
+    {
+     "n": 5,
+     "file": "takes/r-5.mp3",
+     "method": "sonorant",
+     "text": "Rug.",
+     "parts": null,
+     "cut_ms": [
+      120,
+      240
+     ],
+     "metrics": {
+      "ms": 220,
+      "sound_ms": 120,
+      "voiced_ms": 120,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "b7b771a1e7631a5e8a48b19a2c96bda0048b02928cbaa19f5f6df6eab1ca9a0f:(120, 240)",
+     "stt": "",
+     "score": 30.0
+    }
+   ]
+  },
+  "t": {
+   "id": "snd-t",
+   "file": "snd-t.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "onset",
+   "duration_ms": 180,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/t-1.mp3",
+     "method": "onset",
+     "text": "Top.",
+     "parts": null,
+     "cut_ms": [
+      50,
+      130
+     ],
+     "metrics": {
+      "ms": 180,
+      "sound_ms": 80,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "ec5835b8a893945d7d4d782e22fe8d67f5bf32d392fe29b01a5feaa37c318d63:(50, 130)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "p": {
+   "id": "snd-p",
+   "file": "snd-p.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "onset",
+   "duration_ms": 190,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/p-1.mp3",
+     "method": "onset",
+     "text": "Pig.",
+     "parts": null,
+     "cut_ms": [
+      50,
+      140
+     ],
+     "metrics": {
+      "ms": 190,
+      "sound_ms": 90,
+      "voiced_ms": 20,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "fefa5558aa3ffd92031674bcc784430ffa5f92fe534c7ca0ae2134d755c88877:(50, 140)",
+     "stt": "",
+     "score": 20.0
+    },
+    {
+     "n": 2,
+     "file": "takes/p-2.mp3",
+     "method": "onset",
+     "text": "Pot.",
+     "parts": null,
+     "cut_ms": [
+      50,
+      130
+     ],
+     "metrics": {
+      "ms": 180,
+      "sound_ms": 80,
+      "voiced_ms": 30,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "a0946de7f781112af61e605da960bfdfbb10fc547d1e2e49c94aa42be5316cb1:(50, 130)",
+     "stt": "",
+     "score": 30.0
+    }
+   ]
+  },
+  "k": {
+   "id": "snd-k",
+   "file": "snd-k.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "onset",
+   "duration_ms": 200,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/k-1.mp3",
+     "method": "onset",
+     "text": "Kit.",
+     "parts": null,
+     "cut_ms": [
+      20,
+      120
+     ],
+     "metrics": {
+      "ms": 200,
+      "sound_ms": 100,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "cfa33a8c2dd65a2fbd09d42ac8f2fd62ba085bd9c1776b9d325d0b14a16ce40d:(20, 120)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "h": {
+   "id": "snd-h",
+   "file": "snd-h.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "onset",
+   "duration_ms": 210,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/h-1.mp3",
+     "method": "onset",
+     "text": "Hat.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      150
+     ],
+     "metrics": {
+      "ms": 210,
+      "sound_ms": 110,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "326710f59f5cb5055d488cc9b0b7fc40ebc9b52f19e5613b69f10eba15cd8e78:(40, 150)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/h-2.mp3",
+     "method": "onset",
+     "text": "Hop.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      120
+     ],
+     "metrics": {
+      "ms": 180,
+      "sound_ms": 80,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "d1f7e885461f6a1325be108a601ea2ef4164fa3bf642b4cef566c69613739bd9:(40, 120)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "j": {
+   "id": "snd-j",
+   "file": "snd-j.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "onset",
+   "duration_ms": 160,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/j-1.mp3",
+     "method": "onset",
+     "text": "Jam.",
+     "parts": null,
+     "cut_ms": [
+      100,
+      160
+     ],
+     "metrics": {
+      "ms": 160,
+      "sound_ms": 60,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "f21f2d414a0acedf747cfaa1592c920b65fed60917bdc554539f9ff240f88c67:(100, 160)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/j-2.mp3",
+     "method": "onset",
+     "text": "Jet.",
+     "parts": null,
+     "cut_ms": [
+      110,
+      180
+     ],
+     "metrics": {
+      "ms": 170,
+      "sound_ms": 70,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "716161ff290b1e185dd308e7ae50ac5e653da1332a877fac18f6bc0a2e61748a:(110, 180)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "ch": {
+   "id": "snd-ch",
+   "file": "snd-ch.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "onset",
+   "duration_ms": 220,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/ch-1.mp3",
+     "method": "onset",
+     "text": "Chip.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      150
+     ],
+     "metrics": {
+      "ms": 220,
+      "sound_ms": 120,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 1
+     },
+     "stt_key": "09436ec59e092749c9091f12b2037b584916416aab10c036c735c069bc5c6f93:(30, 150)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/ch-2.mp3",
+     "method": "onset",
+     "text": "Chop.",
+     "parts": null,
+     "cut_ms": [
+      60,
+      160
+     ],
+     "metrics": {
+      "ms": 200,
+      "sound_ms": 100,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "c607e315a663ac092f25876092efc84fd0ffb13b431cd3428bd0c4fc39553cf1:(60, 160)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "b": {
+   "id": "snd-b",
+   "file": "snd-b.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "voiced-stop",
+   "duration_ms": 145,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/b-1.mp3",
+     "method": "voiced-stop",
+     "text": "Bat.",
+     "parts": null,
+     "cut_ms": [
+      120,
+      165
+     ],
+     "metrics": {
+      "ms": 140,
+      "sound_ms": 40,
+      "voiced_ms": 20,
+      "open_ms": 10,
+      "wobble": 0
+     },
+     "stt_key": "e2f14b3e83d6c4f4f59e6fff193dbf2e7f4e06ad8d25ccf55c9646d022351fa7:(120, 165)",
+     "stt": "",
+     "score": 20.0
+    },
+    {
+     "n": 2,
+     "file": "takes/b-2.mp3",
+     "method": "voiced-stop",
+     "text": "Bit.",
+     "parts": null,
+     "cut_ms": [
+      120,
+      175
+     ],
+     "metrics": {
+      "ms": 150,
+      "sound_ms": 50,
+      "voiced_ms": 20,
+      "open_ms": 20,
+      "wobble": 0
+     },
+     "stt_key": "ce894667c74354bb91af38d5be66d83e4f695202ca5f5e688d5d354bd27139ed:(120, 175)",
+     "stt": "",
+     "score": 25.0
+    },
+    {
+     "n": 3,
+     "file": "takes/b-3.mp3",
+     "method": "voiced-stop",
+     "text": "Bed.",
+     "parts": null,
+     "cut_ms": [
+      120,
+      175
+     ],
+     "metrics": {
+      "ms": 150,
+      "sound_ms": 50,
+      "voiced_ms": 20,
+      "open_ms": 20,
+      "wobble": 0
+     },
+     "stt_key": "f2cbd82f98454aa59e1d54bfe6c5462d3c55db3eda590577c750ffadaa6a141b:(120, 175)",
+     "stt": "",
+     "score": 25.0
+    }
+   ]
+  },
+  "d": {
+   "id": "snd-d",
+   "file": "snd-d.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 2,
+   "method": "voiced-stop",
+   "duration_ms": 165,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/d-1.mp3",
+     "method": "voiced-stop",
+     "text": "Dog.",
+     "parts": null,
+     "cut_ms": [
+      110,
+      175
+     ],
+     "metrics": {
+      "ms": 160,
+      "sound_ms": 60,
+      "voiced_ms": 20,
+      "open_ms": 20,
+      "wobble": 0
+     },
+     "stt_key": "22bca3756ad56bd0efb039552a152b270b4d0d66caf16fc770a04428e270e871:(110, 175)",
+     "stt": "",
+     "score": 20.0
+    },
+    {
+     "n": 2,
+     "file": "takes/d-2.mp3",
+     "method": "voiced-stop",
+     "text": "Dip.",
+     "parts": null,
+     "cut_ms": [
+      140,
+      205
+     ],
+     "metrics": {
+      "ms": 160,
+      "sound_ms": 60,
+      "voiced_ms": 20,
+      "open_ms": 10,
+      "wobble": 0
+     },
+     "stt_key": "f32e9df6db86d13b94d337dc4817f90bf4a2dad5689afba7c32e78d9f305539a:(140, 205)",
+     "stt": "",
+     "score": 10.0
+    },
+    {
+     "n": 3,
+     "file": "takes/d-3.mp3",
+     "method": "voiced-stop",
+     "text": "Den.",
+     "parts": null,
+     "cut_ms": [
+      110,
+      165
+     ],
+     "metrics": {
+      "ms": 150,
+      "sound_ms": 60,
+      "voiced_ms": 20,
+      "open_ms": 10,
+      "wobble": 0
+     },
+     "stt_key": "07476e2d8f1a92102bd2c8f50685f34e918da1383361fcbc5fa72521f5236ade:(110, 165)",
+     "stt": "",
+     "score": 10.0
+    }
+   ]
+  },
+  "g": {
+   "id": "snd-g",
+   "file": "snd-g.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 2,
+   "method": "voiced-stop",
+   "duration_ms": 175,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/g-1.mp3",
+     "method": "voiced-stop",
+     "text": "Got.",
+     "parts": null,
+     "cut_ms": [
+      90,
+      165
+     ],
+     "metrics": {
+      "ms": 170,
+      "sound_ms": 80,
+      "voiced_ms": 30,
+      "open_ms": 20,
+      "wobble": 0
+     },
+     "stt_key": "593a457ae7ca69ffe85e48c5cfdf0fa23a81360d2e0e69bb1dcf84b32ec541d7:(90, 165)",
+     "stt": "",
+     "score": 30.0
+    },
+    {
+     "n": 2,
+     "file": "takes/g-2.mp3",
+     "method": "voiced-stop",
+     "text": "Gift.",
+     "parts": null,
+     "cut_ms": [
+      90,
+      165
+     ],
+     "metrics": {
+      "ms": 170,
+      "sound_ms": 80,
+      "voiced_ms": 30,
+      "open_ms": 0,
+      "wobble": 1
+     },
+     "stt_key": "d33983cfae9fb476cd2dffde667387caacecb8b989ac18781118886d642bcdec:(90, 165)",
+     "stt": "",
+     "score": 10.0
+    },
+    {
+     "n": 3,
+     "file": "takes/g-3.mp3",
+     "method": "voiced-stop",
+     "text": "Get.",
+     "parts": null,
+     "cut_ms": [
+      90,
+      165
+     ],
+     "metrics": {
+      "ms": 170,
+      "sound_ms": 80,
+      "voiced_ms": 20,
+      "open_ms": 10,
+      "wobble": 0
+     },
+     "stt_key": "56a3cb41ae915147ea0cc61ccfcadf827891cb01f16f176f746252cd7d437fa8:(90, 165)",
+     "stt": "",
+     "score": 20.0
+    }
+   ]
+  },
+  "w": {
+   "id": "snd-w",
+   "file": "snd-w.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 2,
+   "method": "sonorant",
+   "duration_ms": 240,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/w-1.mp3",
+     "method": "sonorant",
+     "text": "Wet.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      140
+     ],
+     "metrics": {
+      "ms": 200,
+      "sound_ms": 100,
+      "voiced_ms": 100,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "a014c07c5c3514b4be0a4d61f32cf0fa31cfaba5d41b60ce4f10f1605aab1616:(40, 140)",
+     "stt": "",
+     "score": 50.0
+    },
+    {
+     "n": 2,
+     "file": "takes/w-2.mp3",
+     "method": "sonorant",
+     "text": "Win.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      170
+     ],
+     "metrics": {
+      "ms": 240,
+      "sound_ms": 140,
+      "voiced_ms": 130,
+      "open_ms": 20,
+      "wobble": 0
+     },
+     "stt_key": "71a9212853b02af1d6915da494fc2a01620a9c48baa67eec05db1a9397f374d3:(30, 170)",
+     "stt": "",
+     "score": 20.0
+    }
+   ]
+  },
+  "y": {
+   "id": "snd-y",
+   "file": "snd-y.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 2,
+   "method": "sonorant",
+   "duration_ms": 200,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/y-1.mp3",
+     "method": "sonorant",
+     "text": "Yes.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      110
+     ],
+     "metrics": {
+      "ms": 170,
+      "sound_ms": 70,
+      "voiced_ms": 70,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "0141aeb63a565257c6b5de734064c80ec35d2826476dde0e849aac99024cc6c4:(40, 110)",
+     "stt": "",
+     "score": 80.0
+    },
+    {
+     "n": 2,
+     "file": "takes/y-2.mp3",
+     "method": "sonorant",
+     "text": "Yak.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      130
+     ],
+     "metrics": {
+      "ms": 200,
+      "sound_ms": 100,
+      "voiced_ms": 100,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "3a6ad00459a0d0dd0cb86fe18f431a6557c767c472f4f0fea509a33312b7c7ac:(30, 130)",
+     "stt": "",
+     "score": 50.0
+    }
+   ]
+  },
+  "qu": {
+   "id": "snd-qu",
+   "file": "snd-qu.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "onset",
+   "duration_ms": 200,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/qu-1.mp3",
+     "method": "onset",
+     "text": "Quit.",
+     "parts": null,
+     "cut_ms": [
+      90,
+      190
+     ],
+     "metrics": {
+      "ms": 200,
+      "sound_ms": 100,
+      "voiced_ms": 40,
+      "open_ms": 40,
+      "wobble": 1
+     },
+     "stt_key": "dadd9c0b3d9eb3b55faf06afc6dd439a986484f609f2a87f31395e3d9c23aed9:(90, 190)",
+     "stt": "",
+     "score": 40.0
+    },
+    {
+     "n": 2,
+     "file": "takes/qu-2.mp3",
+     "method": "onset",
+     "text": "Queen.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      150
+     ],
+     "metrics": {
+      "ms": 210,
+      "sound_ms": 110,
+      "voiced_ms": 50,
+      "open_ms": 30,
+      "wobble": 1
+     },
+     "stt_key": "f06e0e8710e05c9e314d06bf9a2f95e2268e794507297a3ce9e0bdc85331b33a:(40, 150)",
+     "stt": "",
+     "score": 50.0
+    }
+   ]
+  },
+  "x": {
+   "id": "snd-x",
+   "file": "snd-x.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "coda",
+   "duration_ms": 390,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/x-1.mp3",
+     "method": "coda",
+     "text": "Box.",
+     "parts": null,
+     "cut_ms": [
+      400,
+      690
+     ],
+     "metrics": {
+      "ms": 390,
+      "sound_ms": 290,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "835dbbc5c2609cb2527b86fa62cd51e6d41db80a42de4dda7eb1090192b105c9:(400, 690)",
+     "stt": "くそ。",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/x-2.mp3",
+     "method": "coda",
+     "text": "Fox.",
+     "parts": null,
+     "cut_ms": [
+      400,
+      660
+     ],
+     "metrics": {
+      "ms": 360,
+      "sound_ms": 260,
+      "voiced_ms": 0,
+      "open_ms": 0,
+      "wobble": 1
+     },
+     "stt_key": "fafba53553342b200d7e180367ed385e5b6da9a80c7ffe45b9b82098e8090062:(400, 660)",
+     "stt": "くそ。",
+     "score": 0.0
+    }
+   ]
+  },
+  "ng": {
+   "id": "snd-ng",
+   "file": "snd-ng.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "coda-nasal",
+   "duration_ms": 300,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/ng-1.mp3",
+     "method": "coda-nasal",
+     "text": "Sing.",
+     "parts": null,
+     "cut_ms": [
+      380,
+      580
+     ],
+     "metrics": {
+      "ms": 300,
+      "sound_ms": 200,
+      "voiced_ms": 190,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "8244419e3876ec80549a0743a3d7ba01903882f27ea38069d6d7550609273007:(380, 580)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/ng-2.mp3",
+     "method": "coda-nasal",
+     "text": "Song.",
+     "parts": null,
+     "cut_ms": [
+      430,
+      610
+     ],
+     "metrics": {
+      "ms": 280,
+      "sound_ms": 180,
+      "voiced_ms": 170,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "2202ea0edbda6eb7899c34f912cdfb78b85a0298625aa877d16a84be928090c9:(430, 610)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "nk": {
+   "id": "snd-nk",
+   "file": "snd-nk.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "chosen": 1,
+   "method": "concat",
+   "duration_ms": 457,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/nk-1.mp3",
+     "method": "concat",
+     "text": null,
+     "parts": [
+      "ng",
+      "k"
+     ],
+     "cut_ms": null,
+     "metrics": {
+      "ms": 450,
+      "sound_ms": 340,
+      "voiced_ms": 190,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": null,
+     "stt": null,
+     "score": 0.0
+    }
+   ]
+  },
+  "a": {
+   "id": "snd-a",
+   "file": "snd-a.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "vowel",
+   "duration_ms": 300,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/a-1.mp3",
+     "method": "vowel",
+     "text": "At.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      230
+     ],
+     "metrics": {
+      "ms": 300,
+      "sound_ms": 200,
+      "voiced_ms": 60,
+      "open_ms": 30,
+      "wobble": 1
+     },
+     "stt_key": "4d1cbdb074ddb34b8269405aab629519944622bdaf984bf01f1f0f71fd1f1f4d:(30, 230)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/a-2.mp3",
+     "method": "vowel",
+     "text": "Apple.",
+     "parts": null,
+     "cut_ms": [
+      20,
+      160
+     ],
+     "metrics": {
+      "ms": 240,
+      "sound_ms": 140,
+      "voiced_ms": 60,
+      "open_ms": 10,
+      "wobble": 0
+     },
+     "stt_key": "23f95868e475a9a150fceb62845060c7948d4e9268bed656b06a51ad77e6466c:(20, 160)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "e": {
+   "id": "snd-e",
+   "file": "snd-e.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "vowel",
+   "duration_ms": 230,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/e-1.mp3",
+     "method": "vowel",
+     "text": "Etch.",
+     "parts": null,
+     "cut_ms": [
+      60,
+      190
+     ],
+     "metrics": {
+      "ms": 230,
+      "sound_ms": 130,
+      "voiced_ms": 100,
+      "open_ms": 90,
+      "wobble": 0
+     },
+     "stt_key": "f10561c71c6d094b0779f6ef0e456045542a98a875095d638157c6d31c2d1811:(60, 190)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/e-2.mp3",
+     "method": "vowel",
+     "text": "Ex.",
+     "parts": null,
+     "cut_ms": [
+      20,
+      150
+     ],
+     "metrics": {
+      "ms": 230,
+      "sound_ms": 130,
+      "voiced_ms": 100,
+      "open_ms": 80,
+      "wobble": 0
+     },
+     "stt_key": "6525f8ad3cf70525e3f9f05204e920df5a296064d99cb05bb8cd2096b58d20c6:(20, 150)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "i": {
+   "id": "snd-i",
+   "file": "snd-i.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "vowel",
+   "duration_ms": 260,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/i-1.mp3",
+     "method": "vowel",
+     "text": "It.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      190
+     ],
+     "metrics": {
+      "ms": 260,
+      "sound_ms": 160,
+      "voiced_ms": 120,
+      "open_ms": 100,
+      "wobble": 2
+     },
+     "stt_key": "5bab298666f9f4845276c1e4a09a3766c60b3bc48a36b36da176b8a619779f40:(30, 190)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "o": {
+   "id": "snd-o",
+   "file": "snd-o.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "vowel",
+   "duration_ms": 240,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/o-1.mp3",
+     "method": "vowel",
+     "text": "Ox.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      180
+     ],
+     "metrics": {
+      "ms": 240,
+      "sound_ms": 140,
+      "voiced_ms": 130,
+      "open_ms": 130,
+      "wobble": 0
+     },
+     "stt_key": "d739eb6df2531721e12ff6802c4cd5d9901deae7afe9a12ef1878c3d5bb41800:(40, 180)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/o-2.mp3",
+     "method": "vowel",
+     "text": "Off.",
+     "parts": null,
+     "cut_ms": [
+      30,
+      220
+     ],
+     "metrics": {
+      "ms": 290,
+      "sound_ms": 190,
+      "voiced_ms": 150,
+      "open_ms": 110,
+      "wobble": 0
+     },
+     "stt_key": "3d7015041ab70d02f5b4320b5a002aad7bb7b5350a5d450a8945fd859db70062:(30, 220)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "u": {
+   "id": "snd-u",
+   "file": "snd-u.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "vowel",
+   "duration_ms": 250,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/u-1.mp3",
+     "method": "vowel",
+     "text": "Up.",
+     "parts": null,
+     "cut_ms": [
+      40,
+      190
+     ],
+     "metrics": {
+      "ms": 250,
+      "sound_ms": 140,
+      "voiced_ms": 60,
+      "open_ms": 60,
+      "wobble": 1
+     },
+     "stt_key": "cd0e26127dcbb48656a0d7e4ad31feef5c2dbc0dbaff8b359e71bf05e096a2c0:(40, 190)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "ai": {
+   "id": "snd-ai",
+   "file": "snd-ai.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 567,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/ai-1.mp3",
+     "method": "word",
+     "text": "A.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 560,
+      "sound_ms": 410,
+      "voiced_ms": 330,
+      "open_ms": 120,
+      "wobble": 1
+     },
+     "stt_key": "748d323853bf5ceb9bcd347a2abea19e3ba83cf6e068d10b157fc0b075b9ae8a:None",
+     "stt": "A",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/ai-2.mp3",
+     "method": "strip",
+     "text": "Hay.",
+     "parts": null,
+     "cut_ms": [
+      160,
+      560
+     ],
+     "metrics": {
+      "ms": 500,
+      "sound_ms": 380,
+      "voiced_ms": 310,
+      "open_ms": 170,
+      "wobble": 2
+     },
+     "stt_key": "6e980b788c4695198c501d9e32e56603a20bfe1b49b7b7c5e875ae6876213432:(160, 560)",
+     "stt": "A",
+     "score": 0.0
+    }
+   ]
+  },
+  "ee": {
+   "id": "snd-ee",
+   "file": "snd-ee.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 864,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/ee-1.mp3",
+     "method": "word",
+     "text": "Ee.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 860,
+      "sound_ms": 710,
+      "voiced_ms": 440,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "e5c3da6119e5ec5b34a0a6a40168e96354523ea9315ade2b6fdb4663d8463f39:None",
+     "stt": "E",
+     "score": 0.0
+    }
+   ]
+  },
+  "igh": {
+   "id": "snd-igh",
+   "file": "snd-igh.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 671,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/igh-1.mp3",
+     "method": "word",
+     "text": "Eye.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 670,
+      "sound_ms": 520,
+      "voiced_ms": 340,
+      "open_ms": 130,
+      "wobble": 3
+     },
+     "stt_key": "88ee8890d04ebc3142dff7d0f8b0b8359d4c05789526819a57e05819414a8820:None",
+     "stt": "I",
+     "score": 0.0
+    }
+   ]
+  },
+  "oa": {
+   "id": "snd-oa",
+   "file": "snd-oa.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 980,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/oa-1.mp3",
+     "method": "word",
+     "text": "Oh.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 980,
+      "sound_ms": 850,
+      "voiced_ms": 420,
+      "open_ms": 10,
+      "wobble": 0
+     },
+     "stt_key": "abd58fb78a75dd537835fa99af77d7b526583b6da399be47975afc48703ef98d:None",
+     "stt": "Oh",
+     "score": 0.0
+    }
+   ]
+  },
+  "oo": {
+   "id": "snd-oo",
+   "file": "snd-oo.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 1030,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/oo-1.mp3",
+     "method": "word",
+     "text": "Ooo.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 1030,
+      "sound_ms": 910,
+      "voiced_ms": 720,
+      "open_ms": 30,
+      "wobble": 0
+     },
+     "stt_key": "b3119cd8e104bfc264f5a55c21d88474ad52a5d839afca88df63f1d736af26d9:None",
+     "stt": "Ooh",
+     "score": 0.0
+    }
+   ]
+  },
+  "ar": {
+   "id": "snd-ar",
+   "file": "snd-ar.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 792,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/ar-1.mp3",
+     "method": "word",
+     "text": "Ah.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 790,
+      "sound_ms": 680,
+      "voiced_ms": 130,
+      "open_ms": 0,
+      "wobble": 0
+     },
+     "stt_key": "0eb08a7e4e7cd2fe5404bc84bb04258894902c854d1a6a80f5da772b178a3590:None",
+     "stt": "Ah.",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/ar-2.mp3",
+     "method": "strip",
+     "text": "Car.",
+     "parts": null,
+     "cut_ms": [
+      160,
+      620
+     ],
+     "metrics": {
+      "ms": 560,
+      "sound_ms": 410,
+      "voiced_ms": 290,
+      "open_ms": 170,
+      "wobble": 2
+     },
+     "stt_key": "b6215bc923a5bbb74232be67d730892b0bed3869be164c76d4c0dc20c578bac4:(160, 620)",
+     "stt": "R",
+     "score": 0.0
+    }
+   ]
+  },
+  "or": {
+   "id": "snd-or",
+   "file": "snd-or.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 621,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/or-1.mp3",
+     "method": "word",
+     "text": "Or.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 620,
+      "sound_ms": 450,
+      "voiced_ms": 340,
+      "open_ms": 220,
+      "wobble": 1
+     },
+     "stt_key": "0476e14ad95147c951ab832d6b62b8091325a75a4e180195c793572def95d12f:None",
+     "stt": "Or",
+     "score": 0.0
+    }
+   ]
+  },
+  "ur": {
+   "id": "snd-ur",
+   "file": "snd-ur.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 768,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/ur-1.mp3",
+     "method": "word",
+     "text": "Err.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 760,
+      "sound_ms": 630,
+      "voiced_ms": 240,
+      "open_ms": 200,
+      "wobble": 0
+     },
+     "stt_key": "f8e8265c2b440236bfb5d5d59d647bcbdef879bc39018c7808184f2246b7083a:None",
+     "stt": "Er",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/ur-2.mp3",
+     "method": "strip",
+     "text": "Fur.",
+     "parts": null,
+     "cut_ms": [
+      220,
+      590
+     ],
+     "metrics": {
+      "ms": 470,
+      "sound_ms": 360,
+      "voiced_ms": 300,
+      "open_ms": 180,
+      "wobble": 2
+     },
+     "stt_key": "0872cc64ad5103162a890f4d305f3004c578ed031b684caa46cd7f48d56d43da:(220, 590)",
+     "stt": "Uh",
+     "score": 0.0
+    }
+   ]
+  },
+  "ow": {
+   "id": "snd-ow",
+   "file": "snd-ow.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 887,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/ow-1.mp3",
+     "method": "word",
+     "text": "Ow!",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 880,
+      "sound_ms": 750,
+      "voiced_ms": 310,
+      "open_ms": 240,
+      "wobble": 0
+     },
+     "stt_key": "9ee67c5f67f2f822b1a59b2e10025617a6397bb811ea0535df702d71c647366d:None",
+     "stt": "Ow!",
+     "score": 0.0
+    }
+   ]
+  },
+  "oi": {
+   "id": "snd-oi",
+   "file": "snd-oi.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 656,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/oi-1.mp3",
+     "method": "word",
+     "text": "Oi!",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 650,
+      "sound_ms": 470,
+      "voiced_ms": 200,
+      "open_ms": 170,
+      "wobble": 0
+     },
+     "stt_key": "997d50138224138113bc9e23fdb5572dfe80a7cec0fc22e6f54ff261ae0821a3:None",
+     "stt": "Oi",
+     "score": 0.0
+    }
+   ]
+  },
+  "ear": {
+   "id": "snd-ear",
+   "file": "snd-ear.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 680,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/ear-1.mp3",
+     "method": "word",
+     "text": "Ear.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 680,
+      "sound_ms": 510,
+      "voiced_ms": 410,
+      "open_ms": 150,
+      "wobble": 1
+     },
+     "stt_key": "224e96eb0153c924893205aba53a7b8774381f694a8924e1ba2d499af89831f8:None",
+     "stt": "Ear",
+     "score": 0.0
+    }
+   ]
+  },
+  "air": {
+   "id": "snd-air",
+   "file": "snd-air.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 723,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/air-1.mp3",
+     "method": "word",
+     "text": "Air.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 720,
+      "sound_ms": 550,
+      "voiced_ms": 340,
+      "open_ms": 200,
+      "wobble": 0
+     },
+     "stt_key": "6114c281936b19f3bf58d8e646e364481f020dfe3a6fb76c5c8f2365f6c553cc:None",
+     "stt": "Air",
+     "score": 0.0
+    }
+   ]
+  },
+  "er": {
+   "id": "snd-er",
+   "file": "snd-er.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "tail",
+   "duration_ms": 270,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/er-1.mp3",
+     "method": "tail",
+     "text": "Letter.",
+     "parts": null,
+     "cut_ms": [
+      370,
+      540
+     ],
+     "metrics": {
+      "ms": 270,
+      "sound_ms": 170,
+      "voiced_ms": 140,
+      "open_ms": 60,
+      "wobble": 1
+     },
+     "stt_key": "07c4cbb907663dbf23b37e1f05996d50a3d1e7ae71ef32919c1b70f98cc6a7a6:(370, 540)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/er-2.mp3",
+     "method": "tail",
+     "text": "Hammer.",
+     "parts": null,
+     "cut_ms": [
+      370,
+      560
+     ],
+     "metrics": {
+      "ms": 290,
+      "sound_ms": 190,
+      "voiced_ms": 170,
+      "open_ms": 10,
+      "wobble": 1
+     },
+     "stt_key": "dba8ba18b29f6c9e17742909f4a76b79cc5d848d2212ce8d5b4306ad1d0efeed:(370, 560)",
+     "stt": "",
+     "score": 0.0
+    }
+   ]
+  },
+  "ss": {
+   "id": "snd-ss",
+   "file": "snd-s.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "same_as": "s"
+  },
+  "ff": {
+   "id": "snd-ff",
+   "file": "snd-f.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "same_as": "f"
+  },
+  "zz": {
+   "id": "snd-zz",
+   "file": "snd-z.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "same_as": "z"
+  },
+  "ll": {
+   "id": "snd-ll",
+   "file": "snd-l.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "same_as": "l"
+  },
+  "c": {
+   "id": "snd-c",
+   "file": "snd-k.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "same_as": "k"
+  },
+  "ck": {
+   "id": "snd-ck",
+   "file": "snd-k.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "same_as": "k"
+  }
+ }
+}

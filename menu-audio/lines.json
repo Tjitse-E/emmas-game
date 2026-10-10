@@ -1,0 +1,26 @@
+{
+  "lines": [
+    {
+      "id": "menu-welcome",
+      "speaker": "narrator",
+      "text": "Hello, Emma! Which game do you want to play? Tap a picture.",
+      "note": "After the Play button on the picture menu."
+    },
+    {
+      "id": "menu-unicorn-egg-nest",
+      "speaker": "narrator",
+      "text": "Unicorn Egg Nest!"
+    },
+    {
+      "id": "menu-pippas-word-wand",
+      "speaker": "narrator",
+      "text": "Pippa's Word Wand!"
+    },
+    {
+      "id": "menu-fluffle-nursery",
+      "speaker": "narrator",
+      "text": "Fluffle Nursery!",
+      "seed": 23
+    }
+  ]
+}

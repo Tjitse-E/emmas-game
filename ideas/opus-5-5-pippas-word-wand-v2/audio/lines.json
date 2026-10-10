@@ -1,0 +1,879 @@
+{
+  "lines": [
+    {
+      "id": "goal-play",
+      "speaker": "narrator",
+      "text": "Tap Play to make magic!"
+    },
+    {
+      "id": "goal-colour",
+      "speaker": "narrator",
+      "text": "What colour is it? Tap one."
+    },
+    {
+      "id": "goal-wheel",
+      "speaker": "narrator",
+      "text": "Tap a gem to change it. Then slide your finger along the wand."
+    },
+    {
+      "id": "goal-heart",
+      "speaker": "narrator",
+      "text": "Tap the heart, or the round arrow."
+    },
+    {
+      "id": "goal-gems",
+      "speaker": "narrator",
+      "text": "Put the gems on the wand."
+    },
+    {
+      "id": "goal-slide",
+      "speaker": "narrator",
+      "text": "Now slide your finger along the wand."
+    },
+    {
+      "id": "goal-star",
+      "speaker": "narrator",
+      "text": "Slide all the way to the star."
+    },
+    {
+      "id": "goal-number",
+      "speaker": "narrator",
+      "text": "Put a number on your wand."
+    },
+    {
+      "id": "goal-count",
+      "speaker": "narrator",
+      "text": "Tap them to count."
+    },
+    {
+      "id": "goal-two",
+      "speaker": "narrator",
+      "text": "Is it this one, or this one?"
+    },
+    {
+      "id": "goal-shelf",
+      "speaker": "narrator",
+      "text": "On the shelf."
+    },
+    {
+      "id": "goal-note",
+      "speaker": "narrator",
+      "text": "Slide under the note. Then give Sizzle the right thing."
+    },
+    {
+      "id": "goal-queen-note",
+      "speaker": "narrator",
+      "text": "The Queen sent you a note. Do what it says!"
+    },
+    {
+      "id": "goal-read",
+      "speaker": "narrator",
+      "text": "Read the note. Slide under a word to hear its sounds."
+    },
+    {
+      "id": "goal-scroll",
+      "speaker": "narrator",
+      "text": "Do you want to try? Tap the scroll, or wave bye bye."
+    },
+    {
+      "id": "goal-choice",
+      "speaker": "narrator",
+      "text": "Do you want to make more magic? Tap the wand. Or tap the moon for bedtime."
+    },
+    {
+      "id": "goal-newday",
+      "speaker": "narrator",
+      "text": "Tap the sun for a new day!"
+    },
+    {
+      "id": "goal-close",
+      "speaker": "narrator",
+      "text": "Tap the cross to close your book."
+    },
+    {
+      "id": "need-bobbin-hungry",
+      "speaker": "narrator",
+      "text": "Your Bobbin is hungry. What does it want?"
+    },
+    {
+      "id": "need-bobbin-cold",
+      "speaker": "narrator",
+      "text": "Your Bobbin is cold. What does it want?"
+    },
+    {
+      "id": "need-bobbin-thirsty",
+      "speaker": "narrator",
+      "text": "Your Bobbin is thirsty. What does it want?"
+    },
+    {
+      "id": "need-duck-cold",
+      "speaker": "narrator",
+      "text": "The ducklings are cold. What do they need?"
+    },
+    {
+      "id": "need-duck-hungry",
+      "speaker": "narrator",
+      "text": "The ducklings are hungry. What do they need?"
+    },
+    {
+      "id": "need-duck-thirsty",
+      "speaker": "narrator",
+      "text": "The ducklings are thirsty. What do they need?"
+    },
+    {
+      "id": "need-goat-hungry",
+      "speaker": "narrator",
+      "text": "Grandpa Goat is hungry. What does he need?"
+    },
+    {
+      "id": "need-goat-thirsty",
+      "speaker": "narrator",
+      "text": "Grandpa Goat is thirsty. What does he need?"
+    },
+    {
+      "id": "need-dot",
+      "speaker": "narrator",
+      "text": "Dot wants something. It is very tricky!"
+    },
+    {
+      "id": "help-not-it",
+      "speaker": "narrator",
+      "text": "That is not it. Listen again."
+    },
+    {
+      "id": "help-hmm",
+      "speaker": "narrator",
+      "text": "Hmm. Listen again."
+    },
+    {
+      "id": "help-listen",
+      "speaker": "narrator",
+      "text": "Listen."
+    },
+    {
+      "id": "help-some",
+      "speaker": "narrator",
+      "text": "Some gems are right! Listen."
+    },
+    {
+      "id": "help-sound",
+      "speaker": "narrator",
+      "text": "Listen for this sound."
+    },
+    {
+      "id": "sizzle-goal",
+      "speaker": "narrator",
+      "text": "Sizzle wants something. It is on his note."
+    },
+    {
+      "id": "note-yes",
+      "speaker": "narrator",
+      "text": "Yes! You read the note!"
+    },
+    {
+      "id": "note-no",
+      "speaker": "narrator",
+      "text": "Oh no! Read the note again."
+    },
+    {
+      "id": "note-this",
+      "speaker": "narrator",
+      "text": "The note says this one."
+    },
+    {
+      "id": "scroll-offer",
+      "speaker": "narrator",
+      "text": "Look! Dot has a Golden Scroll."
+    },
+    {
+      "id": "party-pets",
+      "speaker": "narrator",
+      "text": "The Queen's pets: a pig, a dog and a cat."
+    },
+    {
+      "id": "party-wrong-pig",
+      "speaker": "narrator",
+      "text": "That is the pig. Read the note again."
+    },
+    {
+      "id": "party-wrong-dog",
+      "speaker": "narrator",
+      "text": "That is the dog. Read the note again."
+    },
+    {
+      "id": "party-wrong-cat",
+      "speaker": "narrator",
+      "text": "That is the cat. Read the note again."
+    },
+    {
+      "id": "party-wrong-thing",
+      "speaker": "narrator",
+      "text": "Not that thing. Read the note again."
+    },
+    {
+      "id": "party-yes",
+      "speaker": "narrator",
+      "text": "Yes! You did what the note says!"
+    },
+    {
+      "id": "party-made",
+      "speaker": "narrator",
+      "text": "Look at all the things you made today!"
+    },
+    {
+      "id": "book-new",
+      "speaker": "narrator",
+      "text": "Look! New stickers for your book!"
+    },
+    {
+      "id": "book-shiny",
+      "speaker": "narrator",
+      "text": "First try! A shiny sticker!"
+    },
+    {
+      "id": "book-rare",
+      "speaker": "narrator",
+      "text": "A rare unicorn sticker!"
+    },
+    {
+      "id": "grow",
+      "speaker": "narrator",
+      "text": "Look! Your Bobbin is growing!"
+    },
+    {
+      "id": "num-one",
+      "speaker": "narrator",
+      "text": "One."
+    },
+    {
+      "id": "num-more-one",
+      "speaker": "narrator",
+      "text": "One more duckling is coming!"
+    },
+    {
+      "id": "num-more-two",
+      "speaker": "narrator",
+      "text": "Two more ducklings are coming!"
+    },
+    {
+      "id": "num-tray",
+      "speaker": "narrator",
+      "text": "Look at the number on the bag. The tray has ten holes. How many more nuts will fill it?"
+    },
+    {
+      "id": "num-duck-hat",
+      "speaker": "narrator",
+      "text": "Every duckling needs a hat. How many hats?"
+    },
+    {
+      "id": "duck-few-hat",
+      "speaker": "narrator",
+      "text": "Oh no! A duckling has no hat."
+    },
+    {
+      "id": "duck-many-hat",
+      "speaker": "narrator",
+      "text": "Oops! Too many hats."
+    },
+    {
+      "id": "duck-done-hat",
+      "speaker": "narrator",
+      "text": "Every duckling has a hat!"
+    },
+    {
+      "id": "num-duck-rug",
+      "speaker": "narrator",
+      "text": "Every duckling needs a rug. How many rugs?"
+    },
+    {
+      "id": "duck-few-rug",
+      "speaker": "narrator",
+      "text": "Oh no! A duckling has no rug."
+    },
+    {
+      "id": "duck-many-rug",
+      "speaker": "narrator",
+      "text": "Oops! Too many rugs."
+    },
+    {
+      "id": "duck-done-rug",
+      "speaker": "narrator",
+      "text": "Every duckling has a rug!"
+    },
+    {
+      "id": "num-duck-bun",
+      "speaker": "narrator",
+      "text": "Every duckling needs a bun. How many buns?"
+    },
+    {
+      "id": "duck-few-bun",
+      "speaker": "narrator",
+      "text": "Oh no! A duckling has no bun."
+    },
+    {
+      "id": "duck-many-bun",
+      "speaker": "narrator",
+      "text": "Oops! Too many buns."
+    },
+    {
+      "id": "duck-done-bun",
+      "speaker": "narrator",
+      "text": "Every duckling has a bun!"
+    },
+    {
+      "id": "num-duck-cup",
+      "speaker": "narrator",
+      "text": "Every duckling needs a cup. How many cups?"
+    },
+    {
+      "id": "duck-few-cup",
+      "speaker": "narrator",
+      "text": "Oh no! A duckling has no cup."
+    },
+    {
+      "id": "duck-many-cup",
+      "speaker": "narrator",
+      "text": "Oops! Too many cups."
+    },
+    {
+      "id": "duck-done-cup",
+      "speaker": "narrator",
+      "text": "Every duckling has a cup!"
+    },
+    {
+      "id": "goat-few",
+      "speaker": "narrator",
+      "text": "There is an empty hole."
+    },
+    {
+      "id": "goat-many",
+      "speaker": "narrator",
+      "text": "Oops! Too many nuts."
+    },
+    {
+      "id": "goat-done",
+      "speaker": "narrator",
+      "text": "The tray is full!"
+    },
+    {
+      "id": "word-bun-ask",
+      "speaker": "narrator",
+      "text": "A bun. Bun."
+    },
+    {
+      "id": "word-bun",
+      "speaker": "narrator",
+      "text": "A bun!"
+    },
+    {
+      "id": "word-nut-ask",
+      "speaker": "narrator",
+      "text": "A nut. Nut."
+    },
+    {
+      "id": "word-nut",
+      "speaker": "narrator",
+      "text": "A nut!"
+    },
+    {
+      "id": "word-hat-ask",
+      "speaker": "narrator",
+      "text": "A hat. Hat."
+    },
+    {
+      "id": "word-hat",
+      "speaker": "narrator",
+      "text": "A hat!"
+    },
+    {
+      "id": "word-rug-ask",
+      "speaker": "narrator",
+      "text": "A rug. Rug."
+    },
+    {
+      "id": "word-rug",
+      "speaker": "narrator",
+      "text": "A rug!"
+    },
+    {
+      "id": "word-cup-ask",
+      "speaker": "narrator",
+      "text": "A cup. Cup."
+    },
+    {
+      "id": "word-cup",
+      "speaker": "narrator",
+      "text": "A cup!"
+    },
+    {
+      "id": "word-mug-ask",
+      "speaker": "narrator",
+      "text": "A mug. Mug."
+    },
+    {
+      "id": "word-mug",
+      "speaker": "narrator",
+      "text": "A mug!"
+    },
+    {
+      "id": "word-mat-ask",
+      "speaker": "narrator",
+      "text": "A mat. Mat."
+    },
+    {
+      "id": "word-mat",
+      "speaker": "narrator",
+      "text": "A mat!"
+    },
+    {
+      "id": "word-pot-ask",
+      "speaker": "narrator",
+      "text": "A pot. Pot."
+    },
+    {
+      "id": "word-pot",
+      "speaker": "narrator",
+      "text": "A pot!",
+      "seed": 101
+    },
+    {
+      "id": "word-pen-ask",
+      "speaker": "narrator",
+      "text": "A pen. Pen."
+    },
+    {
+      "id": "word-pen",
+      "speaker": "narrator",
+      "text": "A pen!"
+    },
+    {
+      "id": "word-net-ask",
+      "speaker": "narrator",
+      "text": "A net. Net."
+    },
+    {
+      "id": "word-net",
+      "speaker": "narrator",
+      "text": "A net!"
+    },
+    {
+      "id": "word-bed-ask",
+      "speaker": "narrator",
+      "text": "A bed. Bed."
+    },
+    {
+      "id": "word-bed",
+      "speaker": "narrator",
+      "text": "A bed!"
+    },
+    {
+      "id": "word-log-ask",
+      "speaker": "narrator",
+      "text": "A log. Log."
+    },
+    {
+      "id": "word-log",
+      "speaker": "narrator",
+      "text": "A log!"
+    },
+    {
+      "id": "word-bus-ask",
+      "speaker": "narrator",
+      "text": "A bus. Bus."
+    },
+    {
+      "id": "word-bus",
+      "speaker": "narrator",
+      "text": "A bus!"
+    },
+    {
+      "id": "word-pup",
+      "speaker": "narrator",
+      "text": "A pup!"
+    },
+    {
+      "id": "word-cap",
+      "speaker": "narrator",
+      "text": "A cap!"
+    },
+    {
+      "id": "word-cub",
+      "speaker": "narrator",
+      "text": "A cub!"
+    },
+    {
+      "id": "word-jug",
+      "speaker": "narrator",
+      "text": "A jug!"
+    },
+    {
+      "id": "word-bug",
+      "speaker": "narrator",
+      "text": "A bug!"
+    },
+    {
+      "id": "word-sun",
+      "speaker": "narrator",
+      "text": "A sun!"
+    },
+    {
+      "id": "word-hut",
+      "speaker": "narrator",
+      "text": "A hut!"
+    },
+    {
+      "id": "word-cat",
+      "speaker": "narrator",
+      "text": "A cat!"
+    },
+    {
+      "id": "word-pig",
+      "speaker": "narrator",
+      "text": "A pig!"
+    },
+    {
+      "id": "word-dog",
+      "speaker": "narrator",
+      "text": "A dog!"
+    },
+    {
+      "id": "word-put",
+      "speaker": "narrator",
+      "text": "Put.",
+      "note": "Tricky word, said whole."
+    },
+    {
+      "id": "word-the",
+      "speaker": "narrator",
+      "text": "The.",
+      "note": "Tricky word, said whole. Rhymes with 'duh', not 'thee'."
+    },
+    {
+      "id": "name-bip",
+      "speaker": "narrator",
+      "text": "Bip!"
+    },
+    {
+      "id": "name-bip-like",
+      "speaker": "narrator",
+      "text": "Do you like the name Bip?",
+      "seed": 101
+    },
+    {
+      "id": "name-bip-hello",
+      "speaker": "narrator",
+      "text": "Hello, Bip!"
+    },
+    {
+      "id": "name-bip-missed",
+      "speaker": "narrator",
+      "text": "Bip is so happy to see you!"
+    },
+    {
+      "id": "name-bip-night",
+      "speaker": "narrator",
+      "text": "Night night, Bip."
+    },
+    {
+      "id": "name-bop",
+      "speaker": "narrator",
+      "text": "Bop!"
+    },
+    {
+      "id": "name-bop-like",
+      "speaker": "narrator",
+      "text": "Do you like the name Bop?"
+    },
+    {
+      "id": "name-bop-hello",
+      "speaker": "narrator",
+      "text": "Hello, Bop!"
+    },
+    {
+      "id": "name-bop-missed",
+      "speaker": "narrator",
+      "text": "Bop is so happy to see you!",
+      "seed": 303
+    },
+    {
+      "id": "name-bop-night",
+      "speaker": "narrator",
+      "text": "Night night, Bop.",
+      "seed": 303
+    },
+    {
+      "id": "name-fip",
+      "speaker": "narrator",
+      "text": "Fip!",
+      "seed": 101
+    },
+    {
+      "id": "name-fip-like",
+      "speaker": "narrator",
+      "text": "Do you like the name Fip?",
+      "seed": 202
+    },
+    {
+      "id": "name-fip-hello",
+      "speaker": "narrator",
+      "text": "Hello, Fip!"
+    },
+    {
+      "id": "name-fip-missed",
+      "speaker": "narrator",
+      "text": "Fip is so happy to see you!"
+    },
+    {
+      "id": "name-fip-night",
+      "speaker": "narrator",
+      "text": "Night night, Fip."
+    },
+    {
+      "id": "name-fop",
+      "speaker": "narrator",
+      "text": "Fop!"
+    },
+    {
+      "id": "name-fop-like",
+      "speaker": "narrator",
+      "text": "Do you like the name Fop?",
+      "seed": 101
+    },
+    {
+      "id": "name-fop-hello",
+      "speaker": "narrator",
+      "text": "Hello, Fop!"
+    },
+    {
+      "id": "name-fop-missed",
+      "speaker": "narrator",
+      "text": "Fop is so happy to see you!"
+    },
+    {
+      "id": "name-fop-night",
+      "speaker": "narrator",
+      "text": "Night night, Fop."
+    },
+    {
+      "id": "name-tip",
+      "speaker": "narrator",
+      "text": "Tip!"
+    },
+    {
+      "id": "name-tip-like",
+      "speaker": "narrator",
+      "text": "Do you like the name Tip?"
+    },
+    {
+      "id": "name-tip-hello",
+      "speaker": "narrator",
+      "text": "Hello, Tip!"
+    },
+    {
+      "id": "name-tip-missed",
+      "speaker": "narrator",
+      "text": "Tip is so happy to see you!"
+    },
+    {
+      "id": "name-tip-night",
+      "speaker": "narrator",
+      "text": "Night night, Tip."
+    },
+    {
+      "id": "name-top",
+      "speaker": "narrator",
+      "text": "Top!"
+    },
+    {
+      "id": "name-top-like",
+      "speaker": "narrator",
+      "text": "Do you like the name Top?"
+    },
+    {
+      "id": "name-top-hello",
+      "speaker": "narrator",
+      "text": "Hello, Top!"
+    },
+    {
+      "id": "name-top-missed",
+      "speaker": "narrator",
+      "text": "Top is so happy to see you!"
+    },
+    {
+      "id": "name-top-night",
+      "speaker": "narrator",
+      "text": "Night night, Top."
+    },
+    {
+      "id": "pippa-hello",
+      "speaker": "pippa",
+      "text": "Hello, Princess Emma! I am Princess Pippa. This magic wand is for you!"
+    },
+    {
+      "id": "pippa-basket",
+      "speaker": "pippa",
+      "text": "Oh! Something is in my sock basket!"
+    },
+    {
+      "id": "pippa-bobbin",
+      "speaker": "pippa",
+      "text": "A baby Bobbin! It is so fluffy!"
+    },
+    {
+      "id": "pippa-name",
+      "speaker": "pippa",
+      "text": "It needs a name. Let's make one with your wand!"
+    },
+    {
+      "id": "pippa-watch",
+      "speaker": "pippa",
+      "text": "Watch me first!"
+    },
+    {
+      "id": "pippa-first",
+      "speaker": "pippa",
+      "text": "What is the first sound?"
+    },
+    {
+      "id": "pippa-here",
+      "speaker": "pippa",
+      "text": "Here it is!"
+    },
+    {
+      "id": "pippa-next",
+      "speaker": "pippa",
+      "text": "Next sound?"
+    },
+    {
+      "id": "pippa-last",
+      "speaker": "pippa",
+      "text": "Last sound?"
+    },
+    {
+      "id": "pippa-slide",
+      "speaker": "pippa",
+      "text": "Now I slide."
+    },
+    {
+      "id": "pippa-turn",
+      "speaker": "pippa",
+      "text": "Now it is your turn, Princess Emma!"
+    },
+    {
+      "id": "pippa-knock",
+      "speaker": "pippa",
+      "text": "Knock knock! Who is it?"
+    },
+    {
+      "id": "pippa-duck",
+      "speaker": "pippa",
+      "text": "It is Mrs Duck and her ducklings!"
+    },
+    {
+      "id": "pippa-goat",
+      "speaker": "pippa",
+      "text": "It is Grandpa Goat!"
+    },
+    {
+      "id": "pippa-sizzle",
+      "speaker": "pippa",
+      "text": "Look! It is Sizzle the baby dragon!"
+    },
+    {
+      "id": "pippa-dot",
+      "speaker": "pippa",
+      "text": "Oh! It is Dot the unicorn foal!"
+    },
+    {
+      "id": "pippa-onetoo",
+      "speaker": "pippa",
+      "text": "Your Bobbin wants one too. Watch me!"
+    },
+    {
+      "id": "pippa-nowyou",
+      "speaker": "pippa",
+      "text": "Now you!"
+    },
+    {
+      "id": "pippa-thanks",
+      "speaker": "pippa",
+      "text": "They say thank you, Princess Emma!"
+    },
+    {
+      "id": "pippa-party",
+      "speaker": "pippa",
+      "text": "The Queen is having a tea party! Let's go!"
+    },
+    {
+      "id": "pippa-morning",
+      "speaker": "pippa",
+      "text": "Good morning, Princess Emma!"
+    },
+    {
+      "id": "queen-welcome",
+      "speaker": "queen",
+      "text": "Welcome to my tea party!"
+    },
+    {
+      "id": "queen-giggle",
+      "speaker": "queen",
+      "text": "Oh, how funny!"
+    },
+    {
+      "id": "queen-thanks",
+      "speaker": "queen",
+      "text": "Thank you, Princess Emma! Here is a crown for you."
+    },
+    {
+      "id": "dot-hello",
+      "speaker": "foal",
+      "text": "[giggles] Hello! Look!"
+    },
+    {
+      "id": "dot-yay",
+      "speaker": "foal",
+      "text": "[giggles] Yay!"
+    },
+    {
+      "id": "dot-bye",
+      "speaker": "foal",
+      "text": "Bye bye! [giggles]"
+    },
+    {
+      "id": "bob-pop",
+      "speaker": "fluffle",
+      "text": "[gasps] Pibbi? [giggles]",
+      "note": "Bobbin babble. Must not sound like a real English word."
+    },
+    {
+      "id": "bob-happy",
+      "speaker": "fluffle",
+      "text": "[giggles] Mimmi bobba!",
+      "note": "Bobbin babble. Must not sound like a real English word."
+    },
+    {
+      "id": "bob-yum",
+      "speaker": "fluffle",
+      "text": "Mmm! Pibbo pibbo! [giggles]",
+      "note": "Bobbin babble. Must not sound like a real English word."
+    },
+    {
+      "id": "bob-sleepy",
+      "speaker": "fluffle",
+      "text": "[yawns] Mimmi... nunu...",
+      "note": "Bobbin babble. Must not sound like a real English word."
+    },
+    {
+      "id": "bob-wake",
+      "speaker": "fluffle",
+      "text": "[coos] Pibbo bibbi! [giggles]",
+      "note": "Bobbin babble. Must not sound like a real English word."
+    },
+    {
+      "id": "bob-giggle",
+      "speaker": "fluffle",
+      "text": "[giggles] Hihihi!",
+      "note": "Bobbin babble. Must not sound like a real English word."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "lines": [
+    {"id": "word-bun", "speaker": "narrator", "text": "Bun.", "note": "Test clip for shared/test.html"},
+    {"id": "goal-make-bun", "speaker": "narrator", "text": "Can you make the word bun?", "note": "Test clip for shared/test.html"}
+  ]
+}

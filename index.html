@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2a2160">
+<link rel="icon" href="data:,">
+<title>Emma's Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;
+  font-family:'Andika','Chalkboard SE','Comic Sans MS',system-ui,sans-serif}
+body{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,#5a3f9e 0%,#2a2160 60%,#1b1745 100%)}
+svg{display:block}
+
+#stage{position:absolute;left:0;top:0;width:1180px;height:820px;transform-origin:0 0}
+#sky{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.star{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;animation:twinkle 3s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+
+#title{position:absolute;left:0;right:0;top:34px;text-align:center;font-size:52px;font-weight:700;color:#fff6fb;letter-spacing:1px;
+  text-shadow:0 4px 0 #b4458a,0 0 26px rgba(255,150,220,.55);pointer-events:none}
+#cards{position:absolute;left:0;right:0;top:150px;display:flex;flex-wrap:wrap;justify-content:center;gap:40px;padding:0 20px}
+.card{position:relative;width:330px;height:496px;border-radius:44px;background:#fff;padding:12px 12px 0;touch-action:none;cursor:pointer;
+  box-shadow:0 12px 0 rgba(0,0,0,.25),0 20px 40px rgba(0,0,0,.35);transform:scale(.6);opacity:0;
+  transition:transform .5s cubic-bezier(.3,1.5,.5,1),opacity .3s}
+.card.in{transform:scale(1);opacity:1}
+.card .art{width:306px;height:400px;border-radius:34px;overflow:hidden;pointer-events:none}
+.card .art svg{width:306px;height:400px}
+.card .name{height:72px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;pointer-events:none}
+.card.uni{box-shadow:0 12px 0 #b4458a,0 20px 40px rgba(0,0,0,.35)}
+.card.uni .name{color:#b4458a}
+.card.wand{box-shadow:0 12px 0 #d49a1f,0 20px 40px rgba(0,0,0,.35)}
+.card.wand .name{color:#6a2bbf}
+.card.fluff{box-shadow:0 12px 0 #3f9c78,0 20px 40px rgba(0,0,0,.35)}
+.card.fluff .name{color:#2f7f60}
+.card.down{transform:scale(.95)}
+.card.chosen{animation:chosen .9s ease-in-out infinite;z-index:2}
+@keyframes chosen{0%,100%{transform:scale(1.04) rotate(-1.5deg)}50%{transform:scale(1.1) rotate(1.5deg)}}
+.cards-busy .card:not(.chosen){opacity:.55;transition:opacity .3s}
+
+/* art details */
+.uni-art .u-eye{transform-box:fill-box;transform-origin:center;animation:eyeBlink 4.5s infinite}
+@keyframes eyeBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.uni-art .shine,.twk{animation:twinkle 1.6s ease-in-out infinite}
+.wand-art .wand-glow{transform-box:fill-box;transform-origin:center;animation:glowpulse 1.6s ease-in-out infinite}
+@keyframes glowpulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.3);opacity:1}}
+.bob{animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.fluff-art .f1{fill:var(--fluff,#a8e8cc)}.fluff-art .f1s{stroke:var(--fluff,#a8e8cc)}
+.fluff-art .f2{fill:var(--fluff2,#79cfa9)}.fluff-art .f2s{stroke:var(--fluff2,#79cfa9)}
+.fluff-art .f3{fill:var(--fluff3,#e4fbf1)}
+.fluff-art .fp{fill:var(--pat,#ffffff)}
+.fluff-art .ein{fill:#ffd2de}
+.fluff-art .eyesClosed,.fluff-art .mouthO,.fluff-art .puffcheeks,.fluff-art .pattern,.fluff-art .crown,.fluff-art .mud path{display:none}
+.fluff-art .breathe{transform-box:fill-box;transform-origin:50% 100%;animation:breathe 2.6s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.96)}}
+
+/* Play: a white triangle on a round disc, the same as in the games */
+#start{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 50%,rgba(90,63,158,.55),rgba(20,16,55,.9))}
+#start.gone{display:none}
+#play{width:240px;height:240px;border-radius:50%;touch-action:none;cursor:pointer;
+  background:radial-gradient(circle at 35% 30%,#ffb3dc,#ff5fae 60%,#e0408f);box-shadow:0 12px 0 #b4307a,0 22px 40px rgba(0,0,0,.35);
+  display:flex;align-items:center;justify-content:center;animation:pulse 1.6s ease-in-out infinite}
+#play svg{width:110px;height:110px;margin-left:14px;pointer-events:none}
+#play.down{animation:none;transform:translateY(6px) scale(.97)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+/* grown-ups only: small link to the listening sheet */
+#grownups{position:absolute;right:12px;bottom:10px;z-index:60;font-size:15px;color:rgba(255,255,255,.55);text-decoration:none;
+  padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.25)}
+
+#sparks{position:absolute;inset:0;pointer-events:none;z-index:40}
+.spark{position:absolute;font-size:34px;color:#ffe27a;pointer-events:none;text-shadow:0 0 10px #fff2a8}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="sky"></div>
+  <div id="title">Emma's Games</div>
+
+  <div id="cards">
+    <div class="card uni" data-game="unicorn-egg-nest" data-href="ideas/opus-5-5-unicorn-egg-nest-v2/index.html" role="button" aria-label="Unicorn Egg Nest">
+      <div class="art uni-art">
+        <svg viewBox="0 0 306 400" aria-hidden="true">
+          <defs>
+            <linearGradient id="mUniSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#11163d"/><stop offset=".55" stop-color="#26296b"/><stop offset="1" stop-color="#2b4d6e"/></linearGradient>
+            <radialGradient id="mMoon" cx="40%" cy="40%"><stop offset="0" stop-color="#fffef2"/><stop offset="1" stop-color="#f3e7b5"/></radialGradient>
+            <radialGradient id="mMoonGlow"><stop offset="0" stop-color="rgba(255,250,210,.45)"/><stop offset="1" stop-color="rgba(255,250,210,0)"/></radialGradient>
+          </defs>
+          <rect width="306" height="400" fill="url(#mUniSky)"/>
+          <circle cx="246" cy="62" r="80" fill="url(#mMoonGlow)"/>
+          <circle cx="246" cy="62" r="34" fill="url(#mMoon)"/><circle cx="235" cy="54" r="6" fill="#efe2a8"/><circle cx="257" cy="72" r="8" fill="#efe2a8"/>
+          <g fill="#fff"><circle class="twk" cx="40" cy="40" r="2.5"/><circle class="twk" cx="110" cy="70" r="2"/><circle class="twk" cx="170" cy="30" r="2.5"/><circle class="twk" cx="70" cy="120" r="2"/><circle class="twk" cx="190" cy="120" r="2"/><circle class="twk" cx="280" cy="150" r="2"/></g>
+          <path d="M0 250 C80 228 200 236 306 226 L306 400 L0 400 Z" fill="#2f6b4f"/>
+          <path d="M0 290 C100 270 220 280 306 268 L306 400 L0 400 Z" fill="#3c8a5e" opacity=".6"/>
+          <!-- nest with the egg -->
+          <ellipse cx="82" cy="340" rx="78" ry="26" fill="#7a4a1e"/>
+          <g class="bob"><svg x="30" y="208" width="104" height="132" viewBox="0 0 190 240"><defs><radialGradient id="mge1" cx="35%" cy="28%" r="80%"><stop offset="0" stop-color="#ffffff"></stop><stop offset=".45" stop-color="#ffe3f1"></stop><stop offset="1" stop-color="#ffb3d9"></stop></radialGradient><clipPath id="mce1"><path d="M95 6 C152 6 184 96 184 150 C184 206 144 236 95 236 C46 236 6 206 6 150 C6 96 38 6 95 6 Z"></path></clipPath></defs><path d="M95 6 C152 6 184 96 184 150 C184 206 144 236 95 236 C46 236 6 206 6 150 C6 96 38 6 95 6 Z" fill="url(#mge1)" stroke="#d998b8" stroke-width="3"></path><g clip-path="url(#mce1)"><ellipse cx="52" cy="70" rx="6" ry="4" fill="#ffffff" opacity="0.7"></ellipse><ellipse cx="128" cy="60" rx="8" ry="6" fill="#ff8cc6" opacity="0.7"></ellipse><ellipse cx="150" cy="120" rx="10" ry="4" fill="#ffffff" opacity="0.7"></ellipse><ellipse cx="40" cy="150" rx="6" ry="6" fill="#ff8cc6" opacity="0.7"></ellipse><ellipse cx="96" cy="40" rx="8" ry="4" fill="#ffffff" opacity="0.7"></ellipse><ellipse cx="70" cy="200" rx="10" ry="6" fill="#ff8cc6" opacity="0.7"></ellipse><ellipse cx="140" cy="190" rx="6" ry="4" fill="#ffffff" opacity="0.7"></ellipse><ellipse cx="110" cy="105" rx="8" ry="6" fill="#ff8cc6" opacity="0.7"></ellipse><ellipse cx="30" cy="110" rx="10" ry="4" fill="#ffffff" opacity="0.7"></ellipse><ellipse cx="160" cy="160" rx="6" ry="6" fill="#ff8cc6" opacity="0.7"></ellipse><ellipse cx="86" cy="170" rx="8" ry="4" fill="#ffffff" opacity="0.7"></ellipse><ellipse cx="60" cy="112" rx="10" ry="6" fill="#ff8cc6" opacity="0.7"></ellipse><path d="M0 92 Q24 78 48 92 T96 92 T144 92 T192 92" stroke="#ff8cc6" stroke-width="8" fill="none" opacity=".55"></path></g></svg></g>
+          <ellipse cx="82" cy="338" rx="80" ry="22" fill="#b97a3c"/>
+          <path d="M8 336 Q82 358 156 336" stroke="#7a4a1e" stroke-width="5" fill="none"/>
+          <path d="M14 328 Q82 346 150 328" stroke="#d39350" stroke-width="4" fill="none"/>
+          <!-- the foal -->
+          <svg x="118" y="186" width="172" height="170" viewBox="0 -30 232 230"><ellipse cx="112" cy="190" rx="82" ry="10" fill="rgba(0,0,0,.18)"></ellipse><rect x="62" y="130" width="24" height="56" rx="12" fill="#ded3da"></rect><rect x="126" y="130" width="24" height="56" rx="12" fill="#ded3da"></rect><rect x="62" y="174" width="24" height="12" rx="5" fill="#cc6699"></rect><rect x="126" y="174" width="24" height="12" rx="5" fill="#cc6699"></rect><rect x="82" y="138" width="24" height="52" rx="12" fill="#fff3fb"></rect><rect x="146" y="138" width="24" height="52" rx="12" fill="#fff3fb"></rect><rect x="82" y="178" width="24" height="12" rx="5" fill="#cc6699"></rect><rect x="146" y="178" width="24" height="12" rx="5" fill="#cc6699"></rect><g transform="translate(0 0)"><g><path d="M54 112 C18 96 6 142 26 172 C30 152 36 142 54 132 Z" fill="#ff7fbf"></path><path d="M52 124 C28 130 26 162 40 184 C44 162 50 150 62 140 Z" fill="#9d7bff"></path></g><ellipse cx="108" cy="124" rx="64" ry="44" fill="#fff3fb" stroke="#ded3da" stroke-width="2"></ellipse><ellipse cx="98" cy="140" rx="40" ry="18" fill="#fff" opacity=".4"></ellipse><g class="u-head"><path d="M126 116 C128 84 148 70 168 74 L178 120 C160 132 138 130 126 116 Z" fill="#fff3fb"></path><circle cx="136" cy="40" r="19" fill="#ff7fbf"></circle><circle cx="124" cy="62" r="18" fill="#9d7bff"></circle><circle cx="124" cy="86" r="17" fill="#ff7fbf"></circle><circle cx="132" cy="108" r="15" fill="#9d7bff"></circle><circle cx="164" cy="66" r="46" fill="#fff3fb" stroke="#ded3da" stroke-width="2"></circle><path d="M140 30 L136 0 L162 22 Z" fill="#fff3fb" stroke="#ded3da" stroke-width="2" stroke-linejoin="round"></path><path d="M143 24 L141 8 L155 20 Z" fill="#ffb6cf"></path><g class="horn" transform="rotate(14 172 20)"><path d="M163 24 L172 -20 L181 24 Z" fill="#ffe58a" stroke="#eab243" stroke-width="2.5" stroke-linejoin="round"></path><path d="M165 14 L179 9 M167 3 L177 -1 M169 -8 L175 -11" stroke="#eab243" stroke-width="3" stroke-linecap="round"></path></g><path d="M148 28 C166 18 186 28 182 46 C172 36 160 40 148 48 Z" fill="#ff7fbf"></path><ellipse cx="190" cy="92" rx="28" ry="21" fill="#fff8fd" stroke="#ded3da" stroke-width="2"></ellipse><ellipse cx="204" cy="87" rx="3.5" ry="2.6" fill="#ded3da"></ellipse><path d="M188 103 q9 7 18 -2" stroke="#8a4a6e" stroke-width="3" fill="none" stroke-linecap="round"></path><ellipse class="u-eye" cx="170" cy="62" rx="13" ry="15" fill="#2a1b3d"></ellipse><circle cx="175" cy="56" r="5.5" fill="#fff"></circle><circle cx="166" cy="68" r="2.6" fill="#fff"></circle><path d="M159 50 l-7 -6 M165 47 l-3 -8 M172 46 l1 -8" stroke="#2a1b3d" stroke-width="3" stroke-linecap="round"></path><ellipse cx="186" cy="76" rx="9" ry="6" fill="#ff8fb1" opacity=".75"></ellipse></g></g><g class="shine" fill="#fff6b0"><path d="M118 22 l4 -10 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 z"></path><path d="M40 150 l3 -7 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 z"></path><path d="M200 30 l3 -7 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 z"></path></g></svg>
+        </svg>
+      </div>
+      <div class="name">Unicorn Egg Nest</div>
+    </div>
+
+    <div class="card wand" data-game="pippas-word-wand" data-href="ideas/opus-5-5-pippas-word-wand-v2/index.html" role="button" aria-label="Pippa's Word Wand">
+      <div class="art wand-art">
+        <svg viewBox="0 0 306 400" aria-hidden="true">
+          <defs>
+            <linearGradient id="mWandSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset="1" stop-color="#e8f6ff"/></linearGradient>
+          </defs>
+          <rect width="306" height="400" fill="url(#mWandSky)"/>
+          <g fill="#fff"><ellipse cx="70" cy="60" rx="40" ry="18"/><ellipse cx="100" cy="50" rx="30" ry="20"/><ellipse cx="230" cy="90" rx="36" ry="15"/><ellipse cx="252" cy="80" rx="24" ry="16"/></g>
+          <path d="M0 230 C80 200 200 220 306 196 L306 400 L0 400 Z" fill="#b6e3a4"/>
+          <path d="M0 290 C110 262 220 280 306 262 L306 400 L0 400 Z" fill="#9ed48a"/>
+          <g transform="translate(250 160)"><rect x="-6" y="30" width="12" height="40" fill="#8a5636"/><circle cx="0" cy="18" r="26" fill="#6cc070"/><circle cx="-12" cy="30" r="18" fill="#58b062"/></g>
+          <g><circle cx="40" cy="340" r="6" fill="#ff8fb8"/><circle cx="40" cy="340" r="2.5" fill="#ffe27a"/><circle cx="270" cy="350" r="6" fill="#c9a7e8"/><circle cx="270" cy="350" r="2.5" fill="#ffe27a"/></g>
+          <!-- letter gems -->
+          <g font-family="Andika, Chalkboard SE, sans-serif" font-weight="700" text-anchor="middle">
+            <g transform="translate(206 250)"><path d="M-17 -40 L17 -40 L40 -17 L40 17 L17 40 L-17 40 L-40 17 L-40 -17 Z" fill="#ff8fb8" stroke="#d9567f" stroke-width="5"/><path d="M-12 -30 L12 -30 L30 -12 L30 12 L12 30 L-12 30 L-30 12 L-30 -12 Z" fill="#ffe0ec"/><text y="15" font-size="44" fill="#7a2b48">s</text></g>
+            <g transform="translate(262 312) rotate(8)"><path d="M-17 -40 L17 -40 L40 -17 L40 17 L17 40 L-17 40 L-40 17 L-40 -17 Z" fill="#ffd25e" stroke="#d49a1f" stroke-width="5"/><path d="M-12 -30 L12 -30 L30 -12 L30 12 L12 30 L-12 30 L-30 12 L-30 -12 Z" fill="#fff6c8"/><text y="15" font-size="44" fill="#7a4a00">a</text></g>
+            <g transform="translate(196 340) rotate(-8)"><path d="M-17 -40 L17 -40 L40 -17 L40 17 L17 40 L-17 40 L-40 17 L-40 -17 Z" fill="#9fd8ff" stroke="#3f8fd0" stroke-width="5"/><path d="M-12 -30 L12 -30 L30 -12 L30 12 L12 30 L-12 30 L-30 12 L-30 -12 Z" fill="#e6f5ff"/><text y="15" font-size="44" fill="#1f4f8a">t</text></g>
+          </g>
+          <g fill="#ffe27a"><path class="twk" d="M170 120 l5 -12 l5 12 l12 5 l-12 5 l-5 12 l-5 -12 l-12 -5 z"/><path class="twk" d="M220 160 l3 -8 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 z"/></g>
+          <!-- Princess Pippa -->
+          <svg x="0" y="96" width="190" height="297" viewBox="0 0 160 250"><defs><linearGradient id="du4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcc3f5"></stop><stop offset="1" stop-color="#b18ad9"></stop></linearGradient><radialGradient id="su4" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#fde3cd"></stop><stop offset="1" stop-color="#efc29f"></stop></radialGradient><radialGradient id="wu4"><stop offset="0" stop-color="#fffbe0"></stop><stop offset=".45" stop-color="#ffe066" stop-opacity=".7"></stop><stop offset="1" stop-color="#ffe066" stop-opacity="0"></stop></radialGradient></defs><g fill="#6b3f24"><circle cx="50" cy="58" r="24"></circle><circle cx="110" cy="58" r="24"></circle><circle cx="43" cy="86" r="20"></circle><circle cx="117" cy="86" r="20"></circle><circle cx="46" cy="110" r="16"></circle><circle cx="114" cy="110" r="16"></circle><circle cx="54" cy="128" r="12"></circle><circle cx="106" cy="128" r="12"></circle></g><rect x="64" y="200" width="11" height="34" rx="5" fill="#efc29f"></rect><rect x="85" y="200" width="11" height="34" rx="5" fill="#efc29f"></rect><ellipse cx="68" cy="236" rx="13" ry="7" fill="#8e5bc4"></ellipse><ellipse cx="92" cy="236" rx="13" ry="7" fill="#8e5bc4"></ellipse><path d="M62 134 Q46 158 50 184" stroke="#efc29f" stroke-width="11" fill="none" stroke-linecap="round"></path><path d="M68 118 Q80 112 92 118 L100 146 Q118 184 130 212 Q80 232 30 212 Q42 184 60 146Z" fill="url(#du4)"></path><circle cx="34.0" cy="213.7" r="7" fill="#a47ad0"></circle><circle cx="45.6" cy="217.4" r="7" fill="#a47ad0"></circle><circle cx="57.2" cy="220.0" r="7" fill="#a47ad0"></circle><circle cx="68.8" cy="221.5" r="7" fill="#a47ad0"></circle><circle cx="80.4" cy="222.0" r="7" fill="#a47ad0"></circle><circle cx="92.0" cy="221.4" r="7" fill="#a47ad0"></circle><circle cx="103.6" cy="219.8" r="7" fill="#a47ad0"></circle><circle cx="115.2" cy="217.2" r="7" fill="#a47ad0"></circle><circle cx="126.8" cy="213.4" r="7" fill="#a47ad0"></circle><path d="M66 120 Q80 128 94 120 L97 146 Q80 152 63 146Z" fill="#c9a2ec"></path><circle cx="62" cy="128" r="10" fill="#ead9fb"></circle><circle cx="98" cy="128" r="10" fill="#ead9fb"></circle><path d="M61 146 Q80 153 99 146 L100 156 Q80 163 60 156Z" fill="#f7dcff"></path><circle cx="80" cy="154" r="5" fill="#f5c542"></circle><path d="M98 132 Q118 130 124 110" stroke="#efc29f" stroke-width="11" fill="none" stroke-linecap="round"></path><line x1="124" y1="112" x2="138" y2="70" stroke="#c98d2b" stroke-width="5" stroke-linecap="round"></line><circle class="wand-glow" cx="140" cy="62" r="22" fill="url(#wu4)"></circle><polygon points="140.0,47.0 143.8,56.7 154.3,57.4 146.2,64.0 148.8,74.1 140.0,68.5 131.2,74.1 133.8,64.0 125.7,57.4 136.2,56.7" fill="#ffd84a" stroke="#e0a51e" stroke-width="2" stroke-linejoin="round"></polygon><rect x="74" y="104" width="12" height="16" fill="#efc29f"></rect><circle cx="80" cy="78" r="34" fill="url(#su4)"></circle><g fill="#6b3f24"><circle cx="54" cy="54" r="14"></circle><circle cx="68" cy="46" r="14"></circle><circle cx="84" cy="44" r="14"></circle><circle cx="99" cy="50" r="13"></circle><circle cx="108" cy="63" r="10"></circle><circle cx="49" cy="66" r="10"></circle></g><g class="blink" style="transform-origin:80px 84px"><ellipse cx="68" cy="84" rx="5" ry="6.5" fill="#3a2416"></ellipse><ellipse cx="92" cy="84" rx="5" ry="6.5" fill="#3a2416"></ellipse><circle cx="70" cy="81.5" r="2" fill="#fff"></circle><circle cx="94" cy="81.5" r="2" fill="#fff"></circle></g><circle cx="60" cy="95" r="6" fill="#ff9aa8" opacity=".55"></circle><circle cx="100" cy="95" r="6" fill="#ff9aa8" opacity=".55"></circle><path d="M72 97 Q80 105 88 97" stroke="#a0453f" stroke-width="3" fill="none" stroke-linecap="round"></path><path d="M63 44 L67 29 L74 39 L80 24 L86 39 L93 29 L97 44 Q80 39 63 44Z" fill="#f5c542" stroke="#d49a1f" stroke-width="1.5" stroke-linejoin="round"></path><circle cx="80" cy="34" r="3.2" fill="#ff6fa8"></circle><circle cx="68" cy="36" r="2" fill="#7fd3ff"></circle><circle cx="92" cy="36" r="2" fill="#7fd3ff"></circle></svg>
+        </svg>
+      </div>
+      <div class="name">Pippa's Word Wand</div>
+    </div>
+
+    <div class="card fluff" data-game="fluffle-nursery" data-href="ideas/opus-5-5-fluffle-nursery-v2/index.html" role="button" aria-label="Fluffle Nursery">
+      <div class="art fluff-art">
+        <svg viewBox="0 0 306 400" aria-hidden="true">
+          <rect width="306" height="400" fill="#f3c995"/>
+          <g stroke="#e3b47c" stroke-width="3"><path d="M50 0 V260"/><path d="M110 0 V260"/><path d="M170 0 V260"/><path d="M230 0 V260"/><path d="M290 0 V260"/></g>
+          <path d="M0 36 Q76 70 153 40 Q230 70 306 36" stroke="#a8693f" stroke-width="2.5" fill="none"/>
+          <g><circle cx="30" cy="48" r="7" fill="#ffd27a"/><circle cx="70" cy="58" r="7" fill="#9fd8ff"/><circle cx="110" cy="56" r="7" fill="#ff9fc0"/><circle cx="196" cy="56" r="7" fill="#a8e8cc"/><circle cx="236" cy="58" r="7" fill="#c9a7e8"/><circle cx="276" cy="48" r="7" fill="#ffd27a"/></g>
+          <!-- round window -->
+          <circle cx="153" cy="128" r="54" fill="#a8693f"/><circle cx="153" cy="128" r="44" fill="#cfe9ff"/><ellipse cx="140" cy="118" rx="24" ry="10" fill="#fff"/><path d="M153 84 V172 M109 128 H197" stroke="#a8693f" stroke-width="6"/>
+          <path d="M0 260 Q153 236 306 260 L306 400 L0 400 Z" fill="#e3a873"/>
+          <ellipse cx="153" cy="352" rx="140" ry="34" fill="#f4a6c4"/><ellipse cx="153" cy="352" rx="104" ry="24" fill="#f9c4d8"/><ellipse cx="153" cy="352" rx="62" ry="14" fill="#fde0ea"/>
+          <!-- a small peach fluffle and the big mint one -->
+          <svg x="192" y="236" width="108" height="112" viewBox="-130 -150 260 270" style="--fluff:#ffc9a8;--fluff2:#f2a37e;--fluff3:#fff1e6"><ellipse cx="0" cy="106" rx="72" ry="12" fill="rgba(80,40,30,.22)"></ellipse><g class="breathe"><g class="tailg"><circle class="f2" cx="80" cy="66" r="30"></circle><circle class="f1" cx="88" cy="58" r="20"></circle><circle class="f3" cx="92" cy="52" r="8"></circle></g><g class="earfold earfoldL"><g class="ear earL"><path class="f2" d="M-56 -66C-120 -66 -146 30 -130 94C-122 118 -90 114 -88 88C-82 30 -70 -14 -44 -50Z"></path><path class="ein" d="M-62 -48C-108 -38 -126 30 -116 84C-112 98 -98 96 -98 82C-94 30 -82 -12 -58 -40Z"></path></g></g><g class="earfold earfoldR"><g class="ear earR"><g transform="scale(-1 1)"><path class="f2" d="M-56 -66C-120 -66 -146 30 -130 94C-122 118 -90 114 -88 88C-82 30 -70 -14 -44 -50Z"></path><path class="ein" d="M-62 -48C-108 -38 -126 30 -116 84C-112 98 -98 96 -98 82C-94 30 -82 -12 -58 -40Z"></path></g></g></g><g class="feet"><ellipse class="f2" cx="-32" cy="94" rx="24" ry="13"></ellipse><ellipse class="f2" cx="32" cy="94" rx="24" ry="13"></ellipse></g><circle class="f2s" r="90" fill="none" stroke-width="24" stroke-dasharray="0.1 15" stroke-linecap="round"></circle><circle class="f2" r="92"></circle><circle class="f1s" r="84" fill="none" stroke-width="20" stroke-dasharray="0.1 12" stroke-linecap="round" transform="rotate(6)"></circle><circle class="f1" r="84"></circle><path class="f1" d="M-18 -82C-30 -116 -4 -126 2 -104C8 -128 40 -116 22 -82Z"></path><g class="pattern"><circle class="fp" cx="-50" cy="-52" r="13" opacity=".8"></circle><circle class="fp" cx="54" cy="-46" r="11" opacity=".8"></circle><circle class="fp" cx="-74" cy="-14" r="8" opacity=".8"></circle><circle class="fp" cx="76" cy="-10" r="9" opacity=".8"></circle><circle class="fp" cx="-34" cy="-70" r="6" opacity=".8"></circle></g><ellipse class="f3" cx="0" cy="40" rx="56" ry="42"></ellipse><g class="paws"><ellipse class="f2 pawL" cx="-64" cy="38" rx="17" ry="21"></ellipse><ellipse class="f2 pawR" cx="64" cy="38" rx="17" ry="21"></ellipse></g><g class="eyesOpen"><circle cx="-36" cy="-16" r="36" fill="#fff" stroke="#5a3348" stroke-width="3"></circle><circle cx="-33" cy="-11" r="27" fill="#5b3a7a"></circle><circle cx="-33" cy="-11" r="14" fill="#24122e"></circle><circle cx="-24" cy="-23" r="9" fill="#fff"></circle><circle cx="-42" cy="0" r="5" fill="#fff"></circle><circle cx="36" cy="-16" r="36" fill="#fff" stroke="#5a3348" stroke-width="3"></circle><circle cx="39" cy="-11" r="27" fill="#5b3a7a"></circle><circle cx="39" cy="-11" r="14" fill="#24122e"></circle><circle cx="48" cy="-23" r="9" fill="#fff"></circle><circle cx="30" cy="0" r="5" fill="#fff"></circle><path d="M-58 -46l-6 -10M-67 -37l-10 -6" stroke="#5a3348" stroke-width="3.5" stroke-linecap="round"></path><path d="M58 -46l6 -10M67 -37l10 -6" stroke="#5a3348" stroke-width="3.5" stroke-linecap="round"></path></g><g class="eyesClosed"><path d="M-64 -10Q-38 12 -12 -10M12 -10Q38 12 64 -10" stroke="#5a3348" stroke-width="6" fill="none" stroke-linecap="round"></path></g><g class="cheeks"><ellipse cx="-60" cy="16" rx="15" ry="9" fill="#ff6f93" opacity=".45"></ellipse><ellipse cx="60" cy="16" rx="15" ry="9" fill="#ff6f93" opacity=".45"></ellipse></g><g class="puffcheeks"><circle cx="-58" cy="10" r="21" class="f1"></circle><circle cx="58" cy="10" r="21" class="f1"></circle><circle cx="-58" cy="10" r="11" fill="#ff6f93" opacity=".5"></circle><circle cx="58" cy="10" r="11" fill="#ff6f93" opacity=".5"></circle></g><g class="mouthSmile"><path d="M-13 22Q-6 31 0 23Q6 31 13 22" stroke="#7a2b48" stroke-width="4.5" fill="none" stroke-linecap="round"></path></g><g class="mouthO"><ellipse cx="0" cy="28" rx="12" ry="14" fill="#7a2b48"></ellipse><ellipse cx="0" cy="34" rx="7" ry="5" fill="#ff8fa8"></ellipse></g><g class="mud"><path class="m1" d="M-70 44q-14-6-8-18q10-6 18 2q12-4 14 8q6 12-8 14q-10 6-16-6z" fill="#8d5a3a"></path><path class="m2" d="M40 -70q-6-14 8-16q12 0 14 10q12 2 8 14q-6 10-18 4q-14 0-12-12z" fill="#8d5a3a"></path><path class="m3" d="M22 58q-4-12 10-14q10-4 16 6q12 4 6 14q-8 8-18 2q-14 2-14-8z" fill="#7a4a2e"></path></g><g class="crown"><path d="M-36 -94 L-32 -128 L-16 -108 L0 -136 L16 -108 L32 -128 L36 -94Z" fill="#ffd166" stroke="#d9a520" stroke-width="3" stroke-linejoin="round"></path><circle class="gm g0" cx="-22" cy="-112" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g1" cx="0" cy="-120" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g2" cx="22" cy="-112" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g3" cx="-11" cy="-103" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g4" cx="11" cy="-103" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g5" cx="-30" cy="-100" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g6" cx="30" cy="-100" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle></g></g></svg>
+          <svg x="16" y="180" width="200" height="208" viewBox="-130 -150 260 270" style="--fluff:#a8e8cc;--fluff2:#79cfa9;--fluff3:#e4fbf1"><ellipse cx="0" cy="106" rx="72" ry="12" fill="rgba(80,40,30,.22)"></ellipse><g class="breathe"><g class="tailg"><circle class="f2" cx="80" cy="66" r="30"></circle><circle class="f1" cx="88" cy="58" r="20"></circle><circle class="f3" cx="92" cy="52" r="8"></circle></g><g class="earfold earfoldL"><g class="ear earL"><path class="f2" d="M-56 -66C-120 -66 -146 30 -130 94C-122 118 -90 114 -88 88C-82 30 -70 -14 -44 -50Z"></path><path class="ein" d="M-62 -48C-108 -38 -126 30 -116 84C-112 98 -98 96 -98 82C-94 30 -82 -12 -58 -40Z"></path></g></g><g class="earfold earfoldR"><g class="ear earR"><g transform="scale(-1 1)"><path class="f2" d="M-56 -66C-120 -66 -146 30 -130 94C-122 118 -90 114 -88 88C-82 30 -70 -14 -44 -50Z"></path><path class="ein" d="M-62 -48C-108 -38 -126 30 -116 84C-112 98 -98 96 -98 82C-94 30 -82 -12 -58 -40Z"></path></g></g></g><g class="feet"><ellipse class="f2" cx="-32" cy="94" rx="24" ry="13"></ellipse><ellipse class="f2" cx="32" cy="94" rx="24" ry="13"></ellipse></g><circle class="f2s" r="90" fill="none" stroke-width="24" stroke-dasharray="0.1 15" stroke-linecap="round"></circle><circle class="f2" r="92"></circle><circle class="f1s" r="84" fill="none" stroke-width="20" stroke-dasharray="0.1 12" stroke-linecap="round" transform="rotate(6)"></circle><circle class="f1" r="84"></circle><path class="f1" d="M-18 -82C-30 -116 -4 -126 2 -104C8 -128 40 -116 22 -82Z"></path><g class="pattern"><circle class="fp" cx="-50" cy="-52" r="13" opacity=".8"></circle><circle class="fp" cx="54" cy="-46" r="11" opacity=".8"></circle><circle class="fp" cx="-74" cy="-14" r="8" opacity=".8"></circle><circle class="fp" cx="76" cy="-10" r="9" opacity=".8"></circle><circle class="fp" cx="-34" cy="-70" r="6" opacity=".8"></circle></g><ellipse class="f3" cx="0" cy="40" rx="56" ry="42"></ellipse><g class="paws"><ellipse class="f2 pawL" cx="-64" cy="38" rx="17" ry="21"></ellipse><ellipse class="f2 pawR" cx="64" cy="38" rx="17" ry="21"></ellipse></g><g class="eyesOpen"><circle cx="-36" cy="-16" r="36" fill="#fff" stroke="#5a3348" stroke-width="3"></circle><circle cx="-33" cy="-11" r="27" fill="#5b3a7a"></circle><circle cx="-33" cy="-11" r="14" fill="#24122e"></circle><circle cx="-24" cy="-23" r="9" fill="#fff"></circle><circle cx="-42" cy="0" r="5" fill="#fff"></circle><circle cx="36" cy="-16" r="36" fill="#fff" stroke="#5a3348" stroke-width="3"></circle><circle cx="39" cy="-11" r="27" fill="#5b3a7a"></circle><circle cx="39" cy="-11" r="14" fill="#24122e"></circle><circle cx="48" cy="-23" r="9" fill="#fff"></circle><circle cx="30" cy="0" r="5" fill="#fff"></circle><path d="M-58 -46l-6 -10M-67 -37l-10 -6" stroke="#5a3348" stroke-width="3.5" stroke-linecap="round"></path><path d="M58 -46l6 -10M67 -37l10 -6" stroke="#5a3348" stroke-width="3.5" stroke-linecap="round"></path></g><g class="eyesClosed"><path d="M-64 -10Q-38 12 -12 -10M12 -10Q38 12 64 -10" stroke="#5a3348" stroke-width="6" fill="none" stroke-linecap="round"></path></g><g class="cheeks"><ellipse cx="-60" cy="16" rx="15" ry="9" fill="#ff6f93" opacity=".45"></ellipse><ellipse cx="60" cy="16" rx="15" ry="9" fill="#ff6f93" opacity=".45"></ellipse></g><g class="puffcheeks"><circle cx="-58" cy="10" r="21" class="f1"></circle><circle cx="58" cy="10" r="21" class="f1"></circle><circle cx="-58" cy="10" r="11" fill="#ff6f93" opacity=".5"></circle><circle cx="58" cy="10" r="11" fill="#ff6f93" opacity=".5"></circle></g><g class="mouthSmile"><path d="M-13 22Q-6 31 0 23Q6 31 13 22" stroke="#7a2b48" stroke-width="4.5" fill="none" stroke-linecap="round"></path></g><g class="mouthO"><ellipse cx="0" cy="28" rx="12" ry="14" fill="#7a2b48"></ellipse><ellipse cx="0" cy="34" rx="7" ry="5" fill="#ff8fa8"></ellipse></g><g class="mud"><path class="m1" d="M-70 44q-14-6-8-18q10-6 18 2q12-4 14 8q6 12-8 14q-10 6-16-6z" fill="#8d5a3a"></path><path class="m2" d="M40 -70q-6-14 8-16q12 0 14 10q12 2 8 14q-6 10-18 4q-14 0-12-12z" fill="#8d5a3a"></path><path class="m3" d="M22 58q-4-12 10-14q10-4 16 6q12 4 6 14q-8 8-18 2q-14 2-14-8z" fill="#7a4a2e"></path></g><g class="crown"><path d="M-36 -94 L-32 -128 L-16 -108 L0 -136 L16 -108 L32 -128 L36 -94Z" fill="#ffd166" stroke="#d9a520" stroke-width="3" stroke-linejoin="round"></path><circle class="gm g0" cx="-22" cy="-112" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g1" cx="0" cy="-120" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g2" cx="22" cy="-112" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g3" cx="-11" cy="-103" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g4" cx="11" cy="-103" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g5" cx="-30" cy="-100" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle><circle class="gm g6" cx="30" cy="-100" r="6" fill="#ff6f9c" stroke="#fff" stroke-width="2"></circle></g></g></svg>
+          <g fill="#ff6f9c"><path class="twk" d="M262 210 c-6 -10 -20 -4 -14 8 l14 12 l14 -12 c6 -12 -8 -18 -14 -8z"/><path class="twk" d="M40 190 c-5 -8 -16 -3 -11 6 l11 10 l11 -10 c5 -9 -6 -14 -11 -6z"/></g>
+        </svg>
+      </div>
+      <div class="name">Fluffle Nursery</div>
+    </div>
+  </div>
+
+  <div id="sparks"></div>
+
+  <div id="start">
+    <div id="play" role="button" aria-label="Play"><svg viewBox="0 0 100 100"><path d="M26 14L86 50L26 86Z" fill="#fff" stroke="#fff" stroke-width="12" stroke-linejoin="round"/></svg></div>
+  </div>
+
+  <a id="grownups" href="shared/review.html">Sounds (grown-ups)</a>
+</div>
+
+<script src="shared/audio.js"></script>
+<script>
+'use strict';
+/* Emma's picture menu. Play unlocks audio (iOS), Elizabeth says hello, a tap on a card says the
+   game's name and opens it. All speech is pre-generated (menu-audio/lines.json). */
+const A = window.EmmaAudio;
+A.init({ base: 'menu-audio/', phonics: 'shared/audio/phonics/' });
+
+const CLIPS = ['menu-welcome', 'menu-unicorn-egg-nest', 'menu-pippas-word-wand', 'menu-fluffle-nursery'];
+const stage = document.getElementById('stage');
+const start = document.getElementById('start');
+const play = document.getElementById('play');
+const cards = [...document.querySelectorAll('.card')];
+let busy = false;
+let started = false;
+
+/* fit the 1180 x 820 stage (820 x 1180 in portrait) into the screen */
+function fit(){
+  const portrait = innerHeight > innerWidth;
+  const W = portrait ? 820 : 1180, H = portrait ? 1180 : 820;
+  stage.style.width = W + 'px'; stage.style.height = H + 'px';
+  const cardsEl = document.getElementById('cards');
+  cardsEl.style.top = portrait ? '118px' : '164px';
+  cardsEl.style.rowGap = portrait ? '30px' : '40px';
+  document.getElementById('title').style.top = portrait ? '22px' : '34px';
+  const s = Math.min(innerWidth / W, innerHeight / H);
+  stage.style.transform = `translate(${(innerWidth - W * s) / 2}px,${(innerHeight - H * s) / 2}px) scale(${s})`;
+}
+addEventListener('resize', fit);
+addEventListener('orientationchange', () => setTimeout(fit, 200));
+fit();
+
+/* stars */
+const sky = document.getElementById('sky');
+for (let i = 0; i < 50; i++){
+  const s = document.createElement('div'); s.className = 'star';
+  s.style.left = (Math.random() * 100) + '%'; s.style.top = (Math.random() * 100) + '%';
+  s.style.animationDelay = (Math.random() * 3) + 's'; sky.appendChild(s);
+}
+
+/* no zoom, no long-press menu, no double-tap zoom */
+['gesturestart', 'gesturechange', 'dblclick', 'contextmenu'].forEach(t => document.addEventListener(t, e => e.preventDefault()));
+
+function sparkle(el){
+  const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(), k = sr.width / stage.offsetWidth;
+  const cx = (r.left + r.width / 2 - sr.left) / k, cy = (r.top + r.height / 2 - sr.top) / k;
+  const box = document.getElementById('sparks');
+  for (let i = 0; i < 12; i++){
+    const s = document.createElement('div'); s.className = 'spark'; s.textContent = ['✦', '★', '✧', '♥'][i % 4];
+    s.style.left = cx + 'px'; s.style.top = cy + 'px'; box.appendChild(s);
+    const a = Math.random() * Math.PI * 2, d = 140 + Math.random() * 110;
+    s.animate([{ transform: 'translate(-50%,-50%) scale(.4)', opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(a) * d}px),calc(-50% + ${Math.sin(a) * d}px)) scale(1.1)`, opacity: 0 }],
+      { duration: 900 + Math.random() * 300, easing: 'cubic-bezier(.2,.8,.4,1)', fill: 'forwards' }).onfinish = () => s.remove();
+  }
+}
+
+function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+play.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (started) return;
+  started = true;
+  play.classList.add('down');
+  A.unlock();
+  const loaded = A.preload(CLIPS);
+  A.sfx('magic');
+  setTimeout(() => {
+    start.classList.add('gone');
+    cards.forEach((c, i) => setTimeout(() => c.classList.add('in'), 120 + i * 160));
+    loaded.then(() => wait(450)).then(() => { if (!busy) A.say('menu-welcome'); });
+  }, 180);
+});
+
+cards.forEach(card => {
+  card.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    if (busy || !started) return;
+    card.classList.add('down');
+  });
+  const lift = () => card.classList.remove('down');
+  card.addEventListener('pointercancel', lift);
+  card.addEventListener('pointerleave', lift);
+  card.addEventListener('pointerup', async e => {
+    e.preventDefault();
+    lift();
+    if (busy || !started) return;
+    busy = true;
+    document.getElementById('cards').classList.add('cards-busy');
+    card.classList.add('chosen');
+    A.sfx('sparkle');
+    sparkle(card);
+    const said = A.say('menu-' + card.dataset.game);
+    await Promise.race([said.then(() => wait(250)), wait(3000)]);
+    A.stop();
+    location.href = card.dataset.href;
+  });
+});
+
+/* back from a game through the browser history: the page may come back from the cache */
+addEventListener('pageshow', e => {
+  if (!e.persisted) return;
+  busy = false;
+  document.getElementById('cards').classList.remove('cards-busy');
+  cards.forEach(c => c.classList.remove('chosen', 'down'));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1259 @@
+{
+  "lines": [
+    {
+      "id": "welcome",
+      "speaker": "narrator",
+      "text": "Hello, Nurse Emma! Welcome to the Fluffle Nursery."
+    },
+    {
+      "id": "arrive",
+      "speaker": "narrator",
+      "text": "Look! A cloud brought a basket. Tap the basket."
+    },
+    {
+      "id": "baby",
+      "speaker": "narrator",
+      "text": "A baby Fluffle!"
+    },
+    {
+      "id": "no-talk",
+      "speaker": "narrator",
+      "text": "Fluffles can't talk. Read their bubbles."
+    },
+    {
+      "id": "pom-watch",
+      "speaker": "narrator",
+      "text": "This is Pom. Watch!"
+    },
+    {
+      "id": "naming-goal",
+      "speaker": "narrator",
+      "text": "Your baby needs a name. You choose!"
+    },
+    {
+      "id": "naming-how",
+      "speaker": "narrator",
+      "text": "Tap a gem to hear it. Put one in the box."
+    },
+    {
+      "id": "naming-slide",
+      "speaker": "narrator",
+      "text": "Slide the star, and listen."
+    },
+    {
+      "id": "naming-heart",
+      "speaker": "narrator",
+      "text": "Do you like it? Tap the heart."
+    },
+    {
+      "id": "wish-goal",
+      "speaker": "narrator",
+      "text": "Your Fluffle wants something."
+    },
+    {
+      "id": "read-bubble",
+      "speaker": "narrator",
+      "text": "Read the bubble."
+    },
+    {
+      "id": "wish-how",
+      "speaker": "narrator",
+      "text": "Tap the dots. Then slide the star.",
+      "seed": 21
+    },
+    {
+      "id": "dots-how",
+      "speaker": "narrator",
+      "text": "Tap every dot."
+    },
+    {
+      "id": "find",
+      "speaker": "narrator",
+      "text": "Find the thing you read."
+    },
+    {
+      "id": "give",
+      "speaker": "narrator",
+      "text": "Give it to your Fluffle."
+    },
+    {
+      "id": "not-that",
+      "speaker": "narrator",
+      "text": "Not that one. Read the bubble again."
+    },
+    {
+      "id": "it-says",
+      "speaker": "narrator",
+      "text": "It says..."
+    },
+    {
+      "id": "golden",
+      "speaker": "narrator",
+      "text": "Ooh, a golden wish!"
+    },
+    {
+      "id": "golden-sticker",
+      "speaker": "narrator",
+      "text": "A golden sticker!"
+    },
+    {
+      "id": "hungry",
+      "speaker": "narrator",
+      "text": "Your Fluffle is hungry!"
+    },
+    {
+      "id": "fill-tummy",
+      "speaker": "narrator",
+      "text": "Fill up the tummy."
+    },
+    {
+      "id": "look-number",
+      "speaker": "narrator",
+      "text": "Look at the number."
+    },
+    {
+      "id": "berries-how",
+      "speaker": "narrator",
+      "text": "Put berries on the plate. Give it to your Fluffle."
+    },
+    {
+      "id": "just-right",
+      "speaker": "narrator",
+      "text": "Just right! The tummy is full."
+    },
+    {
+      "id": "not-enough",
+      "speaker": "narrator",
+      "text": "Not enough."
+    },
+    {
+      "id": "look-spots",
+      "speaker": "narrator",
+      "text": "Look at the empty spots."
+    },
+    {
+      "id": "too-many",
+      "speaker": "narrator",
+      "text": "Too many! They won't fit."
+    },
+    {
+      "id": "sign",
+      "speaker": "narrator",
+      "text": "Look at the sign. The tummy holds ten."
+    },
+    {
+      "id": "muddy",
+      "speaker": "narrator",
+      "text": "Oh dear, muddy! Take your Fluffle to the bath."
+    },
+    {
+      "id": "jug-how",
+      "speaker": "narrator",
+      "text": "Fill the jug to the star. Use two bubbles."
+    },
+    {
+      "id": "jug-again",
+      "speaker": "narrator",
+      "text": "More mud! Fill the jug again."
+    },
+    {
+      "id": "need-ten",
+      "speaker": "narrator",
+      "text": "We need ten."
+    },
+    {
+      "id": "need-five",
+      "speaker": "narrator",
+      "text": "We need five."
+    },
+    {
+      "id": "pour",
+      "speaker": "narrator",
+      "text": "Pour it on the mud!"
+    },
+    {
+      "id": "pop-bubbles",
+      "speaker": "narrator",
+      "text": "Pop the bubbles!"
+    },
+    {
+      "id": "clean",
+      "speaker": "narrator",
+      "text": "Clean and fluffy!"
+    },
+    {
+      "id": "sleepy",
+      "speaker": "narrator",
+      "text": "Sleepy time. Your Fluffle wants a cuddly toy."
+    },
+    {
+      "id": "to-bed",
+      "speaker": "narrator",
+      "text": "Take your Fluffle to bed."
+    },
+    {
+      "id": "night-night",
+      "speaker": "narrator",
+      "text": "Night night, little Fluffle. Sleep tight."
+    },
+    {
+      "id": "grow-night",
+      "speaker": "narrator",
+      "text": "Your Fluffle will grow in the night."
+    },
+    {
+      "id": "stickers",
+      "speaker": "narrator",
+      "text": "New stickers for your book!"
+    },
+    {
+      "id": "moon",
+      "speaker": "narrator",
+      "text": "Tap the moon for tomorrow."
+    },
+    {
+      "id": "morning",
+      "speaker": "narrator",
+      "text": "Good morning, Nurse Emma! Tap the cot."
+    },
+    {
+      "id": "bigger",
+      "speaker": "narrator",
+      "text": "Look! Your Fluffle is bigger!"
+    },
+    {
+      "id": "grown",
+      "speaker": "narrator",
+      "text": "Your Fluffle is all grown up!"
+    },
+    {
+      "id": "new-fur",
+      "speaker": "narrator",
+      "text": "Look at the new fur!"
+    },
+    {
+      "id": "to-tree",
+      "speaker": "narrator",
+      "text": "Off to the Fluffle Tree!"
+    },
+    {
+      "id": "num-1",
+      "speaker": "narrator",
+      "text": "One."
+    },
+    {
+      "id": "num-2",
+      "speaker": "narrator",
+      "text": "Two."
+    },
+    {
+      "id": "num-3",
+      "speaker": "narrator",
+      "text": "Three."
+    },
+    {
+      "id": "num-4",
+      "speaker": "narrator",
+      "text": "Four."
+    },
+    {
+      "id": "num-5",
+      "speaker": "narrator",
+      "text": "Five."
+    },
+    {
+      "id": "num-6",
+      "speaker": "narrator",
+      "text": "Six."
+    },
+    {
+      "id": "num-7",
+      "speaker": "narrator",
+      "text": "Seven."
+    },
+    {
+      "id": "num-8",
+      "speaker": "narrator",
+      "text": "Eight."
+    },
+    {
+      "id": "num-9",
+      "speaker": "narrator",
+      "text": "Nine."
+    },
+    {
+      "id": "num-10",
+      "speaker": "narrator",
+      "text": "Ten."
+    },
+    {
+      "id": "num-11",
+      "speaker": "narrator",
+      "text": "Eleven."
+    },
+    {
+      "id": "num-12",
+      "speaker": "narrator",
+      "text": "Twelve."
+    },
+    {
+      "id": "num-13",
+      "speaker": "narrator",
+      "text": "Thirteen."
+    },
+    {
+      "id": "num-14",
+      "speaker": "narrator",
+      "text": "Fourteen."
+    },
+    {
+      "id": "num-15",
+      "speaker": "narrator",
+      "text": "Fifteen."
+    },
+    {
+      "id": "num-16",
+      "speaker": "narrator",
+      "text": "Sixteen."
+    },
+    {
+      "id": "num-17",
+      "speaker": "narrator",
+      "text": "Seventeen."
+    },
+    {
+      "id": "num-2-and-8",
+      "speaker": "narrator",
+      "text": "Two and eight make ten!"
+    },
+    {
+      "id": "num-3-and-7",
+      "speaker": "narrator",
+      "text": "Three and seven make ten!"
+    },
+    {
+      "id": "num-4-and-6",
+      "speaker": "narrator",
+      "text": "Four and six make ten!"
+    },
+    {
+      "id": "num-6-and-4",
+      "speaker": "narrator",
+      "text": "Six and four make ten!"
+    },
+    {
+      "id": "num-7-and-3",
+      "speaker": "narrator",
+      "text": "Seven and three make ten!"
+    },
+    {
+      "id": "num-8-and-2",
+      "speaker": "narrator",
+      "text": "Eight and two make ten!"
+    },
+    {
+      "id": "num-1-and-4",
+      "speaker": "narrator",
+      "text": "One and four make five!"
+    },
+    {
+      "id": "num-2-and-3",
+      "speaker": "narrator",
+      "text": "Two and three make five!"
+    },
+    {
+      "id": "num-3-and-2",
+      "speaker": "narrator",
+      "text": "Three and two make five!"
+    },
+    {
+      "id": "num-4-and-1",
+      "speaker": "narrator",
+      "text": "Four and one make five!"
+    },
+    {
+      "id": "word-cat",
+      "speaker": "narrator",
+      "text": "Cat."
+    },
+    {
+      "id": "word-cat-yes",
+      "speaker": "narrator",
+      "text": "Yes! A cat."
+    },
+    {
+      "id": "word-rat",
+      "speaker": "narrator",
+      "text": "Rat."
+    },
+    {
+      "id": "word-rat-yes",
+      "speaker": "narrator",
+      "text": "Yes! A rat."
+    },
+    {
+      "id": "word-cap",
+      "speaker": "narrator",
+      "text": "Cap."
+    },
+    {
+      "id": "word-cap-yes",
+      "speaker": "narrator",
+      "text": "Yes! A cap."
+    },
+    {
+      "id": "word-map",
+      "speaker": "narrator",
+      "text": "Map."
+    },
+    {
+      "id": "word-map-yes",
+      "speaker": "narrator",
+      "text": "Yes! A map."
+    },
+    {
+      "id": "word-mop",
+      "speaker": "narrator",
+      "text": "Mop."
+    },
+    {
+      "id": "word-mop-yes",
+      "speaker": "narrator",
+      "text": "Yes! A mop."
+    },
+    {
+      "id": "word-cup",
+      "speaker": "narrator",
+      "text": "Cup."
+    },
+    {
+      "id": "word-cup-yes",
+      "speaker": "narrator",
+      "text": "Yes! A cup."
+    },
+    {
+      "id": "word-rug",
+      "speaker": "narrator",
+      "text": "Rug."
+    },
+    {
+      "id": "word-rug-yes",
+      "speaker": "narrator",
+      "text": "Yes! A rug."
+    },
+    {
+      "id": "word-mug",
+      "speaker": "narrator",
+      "text": "Mug."
+    },
+    {
+      "id": "word-mug-yes",
+      "speaker": "narrator",
+      "text": "Yes! A mug."
+    },
+    {
+      "id": "word-nut",
+      "speaker": "narrator",
+      "text": "Nut.",
+      "seed": 31
+    },
+    {
+      "id": "word-nut-yes",
+      "speaker": "narrator",
+      "text": "Yes! A nut."
+    },
+    {
+      "id": "word-net",
+      "speaker": "narrator",
+      "text": "Net."
+    },
+    {
+      "id": "word-net-yes",
+      "speaker": "narrator",
+      "text": "Yes! A net."
+    },
+    {
+      "id": "word-pan",
+      "speaker": "narrator",
+      "text": "Pan."
+    },
+    {
+      "id": "word-pan-yes",
+      "speaker": "narrator",
+      "text": "Yes! A pan."
+    },
+    {
+      "id": "word-pen",
+      "speaker": "narrator",
+      "text": "Pen."
+    },
+    {
+      "id": "word-pen-yes",
+      "speaker": "narrator",
+      "text": "Yes! A pen."
+    },
+    {
+      "id": "word-sock",
+      "speaker": "narrator",
+      "text": "Sock."
+    },
+    {
+      "id": "word-sock-yes",
+      "speaker": "narrator",
+      "text": "Yes! A sock."
+    },
+    {
+      "id": "word-dog",
+      "speaker": "narrator",
+      "text": "Dog."
+    },
+    {
+      "id": "word-dog-yes",
+      "speaker": "narrator",
+      "text": "Yes! A dog."
+    },
+    {
+      "id": "word-pig",
+      "speaker": "narrator",
+      "text": "Pig."
+    },
+    {
+      "id": "word-pig-yes",
+      "speaker": "narrator",
+      "text": "Yes! A pig."
+    },
+    {
+      "id": "word-sun",
+      "speaker": "narrator",
+      "text": "Sun!",
+      "note": "Sun. was heard as Sunday in five takes; Sun! is heard as Sun."
+    },
+    {
+      "id": "word-sun-yes",
+      "speaker": "narrator",
+      "text": "Yes! The sun."
+    },
+    {
+      "id": "word-duck",
+      "speaker": "narrator",
+      "text": "Duck."
+    },
+    {
+      "id": "word-duck-yes",
+      "speaker": "narrator",
+      "text": "Yes! A duck."
+    },
+    {
+      "id": "word-hat",
+      "speaker": "narrator",
+      "text": "Hat."
+    },
+    {
+      "id": "word-hat-yes",
+      "speaker": "narrator",
+      "text": "Yes! A hat."
+    },
+    {
+      "id": "word-bun",
+      "speaker": "narrator",
+      "text": "Bun."
+    },
+    {
+      "id": "word-bun-yes",
+      "speaker": "narrator",
+      "text": "Yes! A bun."
+    },
+    {
+      "id": "word-bin",
+      "speaker": "narrator",
+      "text": "Bin."
+    },
+    {
+      "id": "word-bin-yes",
+      "speaker": "narrator",
+      "text": "Yes! A bin."
+    },
+    {
+      "id": "word-bus",
+      "speaker": "narrator",
+      "text": "Bus."
+    },
+    {
+      "id": "word-bus-yes",
+      "speaker": "narrator",
+      "text": "Yes! A bus."
+    },
+    {
+      "id": "word-bug",
+      "speaker": "narrator",
+      "text": "Bug."
+    },
+    {
+      "id": "word-bug-yes",
+      "speaker": "narrator",
+      "text": "Yes! A bug."
+    },
+    {
+      "id": "word-bag",
+      "speaker": "narrator",
+      "text": "Bag."
+    },
+    {
+      "id": "word-bag-yes",
+      "speaker": "narrator",
+      "text": "Yes! A bag."
+    },
+    {
+      "id": "word-fan",
+      "speaker": "narrator",
+      "text": "Fan."
+    },
+    {
+      "id": "word-fan-yes",
+      "speaker": "narrator",
+      "text": "Yes! A fan."
+    },
+    {
+      "id": "word-fin",
+      "speaker": "narrator",
+      "text": "Fin."
+    },
+    {
+      "id": "word-fin-yes",
+      "speaker": "narrator",
+      "text": "Yes! A fin."
+    },
+    {
+      "id": "word-log",
+      "speaker": "narrator",
+      "text": "Log."
+    },
+    {
+      "id": "word-log-yes",
+      "speaker": "narrator",
+      "text": "Yes! A log."
+    },
+    {
+      "id": "word-leg",
+      "speaker": "narrator",
+      "text": "Leg."
+    },
+    {
+      "id": "word-leg-yes",
+      "speaker": "narrator",
+      "text": "Yes! A leg."
+    },
+    {
+      "id": "word-lock",
+      "speaker": "narrator",
+      "text": "Lock."
+    },
+    {
+      "id": "word-lock-yes",
+      "speaker": "narrator",
+      "text": "Yes! A lock."
+    },
+    {
+      "id": "word-doll",
+      "speaker": "narrator",
+      "text": "Doll."
+    },
+    {
+      "id": "word-doll-yes",
+      "speaker": "narrator",
+      "text": "Yes! A doll."
+    },
+    {
+      "id": "word-bell",
+      "speaker": "narrator",
+      "text": "Bell."
+    },
+    {
+      "id": "word-bell-yes",
+      "speaker": "narrator",
+      "text": "Yes! A bell."
+    },
+    {
+      "id": "word-hen",
+      "speaker": "narrator",
+      "text": "Hen."
+    },
+    {
+      "id": "word-hen-yes",
+      "speaker": "narrator",
+      "text": "Yes! A hen."
+    },
+    {
+      "id": "word-van",
+      "speaker": "narrator",
+      "text": "Van."
+    },
+    {
+      "id": "word-van-yes",
+      "speaker": "narrator",
+      "text": "Yes! A van."
+    },
+    {
+      "id": "word-fox",
+      "speaker": "narrator",
+      "text": "Fox."
+    },
+    {
+      "id": "word-fox-yes",
+      "speaker": "narrator",
+      "text": "Yes! A fox."
+    },
+    {
+      "id": "word-box",
+      "speaker": "narrator",
+      "text": "Box."
+    },
+    {
+      "id": "word-box-yes",
+      "speaker": "narrator",
+      "text": "Yes! A box."
+    },
+    {
+      "id": "word-jet",
+      "speaker": "narrator",
+      "text": "Jet."
+    },
+    {
+      "id": "word-jet-yes",
+      "speaker": "narrator",
+      "text": "Yes! A jet."
+    },
+    {
+      "id": "word-zip",
+      "speaker": "narrator",
+      "text": "Zip."
+    },
+    {
+      "id": "word-zip-yes",
+      "speaker": "narrator",
+      "text": "Yes! A zip."
+    },
+    {
+      "id": "word-wig",
+      "speaker": "narrator",
+      "text": "Wig."
+    },
+    {
+      "id": "word-wig-yes",
+      "speaker": "narrator",
+      "text": "Yes! A wig."
+    },
+    {
+      "id": "word-jam",
+      "speaker": "narrator",
+      "text": "Jam."
+    },
+    {
+      "id": "word-jam-yes",
+      "speaker": "narrator",
+      "text": "Yes! Jam."
+    },
+    {
+      "id": "word-web",
+      "speaker": "narrator",
+      "text": "Web."
+    },
+    {
+      "id": "word-web-yes",
+      "speaker": "narrator",
+      "text": "Yes! A web."
+    },
+    {
+      "id": "word-ship",
+      "speaker": "narrator",
+      "text": "Ship."
+    },
+    {
+      "id": "word-ship-yes",
+      "speaker": "narrator",
+      "text": "Yes! A ship."
+    },
+    {
+      "id": "word-chip",
+      "speaker": "narrator",
+      "text": "Chip."
+    },
+    {
+      "id": "word-chip-yes",
+      "speaker": "narrator",
+      "text": "Yes! A chip."
+    },
+    {
+      "id": "word-fish",
+      "speaker": "narrator",
+      "text": "Fish."
+    },
+    {
+      "id": "word-fish-yes",
+      "speaker": "narrator",
+      "text": "Yes! A fish."
+    },
+    {
+      "id": "word-dish",
+      "speaker": "narrator",
+      "text": "Dish."
+    },
+    {
+      "id": "word-dish-yes",
+      "speaker": "narrator",
+      "text": "Yes! A dish."
+    },
+    {
+      "id": "word-ring",
+      "speaker": "narrator",
+      "text": "Ring."
+    },
+    {
+      "id": "word-ring-yes",
+      "speaker": "narrator",
+      "text": "Yes! A ring."
+    },
+    {
+      "id": "word-king",
+      "speaker": "narrator",
+      "text": "King."
+    },
+    {
+      "id": "word-king-yes",
+      "speaker": "narrator",
+      "text": "Yes! A king."
+    },
+    {
+      "id": "word-wing",
+      "speaker": "narrator",
+      "text": "Wing."
+    },
+    {
+      "id": "word-wing-yes",
+      "speaker": "narrator",
+      "text": "Yes! A wing."
+    },
+    {
+      "id": "word-moth",
+      "speaker": "narrator",
+      "text": "Moth."
+    },
+    {
+      "id": "word-moth-yes",
+      "speaker": "narrator",
+      "text": "Yes! A moth."
+    },
+    {
+      "id": "name-pom",
+      "speaker": "narrator",
+      "text": "Pom!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 21
+    },
+    {
+      "id": "name-pom-hello",
+      "speaker": "narrator",
+      "text": "Hello, Pom!",
+      "note": "tapping Pom in the Fluffle Tree"
+    },
+    {
+      "id": "name-pag",
+      "speaker": "narrator",
+      "text": "Pag!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 21
+    },
+    {
+      "id": "name-pag-hello",
+      "speaker": "narrator",
+      "text": "Hello, Pag!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-pon",
+      "speaker": "narrator",
+      "text": "Pon!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-pon-hello",
+      "speaker": "narrator",
+      "text": "Hello, Pon!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-pam",
+      "speaker": "narrator",
+      "text": "Pam!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-pam-hello",
+      "speaker": "narrator",
+      "text": "Hello, Pam!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-pim",
+      "speaker": "narrator",
+      "text": "Pim!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 21
+    },
+    {
+      "id": "name-pim-hello",
+      "speaker": "narrator",
+      "text": "Hello, Pim!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-pum",
+      "speaker": "narrator",
+      "text": "Pum!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 21
+    },
+    {
+      "id": "name-pum-hello",
+      "speaker": "narrator",
+      "text": "Hello, Pum!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 21
+    },
+    {
+      "id": "name-mip",
+      "speaker": "narrator",
+      "text": "Mip!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mip-hello",
+      "speaker": "narrator",
+      "text": "Hello, Mip!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-min",
+      "speaker": "narrator",
+      "text": "Min!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-min-hello",
+      "speaker": "narrator",
+      "text": "Hello, Min!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mig",
+      "speaker": "narrator",
+      "text": "Mig!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 21
+    },
+    {
+      "id": "name-mig-hello",
+      "speaker": "narrator",
+      "text": "Hello, Mig!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mon",
+      "speaker": "narrator",
+      "text": "Mon!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mon-hello",
+      "speaker": "narrator",
+      "text": "Hello, Mon!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mup",
+      "speaker": "narrator",
+      "text": "Mup!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 21
+    },
+    {
+      "id": "name-mup-hello",
+      "speaker": "narrator",
+      "text": "Hello, Mup!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mun",
+      "speaker": "narrator",
+      "text": "Mun!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mun-hello",
+      "speaker": "narrator",
+      "text": "Hello, Mun!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mim",
+      "speaker": "narrator",
+      "text": "Mim!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-mim-hello",
+      "speaker": "narrator",
+      "text": "Hello, Mim!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-bip",
+      "speaker": "narrator",
+      "text": "Bip!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-bip-hello",
+      "speaker": "narrator",
+      "text": "Hello, Bip!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-bup",
+      "speaker": "narrator",
+      "text": "Bup!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-bup-hello",
+      "speaker": "narrator",
+      "text": "Hello, Bup!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 31
+    },
+    {
+      "id": "name-bam",
+      "speaker": "narrator",
+      "text": "Bam!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-bam-hello",
+      "speaker": "narrator",
+      "text": "Hello, Bam!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-bim",
+      "speaker": "narrator",
+      "text": "Bim!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-bim-hello",
+      "speaker": "narrator",
+      "text": "Hello, Bim!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zan",
+      "speaker": "narrator",
+      "text": "Zann!",
+      "note": "Spelled Zann so Elizabeth says a short a; speech-to-text heard Zen for Zan.",
+      "seed": 21
+    },
+    {
+      "id": "name-zan-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zan!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zin",
+      "speaker": "narrator",
+      "text": "Zin!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zin-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zin!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zop",
+      "speaker": "narrator",
+      "text": "Zop!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zop-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zop!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zon",
+      "speaker": "narrator",
+      "text": "Zon!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zon-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zon!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zup",
+      "speaker": "narrator",
+      "text": "Zup!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zup-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zup!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple).",
+      "seed": 31
+    },
+    {
+      "id": "name-zug",
+      "speaker": "narrator",
+      "text": "Zug!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zug-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zug!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zam",
+      "speaker": "narrator",
+      "text": "Zam!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zam-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zam!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zim",
+      "speaker": "narrator",
+      "text": "Zim!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zim-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zim!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zom",
+      "speaker": "narrator",
+      "text": "Zom!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "name-zom-hello",
+      "speaker": "narrator",
+      "text": "Hello, Zom!",
+      "note": "Short vowel as in the spelling (u as in up, o as in on, a as in apple)."
+    },
+    {
+      "id": "flf-hello",
+      "speaker": "fluffle",
+      "text": "[excited] Eep! Bibba-bibbi!",
+      "note": "babble with no real English word; was \"[excited] Eep! Bibba-bee!\""
+    },
+    {
+      "id": "flf-giggle",
+      "speaker": "fluffle",
+      "text": "[giggles] Hihihi! Bibbi!",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-happy",
+      "speaker": "fluffle",
+      "text": "[happy] Ooh! Wubba-libbi!",
+      "note": "babble with no real English word; was \"[happy] Ooh! Wubba-loo!\""
+    },
+    {
+      "id": "flf-hmm",
+      "speaker": "fluffle",
+      "text": "[curious] Hmmm? Nn-nn.",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-yum",
+      "speaker": "fluffle",
+      "text": "[happy] Mnyam mnyam! Mmm!",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-rumble",
+      "speaker": "fluffle",
+      "text": "[whimpers] Uuuh... mbb-mbb.",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-puff",
+      "speaker": "fluffle",
+      "text": "[puffs cheeks] Pfff! Mm-mm!",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-wish",
+      "speaker": "fluffle",
+      "text": "[excited] Ooh! Ooh! Eep!",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-splash",
+      "speaker": "fluffle",
+      "text": "[squeals] Wiii! Blub-blub!",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-yawn",
+      "speaker": "fluffle",
+      "text": "[yawns] Haaaa... mmm.",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-snore",
+      "speaker": "fluffle",
+      "text": "[snores softly] Hnn... pfff... hnn...",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-coo",
+      "speaker": "fluffle",
+      "text": "[coos] Ooo... bibba.",
+      "note": "Babble only, never a real English word."
+    },
+    {
+      "id": "flf-proud",
+      "speaker": "fluffle",
+      "text": "[proud] Bibbo-bibba! Eep!",
+      "note": "babble with no real English word; was \"[proud] Bibbo-baa! Eep!\""
+    },
+    {
+      "id": "pom-hi",
+      "speaker": "fluffle",
+      "text": "[cheerful] Bibba-bippo! Eep-eep!",
+      "note": "babble with no real English word; was \"[cheerful] Bibba-boo! Eep-eep!\""
+    },
+    {
+      "id": "pom-bye",
+      "speaker": "fluffle",
+      "text": "[giggles] Wubba-wubba!",
+      "note": "Babble only, never a real English word."
+    }
+  ]
+}
