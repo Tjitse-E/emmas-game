@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Edit(./.env)",
+      "Edit(./.env.*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command // empty' | grep -qE '\\.env([^A-Za-z0-9_]|$)' && { echo 'Blocked: .env holds secrets. Do not read, print or source it. Scripts load it themselves.' >&2; exit 2; } || exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

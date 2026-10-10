@@ -1,0 +1,1733 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#5d0f3a">
+<title>Queen Emma's Letters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#43233f; --gold:#f6c453; --gold-d:#c98e12; --velvet:#8e1e5a; --velvet-d:#55093a;
+  --parch:#fff6dc; --parch-d:#ecd6a0; --sky:#bfe9ff; --grass:#9fdc7c; --grass-d:#6fbf58;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#2c0b26;overscroll-behavior:none;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  font-family:Andika,"Avenir Next Rounded","Arial Rounded MT Bold","Avenir Next",system-ui,sans-serif;color:var(--ink)}
+button{font:inherit;border:0;padding:0;background:none;color:inherit;cursor:pointer}
+svg{display:block;width:100%;height:100%;overflow:visible}
+#stage{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;background:#3b1736;touch-action:none}
+
+/* ---------- Desk ---------- */
+#desk{position:absolute;overflow:hidden;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.12), transparent 40%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,.035) 0 6px, transparent 6px 14px),
+    radial-gradient(ellipse at 50% 50%, #a52a6a, var(--velvet) 55%, var(--velvet-d));}
+#desk::after{content:"";position:absolute;inset:0;pointer-events:none;border:6px solid var(--gold);border-radius:0;box-shadow:inset 0 0 0 3px #fff3, inset 0 0 40px #0006}
+.landscape #desk{left:0;top:0;width:380px;height:820px}
+.portrait #desk{left:0;top:0;width:820px;height:400px}
+.deskitem{position:absolute}
+.landscape #earBtn{left:18px;top:18px}
+.portrait #earBtn{left:18px;top:18px}
+#earBtn{width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffe7a3 60%,#f1b53a);box-shadow:0 6px 0 var(--gold-d),0 10px 18px #0005;z-index:5}
+#earBtn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--gold-d),0 4px 10px #0005}
+#earBtn svg{width:62%;height:62%;margin:auto}
+#earBtn.talk svg .wave{animation:wavey .6s infinite alternate}
+@keyframes wavey{to{opacity:.3}}
+.landscape #crown{left:122px;top:10px;width:240px;height:124px}
+.portrait #crown{left:14px;top:118px;width:196px;height:104px}
+#crown .gem{opacity:0;transform:scale(.2);transform-box:fill-box;transform-origin:center;transition:all .5s cubic-bezier(.3,1.8,.5,1)}
+#crown .gem.on{opacity:1;transform:scale(1)}
+#crown.shine{animation:crownShine 1.2s ease-in-out 2}
+@keyframes crownShine{50%{filter:drop-shadow(0 0 18px #fff6a8) brightness(1.2);transform:scale(1.08) rotate(-3deg)}}
+.landscape #scrollArea{left:16px;top:146px;width:348px;height:496px}
+.portrait #scrollArea{left:226px;top:12px;width:440px;height:376px}
+.landscape #bell{left:20px;top:664px;width:130px;height:136px}
+.portrait #bell{left:46px;top:236px;width:130px;height:136px}
+.landscape #inkpot{left:154px;top:700px;width:66px;height:100px}
+.portrait #inkpot{left:700px;top:24px;width:84px;height:120px}
+.landscape #basket{left:222px;top:662px;width:150px;height:140px}
+.portrait #basket{left:670px;top:236px;width:140px;height:140px}
+
+/* Bell */
+#bell{z-index:4}
+#bell .ring-bg{stroke:#ffffff30}
+#bell .ring{stroke:var(--gold);transition:stroke .3s}
+#bell.ready .ring{stroke:#ffe680}
+#bell.ready .bellbody{animation:bellWiggle 1.4s ease-in-out infinite;transform-origin:60px 30px}
+#bell.ready{filter:drop-shadow(0 0 14px #ffe680)}
+#bell.nope .bellbody{animation:nope .35s;transform-origin:60px 30px}
+#bell.ringing .bellbody{animation:ringing .18s 6 alternate;transform-origin:60px 30px}
+@keyframes bellWiggle{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-10deg)}80%{transform:rotate(10deg)}90%{transform:rotate(-5deg)}}
+@keyframes nope{33%{transform:rotate(-4deg)}66%{transform:rotate(4deg)}}
+@keyframes ringing{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}
+
+/* Scroll */
+#rolled{position:absolute;left:50%;top:50%;width:230px;height:120px;margin:-60px 0 0 -115px;display:none;z-index:3}
+#rolled.show{display:block;animation:rolledIdle 1.6s ease-in-out infinite}
+@keyframes rolledIdle{50%{transform:translateY(-6px) rotate(-2deg)}}
+#scroll{position:absolute;inset:0;display:none;z-index:2;transform-origin:50% 0}
+#scroll.show{display:block}
+#scroll .rod{position:absolute;left:-6px;right:-6px;height:26px;border-radius:13px;background:linear-gradient(#f9dc8c,#d39b2a 60%,#a86f12);box-shadow:0 4px 8px #0005}
+#scroll .rod::before,#scroll .rod::after{content:"";position:absolute;top:-4px;width:20px;height:34px;border-radius:10px;background:radial-gradient(circle at 40% 35%,#fff2b8,#d39b2a 60%,#8a5a0c)}
+#scroll .rod::before{left:-10px}#scroll .rod::after{right:-10px}
+#scroll .rod.top{top:0}#scroll .rod.bot{bottom:0}
+#scroll .paper{position:absolute;left:4px;right:4px;top:12px;bottom:12px;
+  background:radial-gradient(ellipse at 50% 40%,#fffbea,var(--parch) 60%,#f3e1b0);
+  box-shadow:inset 0 0 30px #c9a25a55, 0 6px 16px #0004;}
+#seal{position:absolute;left:50%;top:-6px;width:84px;height:84px;margin-left:-42px;border-radius:50%;z-index:3;
+  background:radial-gradient(circle at 40% 35%,#fff,#ffe9f3);border:5px solid var(--gold);box-shadow:0 4px 10px #0004;overflow:hidden}
+#seal svg{width:86%;height:86%;margin:8% auto 0}
+#words{position:absolute;left:14px;right:14px;top:84px;bottom:28px;display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:2px 16px}
+.portrait #words{top:80px;gap:0 18px}
+.word{position:relative;display:inline-flex;align-items:flex-start;justify-content:center;min-width:72px;height:86px;padding:0 4px;
+  font-size:58px;line-height:62px;font-weight:700;color:var(--ink);border-radius:18px;touch-action:none;transition:background .2s}
+.word .g{position:relative;display:inline-block;height:86px}
+.word .dot{position:absolute;left:50%;bottom:8px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#7c5a8a;opacity:0;transform:scale(0);transition:all .25s cubic-bezier(.3,1.8,.5,1)}
+.word .dot.dash{width:70%;margin-left:-35%;height:10px;border-radius:5px;bottom:11px}
+.word.dotted .dot{opacity:1;transform:scale(1)}
+.word .g.on .dot{background:#ff5fa2;transform:scale(1.5);box-shadow:0 0 10px #ff9ccc}
+.word .g.on{color:#d81b72}
+.word .p{display:inline-block;height:86px;color:#8a6a7a;pointer-events:none}
+.word.tricky::after{content:"";position:absolute;left:8px;right:8px;bottom:12px;height:8px;border-radius:4px;background:linear-gradient(90deg,#f6c453,#ffe58a,#f6c453);box-shadow:0 1px 0 var(--gold-d)}
+.word.tricky .p{margin-left:2px}
+.word.num{color:#1f6fb8}
+.word.num::after{content:"";position:absolute;left:10px;right:10px;bottom:12px;height:8px;border-radius:4px;background:#8ec9ff}
+.word.read{background:#ffffff8c}
+.word.say{background:#ffe3f1;transform:scale(1.06)}
+.word.pulse{animation:wpulse 1s ease-in-out 3}
+@keyframes wpulse{50%{transform:scale(1.15);background:#fff1a8}}
+.word.pop{animation:wpop .5s}
+@keyframes wpop{40%{transform:scale(1.22) rotate(-3deg)}}
+
+/* Basket */
+#basket{display:none;z-index:6;touch-action:none}
+#basket.show{display:block;animation:popIn .6s cubic-bezier(.3,1.6,.5,1)}
+.bwrap{position:absolute;inset:0}
+.bapples{position:absolute;left:14%;right:14%;bottom:34%;height:60%}
+.bapples .mini{position:absolute;width:34px;height:36px}
+.bnum{position:absolute;right:4px;top:-8px;min-width:54px;height:54px;border-radius:27px;background:#fff;border:4px solid #1f6fb8;color:#1f6fb8;font-weight:700;font-size:36px;line-height:46px;text-align:center;display:none}
+.bnum.show{display:block}
+#basket.bump{animation:bump .3s}
+@keyframes bump{50%{transform:scale(1.1,0.92)}}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+
+/* ---------- Map ---------- */
+#map{position:absolute;overflow:hidden;background:#9fdc7c}
+.landscape #map{left:380px;top:0;width:800px;height:820px}
+.portrait #map{left:0;top:400px;width:820px;height:780px}
+#mapInner{position:absolute;left:0;top:0;width:800px;height:820px;transform-origin:0 0}
+.portrait #mapInner{transform:translate(29px,0) scale(.9512)}
+.ent{position:absolute;touch-action:none}
+.ent>svg{pointer-events:none}
+#bg{position:absolute;inset:0}
+.portrait #bg{left:-31px;right:-31px}
+#hearts{position:absolute;left:280px;top:14px;width:240px;height:78px;border-radius:40px;background:#fff8;box-shadow:0 4px 0 #0001;display:flex;justify-content:space-around;align-items:center;padding:0 12px;z-index:30}
+#hearts .hs{width:62px;height:58px;transition:transform .3s}
+#hearts .hs .fill{opacity:0;transition:opacity .3s}
+#hearts .hs.on .fill{opacity:1}
+#hearts .hs.on{animation:heartPop .6s}
+@keyframes heartPop{40%{transform:scale(1.5)}}
+.bounce{animation:bounce .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bounce{40%{transform:translateY(-22px) scale(1.06,.95)}70%{transform:translateY(0) scale(.95,1.05)}}
+.wiggle{animation:wiggle .5s}
+@keyframes wiggle{25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+
+#pig{z-index:12}
+#pig.roll{animation:pigRoll 1.6s ease-in-out}
+@keyframes pigRoll{20%{transform:rotate(-30deg) translateY(10px)}50%{transform:rotate(200deg) translateY(10px)}80%{transform:rotate(360deg)}100%{transform:rotate(360deg)}}
+.muddy .mudspots{opacity:1}
+.mudspots{transition:opacity .6s}
+#pig.happy{animation:happyHop 1.2s ease-in-out infinite}
+@keyframes happyHop{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-8px) rotate(-4deg)}75%{transform:translateY(-8px) rotate(4deg)}}
+#hen{z-index:11}
+#hen .head{transform-origin:90px 60px;transition:transform .5s}
+#hen .wing{transform-origin:44px 76px;transition:transform .5s}
+#hen .tailf{transform-origin:32px 72px;transition:transform .5s}
+#hen .tear{transition:opacity .4s}
+#seal .tear{opacity:1}
+#hen.sad .head{transform:rotate(16deg) translateY(4px)}
+#hen.sad .wing{transform:rotate(18deg)}
+#hen.sad .tailf{transform:rotate(-22deg)}
+#hen.sad .tear{opacity:1;animation:tear 2s infinite}
+@keyframes tear{0%{transform:translateY(0);opacity:0}30%{opacity:1}100%{transform:translateY(14px);opacity:0}}
+#hen.flap .wing{animation:flap .16s 8 alternate}
+@keyframes flap{to{transform:rotate(-38deg)}}
+#hen.dance{animation:dance .8s ease-in-out infinite}
+@keyframes dance{0%,100%{transform:rotate(0) translateY(0)}25%{transform:rotate(-8deg) translateY(-12px)}75%{transform:rotate(8deg) translateY(-12px)}}
+#hen .onhead{position:absolute;left:52px;top:-40px;width:92px;height:70px;pointer-events:none}
+#hen.sad .onhead{left:58px;top:-30px;transform:rotate(14deg)}
+#fox{z-index:11}
+#fox .tail{transform-origin:96px 118px}
+#fox.wag .tail{animation:wag .2s 6 alternate}
+@keyframes wag{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+#fox.jump{animation:bounce .5s}
+#duck{z-index:9;animation:duckBob 3s ease-in-out infinite}
+@keyframes duckBob{50%{transform:translateY(5px) rotate(2deg)}}
+#duck.quack{animation:bounce .45s}
+#store .doorL,#store .doorR{transition:transform .6s;transform-box:fill-box}
+#store .doorL{transform-origin:left center}
+#store .doorR{transform-origin:right center}
+#store.open .doorL{transform:scaleX(.15)}
+#store.open .doorR{transform:scaleX(.15)}
+#wardrobe .wdoor{transition:transform .6s;transform-box:fill-box;transform-origin:left center}
+#wardrobe.open .wdoor{transform:scaleX(.12)}
+.zone{z-index:3}
+.zone-glow{animation:zglow 1s ease-in-out 3}
+@keyframes zglow{50%{filter:drop-shadow(0 0 16px #fff) brightness(1.15);transform:scale(1.05)}}
+
+.panel{position:absolute;display:none;z-index:25;border-radius:28px;background:#fffaf0f2;border:6px solid #c98e12;box-shadow:0 10px 30px #0005}
+.panel.show{display:block;animation:popIn .45s cubic-bezier(.3,1.6,.5,1)}
+#storePanel{left:14px;top:500px;width:562px;height:306px;transform-origin:85% 60%}
+#frame{position:absolute;left:14px;top:14px;display:grid;grid-template-columns:repeat(5,100px);grid-template-rows:repeat(2,100px);gap:6px}
+#frame .cell{position:relative;width:100px;height:100px;border-radius:16px;background:#f3e3bd;box-shadow:inset 0 3px 0 #0001;border:3px dashed #d7b979}
+#frame .apple{position:absolute;inset:4px;touch-action:none}
+#frame .apple.ghosty{opacity:.25;filter:grayscale(.6)}
+#frame .apple.hop{animation:bounce .5s}
+#eq{position:absolute;left:0;right:0;bottom:8px;height:66px;display:flex;justify-content:center;align-items:center;gap:18px;font-size:54px;font-weight:700;color:#1f6fb8}
+#eq span{opacity:0;transform:scale(.3);transition:all .45s cubic-bezier(.3,1.8,.5,1)}
+#eq span.on{opacity:1;transform:scale(1)}
+#eq .foxmini{width:56px;height:52px;display:inline-block}
+#wardPanel{left:200px;top:540px;width:476px;height:270px;transform-origin:10% 80%}
+#wardPanel .slot{position:absolute;width:140px;height:110px;border-radius:18px;background:#f4e8ff;border:3px dashed #c4a8f0}
+#wardPanel .item{position:absolute;inset:6px;touch-action:none}
+
+#rainbow{position:absolute;left:-40px;top:-60px;width:880px;height:520px;z-index:2;pointer-events:none;opacity:0}
+#rainbow.show{opacity:1}
+#rainbow path{stroke-dasharray:1400;stroke-dashoffset:1400}
+#rainbow.show path{animation:draw 2s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#unicorn{display:none;z-index:13}
+#unicorn.show{display:block}
+#unicorn.trot .legs1{animation:trot .25s infinite alternate}
+#unicorn.trot .legs2{animation:trot .25s infinite alternate-reverse}
+@keyframes trot{to{transform:translateY(-8px)}}
+.cheer{animation:cheer .5s ease-in-out 4 !important}
+@keyframes cheer{50%{transform:translateY(-26px) rotate(-5deg)}}
+
+/* ---------- FX layer ---------- */
+#fx{position:absolute;inset:0;pointer-events:none;z-index:50}
+.ghost{position:absolute;z-index:60;animation:none !important;transform:scale(1.1);filter:drop-shadow(0 14px 10px #0004);pointer-events:none;opacity:1 !important}
+#tilly{position:absolute;width:140px;height:120px;display:none;z-index:70}
+#tilly .wl{transform-origin:44px 56px;animation:flapL .18s infinite alternate}
+#tilly .wr{transform-origin:96px 56px;animation:flapR .18s infinite alternate}
+@keyframes flapL{to{transform:rotate(-34deg)}}
+@keyframes flapR{to{transform:rotate(34deg)}}
+#hand{position:absolute;width:96px;height:96px;font-size:84px;line-height:96px;text-align:center;display:none;z-index:80;filter:drop-shadow(0 6px 6px #0005)}
+.spark{position:absolute;font-size:30px;line-height:1;color:#ffe066;text-shadow:0 0 8px #fff}
+.confetti{position:absolute;width:14px;height:22px;border-radius:3px}
+.flyheart{position:absolute;width:64px;height:60px;z-index:75}
+.drop{position:absolute;width:18px;height:18px;border-radius:50%;background:#7cc8ff}
+.balloon{position:absolute;left:50%;top:-118px;width:86px;height:124px;margin-left:-43px}
+
+/* ---------- Start + Feast ---------- */
+.overlay{position:absolute;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column}
+#start{background:radial-gradient(circle at 50% 35%,#c2387d,#7b1f4b 50%,#3b0a2a);overflow:hidden}
+#start .stars{position:absolute;inset:0;background-image:radial-gradient(#fff9 1.5px,transparent 2px);background-size:46px 46px;opacity:.35}
+#start h1{position:relative;margin:0 0 10px;font-size:64px;color:#fff3c4;text-shadow:0 4px 0 #8a3a12,0 8px 20px #0007;letter-spacing:1px;text-align:center}
+#start .hero{position:relative;width:420px;height:230px}
+#start .hero .q{position:absolute;left:40px;top:10px;width:180px;height:210px;animation:floaty 3s ease-in-out infinite}
+#start .hero .t{position:absolute;right:30px;top:30px;width:160px;height:138px;animation:floaty 2.4s ease-in-out infinite reverse}
+@keyframes floaty{50%{transform:translateY(-10px)}}
+#playBtn{position:relative;margin-top:24px;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7c8,#f6c453 55%,#d48a10);box-shadow:0 10px 0 #9a5c06,0 18px 40px #0008;animation:pulse 1.6s ease-in-out infinite}
+#playBtn:active{transform:translateY(8px);box-shadow:0 2px 0 #9a5c06}
+#playBtn svg{width:46%;height:46%;margin:0 auto;transform:translateX(8%)}
+@keyframes pulse{50%{transform:scale(1.07)}}
+#feast{display:none;background:radial-gradient(ellipse at 50% 30%,#ffe7b0,#f7b46a 60%,#c4642c)}
+#feast.show{display:flex;animation:fadeIn .8s}
+@keyframes fadeIn{from{opacity:0}}
+#feastScene{position:relative;width:1100px;height:640px;flex:none}
+.portrait #feastScene{transform:scale(.72)}
+#feastScene{margin-top:60px}
+#bunting{position:absolute;left:0;right:0;top:0;height:90px}
+.guest{position:absolute;z-index:1;bottom:250px;width:130px;height:140px;transform-origin:50% 100%}
+.guest.bob{animation:guestBob .9s ease-in-out infinite}
+@keyframes guestBob{50%{transform:translateY(-10px)}}
+.cup{position:absolute;z-index:3;bottom:262px;width:46px;height:60px;transition:transform .25s}
+#table{position:absolute;z-index:2;left:30px;width:1040px;bottom:0;height:270px}
+.drape{position:absolute;top:0;width:150px;height:100%;z-index:0}
+.drape.l{left:0}.drape.r{right:0;transform:scaleX(-1)}
+.treat{position:absolute;z-index:4;font-size:76px;line-height:1}
+#againBtn{position:absolute;right:30px;bottom:24px;width:120px;height:120px;border-radius:50%;display:none;background:radial-gradient(circle at 35% 30%,#fff,#bff0c8 55%,#3fb35c);box-shadow:0 8px 0 #1f7a37,0 14px 30px #0006;z-index:5}
+#againBtn.show{display:block;animation:popIn .5s cubic-bezier(.3,1.6,.5,1)}
+#againBtn svg{width:60%;height:60%;margin:auto}
+.portrait #againBtn{right:40px;bottom:60px;width:140px;height:140px}
+</style>
+</head>
+<body>
+<div id="stage" class="landscape">
+
+  <!-- ===== Desk ===== -->
+  <div id="desk">
+    <button id="earBtn" class="deskitem" aria-label="Hear again">
+      <svg viewBox="0 0 100 100"><path d="M18 38h16l22-18v60L34 62H18z" fill="#8e1e5a"/><path class="wave" d="M66 36q10 14 0 28" stroke="#8e1e5a" stroke-width="7" fill="none" stroke-linecap="round"/><path class="wave" d="M76 26q20 24 0 48" stroke="#8e1e5a" stroke-width="7" fill="none" stroke-linecap="round"/></svg>
+    </button>
+    <div id="crown" class="deskitem">
+      <svg viewBox="0 0 240 124">
+        <path d="M20 104 L10 30 L64 70 L120 10 L176 70 L230 30 L220 104 Z" fill="#f6c453" stroke="#b77a0c" stroke-width="5" stroke-linejoin="round"/>
+        <rect x="18" y="98" width="204" height="20" rx="8" fill="#e9a82a" stroke="#b77a0c" stroke-width="4"/>
+        <circle cx="10" cy="28" r="9" fill="#fff3c4" stroke="#b77a0c" stroke-width="3"/><circle cx="120" cy="8" r="9" fill="#fff3c4" stroke="#b77a0c" stroke-width="3"/><circle cx="230" cy="28" r="9" fill="#fff3c4" stroke="#b77a0c" stroke-width="3"/>
+        <g><circle cx="62" cy="80" r="15" fill="#6b3d12" stroke="#b77a0c" stroke-width="3"/><circle cx="120" cy="66" r="17" fill="#6b3d12" stroke="#b77a0c" stroke-width="3"/><circle cx="178" cy="80" r="15" fill="#6b3d12" stroke="#b77a0c" stroke-width="3"/></g>
+        <g class="gem" data-i="0"><path d="M62 64 l14 10 -5 18 h-18 l-5 -18z" fill="#ff3d7f" stroke="#fff" stroke-width="2"/><path d="M56 72 l6 -4 4 5z" fill="#fff" opacity=".8"/></g>
+        <g class="gem" data-i="1"><path d="M120 48 l16 12 -6 20 h-20 l-6 -20z" fill="#38c172" stroke="#fff" stroke-width="2"/><path d="M113 58 l7 -5 4 6z" fill="#fff" opacity=".8"/></g>
+        <g class="gem" data-i="2"><path d="M178 64 l14 10 -5 18 h-18 l-5 -18z" fill="#3b82f6" stroke="#fff" stroke-width="2"/><path d="M172 72 l6 -4 4 5z" fill="#fff" opacity=".8"/></g>
+      </svg>
+    </div>
+    <div id="scrollArea" class="deskitem">
+      <div id="rolled">
+        <svg viewBox="0 0 230 120">
+          <ellipse cx="115" cy="104" rx="100" ry="10" fill="#0003"/>
+          <rect x="22" y="30" width="186" height="64" rx="32" fill="#fff1c9" stroke="#d6b064" stroke-width="4"/>
+          <ellipse cx="22" cy="62" rx="16" ry="32" fill="#f3dc9e" stroke="#d6b064" stroke-width="4"/>
+          <ellipse cx="22" cy="62" rx="6" ry="14" fill="#d6b064"/>
+          <rect x="100" y="28" width="30" height="68" fill="#e23b6d"/>
+          <circle cx="115" cy="62" r="20" fill="#c2185b" stroke="#ffd166" stroke-width="4"/>
+          <path d="M106 62 l6 -8 3 6 3 -6 6 8 -9 7z" fill="#ffd166"/>
+        </svg>
+      </div>
+      <div id="scroll">
+        <div class="paper"></div>
+        <div class="rod top"></div><div class="rod bot"></div>
+        <div id="seal"></div>
+        <div id="words"></div>
+      </div>
+    </div>
+    <button id="bell" class="deskitem" aria-label="Help bell">
+      <svg viewBox="0 0 120 130">
+        <circle class="ring-bg" cx="60" cy="62" r="54" fill="none" stroke-width="10"/>
+        <circle class="ring" cx="60" cy="62" r="54" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" transform="rotate(-90 60 62)"/>
+        <g class="bellbody">
+          <circle cx="60" cy="24" r="7" fill="#f6c453" stroke="#b77a0c" stroke-width="3"/>
+          <path d="M60 28c-20 0-28 16-28 34v14l-8 10h72l-8-10V62c0-18-8-34-28-34z" fill="#f6c453" stroke="#b77a0c" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M44 50q4-12 14-14" stroke="#fff8d6" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <circle cx="60" cy="94" r="8" fill="#b77a0c"/>
+        </g>
+      </svg>
+    </button>
+    <div id="inkpot" class="deskitem">
+      <svg viewBox="0 0 70 100">
+        <path d="M40 4 q30 10 6 70" stroke="#fff" stroke-width="3" fill="none"/>
+        <path d="M40 4 q34 4 14 40 q-4 -18 -14 -40z" fill="#ffd6ea"/>
+        <path d="M40 4 q28 12 8 44 q0 -22 -8 -44z" fill="#ffc0de"/>
+        <ellipse cx="35" cy="92" rx="30" ry="7" fill="#0004"/>
+        <path d="M12 60 h46 l4 30 h-54z" fill="#2b2350" stroke="#f6c453" stroke-width="3"/>
+        <rect x="20" y="52" width="30" height="10" rx="3" fill="#f6c453"/>
+        <path d="M18 72 q8 -4 12 2" stroke="#ffffff55" stroke-width="3" fill="none"/>
+      </svg>
+    </div>
+    <div id="basket" class="deskitem">
+      <div class="bwrap">
+        <svg viewBox="0 0 150 140" style="position:absolute;inset:0"><ellipse cx="75" cy="58" rx="62" ry="16" fill="#8a5323"/></svg>
+        <div class="bapples"></div>
+        <svg viewBox="0 0 150 140" style="position:absolute;inset:0">
+          <path d="M14 58 h122 l-14 66 q-2 8 -12 8 h-70 q-10 0 -12 -8z" fill="#d08a3e" stroke="#8a5323" stroke-width="4" stroke-linejoin="round"/>
+          <g stroke="#a8682a" stroke-width="4" fill="none"><path d="M20 78 h110"/><path d="M24 98 h102"/><path d="M28 116 h94"/><path d="M50 60 l4 70"/><path d="M75 60 v70"/><path d="M100 60 l-4 70"/></g>
+          <ellipse cx="75" cy="58" rx="62" ry="14" fill="none" stroke="#8a5323" stroke-width="6"/>
+          <path d="M22 56 q53 -70 106 0" fill="none" stroke="#8a5323" stroke-width="7"/>
+        </svg>
+        <div class="bnum">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Map ===== -->
+  <div id="map"><div id="mapInner">
+    <div id="bg"></div>
+    <svg id="rainbow" viewBox="0 0 880 520" fill="none" stroke-width="26" stroke-linecap="round">
+      <path d="M60 520 A380 380 0 0 1 820 520" stroke="#ff6b8b"/>
+      <path d="M86 520 A354 354 0 0 1 794 520" stroke="#ffb347"/>
+      <path d="M112 520 A328 328 0 0 1 768 520" stroke="#ffe066"/>
+      <path d="M138 520 A302 302 0 0 1 742 520" stroke="#7ddc7a"/>
+      <path d="M164 520 A276 276 0 0 1 716 520" stroke="#6fb7ff"/>
+      <path d="M190 520 A250 250 0 0 1 690 520" stroke="#b28dff"/>
+    </svg>
+    <div id="hearts"><div class="hs"></div><div class="hs"></div><div class="hs"></div></div>
+    <div id="henhouse" class="ent zone"></div>
+    <div id="den" class="ent zone"></div>
+    <div id="mud" class="ent zone"></div>
+    <div id="pond" class="ent zone"></div>
+    <div id="hay" class="ent zone"></div>
+    <div id="wardrobe" class="ent zone"></div>
+    <div id="store" class="ent zone"></div>
+    <div id="hen" class="ent sad"></div>
+    <div id="fox" class="ent"></div>
+    <div id="duck" class="ent"></div>
+    <div id="pig" class="ent pig"></div>
+    <div id="unicorn" class="ent"></div>
+    <div id="storePanel" class="panel"><div id="frame"></div><div id="eq"><span>10</span><span>&minus;</span><span>6</span><span>=</span><span>4</span></div></div>
+    <div id="wardPanel" class="panel"></div>
+  </div></div>
+
+  <div id="fx"><div id="tilly"></div><div id="hand">👆</div></div>
+
+  <div id="feast" class="overlay">
+    <div id="feastScene"></div>
+    <button id="againBtn" aria-label="Play again"><svg viewBox="0 0 100 100"><path d="M50 18a32 32 0 1 1-30 21" fill="none" stroke="#1f7a37" stroke-width="12" stroke-linecap="round"/><path d="M8 30l14 14 14-16z" fill="#1f7a37"/></svg></button>
+  </div>
+
+  <div id="start" class="overlay">
+    <div class="stars"></div>
+    <h1>Queen Emma's Letters</h1>
+    <div class="hero"><div class="q" id="startQueen"></div><div class="t" id="startTilly"></div></div>
+    <button id="playBtn" aria-label="Play"><svg viewBox="0 0 100 100"><path d="M24 12 L88 50 L24 88 Z" fill="#8e1e5a" stroke="#8e1e5a" stroke-width="10" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =========================================================
+   Spoken lines (same content as audio/lines.json)
+   ========================================================= */
+const LINES = {
+  "intro": "Good morning, Queen Emma! Your kingdom has sent you letters.",
+  "letter-first": "Look! Tilly the dove has a letter for you. Swipe it open!",
+  "letter-next": "Tilly has another letter for you. Open it!",
+  "letter1-intro": "A letter from the pig! Tap the words and read them.",
+  "letter2-intro": "A letter from the fox! Tap the words and read them.",
+  "letter3-intro": "A letter from the hen! Tap the words and read them.",
+  "letter1-full-mud": "Can the pig go in the mud?",
+  "letter1-full-pond": "Can the pig go in the pond?",
+  "letter1-help": "Can the pig go in the... where? Read the last word.",
+  "letter2-full": "Send six apples to the fox.",
+  "letter3-full-hat": "The hen is sad. I want a red hat.",
+  "letter3-full-cap": "The hen is sad. I want a red cap.",
+  "letter3-full-sock": "The hen is sad. I want a red sock.",
+  "letter3-help": "The hen is sad. I want a... what? Read the last two words.",
+  "hint-read": "Tap a word. Then slide your finger along the dots.",
+  "hint-bell": "Stuck? When the bell is full, ring it for help.",
+  "letter1-act": "Now help the pig. Drag the pig on the map.",
+  "hint-reread-last": "Read the last word again. Where does the pig want to go?",
+  "pig-wrong-mud": "Squelch! That is the mud.",
+  "pig-wrong-pond": "Splash! That is the pond.",
+  "pig-wrong-hay": "Tickly! That is the hay.",
+  "try-again": "Now try again!",
+  "pig-where": "Oink? Where do I go?",
+  "pig-happy-mud": "Oink oink! I love the mud!",
+  "pig-happy-pond": "Splish splash! I love the pond!",
+  "heart-farm": "A heart for the farm!",
+  "hint-store": "Tap the storehouse to open it.",
+  "hint-apples": "Drag the apples into your basket.",
+  "hint-send": "When your basket is ready, drag it onto the map.",
+  "hint-number": "Look at the number in the letter.",
+  "hint-who": "Who is the letter for? Read it again.",
+  "count-1": "One.",
+  "count-2": "Two.",
+  "count-3": "Three.",
+  "count-4": "Four.",
+  "count-5": "Five.",
+  "count-6": "Six.",
+  "count-7": "Seven.",
+  "count-8": "Eight.",
+  "count-9": "Nine.",
+  "count-10": "Ten.",
+  "fox-have-1": "I have one. I want six!",
+  "fox-have-2": "I have two. I want six!",
+  "fox-have-3": "I have three. I want six!",
+  "fox-have-4": "I have four. I want six!",
+  "fox-have-5": "I have five. I want six!",
+  "fox-too-many-1": "One too many!",
+  "fox-too-many-2": "Two too many!",
+  "fox-too-many-3": "Three too many!",
+  "fox-too-many-4": "Four too many!",
+  "send-again": "Now there are six. Send the basket again!",
+  "fox-six": "Six apples! Thank you, Queen Emma!",
+  "takeaway-1": "You had ten apples.",
+  "takeaway-2": "Six went to the fox.",
+  "takeaway-3": "Four are left.",
+  "hint-wardrobe": "Tap the little hut to open the wardrobe.",
+  "hint-dress": "What does the hen want? Drag it to the hen.",
+  "hen-wrong-redhat": "Hee hee! A red hat? No, thank you!",
+  "hen-wrong-redcap": "Hee hee! A red cap? No, thank you!",
+  "hen-wrong-redsock": "Hee hee! A red sock? No, thank you!",
+  "hen-wrong-bluehat": "Hee hee! A blue hat? No, thank you!",
+  "hen-wrong-bluecap": "Hee hee! A blue cap? No, thank you!",
+  "hen-wrong-bluesock": "Hee hee! A blue sock? No, thank you!",
+  "hint-reread-two": "Read the last two words again.",
+  "hen-happy-hat": "Cluck cluck! I love my red hat!",
+  "hen-happy-cap": "Cluck cluck! I love my red cap!",
+  "hen-happy-sock": "Cluck cluck! A red sock on my head! I love it!",
+  "cheer": "Hooray! A unicorn has come to the farm!",
+  "jewel": "A new jewel for your crown!",
+  "feast": "Time for a royal feast!",
+  "finale": "Well done, Queen Emma! The farm is happy.",
+  "word-can": "can",
+  "word-the": "the",
+  "word-pig": "pig",
+  "word-go": "go",
+  "word-in": "in",
+  "word-mud": "mud",
+  "word-pond": "pond",
+  "word-send": "send",
+  "word-six": "six",
+  "word-apples": "apples",
+  "word-to": "to",
+  "word-fox": "fox",
+  "word-hen": "hen",
+  "word-is": "is",
+  "word-sad": "sad",
+  "word-i": "I",
+  "word-want": "want",
+  "word-a": "a",
+  "word-red": "red",
+  "word-hat": "hat",
+  "word-cap": "cap",
+  "word-sock": "sock",
+  "sound-a": "ah",
+  "sound-e": "eh",
+  "sound-i": "ih",
+  "sound-o": "aw",
+  "sound-u": "uh",
+  "sound-k": "kuh",
+  "sound-n": "nnn",
+  "sound-p": "puh",
+  "sound-g": "guh",
+  "sound-m": "mmm",
+  "sound-d": "duh",
+  "sound-s": "sss",
+  "sound-z": "zzz",
+  "sound-le": "ul",
+  "sound-f": "fff",
+  "sound-ks": "ks",
+  "sound-h": "huh",
+  "sound-r": "rrr",
+  "sound-t": "tuh"
+};
+
+/* Placeholder speechSynthesis tuning. ElevenLabs audio replaces this. */
+const PITCH = {pig:1.25, hen:1.5, fox:1.15};
+const pitchFor = id => PITCH[id.split('-')[0]] || 1.0;
+
+/* =========================================================
+   Helpers
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const stage = $('#stage'), fx = $('#fx'), mapInner = $('#mapInner');
+const state = {
+  phase:'start', letter:-1, busy:true, hearts:0, mistakes:0, blended:[], tapped:[],
+  basket:0, storeOpen:false, wardOpen:false, spoken:[], hintsGiven:0, actPrompted:false,
+  jewels:0, fast:false, done:false, solved:false, lock:[]
+};
+const wait = ms => new Promise(r => setTimeout(r, state.fast ? Math.min(ms, 30) : ms));
+const rand = (a,b) => a + Math.random()*(b-a);
+let S = 1, W = 1180, H = 820;
+
+function layout(){
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const portrait = vh > vw * 1.05;
+  W = portrait ? 820 : 1180; H = portrait ? 1180 : 820;
+  stage.classList.toggle('portrait', portrait);
+  stage.classList.toggle('landscape', !portrait);
+  stage.style.width = W + 'px'; stage.style.height = H + 'px';
+  S = Math.min(vw / W, vh / H);
+  stage.style.transform = `translate(${(vw - W*S)/2}px,${(vh - H*S)/2}px) scale(${S})`;
+}
+window.addEventListener('resize', layout);
+layout();
+
+function srect(el){
+  const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
+  const x = (r.left - s.left)/S, y = (r.top - s.top)/S, w = r.width/S, h = r.height/S;
+  return {x, y, w, h, cx: x + w/2, cy: y + h/2};
+}
+function toMap(cx, cy){
+  const r = mapInner.getBoundingClientRect(), k = r.width/800;
+  return {x:(cx - r.left)/k, y:(cy - r.top)/k};
+}
+function inRect(el, x, y, pad=0){
+  const r = el.getBoundingClientRect();
+  const p = pad * S;
+  return x >= r.left - p && x <= r.right + p && y >= r.top - p && y <= r.bottom + p;
+}
+function el(html){ const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+function place(node, b){ Object.assign(node.style, {left:b.x+'px', top:b.y+'px', width:b.w+'px', height:b.h+'px'}); }
+function retrigger(node, cls){ node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
+
+/* =========================================================
+   Sound effects (WebAudio, generated)
+   ========================================================= */
+let AC = null, master = null;
+function ac(){
+  if (!AC){
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return null;
+    AC = new C(); master = AC.createGain(); master.gain.value = .55; master.connect(AC.destination);
+  }
+  return AC;
+}
+function tone(f, d, o={}){
+  const a = ac(); if (!a) return;
+  const t = a.currentTime + (o.at||0);
+  const osc = a.createOscillator(), g = a.createGain();
+  osc.type = o.type || 'sine';
+  osc.frequency.setValueAtTime(f, t);
+  if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + d);
+  if (o.vib){ const l = a.createOscillator(), lg = a.createGain(); l.frequency.value = o.vib; lg.gain.value = f*.06; l.connect(lg).connect(osc.frequency); l.start(t); l.stop(t+d+.1); }
+  const v = o.vol || .2;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(v, t + (o.attack||.01));
+  g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  let node = osc;
+  if (o.lp){ const fl = a.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=o.lp; osc.connect(fl); node = fl; }
+  node.connect(g).connect(master);
+  osc.start(t); osc.stop(t + d + .05);
+}
+function noise(d, o={}){
+  const a = ac(); if (!a) return;
+  const t = a.currentTime + (o.at||0);
+  const buf = a.createBuffer(1, Math.floor(a.sampleRate*d), a.sampleRate);
+  const ch = buf.getChannelData(0); for (let i=0;i<ch.length;i++) ch[i] = Math.random()*2-1;
+  const src = a.createBufferSource(); src.buffer = buf;
+  const fl = a.createBiquadFilter(); fl.type = o.type || 'lowpass'; fl.Q.value = o.q || 1;
+  fl.frequency.setValueAtTime(o.f1 || 1200, t); fl.frequency.exponentialRampToValueAtTime(o.f2 || 300, t + d);
+  const g = a.createGain(); g.gain.setValueAtTime(o.vol || .3, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  src.connect(fl).connect(g).connect(master); src.start(t);
+}
+const sfx = {
+  fanfare(){ [[523,0],[659,.14],[784,.28],[1047,.46],[784,.7],[1047,.82]].forEach(([f,at],i)=>{ tone(f, i>4?.7:.22, {type:'square', vol:.09, at, lp:2400}); tone(f/2, i>4?.7:.22, {type:'triangle', vol:.1, at}); }); },
+  chime(){ [784,988,1175,1568].forEach((f,i)=>tone(f,.5,{vol:.14,at:i*.08})); },
+  sparkle(){ for(let i=0;i<8;i++) tone(rand(1500,3200),.18,{vol:.06,at:i*.05}); },
+  pop(){ tone(500,.12,{to:900,vol:.18}); },
+  pick(){ tone(660,.08,{to:880,vol:.08}); },
+  soft(){ tone(330,.25,{to:260,vol:.1,type:'triangle'}); },
+  tick(){ tone(1200,.05,{vol:.05}); },
+  dot(){ tone(880,.06,{vol:.05}); },
+  oink(){ tone(170,.16,{type:'sawtooth',to:120,vol:.18,lp:700}); tone(190,.18,{type:'sawtooth',to:130,vol:.18,lp:700,at:.2}); },
+  quack(){ tone(620,.14,{type:'sawtooth',to:420,vol:.12,lp:1600}); tone(600,.16,{type:'sawtooth',to:380,vol:.12,lp:1600,at:.18}); },
+  cluck(){ [0,.12,.22].forEach(at=>tone(900,.07,{to:600,vol:.12,type:'square',lp:2000,at})); },
+  yip(){ tone(700,.15,{to:1300,vol:.12,type:'triangle'}); tone(800,.12,{to:1400,vol:.1,type:'triangle',at:.18}); },
+  neigh(){ tone(600,.8,{type:'sawtooth',to:420,vol:.08,lp:1800,vib:18}); },
+  splash(){ noise(.7,{f1:3000,f2:200,vol:.4}); },
+  plop(){ tone(300,.15,{to:900,vol:.15}); },
+  blop(){ tone(140,.2,{to:80,vol:.2,type:'triangle'}); },
+  rustle(){ noise(.3,{type:'bandpass',f1:4000,f2:2000,q:2,vol:.25}); },
+  whoosh(){ noise(.8,{type:'bandpass',f1:400,f2:2400,q:1.5,vol:.25}); },
+  unroll(){ noise(.4,{type:'bandpass',f1:900,f2:3000,q:3,vol:.2}); tone(523,.3,{vol:.06,at:.3}); },
+  ding(){ tone(1320,1.2,{vol:.16}); tone(2640,.8,{vol:.06}); },
+  heart(){ [523,659,784,1047].forEach((f,i)=>tone(f,.3,{vol:.12,at:i*.07,type:'triangle'})); },
+  giggle(){ for(let i=0;i<5;i++) tone(900+i*60,.08,{to:1200+i*60,vol:.08,at:i*.1}); },
+  clink(){ tone(2400,.4,{vol:.08}); tone(3300,.3,{vol:.05}); },
+  creak(){ tone(180,.35,{type:'sawtooth',to:240,vol:.05,lp:900}); }
+};
+
+/* =========================================================
+   Voice: say(id) tries audio/<id>.mp3, falls back to speechSynthesis
+   ========================================================= */
+const voiceEl = new Audio(); voiceEl.preload = 'auto';
+const missing = new Set();
+let mp3Hits = 0, mp3Fails = 0, noMp3 = location.protocol === 'file:';
+let token = 0, curResolve = null, ttsVoice = null, lastAct = Date.now();
+function pickVoice(){
+  if (!window.speechSynthesis) return;
+  const vs = speechSynthesis.getVoices();
+  const gb = vs.filter(v => /en[-_]GB/i.test(v.lang));
+  ttsVoice = gb.find(v => /serena|kate|stephanie|martha|libby|sonia|female/i.test(v.name)) || gb[0] || vs.find(v => /^en/i.test(v.lang)) || null;
+}
+if (window.speechSynthesis){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function stopVoice(){
+  token++;
+  try { voiceEl.pause(); } catch(e){}
+  try { if (window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel(); } catch(e){}
+  $('#earBtn').classList.remove('talk');
+  if (curResolve){ const r = curResolve; curResolve = null; r('cut'); }
+}
+const speaking = () => curResolve !== null;
+function say(id){
+  stopVoice();
+  const my = token;
+  state.spoken.push(id); if (state.spoken.length > 300) state.spoken.shift();
+  return new Promise(res => {
+    curResolve = res;
+    $('#earBtn').classList.add('talk');
+    const done = () => {
+      if (my !== token) return;
+      curResolve = null; lastAct = Date.now();
+      $('#earBtn').classList.remove('talk');
+      res(true);
+    };
+    if (state.fast){ setTimeout(done, 20); return; }
+    const tts = () => { if (my === token) speakTTS(id, done, my); };
+    if (noMp3 || missing.has(id)) { tts(); return; }
+    let settled = false;
+    const fail = () => {
+      if (settled) return; settled = true; missing.add(id); mp3Fails++;
+      if (mp3Fails >= 3 && mp3Hits === 0) noMp3 = true;
+      tts();
+    };
+    voiceEl.onerror = () => { if (my === token) fail(); };
+    voiceEl.onended = () => { if (!settled && my === token){ settled = true; done(); } };
+    voiceEl.src = 'audio/' + id + '.mp3';
+    const p = voiceEl.play();
+    if (p && p.then) p.then(() => { mp3Hits++; }).catch(() => { if (my === token) fail(); });
+  });
+}
+function speakTTS(id, done, my){
+  const text = LINES[id];
+  if (!text || !window.speechSynthesis){ setTimeout(done, 400); return; }
+  const isSound = id.startsWith('sound-');
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-GB'; if (ttsVoice) u.voice = ttsVoice;
+  u.rate = isSound ? .8 : .9; u.pitch = pitchFor(id);
+  let fin = false;
+  const finish = () => { if (fin) return; fin = true; clearTimeout(to); done(); };
+  u.onend = finish; u.onerror = finish;
+  const to = setTimeout(finish, 1300 + text.length * 85);
+  setTimeout(() => { if (my !== token){ fin = true; clearTimeout(to); return; } try { speechSynthesis.speak(u); } catch(e){ finish(); } }, 60);
+}
+async function sayAll(ids){
+  for (const id of ids){ const r = await say(id); if (r === 'cut') return false; }
+  return true;
+}
+let instr = [];
+function instruct(ids){ instr = ids; return sayAll(ids); }
+function silentWav(){
+  const n = 800, buf = new ArrayBuffer(44 + n*2), v = new DataView(buf);
+  const str = (o, t) => { for (let i=0;i<t.length;i++) v.setUint8(o+i, t.charCodeAt(i)); };
+  str(0,'RIFF'); v.setUint32(4, 36 + n*2, true); str(8,'WAVE'); str(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,8000,true); v.setUint32(28,16000,true); v.setUint16(32,2,true); v.setUint16(34,16,true); str(36,'data'); v.setUint32(40, n*2, true);
+  let bin = ''; new Uint8Array(buf).forEach(b => bin += String.fromCharCode(b));
+  return 'data:audio/wav;base64,' + btoa(bin);
+}
+function unlockAudio(){
+  const a = ac(); if (a && a.state === 'suspended') a.resume();
+  try { const b = a.createBuffer(1,1,22050), s = a.createBufferSource(); s.buffer = b; s.connect(a.destination); s.start(0); } catch(e){}
+  try { voiceEl.src = silentWav(); const p = voiceEl.play(); if (p && p.catch) p.catch(()=>{}); } catch(e){}
+  try { if (window.speechSynthesis){ const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } } catch(e){}
+}
+
+/* =========================================================
+   Art (our own characters, inline SVG)
+   ========================================================= */
+const ART = {
+  pig: () => `<svg viewBox="0 0 140 130">
+    <path d="M118 74 q16 -4 10 -16 q-8 -6 -10 6" stroke="#e57d9f" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="44" cy="118" rx="15" ry="9" fill="#e57d9f"/><ellipse cx="96" cy="118" rx="15" ry="9" fill="#e57d9f"/>
+    <circle cx="70" cy="68" r="52" fill="#fbb4c9" stroke="#ec8fae" stroke-width="3"/>
+    <path d="M28 34 L36 4 L60 24 Z" fill="#f38fb0" stroke="#ec8fae" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M112 34 L104 4 L80 24 Z" fill="#f38fb0" stroke="#ec8fae" stroke-width="3" stroke-linejoin="round"/>
+    <g class="mudspots" fill="#8b5a2b" opacity="0"><ellipse cx="34" cy="88" rx="12" ry="8"/><ellipse cx="102" cy="40" rx="9" ry="6"/><ellipse cx="96" cy="100" rx="10" ry="6"/><circle cx="50" cy="34" r="5"/></g>
+    <circle cx="52" cy="56" r="7" fill="#3a2a35"/><circle cx="88" cy="56" r="7" fill="#3a2a35"/>
+    <circle cx="54.5" cy="53.5" r="2.4" fill="#fff"/><circle cx="90.5" cy="53.5" r="2.4" fill="#fff"/>
+    <ellipse cx="36" cy="78" rx="9" ry="5.5" fill="#f7849f" opacity=".55"/><ellipse cx="104" cy="78" rx="9" ry="5.5" fill="#f7849f" opacity=".55"/>
+    <ellipse cx="70" cy="80" rx="21" ry="15" fill="#f590b2" stroke="#e57d9f" stroke-width="3"/>
+    <ellipse cx="63" cy="80" rx="4" ry="6" fill="#b85274"/><ellipse cx="77" cy="80" rx="4" ry="6" fill="#b85274"/>
+    <path d="M60 101 q10 8 20 0" stroke="#b85274" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>`,
+  hen: () => `<svg viewBox="0 0 130 130">
+    <g stroke="#f0a020" stroke-width="5" stroke-linecap="round" fill="none"><path d="M54 108 v16 m-7 0 h14"/><path d="M76 108 v16 m-7 0 h14"/></g>
+    <g class="tailf"><path d="M24 74 q-22 -30 2 -42 q2 16 10 22 q-6 -28 14 -32 q-2 18 8 32z" fill="#fff" stroke="#e3dccd" stroke-width="2.5"/></g>
+    <ellipse cx="62" cy="80" rx="44" ry="34" fill="#fff" stroke="#e3dccd" stroke-width="2.5"/>
+    <g class="wing"><path d="M40 74 q22 -12 40 4 q-10 22 -40 8z" fill="#f4efe6" stroke="#e3dccd" stroke-width="2.5"/></g>
+    <g class="head">
+      <path d="M84 20 q2 -14 12 -6 q6 -12 14 0 q10 -4 6 10 z" fill="#ef4444"/>
+      <circle cx="96" cy="38" r="22" fill="#fff" stroke="#e3dccd" stroke-width="2.5"/>
+      <path d="M116 36 l15 5 l-15 5z" fill="#f59e0b"/>
+      <path d="M112 48 q5 10 -2 13 q-6 -2 -2 -13z" fill="#ef4444"/>
+      <circle cx="102" cy="33" r="4.8" fill="#3a2a35"/><circle cx="103.6" cy="31.4" r="1.6" fill="#fff"/>
+      <ellipse cx="93" cy="45" rx="5.5" ry="3" fill="#fda4af" opacity=".75"/>
+      <path class="tear" d="M104 40 q4 7 0 9 q-4 -2 0 -9z" fill="#7dd3fc" opacity="0"/>
+    </g></svg>`,
+  fox: () => `<svg viewBox="0 0 150 140">
+    <g class="tail"><path d="M92 120 q54 6 52 -44 q-2 -22 -18 -30 q6 32 -38 54z" fill="#f28c28" stroke="#d96f12" stroke-width="3"/><path d="M126 46 q16 8 18 30 q-12 -4 -24 -14z" fill="#fff6ea"/></g>
+    <ellipse cx="72" cy="100" rx="34" ry="34" fill="#f28c28" stroke="#d96f12" stroke-width="3"/>
+    <ellipse cx="72" cy="108" rx="18" ry="24" fill="#fff6ea"/>
+    <ellipse cx="56" cy="132" rx="12" ry="7" fill="#6b3410"/><ellipse cx="88" cy="132" rx="12" ry="7" fill="#6b3410"/>
+    <path d="M36 44 L38 4 L64 28 Z" fill="#f28c28" stroke="#d96f12" stroke-width="3" stroke-linejoin="round"/><path d="M43 34 L44 14 L56 28Z" fill="#5a2a10"/>
+    <path d="M108 44 L106 4 L80 28 Z" fill="#f28c28" stroke="#d96f12" stroke-width="3" stroke-linejoin="round"/><path d="M101 34 L100 14 L88 28Z" fill="#5a2a10"/>
+    <path d="M28 46 Q72 2 116 46 Q112 78 72 88 Q32 78 28 46Z" fill="#f28c28" stroke="#d96f12" stroke-width="3"/>
+    <path d="M30 50 Q52 64 72 88 Q40 84 30 50Z" fill="#fff6ea"/><path d="M114 50 Q92 64 72 88 Q104 84 114 50Z" fill="#fff6ea"/>
+    <circle cx="56" cy="52" r="5.5" fill="#2b2024"/><circle cx="88" cy="52" r="5.5" fill="#2b2024"/>
+    <circle cx="57.8" cy="50" r="1.8" fill="#fff"/><circle cx="89.8" cy="50" r="1.8" fill="#fff"/>
+    <ellipse cx="72" cy="76" rx="7" ry="5" fill="#2b2024"/>
+    <path d="M64 84 q8 6 16 0" stroke="#2b2024" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`,
+  duck: () => `<svg viewBox="0 0 120 100">
+    <ellipse cx="60" cy="88" rx="54" ry="8" fill="#7dd3fc" opacity=".8"/>
+    <path d="M20 66 q-14 -16 2 -18 q4 8 12 10z" fill="#fde047" stroke="#eab308" stroke-width="2"/>
+    <ellipse cx="58" cy="70" rx="40" ry="22" fill="#fde047" stroke="#eab308" stroke-width="2.5"/>
+    <path d="M40 66 q18 -14 32 4 q-14 14 -32 -4z" fill="#facc15"/>
+    <circle cx="86" cy="38" r="19" fill="#fde047" stroke="#eab308" stroke-width="2.5"/>
+    <path d="M101 40 q18 -3 18 6 q-8 7 -20 2z" fill="#fb923c" stroke="#ea7a1c" stroke-width="2"/>
+    <circle cx="91" cy="33" r="4" fill="#3a2a35"/><circle cx="92.4" cy="31.6" r="1.3" fill="#fff"/>
+    <ellipse cx="82" cy="45" rx="5" ry="3" fill="#fda4af" opacity=".7"/></svg>`,
+  tilly: (scroll) => `<svg viewBox="0 0 140 120">
+    <g class="wl"><path d="M46 56 q-38 -30 -44 6 q16 12 44 4z" fill="#fff" stroke="#e2dcf2" stroke-width="2.5"/><path d="M14 52 q10 4 22 4" stroke="#e2dcf2" stroke-width="2" fill="none"/></g>
+    <g class="wr"><path d="M94 56 q38 -30 44 6 q-16 12 -44 4z" fill="#fff" stroke="#e2dcf2" stroke-width="2.5"/><path d="M126 52 q-10 4 -22 4" stroke="#e2dcf2" stroke-width="2" fill="none"/></g>
+    <g stroke="#f59e0b" stroke-width="4" stroke-linecap="round"><path d="M62 100 v10"/><path d="M78 100 v10"/></g>
+    <circle cx="70" cy="66" r="38" fill="#fff" stroke="#e2dcf2" stroke-width="2.5"/>
+    <g fill="#fff" stroke="#e2dcf2" stroke-width="2"><circle cx="40" cy="80" r="10"/><circle cx="100" cy="80" r="10"/><circle cx="56" cy="98" r="9"/><circle cx="84" cy="98" r="9"/></g>
+    <circle cx="70" cy="70" r="30" fill="#fff"/>
+    <path d="M62 30 q0 -16 8 -6 q6 -14 10 2" fill="#fff" stroke="#e2dcf2" stroke-width="2.5"/>
+    <path d="M80 30 l12 -8 v14z M80 30 l-12 -8 v14z" fill="#ff8fc0"/><circle cx="80" cy="30" r="4" fill="#ff5fa2"/>
+    <circle cx="58" cy="62" r="7.5" fill="#3a2a35"/><circle cx="82" cy="62" r="7.5" fill="#3a2a35"/>
+    <circle cx="60.5" cy="59" r="2.6" fill="#fff"/><circle cx="84.5" cy="59" r="2.6" fill="#fff"/>
+    <path d="M64 74 l6 9 l6 -9z" fill="#ff9fbf"/>
+    <ellipse cx="48" cy="76" rx="7" ry="4" fill="#fbcfe8"/><ellipse cx="92" cy="76" rx="7" ry="4" fill="#fbcfe8"/>
+    ${scroll ? `<g class="carry"><rect x="44" y="104" width="52" height="18" rx="9" fill="#fff1c9" stroke="#d6b064" stroke-width="3"/><rect x="66" y="103" width="8" height="20" fill="#e23b6d"/></g>` : ''}
+    </svg>`,
+  unicorn: () => `<svg viewBox="0 0 220 190">
+    <path d="M170 84 q44 4 36 58 q-10 -12 -20 -10 q8 -24 -18 -34z" fill="#c4b5fd"/><path d="M172 92 q30 8 24 46 q-8 -10 -14 -10 q4 -20 -12 -28z" fill="#f9a8d4"/>
+    <g class="legs1"><rect x="74" y="112" width="18" height="58" rx="8" fill="#fff" stroke="#e5ddf5" stroke-width="2.5"/><rect x="146" y="112" width="18" height="58" rx="8" fill="#fff" stroke="#e5ddf5" stroke-width="2.5"/><rect x="74" y="160" width="18" height="12" rx="4" fill="#c4b5fd"/><rect x="146" y="160" width="18" height="12" rx="4" fill="#c4b5fd"/></g>
+    <g class="legs2"><rect x="96" y="112" width="18" height="58" rx="8" fill="#fff" stroke="#e5ddf5" stroke-width="2.5"/><rect x="164" y="112" width="18" height="58" rx="8" fill="#fff" stroke="#e5ddf5" stroke-width="2.5"/><rect x="96" y="160" width="18" height="12" rx="4" fill="#c4b5fd"/><rect x="164" y="160" width="18" height="12" rx="4" fill="#c4b5fd"/></g>
+    <ellipse cx="126" cy="104" rx="62" ry="36" fill="#fff" stroke="#e5ddf5" stroke-width="2.5"/>
+    <path d="M70 104 L58 52 L96 42 L108 92 Z" fill="#fff" stroke="#e5ddf5" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="56" cy="52" rx="34" ry="24" transform="rotate(-18 56 52)" fill="#fff" stroke="#e5ddf5" stroke-width="2.5"/>
+    <ellipse cx="30" cy="66" rx="19" ry="15" fill="#fde2f0"/><circle cx="24" cy="64" r="2.5" fill="#d08aae"/>
+    <path d="M76 28 l6 -20 l10 20z" fill="#fff" stroke="#e5ddf5" stroke-width="2.5"/>
+    <path d="M54 32 L46 -6 L68 28 Z" fill="#fcd34d" stroke="#e7a913" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M50 14 l12 -3 M52 22 l13 -3" stroke="#e7a913" stroke-width="2.5"/>
+    <circle cx="58" cy="48" r="5.5" fill="#3a2a35"/><circle cx="59.8" cy="46" r="1.8" fill="#fff"/>
+    <path d="M52 42 l-5 -4 M57 41 l-2 -6" stroke="#3a2a35" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="50" cy="60" rx="6" ry="3.5" fill="#fbcfe8"/>
+    <circle cx="84" cy="30" r="11" fill="#f9a8d4"/><circle cx="94" cy="44" r="11" fill="#c4b5fd"/><circle cx="100" cy="60" r="11" fill="#93c5fd"/><circle cx="104" cy="76" r="10" fill="#86efac"/><circle cx="106" cy="90" r="9" fill="#fde68a"/></svg>`,
+  queen: () => `<svg viewBox="0 0 120 140">
+    <path d="M22 140 q2 -50 38 -54 q36 4 38 54z" fill="#f472b6" stroke="#db2777" stroke-width="3"/>
+    <path d="M48 92 q12 10 24 0" stroke="#fff" stroke-width="5" fill="none"/>
+    <path d="M22 60 q-6 50 14 66 q-2 -40 6 -60z M98 60 q6 50 -14 66 q2 -40 -6 -60z" fill="#8b5a2b"/>
+    <circle cx="60" cy="56" r="34" fill="#ffd9c2" stroke="#f0b99a" stroke-width="2.5"/>
+    <path d="M26 54 q4 -34 34 -34 q30 0 34 34 q-14 -18 -34 -16 q-20 -2 -34 16z" fill="#8b5a2b"/>
+    <path d="M32 26 L28 2 L46 16 L60 0 L74 16 L92 2 L88 26 Z" fill="#f6c453" stroke="#b77a0c" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="60" cy="16" r="4" fill="#ff3d7f"/>
+    <circle cx="48" cy="58" r="5" fill="#3a2a35"/><circle cx="72" cy="58" r="5" fill="#3a2a35"/><circle cx="49.6" cy="56.4" r="1.6" fill="#fff"/><circle cx="73.6" cy="56.4" r="1.6" fill="#fff"/>
+    <ellipse cx="40" cy="70" rx="6" ry="3.5" fill="#fda4af"/><ellipse cx="80" cy="70" rx="6" ry="3.5" fill="#fda4af"/>
+    <path d="M52 74 q8 7 16 0" stroke="#c2410c" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
+  apple: () => `<svg viewBox="0 0 60 64">
+    <path d="M30 16 C18 6 2 12 4 32 C6 52 20 62 30 56 C40 62 54 52 56 32 C58 12 42 6 30 16Z" fill="#e53935" stroke="#b71c1c" stroke-width="2.5"/>
+    <path d="M14 26 q2 -8 10 -9" stroke="#ff9e9e" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M30 16 q0 -8 4 -13" stroke="#6b3410" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M34 8 q12 -8 18 0 q-8 8 -18 0z" fill="#4caf50"/></svg>`,
+  heart: (on) => `<svg viewBox="0 0 64 60"><path d="M32 56 C10 40 2 30 4 18 C6 6 22 2 32 14 C42 2 58 6 60 18 C62 30 54 40 32 56Z" fill="${on?'#ff4f8b':'#fff'}" stroke="#e0336f" stroke-width="4"/>${on?'':'<path class="fill" d="M32 56 C10 40 2 30 4 18 C6 6 22 2 32 14 C42 2 58 6 60 18 C62 30 54 40 32 56Z" fill="#ff4f8b"/>'}<path d="M14 18 q2 -6 8 -6" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/></svg>`,
+  hat: (c, d) => `<svg viewBox="0 0 100 74">
+    <ellipse cx="50" cy="60" rx="47" ry="12" fill="${c}" stroke="${d}" stroke-width="3"/>
+    <path d="M22 60 Q20 14 50 12 Q80 14 78 60Z" fill="${c}" stroke="${d}" stroke-width="3"/>
+    <path d="M22 50 Q50 58 78 50 L78 42 Q50 50 22 42Z" fill="#fff8"/>
+    <circle cx="70" cy="44" r="7" fill="#ffe066" stroke="#d4a600" stroke-width="2"/></svg>`,
+  sock: (c, d) => `<svg viewBox="0 0 100 74">
+    <path d="M40 4 h30 v38 q0 10 -8 16 l-14 10 q-14 8 -24 -2 q-8 -10 4 -18 l12 -8z" fill="${c}" stroke="${d}" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="38" y="2" width="34" height="12" rx="4" fill="#fff" stroke="${d}" stroke-width="3"/>
+    <path d="M44 24 h22 M44 34 h22" stroke="#fff9" stroke-width="5"/></svg>`,
+  cap: (c, d) => `<svg viewBox="0 0 100 74">
+    <path d="M14 54 Q14 14 52 14 Q86 16 86 54Z" fill="${c}" stroke="${d}" stroke-width="3"/>
+    <path d="M60 54 q30 -6 38 6 q-20 8 -40 2z" fill="${c}" stroke="${d}" stroke-width="3"/>
+    <circle cx="50" cy="14" r="5" fill="${d}"/><path d="M50 16 V54 M30 22 q8 14 6 32 M70 22 q-8 14 -6 32" stroke="${d}" stroke-width="2" fill="none" opacity=".6"/></svg>`,
+  goblet: () => `<svg viewBox="0 0 54 70"><path d="M6 4 h42 q0 26 -21 30 q-21 -4 -21 -30z" fill="#f6c453" stroke="#b77a0c" stroke-width="3"/><path d="M9 10 h36 q-2 16 -18 20 q-16 -4 -18 -20z" fill="#e2336f" opacity=".8"/><rect x="24" y="34" width="6" height="22" fill="#e9a82a"/><ellipse cx="27" cy="62" rx="16" ry="6" fill="#f6c453" stroke="#b77a0c" stroke-width="3"/></svg>`
+};
+
+const SCENERY = {
+  bg: () => `<svg viewBox="0 0 800 820" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fdcff"/><stop offset="1" stop-color="#dff4ff"/></linearGradient>
+      <linearGradient id="grassG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b5e88f"/><stop offset="1" stop-color="#86cf66"/></linearGradient>
+    </defs>
+    <rect width="800" height="820" fill="url(#grassG)"/>
+    <rect width="800" height="150" fill="url(#skyG)"/>
+    <circle cx="90" cy="60" r="38" fill="#ffe680"/><circle cx="90" cy="60" r="52" fill="#ffe680" opacity=".3"/>
+    <g fill="#fff" opacity=".95"><ellipse cx="620" cy="50" rx="46" ry="18"/><ellipse cx="650" cy="40" rx="30" ry="18"/><ellipse cx="230" cy="40" rx="36" ry="14"/><ellipse cx="252" cy="32" rx="22" ry="14"/></g>
+    <path d="M0 150 Q120 90 260 140 Q400 80 540 140 Q680 90 800 140 V190 H0Z" fill="#a3dd7d"/>
+    <path d="M0 175 Q200 135 400 170 Q600 140 800 172 V220 H0Z" fill="#b5e88f"/>
+    <path d="M400 820 C390 720 470 640 420 560 C380 500 420 420 400 360 C390 300 420 240 400 190" stroke="#f1dca4" stroke-width="56" fill="none" stroke-linecap="round"/>
+    <path d="M400 820 C390 720 470 640 420 560 C380 500 420 420 400 360 C390 300 420 240 400 190" stroke="#e8cd88" stroke-width="56" fill="none" stroke-dasharray="2 22" stroke-linecap="round"/>
+    <g stroke="#c08a4a" stroke-width="8" stroke-linecap="round"><path d="M240 190 v40 M280 190 v40 M320 190 v40 M480 190 v40 M520 190 v40"/><path d="M230 202 h100 M230 220 h100 M470 202 h60 M470 220 h60" stroke-width="6"/></g>
+    <g>${[[60,370],[300,580],[470,610],[700,360],[540,350],[250,330],[150,590],[520,770],[260,790],[350,300]].map(([x,y],i)=>`<g transform="translate(${x} ${y})"><circle r="7" cx="0" cy="-8" fill="${['#ff8fb8','#fff','#ffd84d','#c4a8ff'][i%4]}"/><circle r="7" cx="8" cy="0" fill="${['#ff8fb8','#fff','#ffd84d','#c4a8ff'][i%4]}"/><circle r="7" cx="0" cy="8" fill="${['#ff8fb8','#fff','#ffd84d','#c4a8ff'][i%4]}"/><circle r="7" cx="-8" cy="0" fill="${['#ff8fb8','#fff','#ffd84d','#c4a8ff'][i%4]}"/><circle r="5" fill="#ffb020"/></g>`).join('')}</g>
+    <g fill="#7cc95e">${[[130,360],[280,520],[700,590],[480,330],[200,560],[610,330]].map(([x,y])=>`<path d="M${x} ${y} q4 -16 8 0 q4 -20 8 0 q4 -14 8 0z"/>`).join('')}</g>
+    </svg>`,
+  henhouse: () => `<svg viewBox="0 0 180 200">
+    <ellipse cx="90" cy="188" rx="84" ry="10" fill="#0002"/>
+    <rect x="20" y="78" width="140" height="104" rx="6" fill="#e35d4f" stroke="#a83a2f" stroke-width="4"/>
+    <g stroke="#c84a3e" stroke-width="3"><path d="M22 104 h136 M22 130 h136 M22 156 h136"/></g>
+    <path d="M6 84 L90 18 L174 84 Z" fill="#8b4a1f" stroke="#5e3010" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M30 76 L90 30 L150 76" stroke="#a65d2a" stroke-width="5" fill="none"/>
+    <circle cx="90" cy="62" r="12" fill="#ffe7a8" stroke="#5e3010" stroke-width="3"/>
+    <path d="M70 182 v-34 a20 20 0 0 1 40 0 v34z" fill="#5b2a1a"/>
+    <path d="M70 182 L40 198" stroke="#c08a4a" stroke-width="10" stroke-linecap="round"/>
+    <g fill="#ffe680"><path d="M34 182 l8 -10 4 10z"/><path d="M134 182 l8 -12 4 12z"/></g></svg>`,
+  den: () => `<svg viewBox="0 0 230 240">
+    <g><rect x="22" y="40" width="16" height="90" fill="#7a4a24"/><circle cx="30" cy="40" r="34" fill="#3f9c4a"/><circle cx="14" cy="62" r="22" fill="#4caf50"/><circle cx="48" cy="58" r="24" fill="#4caf50"/></g>
+    <g><rect x="186" y="26" width="16" height="100" fill="#7a4a24"/><circle cx="194" cy="28" r="34" fill="#3f9c4a"/><circle cx="176" cy="52" r="24" fill="#4caf50"/><circle cx="214" cy="54" r="22" fill="#4caf50"/></g>
+    <g><rect x="108" y="6" width="14" height="90" fill="#7a4a24"/><circle cx="115" cy="14" r="30" fill="#2f8a3e"/><circle cx="96" cy="34" r="22" fill="#3f9c4a"/><circle cx="134" cy="34" r="22" fill="#3f9c4a"/></g>
+    <path d="M6 232 Q14 116 115 104 Q216 116 224 232Z" fill="#b8a99a" stroke="#8f7e6e" stroke-width="4"/>
+    <path d="M40 150 q20 -16 40 -6 M150 140 q24 -6 40 12" stroke="#9e8f80" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="115" cy="206" rx="54" ry="38" fill="#4a2f24"/><ellipse cx="115" cy="214" rx="42" ry="26" fill="#2e1c15"/></svg>`,
+  mud: () => `<svg viewBox="0 0 260 160">
+    <path d="M20 90 Q8 40 70 34 Q120 10 170 30 Q248 30 244 90 Q252 140 180 146 Q120 160 70 146 Q10 140 20 90Z" fill="#8b5a2b" stroke="#6b4320" stroke-width="5"/>
+    <path d="M50 92 Q50 60 100 60 Q150 44 200 70 Q226 100 180 118 Q120 130 80 118 Q48 110 50 92Z" fill="#a06a36"/>
+    <g fill="#6b4320"><circle cx="90" cy="84" r="8"/><circle cx="160" cy="96" r="6"/><circle cx="196" cy="70" r="5"/><circle cx="60" cy="120" r="5"/></g>
+    <g fill="#c48a52" opacity=".8"><circle cx="120" cy="76" r="5"/><circle cx="174" cy="112" r="4"/></g></svg>`,
+  pond: () => `<svg viewBox="0 0 300 200">
+    <path d="M20 110 Q10 40 100 34 Q170 14 230 40 Q296 60 286 120 Q280 186 180 186 Q90 196 46 168 Q20 150 20 110Z" fill="#5fb4f5" stroke="#3a8fd6" stroke-width="5"/>
+    <path d="M50 108 Q50 64 120 58 Q190 50 240 80" stroke="#a7dcff" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M90 140 q30 10 60 0 M170 156 q20 6 40 0" stroke="#a7dcff" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <g fill="#5cbf5a"><path d="M60 150 a18 12 0 1 1 28 -6 l-14 0z"/><path d="M230 140 a16 10 0 1 1 24 -6 l-12 0z"/></g>
+    <circle cx="74" cy="142" r="5" fill="#ff8fb8"/>
+    <g stroke="#3f9c4a" stroke-width="5" stroke-linecap="round"><path d="M268 70 v-50 M280 76 v-60 M256 80 v-40"/></g>
+    <g fill="#8b5a2b"><rect x="263" y="14" width="10" height="24" rx="5"/><rect x="275" y="8" width="10" height="26" rx="5"/></g></svg>`,
+  hay: () => `<svg viewBox="0 0 150 130">
+    <ellipse cx="75" cy="122" rx="70" ry="8" fill="#0002"/>
+    <path d="M8 120 Q10 30 75 18 Q140 30 142 120Z" fill="#f6c94a" stroke="#d29b16" stroke-width="4"/>
+    <g stroke="#d29b16" stroke-width="3" fill="none"><path d="M30 110 q6 -40 20 -70 M60 116 q2 -50 12 -90 M90 116 q0 -50 -6 -90 M118 110 q-4 -40 -20 -70"/></g>
+    <g stroke="#ffe48a" stroke-width="3"><path d="M40 70 l-12 -8 M100 50 l14 -8 M70 30 l-4 -14 M120 90 l14 -2"/></g></svg>`,
+  wardrobe: () => `<svg viewBox="0 0 170 200">
+    <ellipse cx="85" cy="190" rx="80" ry="9" fill="#0002"/>
+    <rect x="20" y="70" width="130" height="114" rx="8" fill="#b79cf2" stroke="#7c5bc9" stroke-width="4"/>
+    <path d="M6 78 Q85 -6 164 78Z" fill="#ff8fc0" stroke="#d6559a" stroke-width="5" stroke-linejoin="round"/>
+    <g fill="#fff" opacity=".7"><circle cx="50" cy="60" r="6"/><circle cx="85" cy="44" r="6"/><circle cx="120" cy="60" r="6"/></g>
+    <rect x="52" y="96" width="66" height="88" rx="8" fill="#5a3c8f"/>
+    <g class="wdoor"><rect x="52" y="96" width="66" height="88" rx="8" fill="#e9dcff" stroke="#7c5bc9" stroke-width="4"/>
+    <path d="M70 128 q15 -14 30 0 h-30z M85 114 v-6 q0 -4 4 -4" stroke="#7c5bc9" stroke-width="4" fill="none" stroke-linejoin="round"/>
+    <path d="M66 150 q19 -20 38 0z" fill="#ff6b8b"/><circle cx="108" cy="146" r="4" fill="#f6c453"/></g></svg>`,
+  store: () => `<svg viewBox="0 0 200 200">
+    <ellipse cx="100" cy="192" rx="96" ry="9" fill="#0002"/>
+    <path d="M10 82 L100 16 L190 82 Z" fill="#a8522a" stroke="#6b3014" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="22" y="76" width="156" height="110" rx="6" fill="#d9773e" stroke="#9a4a1e" stroke-width="4"/>
+    <g stroke="#c0622e" stroke-width="3"><path d="M24 100 h152 M24 124 h152 M24 148 h152"/></g>
+    <circle cx="100" cy="58" r="20" fill="#fff6dc" stroke="#6b3014" stroke-width="4"/>
+    <path d="M100 52 C94 46 86 50 88 60 C89 68 96 72 100 69 C104 72 111 68 112 60 C114 50 106 46 100 52Z" fill="#e53935"/><path d="M100 52 q0 -6 3 -8" stroke="#6b3014" stroke-width="2.5" fill="none"/>
+    <rect x="58" y="104" width="84" height="82" fill="#5b2a1a"/>
+    <g fill="#e53935"><circle cx="78" cy="170" r="10"/><circle cx="98" cy="172" r="10"/><circle cx="118" cy="170" r="10"/><circle cx="88" cy="156" r="10"/><circle cx="108" cy="156" r="10"/></g>
+    <g class="doorL"><rect x="58" y="104" width="42" height="82" fill="#fff1d6" stroke="#9a4a1e" stroke-width="4"/><path d="M60 106 L98 184 M98 106 L60 184" stroke="#d9773e" stroke-width="5"/></g>
+    <g class="doorR"><rect x="100" y="104" width="42" height="82" fill="#fff1d6" stroke="#9a4a1e" stroke-width="4"/><path d="M102 106 L140 184 M140 106 L102 184" stroke="#d9773e" stroke-width="5"/></g></svg>`
+};
+
+const MAP = {
+  henhouse:{x:20,y:100,w:180,h:200}, den:{x:560,y:92,w:230,h:240}, mud:{x:16,y:398,w:260,h:160},
+  pond:{x:484,y:384,w:300,h:200}, hay:{x:300,y:612,w:150,h:130}, wardrobe:{x:40,y:604,w:170,h:200},
+  store:{x:582,y:600,w:200,h:200}, hen:{x:178,y:212,w:130,h:130}, fox:{x:612,y:206,w:150,h:140},
+  duck:{x:604,y:430,w:120,h:100}, pig:{x:322,y:384,w:140,h:130}, unicorn:{x:330,y:176,w:220,h:190}
+};
+
+function buildMap(){
+  $('#bg').innerHTML = SCENERY.bg();
+  for (const k of ['henhouse','den','mud','pond','hay','wardrobe','store']){ const n = $('#'+k); n.innerHTML = SCENERY[k](); place(n, MAP[k]); }
+  for (const k of ['hen','fox','duck','pig','unicorn']){ const n = $('#'+k); n.innerHTML = ART[k](); place(n, MAP[k]); }
+  document.querySelectorAll('#hearts .hs').forEach(h => h.innerHTML = ART.heart(false));
+  $('#tilly').innerHTML = ART.tilly(true);
+  $('#startQueen').innerHTML = ART.queen();
+  $('#startTilly').innerHTML = ART.tilly(false);
+  const fr = $('#frame'); fr.innerHTML = '';
+  for (let i=0;i<10;i++){ fr.appendChild(el(`<div class="cell" data-i="${i}"></div>`)); }
+}
+
+/* =========================================================
+   Pointer helpers (pointer events + pointer capture)
+   ========================================================= */
+function onTap(node, fn){
+  let p = null;
+  node.addEventListener('pointerdown', e => { p = {x:e.clientX, y:e.clientY, id:e.pointerId}; });
+  node.addEventListener('pointerup', e => { if (p && p.id === e.pointerId && Math.hypot(e.clientX-p.x, e.clientY-p.y) < 24*S) fn(e); p = null; });
+  node.addEventListener('pointercancel', () => { p = null; });
+}
+function makeGhost(src){
+  const r = srect(src);
+  const g = src.cloneNode(true);
+  g.removeAttribute('id'); g.classList.add('ghost');
+  g.style.cssText = `position:absolute;left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;margin:0`;
+  g._src = src; g._x = r.x; g._y = r.y;
+  fx.appendChild(g);
+  src.style.opacity = '0';
+  return g;
+}
+function moveGhost(g, x, y){ g._x = x; g._y = y; g.style.left = x+'px'; g.style.top = y+'px'; }
+async function glide(node, x, y, dur=450, arc=0){
+  const x0 = parseFloat(node.style.left)||0, y0 = parseFloat(node.style.top)||0;
+  const dx = x - x0, dy = y - y0;
+  const base = node.classList.contains('ghost') ? ' scale(1.1)' : '';
+  const kf = arc ? [{transform:`translate(0,0)${base}`},{transform:`translate(${dx/2}px,${dy/2-arc}px)${base}`},{transform:`translate(${dx}px,${dy}px)${base}`}]
+                 : [{transform:`translate(0,0)${base}`},{transform:`translate(${dx}px,${dy}px)${base}`}];
+  const a = node.animate(kf, {duration: state.fast ? 20 : dur, easing:'ease-in-out', fill:'forwards'});
+  await a.finished.catch(()=>{});
+  node.style.left = x+'px'; node.style.top = y+'px'; node._x = x; node._y = y;
+  a.cancel();
+}
+async function returnGhost(g){
+  const r = srect(g._src);
+  await glide(g, r.x, r.y, 380);
+  g._src.style.opacity = ''; g.remove();
+}
+function draggable(node, o){
+  let st = null;
+  node.addEventListener('pointerdown', e => {
+    if (st) return;
+    st = {id:e.pointerId, x0:e.clientX, y0:e.clientY, drag:false, g:null};
+    try { node.setPointerCapture(e.pointerId); } catch(_){}
+  });
+  node.addEventListener('pointermove', e => {
+    if (!st || e.pointerId !== st.id) return;
+    const dx = (e.clientX - st.x0)/S, dy = (e.clientY - st.y0)/S;
+    if (!st.drag){
+      if (Math.hypot(dx, dy) < 14) return;
+      if (o.canDrag && !o.canDrag()){ if (o.onBlocked && !st.blocked){ st.blocked = true; o.onBlocked(); } return; }
+      st.drag = true; st.g = makeGhost(node); st.gx = st.g._x; st.gy = st.g._y; sfx.pick();
+    }
+    moveGhost(st.g, st.gx + dx, st.gy + dy);
+  });
+  const end = e => {
+    if (!st || e.pointerId !== st.id) return;
+    const s = st; st = null;
+    try { node.releasePointerCapture(e.pointerId); } catch(_){}
+    if (s.drag){
+      if (e.type === 'pointercancel') returnGhost(s.g);
+      else o.onDrop(e.clientX, e.clientY, s.g);
+    } else if (e.type === 'pointerup' && o.onTap) o.onTap(e);
+  };
+  node.addEventListener('pointerup', end);
+  node.addEventListener('pointercancel', end);
+}
+stage.addEventListener('pointerdown', () => { lastAct = Date.now(); }, true);
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('touchmove', e => e.preventDefault(), {passive:false});
+
+/* =========================================================
+   Effects
+   ========================================================= */
+function sparkle(x, y, n=10, chars='✦✧★'){
+  for (let i=0;i<n;i++){
+    const s = el(`<div class="spark">${chars[i%chars.length]}</div>`);
+    s.style.left = x+'px'; s.style.top = y+'px'; s.style.color = ['#ffe066','#ff8fc0','#a5f3fc','#fff'][i%4];
+    fx.appendChild(s);
+    const ang = rand(0, Math.PI*2), d = rand(40, 110);
+    s.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:1},{transform:`translate(${Math.cos(ang)*d-15}px,${Math.sin(ang)*d-15}px) scale(1.2) rotate(${rand(-90,90)}deg)`,opacity:0}],{duration:rand(600,1000),easing:'ease-out'}).finished.then(()=>s.remove());
+  }
+}
+function confetti(n=60){
+  const cols = ['#ff4f8b','#ffd84d','#5fd38d','#6fb7ff','#b28dff','#ff9f43','#fff'];
+  for (let i=0;i<n;i++){
+    const c = el('<div class="confetti"></div>');
+    c.style.background = cols[i%cols.length]; c.style.left = rand(0, W)+'px'; c.style.top = '-30px';
+    fx.appendChild(c);
+    c.animate([{transform:`translate(0,0) rotate(0)`},{transform:`translate(${rand(-120,120)}px,${H+60}px) rotate(${rand(360,1080)}deg)`}],{duration:rand(1800,3200),delay:rand(0,700),easing:'cubic-bezier(.3,.6,.6,1)'}).finished.then(()=>c.remove());
+  }
+}
+function drops(x, y){
+  for (let i=0;i<14;i++){
+    const d = el('<div class="drop"></div>'); d.style.left = x+'px'; d.style.top = y+'px'; fx.appendChild(d);
+    const dx = rand(-110,110), up = rand(60,160);
+    d.animate([{transform:'translate(0,0)'},{transform:`translate(${dx/2}px,${-up}px)`},{transform:`translate(${dx}px,20px)`,opacity:0}],{duration:800,easing:'ease-out'}).finished.then(()=>d.remove());
+  }
+}
+const hand = $('#hand');
+async function showHand(kind, a, b){
+  const ra = srect(a);
+  hand.style.display = 'block';
+  const hx = ra.cx - 30, hy = ra.cy - 10;
+  hand.style.left = hx+'px'; hand.style.top = hy+'px';
+  let kf;
+  if (kind === 'tap') kf = [{transform:'translate(0,30px) scale(1)'},{transform:'translate(0,0) scale(.85)',offset:.4},{transform:'translate(0,30px) scale(1)'}];
+  else if (kind === 'slide') kf = [{transform:`translate(${-ra.w/2+20}px,20px)`,opacity:0},{transform:`translate(${-ra.w/2+20}px,20px)`,opacity:1,offset:.15},{transform:`translate(${ra.w/2-10}px,20px)`,opacity:1,offset:.85},{transform:`translate(${ra.w/2-10}px,20px)`,opacity:0}];
+  else if (kind === 'swipe') kf = [{transform:'translate(-60px,20px)',opacity:0},{transform:'translate(-60px,20px)',opacity:1,offset:.15},{transform:'translate(70px,20px)',opacity:1,offset:.8},{transform:'translate(70px,20px)',opacity:0}];
+  else if (kind === 'drag'){
+    const rb = b ? srect(b) : {cx: ra.cx + 80, cy: ra.cy - 30};
+    const dx = rb.cx - ra.cx, dy = rb.cy - ra.cy;
+    kf = [{transform:'translate(0,0) scale(1)',opacity:0},{transform:'translate(0,0) scale(.85)',opacity:1,offset:.15},{transform:`translate(${dx}px,${dy}px) scale(.85)`,opacity:1,offset:.8},{transform:`translate(${dx}px,${dy}px)`,opacity:0}];
+  }
+  const a1 = hand.animate(kf, {duration: kind==='tap' ? 700 : 1500, iterations: kind==='tap' ? 3 : 2, easing:'ease-in-out'});
+  await a1.finished.catch(()=>{});
+  hand.style.display = 'none';
+}
+async function flyHeart(fromEl){
+  const r = srect(fromEl);
+  const slot = document.querySelectorAll('#hearts .hs')[state.hearts];
+  if (!slot) return;
+  const h = el(`<div class="flyheart">${ART.heart(true)}</div>`);
+  h.style.left = (r.cx-32)+'px'; h.style.top = (r.y)+'px'; fx.appendChild(h);
+  sfx.heart();
+  h.animate([{transform:'scale(.2)'},{transform:'scale(1.4)'}],{duration:300,fill:'forwards'});
+  await wait(300);
+  const t = srect(slot);
+  await glide(h, t.cx-32, t.cy-30, 900, 120);
+  h.remove();
+  slot.classList.add('on'); state.hearts++;
+  sparkle(t.cx, t.cy, 12); sfx.chime();
+}
+
+/* =========================================================
+   Letters
+   ========================================================= */
+const T = w => ({w, tricky:true, id:'word-'+w.toLowerCase()});
+const D = (w, spec, extra={}) => Object.assign({w, id:'word-'+w.toLowerCase(), g: spec.split(' ').map(p => { const [t,s] = p.split(':'); return {t, s:'sound-'+s}; })}, extra);
+/* Each round picks what the pig and the hen want, so world knowledge
+   ("pigs like mud") or a remembered position cannot replace reading.
+   ?pig=mud|pond and ?hen=hat|cap|sock fix the choice for testing. */
+const QS = new URLSearchParams(location.search);
+const pickGoal = (key, opts) => opts.includes(QS.get(key)) ? QS.get(key) : opts[Math.floor(Math.random()*opts.length)];
+const PIG_GOAL = pickGoal('pig', ['mud','pond']);
+const HEN_GOAL = pickGoal('hen', ['hat','cap','sock']);
+const SPELL = {mud:'m:m u:u d:d', pond:'p:p o:o n:n d:d', hat:'h:h a:a t:t', cap:'c:k a:a p:p', sock:'s:s o:o ck:k'};
+const LETTERS = [
+  {from:'pig', full:'letter1-full-'+PIG_GOAL, help:'letter1-help', intro:'letter1-intro', tokens:[D('Can','C:k a:a n:n'), T('the'), D('pig','p:p i:i g:g'), T('go'), D('in','i:i n:n'), T('the'), D(PIG_GOAL, SPELL[PIG_GOAL],{punct:'?', key:true})]},
+  {from:'fox', full:'letter2-full', intro:'letter2-intro', tokens:[D('Send','S:s e:e n:n d:d'), {w:'6', num:true, id:'word-six', key:true}, D('apples','a:a pp:p le:le s:z'), T('to'), T('the'), D('fox','f:f o:o x:ks',{punct:'.'})]},
+  {from:'hen', full:'letter3-full-'+HEN_GOAL, help:'letter3-help', intro:'letter3-intro', tokens:[T('The'), D('hen','h:h e:e n:n'), D('is','i:i s:z'), D('sad','s:s a:a d:d',{punct:'.'}), T('I'), T('want'), T('a'), D('red','r:r e:e d:d',{key:true}), D(HEN_GOAL, SPELL[HEN_GOAL],{punct:'.', key:true})]}
+];
+/* A key word decides the action. Until Emma has acted on it (or has had two
+   tries), sliding along it gives the sounds only: she blends the word herself. */
+const hideKey = tk => tk.key && tk.g && !state.solved && state.mistakes < 2;
+
+function renderLetter(L){
+  $('#seal').innerHTML = ART[L.from]();
+  const box = $('#words'); box.innerHTML = '';
+  L.tokens.forEach((tk, i) => {
+    let inner = '';
+    if (tk.g) inner = tk.g.map((g, j) => `<span class="g" data-j="${j}">${g.t}<span class="dot${g.t.length>1?' dash':''}"></span></span>`).join('');
+    else inner = `<span class="g">${tk.w}</span>`;
+    if (tk.punct) inner += `<span class="p">${tk.punct}</span>`;
+    const w = el(`<div class="word${tk.tricky?' tricky':''}${tk.num?' num':''}" data-i="${i}">${inner}</div>`);
+    w._tk = tk;
+    box.appendChild(w);
+    if (tk.g) bindDecodable(w, tk); else bindWhole(w, tk);
+  });
+}
+function markRead(w, tk){
+  if (!w.classList.contains('read')){
+    w.classList.add('read');
+    if (tk.g && !state.blended.includes(tk.id)) state.blended.push(tk.id);
+    if (!tk.g && !state.tapped.includes(tk.id)) state.tapped.push(tk.id);
+  }
+  retrigger(w, 'pop');
+  const r = srect(w); sparkle(r.cx, r.cy, 6);
+  if (tk.key && state.lock.includes(tk.id)){
+    state.lock = state.lock.filter(id => id !== tk.id);
+    if (!state.lock.length && state.phase === 'letter'){
+      const actor = state.letter === 0 ? $('#pig') : $('#hen');
+      const a = srect(actor); sparkle(a.cx, a.cy, 10); retrigger(actor, 'bounce'); sfx.chime();
+      setTimeout(() => { if (state.phase === 'letter' && !state.busy && !state.lock.length) instruct(['try-again']); }, 700);
+    }
+  }
+  maybePromptAct();
+}
+function bindWhole(w, tk){
+  onTap(w, () => {
+    if (state.phase !== 'letter' || state.busy) return;
+    w.classList.add('say'); say(tk.id).then(() => w.classList.remove('say'));
+    markRead(w, tk);
+  });
+}
+function bindDecodable(w, tk){
+  const gs = () => [...w.querySelectorAll('.g')];
+  let st = null;
+  const gAt = x => {
+    const list = gs();
+    for (let j=0;j<list.length;j++){ const r = list[j].getBoundingClientRect(); if (x >= r.left - 4*S && x <= r.right + 4*S) return j; }
+    const last = list[list.length-1].getBoundingClientRect();
+    if (x > last.right) return list.length - 1;
+    return -1;
+  };
+  const light = j => { gs().forEach((g,k) => g.classList.toggle('on', k === j)); };
+  const sound = j => { light(j); sfx.dot(); say(tk.g[j].s); };
+  const finish = async () => {
+    await wait(260);
+    if (hideKey(tk)){
+      gs().forEach(g => g.classList.add('on')); sfx.sparkle();
+      await wait(700);
+      gs().forEach(g => g.classList.remove('on'));
+      markRead(w, tk);
+      return;
+    }
+    gs().forEach(g => g.classList.add('on'));
+    w.classList.add('say');
+    await say(tk.id);
+    gs().forEach(g => g.classList.remove('on'));
+    w.classList.remove('say');
+    markRead(w, tk);
+  };
+  w.addEventListener('pointerdown', e => {
+    if (state.phase !== 'letter' || state.busy) return;
+    try { w.setPointerCapture(e.pointerId); } catch(_){}
+    const first = !w.classList.contains('dotted');
+    w.classList.add('dotted');
+    st = {id:e.pointerId, last:-1, next:0, moved:false, x0:e.clientX, done:false, first};
+    if (first){ sfx.pop(); return; }
+    const j = gAt(e.clientX);
+    if (j >= 0){ st.last = j; sound(j); if (j === 0) st.next = 1; }
+  });
+  w.addEventListener('pointermove', e => {
+    if (!st || st.id !== e.pointerId || st.done) return;
+    if (Math.abs(e.clientX - st.x0) > 8*S) st.moved = true;
+    const j = gAt(e.clientX);
+    if (j < 0 || j === st.last) return;
+    st.last = j; sound(j);
+    if (j === st.next) st.next++;
+    if (st.next >= tk.g.length){ st.done = true; finish(); }
+  });
+  const up = e => {
+    if (!st || st.id !== e.pointerId) return;
+    const s = st; st = null;
+    if (s.done) return;
+    if (!s.moved && !s.first){
+      w._taps = (w._taps||0) + 1;
+      if (w._taps >= 2 && e.type === 'pointerup'){ w._taps = 0; demoBlend(w, tk); return; }
+      if (w._taps === 1 && !state.slideTaught){ state.slideTaught = true; showHand('slide', w); }
+    } else if (s.moved) w._taps = 0;
+    setTimeout(() => { if (!st) light(-1); }, 500);
+  };
+  w.addEventListener('pointerup', up);
+  w.addEventListener('pointercancel', up);
+  w._demo = () => demoBlend(w, tk);
+}
+async function demoBlend(w, tk){
+  w.classList.add('dotted');
+  const gs = [...w.querySelectorAll('.g')];
+  for (let j=0;j<gs.length;j++){
+    gs.forEach((g,k) => g.classList.toggle('on', k===j)); sfx.dot();
+    if (await say(tk.g[j].s) === 'cut') { gs.forEach(g => g.classList.remove('on')); return 'cut'; }
+    await wait(120);
+  }
+  if (hideKey(tk)){ gs.forEach(g => g.classList.remove('on')); markRead(w, tk); return true; }
+  gs.forEach(g => g.classList.add('on')); w.classList.add('say');
+  if (await say(tk.id) === 'cut'){ gs.forEach(g => g.classList.remove('on')); w.classList.remove('say'); return 'cut'; }
+  gs.forEach(g => g.classList.remove('on')); w.classList.remove('say');
+  markRead(w, tk);
+  return true;
+}
+function wordEls(){ return [...document.querySelectorAll('#words .word')]; }
+function keyWords(){ return wordEls().filter(w => w._tk.key); }
+/* full=false (help bell before the wish is granted): the key words stay
+   silent and pulse, so the bell never reads the deciding word for her. */
+async function readWholeLetter(full){
+  const L = LETTERS[state.letter];
+  const helpMode = !full && L.help && !state.solved;
+  const ws = wordEls().filter(w => !(helpMode && w._tk.key));
+  let alive = true;
+  const p = say(helpMode ? L.help : L.full).then(() => { alive = false; });
+  await wait(250);
+  for (const w of ws){
+    if (!alive) break;
+    ws.forEach(x => x.classList.remove('say')); w.classList.add('say');
+    await wait(w._tk.w.length > 3 ? 520 : 400);
+  }
+  await p;
+  ws.forEach(x => x.classList.remove('say'));
+  if (helpMode) pulseWords(keyWords());
+}
+
+/* Help bell: fills over ~10 seconds, only then it can be rung */
+const bell = $('#bell'), ring = bell.querySelector('.ring');
+let bellT0 = 0, bellAnnounced = false;
+function bellReset(){ bellT0 = performance.now(); bell.classList.remove('ready'); }
+function bellTick(){
+  let p = 0;
+  if (state.phase === 'letter'){ p = Math.max(0, Math.min(1, (performance.now() - bellT0) / (state.fast ? 300 : 10000))); }
+  ring.setAttribute('stroke-dashoffset', (339.3 * (1 - p)).toFixed(1));
+  if (p >= 1 && !bell.classList.contains('ready')){
+    bell.classList.add('ready'); sfx.ding();
+    if (!bellAnnounced && !speaking() && !state.busy){ bellAnnounced = true; instruct(['hint-bell']); }
+  }
+  requestAnimationFrame(bellTick);
+}
+onTap(bell, async () => {
+  if (state.phase !== 'letter' || state.busy) return;
+  if (!bell.classList.contains('ready')){ retrigger(bell, 'nope'); sfx.tick(); return; }
+  bellAnnounced = true;
+  bell.classList.remove('ready'); retrigger(bell, 'ringing'); sfx.ding();
+  bellT0 = performance.now() + 1e9;
+  state.bellUsed = (state.bellUsed||0) + 1;
+  await wait(500);
+  await readWholeLetter(false);
+  bellReset();
+  maybePromptAct(true);
+});
+onTap($('#earBtn'), () => { if (instr.length) sayAll(instr); else say('intro'); });
+
+/* After she has read a little, tell her the map is where she acts */
+function maybePromptAct(force){
+  if (state.phase !== 'letter' || state.actPrompted) return;
+  const n = state.blended.length + state.tapped.length;
+  if (!force && n < 3) return;
+  state.actPrompted = true;
+  setTimeout(() => { if (state.phase === 'letter' && !state.busy) actPrompt(); }, 1800);
+}
+function actPrompt(){
+  const i = state.letter;
+  if (i === 0){ instruct(['letter1-act']); showHand('drag', $('#pig')); }
+  if (i === 1){ if (!state.storeOpen){ instruct(['hint-store']); showHand('tap', $('#store')); } }
+  if (i === 2){ if (!state.wardOpen){ instruct(['hint-wardrobe']); showHand('tap', $('#wardrobe')); } }
+}
+
+/* Idle hints after about 8 seconds */
+setInterval(() => {
+  if (state.phase !== 'letter' || state.busy || speaking() || state.fast) return;
+  if (Date.now() - lastAct > 8000){ lastAct = Date.now(); giveHint(); }
+}, 500);
+function giveHint(){
+  state.hintsGiven++;
+  const i = state.letter, n = state.blended.length + state.tapped.length;
+  const firstDec = wordEls().find(w => w._tk.g);
+  if (n < 2){ instruct(['hint-read']); if (firstDec) showHand('slide', firstDec); return; }
+  if (state.lock.length){ rereadPrompt(); return; }
+  if (i === 0){ instruct(['letter1-act']); showHand('drag', $('#pig')); return; }
+  if (i === 1){
+    if (!state.storeOpen){ instruct(['hint-store']); showHand('tap', $('#store')); }
+    else if (state.basket === 0){ instruct(['hint-apples']); const a = document.querySelector('#frame .apple:not(.ghosty)'); if (a) showHand('drag', a, $('#basket')); }
+    else { instruct(['hint-send']); showHand('drag', $('#basket'), $('#map')); }
+    return;
+  }
+  if (i === 2){
+    if (!state.wardOpen){ instruct(['hint-wardrobe']); showHand('tap', $('#wardrobe')); }
+    else { instruct(['hint-dress']); const it = document.querySelector('#wardPanel .item'); if (it) showHand('drag', it, $('#hen')); }
+  }
+}
+function pulseWords(ws){ ws.forEach(w => { w.classList.add('dotted'); retrigger(w, 'pulse'); }); }
+/* After a wrong move the animal waits until Emma has slid along the key
+   word(s) again. Guessing again without reading does nothing. */
+function rereadPrompt(){
+  const locked = wordEls().filter(w => state.lock.includes(w._tk.id));
+  pulseWords(locked.length ? locked : keyWords());
+  if (!speaking()) instruct([state.letter === 0 ? 'hint-reread-last' : 'hint-reread-two']);
+  if (locked[0]) showHand('slide', locked[0]);
+}
+async function afterMistake(hintId){
+  state.lock = keyWords().filter(w => w._tk.g).map(w => w._tk.id);
+  await wait(300);
+  pulseWords(keyWords());
+  const heard = await instruct([hintId]);
+  if (heard && state.mistakes >= 2 && state.phase === 'letter' && !state.busy){
+    await wait(500);
+    for (const k of keyWords().filter(w => w._tk.g)){ if (state.phase !== 'letter' || state.busy || await k._demo() === 'cut') break; }
+  }
+}
+
+/* =========================================================
+   Map: tap reactions (fun before any reading)
+   ========================================================= */
+function bounceOn(n){ retrigger(n, 'bounce'); }
+draggable($('#pig'), {
+  canDrag: () => state.phase === 'letter' && state.letter === 0 && !state.busy && !state.lock.length,
+  onBlocked: () => { if (state.phase === 'letter' && state.letter === 0 && !state.busy && state.lock.length){ sfx.oink(); retrigger($('#pig'), 'wiggle'); rereadPrompt(); } },
+  onTap: () => { sfx.oink(); bounceOn($('#pig')); },
+  onDrop: pigDrop
+});
+onTap($('#duck'), () => { sfx.quack(); retrigger($('#duck'), 'quack'); });
+onTap($('#fox'), () => { sfx.yip(); retrigger($('#fox'), 'wag'); });
+onTap($('#hen'), () => { sfx.cluck(); retrigger($('#hen'), 'flap'); });
+onTap($('#unicorn'), () => { sfx.neigh(); bounceOn($('#unicorn')); });
+onTap($('#mud'), () => { sfx.blop(); const r = srect($('#mud')); sparkle(r.cx, r.cy, 4, '●'); });
+onTap($('#pond'), () => { sfx.plop(); const r = srect($('#pond')); drops(r.cx-40, r.cy); });
+onTap($('#hay'), () => { sfx.rustle(); retrigger($('#hay'), 'wiggle'); });
+onTap($('#henhouse'), () => { sfx.cluck(); retrigger($('#henhouse'), 'wiggle'); });
+onTap($('#den'), () => { sfx.yip(); retrigger($('#fox'), 'wag'); });
+onTap($('#store'), () => {
+  if (state.phase === 'letter' && state.letter === 1 && !state.busy){ openStore(); return; }
+  sfx.creak(); retrigger($('#store'), 'wiggle');
+});
+onTap($('#wardrobe'), () => {
+  if (state.phase === 'letter' && state.letter === 2 && !state.busy){ openWardrobe(); return; }
+  sfx.creak(); retrigger($('#wardrobe'), 'wiggle');
+});
+
+/* ---------- Letter 1: the pig ---------- */
+async function pigDrop(x, y, g){
+  const pig = $('#pig');
+  const zone = ['mud','pond','hay'].find(z => inRect($('#'+z), x, y, z === 'mud' ? 20 : 10));
+  if (!zone){ await returnGhost(g); sfx.oink(); say('pig-where'); return; }
+  state.busy = true;
+  const zr = srect($('#'+zone));
+  if (zone === PIG_GOAL){
+    state.solved = true;
+    const tx = zone === 'pond' ? zr.x + zr.w*0.32 : zr.cx; /* keep clear of the duck */
+    await glide(g, tx - g.offsetWidth/2, zr.cy - g.offsetHeight/2 - 10, 300);
+    const gr = g.getBoundingClientRect(), m = toMap(gr.left + gr.width/2, gr.top + gr.height/2);
+    pig.style.left = (m.x - 70)+'px'; pig.style.top = (m.y - 65)+'px';
+    pig.style.opacity = ''; g.remove();
+    const r = srect(pig);
+    if (zone === 'mud'){ sfx.blop(); retrigger(pig, 'roll'); pig.classList.add('muddy'); sparkle(r.cx, r.cy+30, 8, '●'); }
+    else { sfx.splash(); drops(r.cx, r.cy + 30); }
+    await wait(400); sfx.oink();
+    await wait(1200);
+    pig.classList.add('happy');
+    await say('pig-happy-' + zone);
+    await flyHeart(pig);
+    await say('heart-farm');
+    finishLetter();
+    return;
+  }
+  state.mistakes++;
+  const dy = zone === 'pond' ? 20 : zone === 'hay' ? -30 : 0;
+  await glide(g, zr.cx - g.offsetWidth/2, zr.cy - g.offsetHeight/2 - 10 + dy, 300);
+  if (zone === 'pond'){
+    sfx.splash(); drops(zr.cx, zr.cy + 10);
+    g.animate([{transform:'translateY(0) scale(1.1)'},{transform:'translateY(30px) scale(1.1)'}],{duration:300,fill:'forwards'});
+  } else if (zone === 'hay'){ sfx.rustle(); retrigger($('#hay'), 'wiggle'); }
+  else { sfx.blop(); sparkle(zr.cx, zr.cy, 6, '●'); }
+  await say('pig-wrong-' + zone);
+  await returnGhost(g); sfx.oink();
+  state.busy = false;
+  await afterMistake('hint-reread-last');
+}
+
+/* ---------- Letter 2: the fox and the apples ---------- */
+const frame = $('#frame'), basket = $('#basket');
+function fillFrame(){
+  frame.querySelectorAll('.cell').forEach(c => { c.innerHTML = ''; addApple(c); });
+}
+function addApple(cell){
+  const a = el(`<div class="apple">${ART.apple()}</div>`);
+  cell.appendChild(a);
+  draggable(a, {
+    canDrag: () => state.phase === 'letter' && state.letter === 1 && !state.busy && !a.classList.contains('ghosty'),
+    onTap: () => { sfx.pop(); retrigger(a, 'hop'); },
+    onDrop: async (x, y, g) => {
+      if (inRect(basket, x, y, 30)){
+        const b = srect(basket);
+        await glide(g, b.cx - g.offsetWidth/2, b.y + 10, 220);
+        g.remove(); a.remove();
+        state.basket++; renderBasket(); retrigger(basket, 'bump'); sfx.pop();
+        say('count-' + state.basket);
+      } else returnGhost(g);
+    }
+  });
+  return a;
+}
+function renderBasket(n = state.basket){
+  const box = basket.querySelector('.bapples'); box.innerHTML = '';
+  const pos = [[0,30],[25,32],[50,32],[74,30],[12,14],[37,15],[62,14],[25,-2],[50,-2],[37,-18]];
+  for (let i=0;i<n;i++){ const m = el(`<div class="mini">${ART.apple()}</div>`); m.style.left = pos[i%10][0]+'px'; m.style.top = pos[i%10][1]+'px'; box.appendChild(m); }
+  const num = basket.querySelector('.bnum'); num.textContent = n; num.classList.toggle('show', n > 0);
+}
+draggable(basket, {
+  canDrag: () => state.phase === 'letter' && state.letter === 1 && !state.busy && state.basket > 0,
+  onTap: () => { retrigger(basket, 'bump'); if (state.basket) say('count-' + state.basket); },
+  onDrop: async (x, y, g) => {
+    if (inRect($('#den'), x, y, 10) || inRect($('#fox'), x, y, 20)) return sendBasket(g);
+    if (inRect($('#map'), x, y)){ state.busy = true; await returnGhost(g); state.busy = false; instruct(['hint-who']); pulseWords([wordEls().find(w => w._tk.id === 'word-fox')]); return; }
+    returnGhost(g);
+  }
+});
+async function openStore(){
+  if (state.storeOpen) { retrigger($('#storePanel'), 'bounce'); return; }
+  state.storeOpen = true; state.busy = true;
+  sfx.creak(); $('#store').classList.add('open');
+  await wait(400);
+  $('#storePanel').classList.add('show'); sfx.chime();
+  state.busy = false;
+  await instruct(['hint-apples']);
+  const a = frame.querySelector('.apple'); if (a) showHand('drag', a, basket);
+}
+async function sendBasket(g){
+  state.busy = true;
+  const n = state.basket;
+  const bal = el(`<div class="balloon"><svg viewBox="0 0 86 124"><path d="M43 84 q-4 20 4 40" stroke="#fff" stroke-width="2.5" fill="none"/><ellipse cx="43" cy="42" rx="34" ry="40" fill="#ff6fa8" stroke="#e0336f" stroke-width="3"/><path d="M37 82 h12 l-6 8z" fill="#e0336f"/><ellipse cx="30" cy="28" rx="8" ry="12" fill="#fff" opacity=".6"/></svg></div>`);
+  g.appendChild(bal); sfx.whoosh();
+  const home = srect(basket);
+  const fr = srect($('#fox'));
+  await glide(g, fr.x - g.offsetWidth + 24, fr.y + 46, 1400, 90);
+  retrigger($('#fox'), 'wag'); sfx.yip();
+  const gApples = () => [...g.querySelectorAll('.mini')];
+  if (n === 6){
+    for (let i=1;i<=6;i++){
+      const m = gApples().pop(); if (m) m.remove();
+      const fly = el(`<div class="flyheart">${ART.apple()}</div>`);
+      fly.style.left = (g._x + 50)+'px'; fly.style.top = (g._y + 30)+'px'; fx.appendChild(fly);
+      const f = srect($('#fox'));
+      glide(fly, f.cx - 30 + rand(-30,30), f.y + 80, 400, 60).then(() => fly.remove());
+      sfx.pop();
+      await say('count-' + i);
+    }
+    retrigger($('#fox'), 'jump');
+    await say('fox-six');
+    await flyHeart($('#fox'));
+    await glide(g, home.x, home.y, 1000, 60);
+    g.remove(); basket.style.opacity = '';
+    state.basket = 0; renderBasket();
+    await takeAwayStory();
+    finishLetter();
+    return;
+  }
+  state.mistakes++;
+  if (n < 6){
+    await say('fox-have-' + n);
+    await glide(g, home.x, home.y, 1100, 60);
+    g.remove(); basket.style.opacity = '';
+    state.busy = false;
+    instruct(['hint-number']); pulseWords([wordEls().find(w => w._tk.num)]);
+    return;
+  }
+  const extra = n - 6;
+  retrigger($('#fox'), 'jump');
+  const empties = [...frame.querySelectorAll('.cell')].filter(c => !c.querySelector('.apple'));
+  for (let i=0;i<extra;i++){
+    const m = gApples().pop(); if (m) m.remove();
+    const cell = empties[i];
+    const fly = el(`<div class="flyheart">${ART.apple()}</div>`);
+    fly.style.left = (g._x + 50)+'px'; fly.style.top = (g._y + 20)+'px'; fx.appendChild(fly);
+    const t = srect(cell); sfx.pop();
+    await glide(fly, t.x + 18, t.y + 18, 650, 140);
+    fly.remove(); if (cell) addApple(cell);
+  }
+  state.basket = 6; renderBasket();
+  await say('fox-too-many-' + Math.min(extra, 4));
+  await glide(g, home.x, home.y, 1100, 60);
+  g.remove(); basket.style.opacity = '';
+  state.busy = false;
+  instruct(['send-again']);
+}
+async function takeAwayStory(){
+  const cells = [...frame.querySelectorAll('.cell')];
+  cells.forEach(c => { c.innerHTML = ''; const a = el(`<div class="apple">${ART.apple()}</div>`); c.appendChild(a); });
+  const eqs = [...document.querySelectorAll('#eq span')];
+  eqs.forEach(s => s.classList.remove('on'));
+  $('#storePanel').classList.add('show');
+  const p = srect($('#storePanel')); sparkle(p.cx, p.cy, 10);
+  eqs[0].classList.add('on');
+  cells.forEach((c,i) => setTimeout(() => retrigger(c.firstChild, 'hop'), i*60));
+  await say('takeaway-1');
+  eqs[1].classList.add('on'); eqs[2].classList.add('on');
+  cells.slice(4).forEach((c,i) => setTimeout(() => { c.firstChild.classList.add('ghosty'); sfx.tick(); }, i*120));
+  retrigger($('#fox'), 'wag');
+  await say('takeaway-2');
+  eqs[3].classList.add('on'); eqs[4].classList.add('on');
+  cells.slice(0,4).forEach((c,i) => setTimeout(() => { retrigger(c.firstChild, 'hop'); sfx.pop(); }, i*200));
+  await say('takeaway-3');
+  await wait(1200);
+  $('#storePanel').classList.remove('show'); $('#store').classList.remove('open');
+}
+
+/* ---------- Letter 3: the hen and the wardrobe ---------- */
+const RED = ['#ef4444','#b91c1c'], BLUE = ['#4f8ff7','#2a5fc0'];
+const WARD = [
+  {id:'redhat',   art:() => ART.hat(...RED)},
+  {id:'redcap',   art:() => ART.cap(...RED)},
+  {id:'redsock',  art:() => ART.sock(...RED)},
+  {id:'bluehat',  art:() => ART.hat(...BLUE)},
+  {id:'bluecap',  art:() => ART.cap(...BLUE)},
+  {id:'bluesock', art:() => ART.sock(...BLUE)}
+].sort(() => Math.random() - .5);
+const HEN_ITEM = WARD.find(it => it.id === 'red' + HEN_GOAL);
+function buildWardrobe(){
+  const p = $('#wardPanel'); p.innerHTML = '';
+  WARD.forEach((it, i) => {
+    const slot = el(`<div class="slot" style="left:${14 + (i%3)*152}px;top:${14 + Math.floor(i/3)*120}px"></div>`);
+    const item = el(`<div class="item" data-id="${it.id}">${it.art()}</div>`);
+    slot.appendChild(item); p.appendChild(slot);
+    draggable(item, {
+      canDrag: () => state.phase === 'letter' && state.letter === 2 && !state.busy && !state.lock.length,
+      onBlocked: () => { if (state.phase === 'letter' && state.letter === 2 && !state.busy && state.lock.length){ sfx.cluck(); retrigger($('#hen'), 'flap'); retrigger(item, 'wiggle'); rereadPrompt(); } },
+      onTap: () => { sfx.pop(); retrigger(item, 'bounce'); },
+      onDrop: (x, y, g) => { if (inRect($('#hen'), x, y, 36)) tryOn(it, item, g); else returnGhost(g); }
+    });
+  });
+}
+async function openWardrobe(){
+  if (state.wardOpen){ retrigger($('#wardPanel'), 'bounce'); return; }
+  state.wardOpen = true; state.busy = true;
+  sfx.creak(); $('#wardrobe').classList.add('open');
+  await wait(400);
+  $('#wardPanel').classList.add('show'); sfx.chime();
+  state.busy = false;
+  await instruct(['hint-dress']);
+}
+async function tryOn(it, item, g){
+  state.busy = true;
+  const hen = $('#hen');
+  const h = srect(hen);
+  await glide(g, h.x + 50, h.y - 36, 300);
+  if (it === HEN_ITEM){
+    state.solved = true;
+    g.remove();
+    const hat = el(`<div class="onhead">${it.art()}</div>`); hen.appendChild(hat);
+    item.parentNode.remove();
+    hen.classList.remove('sad'); retrigger(hen, 'flap'); sfx.cluck(); sfx.chime();
+    sparkle(h.cx, h.y, 14);
+    await wait(500); hen.classList.add('dance');
+    await say('hen-happy-' + HEN_GOAL);
+    await flyHeart(hen);
+    await say('heart-farm');
+    $('#wardPanel').classList.remove('show'); $('#wardrobe').classList.remove('open');
+    finishLetter();
+    return;
+  }
+  state.mistakes++;
+  g.animate([{transform:'scale(1.1) rotate(0)'},{transform:'scale(1.1) rotate(-12deg)'},{transform:'scale(1.1) rotate(12deg)'},{transform:'scale(1.1) rotate(0)'}],{duration:600,iterations:2});
+  sfx.giggle(); retrigger(hen, 'flap');
+  await say('hen-wrong-' + it.id);
+  await returnGhost(g);
+  state.busy = false;
+  await afterMistake('hint-reread-two');
+}
+
+/* =========================================================
+   Round flow
+   ========================================================= */
+let letterDone = null;
+function finishLetter(){ state.busy = true; if (letterDone){ const r = letterDone; letterDone = null; r(); } }
+
+async function deliverLetter(i){
+  state.phase = 'delivery'; state.busy = true; state.letter = i;
+  const tilly = $('#tilly'), rolled = $('#rolled');
+  tilly.innerHTML = ART.tilly(true);
+  const sa = srect($('#scrollArea'));
+  tilly.style.left = (W + 40)+'px'; tilly.style.top = '40px'; tilly.style.display = 'block';
+  sfx.whoosh();
+  await glide(tilly, sa.cx - 70, sa.cy - 150, 1800, -60);
+  tilly.querySelector('.carry').remove();
+  rolled.classList.add('show');
+  rolled.animate([{transform:'translateY(-120px) rotate(-20deg)'},{transform:'translateY(0) rotate(4deg)',offset:.7},{transform:'translateY(0) rotate(0)'}],{duration:600,easing:'ease-in'});
+  sfx.pop();
+  glide(tilly, -200, -150, 1500, 40).then(() => { tilly.style.display = 'none'; });
+  await wait(600);
+  state.phase = 'rolled'; state.busy = false;
+  instr = [i === 0 ? 'letter-first' : 'letter-next'];
+  sayAll(instr);
+  showHand('swipe', rolled);
+  await new Promise(r => { rolled._open = r; });
+}
+let rollSt = null;
+$('#rolled').addEventListener('pointerdown', e => { rollSt = {x:e.clientX, y:e.clientY}; try { $('#rolled').setPointerCapture(e.pointerId); } catch(_){} });
+$('#rolled').addEventListener('pointerup', () => {
+  if (state.phase !== 'rolled' || !rollSt) return;
+  rollSt = null;
+  const r = $('#rolled')._open; $('#rolled')._open = null; if (r) r();
+});
+async function openLetter(i){
+  const L = LETTERS[i];
+  state.blended = []; state.tapped = []; state.mistakes = 0; state.actPrompted = false; state.solved = false; state.lock = [];
+  $('#rolled').classList.remove('show');
+  renderLetter(L);
+  const sc = $('#scroll'); sc.classList.add('show');
+  sfx.unroll();
+  await sc.animate([{transform:'scaleY(.08)'},{transform:'scaleY(1.03)',offset:.8},{transform:'scaleY(1)'}],{duration: state.fast ? 20 : 700, easing:'ease-out'}).finished.catch(()=>{});
+  if (i === 1){ basket.classList.add('show'); state.basket = 0; renderBasket(); }
+  state.phase = 'letter'; state.busy = false; bellReset(); lastAct = Date.now();
+  await instruct([L.intro]);
+  const firstDec = wordEls().find(w => w._tk.g);
+  if (state.phase === 'letter' && firstDec && state.blended.length === 0) showHand('tap', firstDec);
+}
+async function closeLetter(){
+  state.phase = 'between';
+  bell.classList.remove('ready');
+  const sc = $('#scroll');
+  await sc.animate([{transform:'scaleY(1)'},{transform:'scaleY(.06)'}],{duration: state.fast ? 20 : 600, easing:'ease-in', fill:'forwards'}).finished.catch(()=>{});
+  sc.classList.remove('show'); sc.getAnimations().forEach(a => a.cancel());
+  basket.classList.remove('show');
+  await wait(500);
+}
+async function runRound(){
+  sfx.fanfare();
+  await wait(900);
+  await say('intro');
+  for (let i=0;i<3;i++){
+    await deliverLetter(i);
+    const done = new Promise(r => { letterDone = r; });
+    await openLetter(i);
+    await done;
+    await wait(400);
+    await readWholeLetter(true); /* the whole letter, now that she has read it */
+    await closeLetter();
+  }
+  await reward();
+}
+
+/* =========================================================
+   Reward
+   ========================================================= */
+function loadJewels(){ try { return Math.max(0, Math.min(3, parseInt(localStorage.getItem('qel-jewels')||'0',10)||0)); } catch(e){ return 0; } }
+function saveJewels(n){ try { localStorage.setItem('qel-jewels', String(n)); } catch(e){} }
+function showJewels(n){ document.querySelectorAll('#crown .gem').forEach((g,i) => g.classList.toggle('on', i < n)); }
+async function reward(){
+  state.phase = 'reward'; state.busy = true;
+  sfx.fanfare(); $('#rainbow').classList.add('show');
+  await wait(1200);
+  const u = $('#unicorn'); u.classList.add('show','trot');
+  sfx.neigh();
+  await u.animate([{transform:'translateX(560px)'},{transform:'translateX(0)'}],{duration: state.fast ? 20 : 2200, easing:'ease-out'}).finished.catch(()=>{});
+  u.classList.remove('trot');
+  ['#pig','#hen','#fox','#duck'].forEach((s,i) => setTimeout(() => retrigger($(s), 'cheer'), i*120));
+  confetti(70); sfx.chime();
+  await say('cheer');
+  // jewel
+  let n = loadJewels();
+  const slotIdx = n < 3 ? n : 2;
+  const gemSrc = document.querySelectorAll('#crown .gem')[slotIdx];
+  const ur = srect(u), cr = srect($('#crown'));
+  const gem = el(`<div class="flyheart"><svg viewBox="0 0 40 40"><path d="M20 2 l16 12 -6 22 h-20 l-6 -22z" fill="${['#ff3d7f','#38c172','#3b82f6'][slotIdx]}" stroke="#fff" stroke-width="3"/></svg></div>`);
+  gem.style.left = (ur.x + 20)+'px'; gem.style.top = (ur.y)+'px'; fx.appendChild(gem);
+  sfx.sparkle();
+  const tx = cr.x + cr.w * [0.26,0.5,0.74][slotIdx] - 32, ty = cr.y + cr.h * [0.55,0.43,0.55][slotIdx] - 30;
+  await glide(gem, tx, ty, 1300, 200);
+  gem.remove();
+  n = Math.min(3, n + 1); saveJewels(n); showJewels(n); state.jewels = n;
+  retrigger($('#crown'), 'shine'); sparkle(cr.cx, cr.cy, 16); sfx.chime();
+  await say('jewel');
+  await wait(400);
+  showFeast();
+  await say('feast');
+  for (let k=0;k<3;k++){ await clink(); await wait(250); }
+  confetti(90);
+  await say('finale');
+  $('#againBtn').classList.add('show');
+  instr = ['finale'];
+  state.done = true;
+}
+function showFeast(){
+  const sc = $('#feastScene');
+  const guests = [['fox',ART.fox()],['pig',ART.pig()],['hen',ART.hen()],['queen',ART.queen()],['duck',ART.duck()],['unicorn',ART.unicorn()],['tilly',ART.tilly(false)]];
+  const flags = Array.from({length:14},(_,i)=>`<path d="M${i*80} 10 l40 50 l40 -50z" fill="${['#ff4f8b','#ffd84d','#5fd38d','#6fb7ff','#b28dff'][i%5]}"/>`).join('');
+  let html = `<svg id="bunting" viewBox="0 0 1100 90"><path d="M0 10 Q550 40 1100 10" stroke="#8a5323" stroke-width="4" fill="none"/>${flags}</svg>`;
+  guests.forEach(([k, art], i) => {
+    const x = 34 + i*148;
+    const hat = k === 'hen' ? `<div style="position:absolute;left:52px;top:-38px;width:90px;height:68px">${HEN_ITEM.art()}</div>` : '';
+    const size = k === 'queen' ? 'width:150px;height:180px;' : k === 'unicorn' ? 'width:170px;height:150px;' : '';
+    const left = k === 'unicorn' ? x - 16 : k === 'queen' ? x - 8 : x;
+    html += `<div class="guest bob" style="left:${left}px;animation-delay:${i*.13}s;${size}">${art}${hat}</div>`;
+    html += `<div class="cup" data-i="${i}" style="left:${x + (i < 3 ? 104 : i > 3 ? -24 : 120)}px">${ART.goblet()}</div>`;
+  });
+  html += `<svg id="table" viewBox="0 0 1040 270" preserveAspectRatio="none">
+    <rect x="20" y="170" width="26" height="100" fill="#7a4a24"/><rect x="994" y="170" width="26" height="100" fill="#7a4a24"/>
+    <rect x="0" y="0" width="1040" height="34" rx="10" fill="#fff7ec" stroke="#e8d2b5" stroke-width="3"/>
+    <path d="M0 30 H1040 V150 ${Array.from({length:26},()=>'q-20 26 -40 0').join(' ')} Z" fill="#fff"/>
+    <path d="M0 44 H1040" stroke="#ff8fb8" stroke-width="10"/>
+    <path d="M0 130 H1040" stroke="#f6c453" stroke-width="6" stroke-dasharray="4 14" stroke-linecap="round"/></svg>`;
+  html += `<div class="treat" style="left:500px;bottom:248px">🎂</div><div class="treat" style="left:300px;bottom:256px;font-size:46px">🍎🍎</div><div class="treat" style="left:740px;bottom:256px;font-size:50px">🍰</div>`;
+  sc.innerHTML = html;
+  const drape = `<svg viewBox="0 0 150 820" preserveAspectRatio="none"><path d="M0 0 H150 Q120 300 140 520 Q60 560 20 820 H0Z" fill="#b0215f"/><path d="M30 0 Q60 300 40 560 M80 0 Q110 260 100 520" stroke="#8e1e5a" stroke-width="8" fill="none"/><path d="M0 0 H150 V40 H0Z" fill="#f6c453"/><circle cx="140" cy="520" r="14" fill="#f6c453"/></svg>`;
+  document.querySelectorAll('#feast .drape').forEach(d => d.remove());
+  $('#feast').insertAdjacentHTML('afterbegin', `<div class="drape l">${drape}</div><div class="drape r">${drape}</div>`);
+  $('#feast').classList.add('show');
+  sfx.fanfare();
+}
+async function clink(){
+  const cups = [...document.querySelectorAll('#feastScene .cup')];
+  cups.forEach((c, i) => { const dir = i < 3 ? 1 : (i > 3 ? -1 : 0); c.style.transform = `translate(${dir*24}px,-40px) rotate(${dir*20}deg)`; });
+  await wait(260); sfx.clink();
+  await wait(260);
+  cups.forEach(c => { c.style.transform = ''; });
+  await wait(300);
+}
+onTap($('#againBtn'), () => { location.reload(); });
+
+/* =========================================================
+   Start
+   ========================================================= */
+buildMap(); fillFrame(); buildWardrobe(); renderBasket(0);
+state.jewels = loadJewels(); showJewels(state.jewels);
+requestAnimationFrame(bellTick);
+onTap($('#playBtn'), () => {
+  if (state.phase !== 'start') return;
+  unlockAudio(); pickVoice();
+  state.phase = 'intro';
+  $('#start').animate([{opacity:1},{opacity:0}],{duration:500,fill:'forwards'}).finished.then(() => { $('#start').style.display = 'none'; });
+  runRound();
+});
+
+/* =========================================================
+   Debug hook for testers: window.__game
+   ========================================================= */
+window.__game = {
+  get state(){ return JSON.parse(JSON.stringify(state)); },
+  goals: {pig: PIG_GOAL, hen: HEN_GOAL},
+  lines: LINES,
+  fast(on=true){ state.fast = on; },
+  /* Open the current scroll if it is waiting to be opened */
+  open(){ const r = $('#rolled')._open; if (r){ $('#rolled')._open = null; r(); return true; } return false; },
+  /* Do the right action for the current letter */
+  async solve(){
+    if (state.phase !== 'letter' || state.busy) return false;
+    if (state.letter === 0){ const pig = $('#pig'); const g = makeGhost(pig); const r = $('#mud').getBoundingClientRect(); await pigDrop(r.left + r.width/2, r.top + r.height/2, g); }
+    else if (state.letter === 1){ if (!state.storeOpen) await openStore(); state.basket = 6; renderBasket(); frame.querySelectorAll('.apple').forEach((a,i) => { if (i < 6) a.remove(); }); const g = makeGhost(basket); await sendBasket(g); }
+    else if (state.letter === 2){ if (!state.wardOpen) await openWardrobe(); const item = document.querySelector(`#wardPanel .item[data-id="${HEN_ITEM.id}"]`); const g = makeGhost(item); await tryOn(HEN_ITEM, item, g); }
+    return true;
+  },
+  hint(){ giveHint(); }
+};
+</script>
+</body>
+</html>

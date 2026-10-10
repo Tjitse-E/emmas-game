@@ -1,0 +1,1438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#8fd29c">
+<link rel="icon" href="data:,">
+<title>Pippa's Word Wand</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+body{background:#8fd29c radial-gradient(ellipse at 50% 40%,#d4f3da 0%,#9ad8a6 55%,#6db87c 100%);
+  font-family:"Chalkboard SE","Comic Sans MS","Comic Neue","Andika",ui-rounded,system-ui,sans-serif;color:#3a2850}
+svg{display:block}
+svg.art{overflow:visible}
+button{font:inherit;border:0;padding:0;background:none;color:inherit;cursor:pointer;touch-action:none}
+.hidden{display:none!important}
+
+#stage{position:absolute;left:50%;top:50%;width:1180px;height:820px;margin:-410px 0 0 -590px;transform-origin:50% 50%;
+  overflow:hidden;border-radius:26px;background:#fffaf0;box-shadow:0 18px 50px rgba(30,70,40,.35)}
+
+/* ---------- scene ---------- */
+#scene{position:absolute;left:0;top:0;width:1180px;height:486px;overflow:hidden}
+#bg,#special,#props,#aboveDark,#dark{position:absolute;inset:0}
+#bg svg{width:100%;height:100%}
+#special{z-index:2}#props{z-index:3}#group{z-index:5}#dark{z-index:7}#aboveDark{z-index:8;pointer-events:none}#bubble{z-index:9}
+#dark{pointer-events:none;opacity:0;transition:opacity 2.2s ease;
+  background:radial-gradient(ellipse 330px 260px at 420px 360px,rgba(16,8,40,.42) 0%,rgba(10,5,28,.86) 100%)}
+#dark.on{opacity:1}
+
+#group{position:absolute;top:198px;left:-400px;width:350px;height:256px}
+#group .pippa{position:absolute;left:84px;top:0;width:160px;height:250px}
+#group .bobo{position:absolute;left:232px;top:136px;width:112px;height:122px}
+#group .cat{position:absolute;left:0;top:160px;width:92px;height:92px}
+.pippa,.bobo,.cat{transform-origin:50% 100%}
+.walking .pippa{animation:walkbob .5s ease-in-out infinite}
+.walking .bobo{animation:hop .42s ease-in-out infinite}
+.walking .cat{animation:walkbob .38s ease-in-out infinite}
+.bobo-idle{animation:breathe 2.2s ease-in-out infinite}
+@keyframes walkbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+@keyframes hop{0%,100%{transform:translateY(0) scaleY(1)}40%{transform:translateY(-26px) scaleY(1.05)}85%{transform:translateY(0) scaleY(.88)}}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.96)}}
+.squish{animation:squish .5s ease!important}
+@keyframes squish{0%{transform:scale(1)}30%{transform:scale(1.25,.75)}60%{transform:scale(.9,1.15) translateY(-20px)}100%{transform:scale(1)}}
+.blink{animation:blink 4.5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.wand-glow{animation:glowpulse 1.6s ease-in-out infinite;transform-origin:140px 62px}
+.glowing .wand-glow{animation:glowbig 1.6s ease-in-out infinite}
+@keyframes glowpulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.3);opacity:1}}
+@keyframes glowbig{0%,100%{transform:scale(3);opacity:.9}50%{transform:scale(3.6);opacity:1}}
+.cat.lick .cat-paw{animation:lickpaw .7s ease-in-out 3}
+.cat.lick .cat-head{animation:lickhead .7s ease-in-out 3;transform-origin:60px 60px}
+@keyframes lickpaw{0%,100%{transform:translate(0,0)}50%{transform:translate(2px,-40px)}}
+@keyframes lickhead{0%,100%{transform:rotate(0)}50%{transform:rotate(8deg)}}
+.cat-tail{animation:tail 2s ease-in-out infinite;transform-origin:28px 86px}
+@keyframes tail{0%,100%{transform:rotate(0)}50%{transform:rotate(12deg)}}
+
+#bubble{position:absolute;width:184px;height:156px;transform-origin:20% 100%;transition:transform .45s cubic-bezier(.3,1.6,.5,1),opacity .3s;cursor:pointer}
+#bubble.off{transform:scale(0);opacity:0}
+#bubble .pic{position:absolute;left:44px;top:18px;width:100px;height:100px;animation:float 2.4s ease-in-out infinite}
+#bubble .wordhint{position:absolute;left:24px;top:40px;width:140px;text-align:center;font-size:48px;font-weight:700;color:#4b2f78}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* map */
+#map{position:absolute;left:150px;top:10px;width:880px;height:70px;z-index:75;border-radius:35px;
+  background:rgba(255,249,234,.94);box-shadow:0 4px 0 rgba(140,100,50,.18),0 6px 16px rgba(0,0,0,.08)}
+#map .route{position:absolute;inset:0}
+.stop{position:absolute;top:7px;width:56px;height:56px;margin-left:-28px}
+.stop .done{position:absolute;right:-8px;top:-6px;width:28px;height:28px;transform:scale(0);transition:transform .5s cubic-bezier(.3,1.8,.5,1)}
+.stop.ok .done{transform:scale(1)}
+#marker{position:absolute;top:4px;width:62px;height:62px;margin-left:-31px;border-radius:50%;overflow:hidden;background:#fff;border:3px solid #f5c542;transition:left 2s cubic-bezier(.5,0,.3,1);
+  filter:drop-shadow(0 3px 2px rgba(0,0,0,.2))}
+
+/* speak button */
+#speak{position:absolute;right:12px;top:6px;width:104px;height:104px;border-radius:50%;z-index:90;background:#fff;
+  border:6px solid #f5c542;box-shadow:0 6px 0 #d49a1f,0 8px 18px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center}
+#speak:active{transform:translateY(4px);box-shadow:0 2px 0 #d49a1f}
+#speak svg{width:64px;height:64px}
+#speak .w{opacity:.35}
+#speak.talking .w1{animation:wave 1s infinite}
+#speak.talking .w2{animation:wave 1s .2s infinite}
+@keyframes wave{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* ---------- panel, wand, gems ---------- */
+#panel{position:absolute;left:0;top:470px;width:1180px;height:350px;z-index:10;
+  background:radial-gradient(ellipse 900px 300px at 50% 0%,#fffaf0 0%,#f6e8cc 70%,#efd9b2 100%)}
+#panel svg.edge{position:absolute;left:0;top:-4px;width:1180px;height:30px}
+.home-spot{position:absolute;width:104px;height:104px;opacity:.5;pointer-events:none}
+#wandArt{position:absolute;left:300px;top:596px;width:720px;height:160px;z-index:11;pointer-events:none;transform-origin:45% 50%}
+#wandArt svg{overflow:visible}
+#wandArt.wiggle{animation:wiggle .6s ease}
+@keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-3deg)}40%{transform:rotate(3deg)}60%{transform:rotate(-2deg)}80%{transform:rotate(2deg)}}
+.socket{transition:fill .3s}
+.socket.lit{fill:#fff6b0}
+.star-glow{animation:glowpulse 2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
+#wandArt.full .star-glow{animation:glowbig2 .9s ease-in-out infinite}
+@keyframes glowbig2{0%,100%{transform:scale(1.1);opacity:.8}50%{transform:scale(1.5);opacity:1}}
+#track{position:absolute;left:356px;top:748px;width:470px;height:68px;z-index:12;pointer-events:none;opacity:0;
+  transform:scale(.6);transition:opacity .3s,transform .4s cubic-bezier(.3,1.6,.5,1)}
+#track.show{opacity:1;transform:scale(1)}
+#track .shim{animation:shim 1.4s linear infinite}
+@keyframes shim{from{transform:translateX(-60px)}to{transform:translateX(420px)}}
+#wandHit{position:absolute;left:300px;top:600px;width:720px;height:220px;z-index:13}
+#gemLayer{position:absolute;inset:0;z-index:20;pointer-events:none}
+.gem{position:absolute;left:0;top:0;width:104px;height:104px;pointer-events:auto;touch-action:none;
+  transition:transform .5s cubic-bezier(.3,1.35,.5,1);z-index:2;--glow:rgba(255,255,255,.6)}
+.gem.dragging{transition:none;z-index:60}
+.gem-in{position:absolute;inset:0;transition:transform .2s;
+  filter:drop-shadow(0 6px 0 rgba(70,40,90,.22)) drop-shadow(0 0 7px var(--glow))}
+.gem.dragging .gem-in{transform:scale(1.14) rotate(-4deg)}
+.gem .cut,.gem .face{position:absolute;clip-path:polygon(29% 0,71% 0,100% 29%,100% 71%,71% 100%,29% 100%,0 71%,0 29%)}
+.gem .cut{inset:0;background:linear-gradient(150deg,var(--light) 0%,var(--rim) 48%,var(--dark) 100%)}
+.gem .face{inset:11px;background:radial-gradient(circle at 32% 26%,#fff 0%,var(--face) 72%)}
+.gem .shine{position:absolute;left:21px;top:17px;width:26px;height:11px;border-radius:50%;background:rgba(255,255,255,.95);transform:rotate(-28deg)}
+.gem .ltr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:70px;font-weight:700;
+  color:var(--ink);line-height:1;padding-bottom:10px}
+.gem.lit .gem-in{transform:scale(1.2);filter:drop-shadow(0 0 14px #fff6a0) drop-shadow(0 0 26px #ffcf2e)}
+.gem.hint .gem-in{animation:hintglow 1.3s ease-in-out infinite}
+.gem.boing .gem-in{animation:boing .45s ease}
+.gem.popin .gem-in{animation:popin .55s cubic-bezier(.3,1.7,.5,1) backwards}
+@keyframes hintglow{0%,100%{transform:scale(1);filter:drop-shadow(0 6px 0 rgba(70,40,90,.22)) drop-shadow(0 0 6px #ffe066)}
+  50%{transform:scale(1.08);filter:drop-shadow(0 6px 0 rgba(70,40,90,.22)) drop-shadow(0 0 24px #ffc400)}}
+@keyframes boing{0%{transform:scale(1)}35%{transform:scale(1.18,.86)}65%{transform:scale(.92,1.1)}100%{transform:scale(1)}}
+@keyframes popin{0%{transform:scale(0) rotate(-30deg)}100%{transform:scale(1) rotate(0)}}
+
+/* ---------- effects ---------- */
+#fx{position:absolute;inset:0;z-index:45;pointer-events:none}
+.spark{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;
+  clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%)}
+.puff{position:absolute;border-radius:50%;background:#ffc2e0}
+.magicword{position:absolute;left:0;top:0;width:1180px;text-align:center;pointer-events:none}
+.magicword span{display:inline-block;padding:0 46px;height:128px;line-height:118px;font-size:100px;font-weight:700;color:#6a2bbf;letter-spacing:6px;
+  background:radial-gradient(ellipse at 50% 30%,#fff 0%,#fff8e1 100%);border:7px solid #f5c542;border-radius:64px;
+  box-shadow:0 0 0 8px rgba(255,236,150,.55),0 0 40px rgba(255,214,70,.8),0 8px 0 #d49a1f}
+.magicword.silly span{border-color:#ff9ad5;color:#c2407e;box-shadow:0 0 0 8px rgba(255,190,225,.5),0 0 40px rgba(255,150,200,.7),0 8px 0 #e070a8}
+.zz{position:absolute;font-size:40px;font-weight:700;color:#6f7fd8}
+.heart{position:absolute;font-size:38px;color:#ff6f9c}
+.prop{position:absolute;transform-origin:50% 100%}
+.prop svg{width:100%;height:100%}
+.spin svg{animation:spin 2s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#hand{position:absolute;left:0;top:0;width:96px;height:96px;font-size:84px;line-height:96px;text-align:center;z-index:55;
+  pointer-events:none;opacity:0;filter:drop-shadow(0 4px 4px rgba(0,0,0,.25))}
+.ghost{opacity:.55;transition:none!important;z-index:54!important;pointer-events:none!important}
+
+/* scene specials */
+#goat{position:absolute;left:650px;top:314px;width:170px;height:150px;transition:left 1.6s ease-in-out}
+#goat .goat-art{transition:transform .2s}
+#goat.flip .goat-art{transform:scaleX(-1)}
+#goat.munch .goat-head{animation:munch .32s ease-in-out 5}
+#goat.walk{animation:walkbob .4s infinite}
+@keyframes munch{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+.goat-head{transform-origin:70px 70px}
+#gatePanel{position:absolute;left:888px;top:296px;width:124px;height:176px;transform-origin:0 50%;
+  transition:transform 1.4s cubic-bezier(.4,0,.2,1);transform:perspective(700px) rotateY(0)}
+#gatePanel.open{transform:perspective(700px) rotateY(-78deg)}
+#batEyes{position:absolute;left:792px;top:118px;width:70px;height:30px;transition:opacity 1s}
+#batEyes i{position:absolute;top:0;width:24px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#fffbd0,#ffd84a 60%,#e0a51e);
+  box-shadow:0 0 16px #ffe066;animation:eyeblink 3.2s infinite}
+#batEyes i:first-child{left:0}#batEyes i:last-child{right:0}
+@keyframes eyeblink{0%,88%,100%{transform:scaleY(1)}92%{transform:scaleY(.08)}}
+#bat{position:absolute;left:756px;top:84px;width:140px;height:90px;animation:batbob 2s ease-in-out infinite}
+@keyframes batbob{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+.bat-wing-l{animation:flapl .5s ease-in-out infinite;transform-origin:56px 48px}
+.bat-wing-r{animation:flapr .5s ease-in-out infinite;transform-origin:84px 48px}
+@keyframes flapl{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
+@keyframes flapr{0%,100%{transform:rotate(0)}50%{transform:rotate(18deg)}}
+#scene.lit .crystal{animation:twinkle 1.6s ease-in-out infinite}
+#scene.lit .crystal:nth-of-type(2n){animation-delay:.5s}
+#scene.lit .crystal:nth-of-type(3n){animation-delay:1s}
+@keyframes twinkle{0%,100%{opacity:.85}50%{opacity:1;filter:brightness(1.6)}}
+.wave{animation:wavemove 2.4s ease-in-out infinite}
+.wave:nth-of-type(2n){animation-delay:-1.2s}
+@keyframes wavemove{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
+
+/* ---------- fade ---------- */
+#fade{position:absolute;inset:0;z-index:80;background:#fff7e8;opacity:0;pointer-events:none;transition:opacity .6s}
+#fade.on{opacity:1;pointer-events:auto}
+
+/* ---------- party ---------- */
+#party{position:absolute;inset:0;z-index:70;overflow:hidden}
+#party .bgp{position:absolute;inset:0}
+#party .bgp svg{width:100%;height:100%}
+#queen{position:absolute;left:900px;top:400px;width:200px;height:300px;transform-origin:50% 100%;animation:sway 3s ease-in-out infinite}
+#queen.bow{animation:bow 1.4s ease}
+@keyframes sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+@keyframes bow{0%,100%{transform:rotate(0)}40%,60%{transform:rotate(-9deg) translateX(-10px)}}
+#pgroup{position:absolute;left:50px;top:466px;width:350px;height:256px}
+#pgroup .pippa{position:absolute;left:84px;top:0;width:160px;height:250px}
+#pgroup .bobo{position:absolute;left:232px;top:136px;width:112px;height:122px}
+#pgroup .cat{position:absolute;left:0;top:160px;width:92px;height:92px}
+.cheer .pippa{animation:walkbob .5s ease-in-out infinite}
+.cheer .bobo{animation:hop .45s ease-in-out infinite}
+#table{position:absolute;left:340px;top:582px;width:520px;height:132px}
+#items{position:absolute;left:340px;top:420px;width:520px;height:190px}
+.item{position:absolute;width:96px;height:132px;text-align:center}
+.item .pic{width:84px;height:84px;margin:0 auto}
+.item .lbl{display:inline-block;margin-top:2px;padding:0 10px;font-size:32px;font-weight:700;color:#4b2f78;background:#fff;border-radius:14px;
+  box-shadow:0 2px 0 rgba(0,0,0,.12);line-height:40px}
+.item.say{animation:boing .6s ease}
+.confetti{position:absolute;top:-30px;width:14px;height:9px;border-radius:2px}
+#pButtons{position:absolute;left:0;top:690px;width:1180px;display:flex;justify-content:center;gap:40px}
+.roundbtn{width:112px;height:112px;border-radius:50%;background:#fff;border:6px solid #f5c542;box-shadow:0 6px 0 #d49a1f,0 8px 18px rgba(0,0,0,.15);
+  display:flex;align-items:center;justify-content:center;position:relative}
+.roundbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #d49a1f}
+.roundbtn svg{width:70px;height:70px}
+.roundbtn .badge{position:absolute;right:-8px;top:-8px;min-width:40px;height:40px;border-radius:20px;background:#ff6f9c;color:#fff;font-size:26px;
+  font-weight:700;line-height:40px;text-align:center;padding:0 8px;box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.flycrown{position:absolute;width:220px;height:220px;z-index:96}
+
+/* ---------- start ---------- */
+#start{position:absolute;inset:0;z-index:100;overflow:hidden}
+#start .bgs{position:absolute;inset:0}
+#start .bgs svg{width:100%;height:100%}
+#title{position:absolute;left:0;top:44px;width:1180px;text-align:center;font-size:76px;font-weight:700;color:#fff;letter-spacing:1px;
+  -webkit-text-stroke:8px #8e5bc4;paint-order:stroke fill;text-shadow:0 8px 0 rgba(90,40,140,.25)}
+#play{position:absolute;left:460px;top:250px;width:260px;height:260px;border-radius:50%;background:#fff;border:10px solid #f5c542;
+  box-shadow:0 10px 0 #d49a1f,0 0 0 18px rgba(255,255,255,.45),0 18px 40px rgba(0,0,0,.2);overflow:hidden;animation:pulse 1.8s ease-in-out infinite}
+#play .face{position:absolute;inset:0}
+#play .tri{position:absolute;right:14px;bottom:14px;width:76px;height:76px;border-radius:50%;background:#8e5bc4;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 0 #6a3ba0}
+#sPippa{position:absolute;left:150px;top:340px;width:220px;height:344px}
+#sBobo{position:absolute;left:390px;top:540px;width:150px;height:163px}
+#sBook{position:absolute;right:30px;bottom:30px}
+
+/* ---------- sticker book ---------- */
+#book{position:absolute;inset:0;z-index:110;background:rgba(60,30,90,.45);display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .35s}
+#book.show{opacity:1;pointer-events:auto}
+.bk{position:relative;width:1060px;height:700px;display:flex;border-radius:28px;background:#8e5bc4;padding:18px;
+  box-shadow:0 14px 0 #6a3ba0,0 20px 50px rgba(0,0,0,.3);transform:scale(.8);transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
+#book.show .bk{transform:scale(1)}
+.pg{flex:1;background:#fffaf0;position:relative;overflow:hidden}
+.pg.l{border-radius:16px 4px 4px 16px;flex:0 0 380px;box-shadow:inset -18px 0 24px -16px rgba(0,0,0,.25)}
+.pg.r{border-radius:4px 16px 16px 4px;box-shadow:inset 18px 0 24px -16px rgba(0,0,0,.25)}
+.bigcrown{position:absolute;left:90px;top:60px;width:200px;height:200px}
+#crownCount{position:absolute;left:0;top:270px;width:100%;text-align:center;font-size:90px;font-weight:700;color:#d49a1f;-webkit-text-stroke:3px #fff;paint-order:stroke fill}
+#crownRow{position:absolute;left:30px;top:400px;width:320px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+#crownRow .mc{width:56px;height:56px}
+.bkp{position:absolute;left:120px;bottom:12px;width:150px;height:110px}
+#stickers{position:absolute;left:26px;top:26px;right:26px;bottom:26px;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;gap:10px}
+.sticker{position:relative;border-radius:22px;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);border:3px dashed #e3d3f3;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sticker .pic{width:86px;height:86px}
+.sticker .lbl{font-size:34px;font-weight:700;color:#4b2f78;line-height:40px;height:40px}
+.sticker.got{border:4px solid #fff;box-shadow:0 0 0 3px #f5c542,0 4px 0 rgba(0,0,0,.1)}
+.sticker.locked .pic{filter:grayscale(1) brightness(0);opacity:.12}
+.sticker.new{animation:newsticker 1s ease 2}
+.sticker.say{animation:boing .5s ease}
+@keyframes newsticker{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.12) rotate(-4deg)}}
+#bookClose{position:absolute;right:-26px;top:-26px;z-index:2}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="scene">
+    <div id="bg"></div>
+    <div id="special"></div>
+    <div id="props"></div>
+    <div id="group">
+      <div class="cat hidden"></div>
+      <div class="pippa"></div>
+      <div class="bobo"></div>
+    </div>
+    <div id="dark"></div>
+    <div id="aboveDark"></div>
+    <div id="bubble" class="off"></div>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="panel"></div>
+  <div id="wandArt"></div>
+  <div id="track"></div>
+  <div id="wandHit"></div>
+  <div id="gemLayer"></div>
+
+  <div id="fx"></div>
+  <div id="hand">👆</div>
+
+  <div id="party" class="hidden">
+    <div class="bgp"></div>
+    <div id="table"></div>
+    <div id="items"></div>
+    <div id="queen"></div>
+    <div id="pgroup"><div class="cat hidden"></div><div class="pippa"></div><div class="bobo"></div></div>
+    <div id="pButtons" class="hidden">
+      <button class="roundbtn" id="pBook" aria-label="Sticker book"></button>
+      <button class="roundbtn" id="pAgain" aria-label="Play again"></button>
+    </div>
+  </div>
+
+  <button id="speak" class="hidden" aria-label="Say it again"></button>
+  <div id="fade"></div>
+
+  <div id="book">
+    <div class="bk">
+      <div class="pg l"><div class="bigcrown"></div><div id="crownCount">0</div><div id="crownRow"></div></div>
+      <div class="pg r"><div id="stickers"></div></div>
+      <button class="roundbtn" id="bookClose" aria-label="Close"></button>
+    </div>
+  </div>
+
+  <div id="start">
+    <div class="bgs"></div>
+    <div id="title">Pippa's Word Wand</div>
+    <div id="sPippa"></div>
+    <div id="sBobo" class="bobo-idle"></div>
+    <button id="play" aria-label="Play"><div class="face"></div><div class="tri"><svg viewBox="0 0 40 40" width="40" height="40"><path d="M12 7 L34 20 L12 33Z" fill="#fff"/></svg></div></button>
+    <button class="roundbtn" id="sBook" aria-label="Sticker book"></button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Spoken lines. Same content as audio/lines.json (inlined so the page
+   works without fetching). Audio files go in audio/<id>.mp3.
+   ===================================================================== */
+const LINES = /*LINES*/{"intro":"Hello! I am Princess Pippa, and this is Bobo. The Queen is having a party. Will you help us get there?","scene-river":"Oh no, a river! Bobo thinks we need something. Make a word with the magic gems.","scene-gate":"Oh dear, a hungry goat! Bobo thinks the goat wants something. Make a word with the magic gems.","scene-cave":"It is so dark in this cave! Bobo thinks we need something. Make a word with the magic gems.","slide":"Slide your finger along the wand.","hint-drag":"Pick up a gem and put it on the wand.","hint-listen":"Listen to the sounds.","giggle":"Hee hee!","silly-word":"That is a silly word!","word-but-goat":"That is a word, but the goat is still hungry!","word-but-river":"That is a word, but we still cannot cross the river!","solve-log":"A log! Now we can walk over the river.","solve-bun":"Yum! The goat loves the bun. The gate is open!","solve-jam":"Yum! The goat loves the jam. The gate is open!","solve-sun":"The sun! Now the cave is bright. Look, a friendly bat! Let's go to the castle.","fx-cat":"A cat! The cat wants to come with us.","fx-cat-again":"Purr! Our cat is happy.","fx-cot":"A cot! Bobo has a little nap.","fx-cog":"A cog! Look, it spins round and round.","fx-lot":"A lot of stones! Clack, clack!","fx-hut":"A tiny hut! Bobo peeks inside.","fx-nut":"A nut! Bobo eats it up. Yum!","party-arrive":"Hooray! We are at the Queen's party!","party-made":"You made","item-and":"and","item-log":"a log","item-cat":"a cat","item-cot":"a cot","item-cog":"a cog","item-lot":"a lot of stones","item-bun":"a bun","item-jam":"some jam","item-sun":"the sun","item-hut":"a hut","item-nut":"a nut","queen-thanks":"Thank you, Pippa. And thank you, Emma!","sticker":"Here is a crown sticker for your sticker book!","book-look":"Look at all your words!","play-again":"Do you want to play again?","sound-l":"lll (as in log)","sound-o":"o (short, as in on)","sound-g":"g (hard, as in got)","sound-c":"c (k sound, as in cat)","sound-a":"a (short, as in apple)","sound-t":"t (as in top)","sound-b":"b (as in bat)","sound-u":"u (short, as in up)","sound-n":"nnn (as in net)","sound-j":"j (as in jam)","sound-m":"mmm (as in man)","sound-s":"sss (as in sun)","sound-h":"h (breathy, as in hat)","word-log":"log!","word-cat":"cat!","word-cot":"cot!","word-cog":"cog!","word-lot":"lot!","word-got":"got!","word-tag":"tag!","word-lag":"lag!","word-bun":"bun!","word-jam":"jam!","word-jab":"jab!","word-nab":"nab!","word-ban":"ban!","word-man":"man!","word-nub":"nub!","word-sun":"sun!","word-hut":"hut!","word-nut":"nut!","nonword-lat":"Lat?","nonword-gol":"Gol?","nonword-gal":"Gal?","nonword-gat":"Gat?","nonword-col":"Col?","nonword-cal":"Cal?","nonword-cag":"Cag?","nonword-tol":"Tol?","nonword-tog":"Tog?","nonword-tal":"Tal?","nonword-bam":"Bam?","nonword-num":"Num?","nonword-nam":"Nam?","nonword-jub":"Jub?","nonword-jun":"Jun?","nonword-jum":"Jum?","nonword-jan":"Jan?","nonword-mub":"Mub?","nonword-mun":"Mun?","nonword-mab":"Mab?","nonword-sut":"Sut?","nonword-nus":"Nus?","nonword-hus":"Hus?","nonword-tus":"Tus?","nonword-tun":"Tun?"}/*END*/;
+
+/* Placeholder pronunciations for speechSynthesis only. The real game uses
+   ElevenLabs files with pure letter sounds (audio/sound-x.mp3). */
+const SOUND_TTS = {l:'luh',o:'aw',g:'guh',c:'kuh',a:'ah',t:'tuh',b:'buh',u:'uh',n:'nuh',j:'juh',m:'mmm',s:'sss',h:'huh'};
+
+/* ===================================================================== */
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+const VOWELS = 'aeiou';
+const AVOID = ['bum','hun'];          // real words we never name out loud
+const ALL_THINGS = ['log','cat','cot','cog','lot','bun','jam','sun','hut','nut'];
+const SCENES = [
+  {id:'river', gems:['l','o','g','c','a','t'], target:['log'], bubble:'log', line:'scene-river', groupX:300,
+   words:{log:'solve',cat:'thing',cot:'thing',cog:'thing',lot:'thing',got:'word',tag:'word',lag:'word'}, wordLine:'word-but-river'},
+  {id:'gate',  gems:['b','u','n','j','a','m'], target:['bun','jam'], bubble:'bun', line:'scene-gate', groupX:290,
+   words:{bun:'solve',jam:'solve',jab:'word',nab:'word',ban:'word',man:'word',nub:'word'}, wordLine:'word-but-goat'},
+  {id:'cave',  gems:['s','u','n','h','t'], target:['sun'], bubble:'sun', line:'scene-cave', groupX:300,
+   words:{sun:'solve',hut:'thing',nut:'thing'}},
+];
+const G = {
+  mode:'start', sceneIdx:-1, misses:0, conjured:[], slots:[null,null,null], gems:[], line:null,
+  fast:false, hasCat:false, slideTold:false, taps:0, spells:[], groupX:-400, book:loadBook(), scale:1, unlocked:false
+};
+
+/* ---------- layout ---------- */
+const GEM = 104, SOCKET = 124;
+const SLOT_X = [430, 590, 750], SLOT_Y = 672;
+function gemHome(i, n){ const gap = 24, total = n*GEM + (n-1)*gap; return {x: 590 - total/2 + i*(GEM+gap), y: 494}; }
+function slotPos(s){ return {x: SLOT_X[s] - GEM/2, y: SLOT_Y - GEM/2}; }
+function fit(){
+  const s = Math.min(innerWidth/1180, innerHeight/820);
+  G.scale = s; stage.style.transform = `scale(${s})`;
+}
+addEventListener('resize', fit); fit();
+function toStage(e){ const r = stage.getBoundingClientRect(); return {x:(e.clientX - r.left)/G.scale, y:(e.clientY - r.top)/G.scale}; }
+const wait = ms => new Promise(r => setTimeout(r, G.fast ? Math.min(ms, 25) : ms));
+
+/* =====================================================================
+   ART (inline SVG, our own characters)
+   ===================================================================== */
+let UID = 0; const uid = () => 'u' + (++UID);
+function starPts(cx, cy, R, r, n = 5){
+  const p = []; for (let i = 0; i < n*2; i++){ const a = -Math.PI/2 + i*Math.PI/n, d = i%2 ? r : R;
+    p.push((cx + Math.cos(a)*d).toFixed(1) + ',' + (cy + Math.sin(a)*d).toFixed(1)); } return p.join(' ');
+}
+function octPts(cx, cy, size){ const h = size/2, k = size*0.21;
+  return [[cx-h+k,cy-h],[cx+h-k,cy-h],[cx+h,cy-h+k],[cx+h,cy+h-k],[cx+h-k,cy+h],[cx-h+k,cy+h],[cx-h,cy+h-k],[cx-h,cy-h+k]].map(p=>p.join(',')).join(' ');
+}
+function gearPts(cx, cy, R, r, teeth){ const st = Math.PI*2/teeth, p = [];
+  for (let i = 0; i < teeth; i++){ const a = i*st;
+    [[a-st*.3,r],[a-st*.17,R],[a+st*.17,R],[a+st*.3,r]].forEach(([b,d]) => p.push((cx+Math.cos(b)*d).toFixed(1)+','+(cy+Math.sin(b)*d).toFixed(1)));
+  } return p.join(' ');
+}
+
+function svgPippa(vb = '0 0 160 250'){
+  const u = uid();
+  let hem = ''; for (let x = 34; x <= 127; x += 11.6){ const t = (x-80)/48; hem += `<circle cx="${x.toFixed(1)}" cy="${(213 + 9*(1-t*t)).toFixed(1)}" r="7" fill="#a47ad0"/>`; }
+  return `<svg viewBox="${vb}" class="art"><defs>
+  <linearGradient id="d${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcc3f5"/><stop offset="1" stop-color="#b18ad9"/></linearGradient>
+  <radialGradient id="s${u}" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#fde3cd"/><stop offset="1" stop-color="#efc29f"/></radialGradient>
+  <radialGradient id="w${u}"><stop offset="0" stop-color="#fffbe0"/><stop offset=".45" stop-color="#ffe066" stop-opacity=".7"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient></defs>
+  <g fill="#6b3f24"><circle cx="50" cy="58" r="24"/><circle cx="110" cy="58" r="24"/><circle cx="43" cy="86" r="20"/><circle cx="117" cy="86" r="20"/>
+   <circle cx="46" cy="110" r="16"/><circle cx="114" cy="110" r="16"/><circle cx="54" cy="128" r="12"/><circle cx="106" cy="128" r="12"/></g>
+  <rect x="64" y="200" width="11" height="34" rx="5" fill="#efc29f"/><rect x="85" y="200" width="11" height="34" rx="5" fill="#efc29f"/>
+  <ellipse cx="68" cy="236" rx="13" ry="7" fill="#8e5bc4"/><ellipse cx="92" cy="236" rx="13" ry="7" fill="#8e5bc4"/>
+  <path d="M62 134 Q46 158 50 184" stroke="#efc29f" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <path d="M68 118 Q80 112 92 118 L100 146 Q118 184 130 212 Q80 232 30 212 Q42 184 60 146Z" fill="url(#d${u})"/>
+  ${hem}
+  <path d="M66 120 Q80 128 94 120 L97 146 Q80 152 63 146Z" fill="#c9a2ec"/>
+  <circle cx="62" cy="128" r="10" fill="#ead9fb"/><circle cx="98" cy="128" r="10" fill="#ead9fb"/>
+  <path d="M61 146 Q80 153 99 146 L100 156 Q80 163 60 156Z" fill="#f7dcff"/><circle cx="80" cy="154" r="5" fill="#f5c542"/>
+  <path d="M98 132 Q118 130 124 110" stroke="#efc29f" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <line x1="124" y1="112" x2="138" y2="70" stroke="#c98d2b" stroke-width="5" stroke-linecap="round"/>
+  <circle class="wand-glow" cx="140" cy="62" r="22" fill="url(#w${u})"/>
+  <polygon points="${starPts(140,62,15,6.5)}" fill="#ffd84a" stroke="#e0a51e" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="74" y="104" width="12" height="16" fill="#efc29f"/>
+  <circle cx="80" cy="78" r="34" fill="url(#s${u})"/>
+  <g fill="#6b3f24"><circle cx="54" cy="54" r="14"/><circle cx="68" cy="46" r="14"/><circle cx="84" cy="44" r="14"/><circle cx="99" cy="50" r="13"/>
+   <circle cx="108" cy="63" r="10"/><circle cx="49" cy="66" r="10"/></g>
+  <g class="blink" style="transform-origin:80px 84px"><ellipse cx="68" cy="84" rx="5" ry="6.5" fill="#3a2416"/><ellipse cx="92" cy="84" rx="5" ry="6.5" fill="#3a2416"/>
+   <circle cx="70" cy="81.5" r="2" fill="#fff"/><circle cx="94" cy="81.5" r="2" fill="#fff"/></g>
+  <circle cx="60" cy="95" r="6" fill="#ff9aa8" opacity=".55"/><circle cx="100" cy="95" r="6" fill="#ff9aa8" opacity=".55"/>
+  <path d="M72 97 Q80 105 88 97" stroke="#a0453f" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M63 44 L67 29 L74 39 L80 24 L86 39 L93 29 L97 44 Q80 39 63 44Z" fill="#f5c542" stroke="#d49a1f" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="80" cy="34" r="3.2" fill="#ff6fa8"/><circle cx="68" cy="36" r="2" fill="#7fd3ff"/><circle cx="92" cy="36" r="2" fill="#7fd3ff"/>
+  </svg>`;
+}
+function svgBobo(){
+  const u = uid(); let fl = '';
+  for (let i = 0; i < 18; i++){ const a = i/18*Math.PI*2; fl += `<circle cx="${(60+Math.cos(a)*44).toFixed(1)}" cy="${(70+Math.sin(a)*42).toFixed(1)}" r="10"/>`; }
+  return `<svg viewBox="0 0 120 130" class="art"><defs><radialGradient id="b${u}" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#c8f8e3"/><stop offset="1" stop-color="#6fd4aa"/></radialGradient></defs>
+  <ellipse cx="44" cy="121" rx="13" ry="7" fill="#f6a24a"/><ellipse cx="76" cy="121" rx="13" ry="7" fill="#f6a24a"/>
+  <path d="M34 40 Q14 20 16 2 Q34 12 52 30Z" fill="#6fd4aa"/><path d="M86 40 Q106 20 104 2 Q86 12 68 30Z" fill="#6fd4aa"/>
+  <path d="M34 36 Q22 22 22 10 Q34 18 46 30Z" fill="#ffb3c7"/><path d="M86 36 Q98 22 98 10 Q86 18 74 30Z" fill="#ffb3c7"/>
+  <path d="M16 3 l-7 -2 M16 3 l1 -3 M16 3 l6 -2 M104 3 l7 -2 M104 3 l-1 -3 M104 3 l-6 -2" stroke="#6fd4aa" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#8fe3c0">${fl}</g>
+  <ellipse cx="60" cy="70" rx="46" ry="44" fill="url(#b${u})"/>
+  <ellipse cx="60" cy="94" rx="26" ry="16" fill="#e2fcef" opacity=".85"/>
+  <g class="blink" style="transform-origin:60px 62px"><ellipse cx="44" cy="60" rx="15" ry="17" fill="#fff"/><ellipse cx="76" cy="60" rx="15" ry="17" fill="#fff"/>
+   <circle cx="46" cy="63" r="9" fill="#2c3d63"/><circle cx="74" cy="63" r="9" fill="#2c3d63"/>
+   <circle cx="49" cy="58" r="3.5" fill="#fff"/><circle cx="77" cy="58" r="3.5" fill="#fff"/></g>
+  <path d="M53 80 Q60 76 67 80 Q60 90 53 80Z" fill="#ff8fa3"/>
+  <circle cx="28" cy="78" r="6" fill="#ff9ab5" opacity=".5"/><circle cx="92" cy="78" r="6" fill="#ff9ab5" opacity=".5"/></svg>`;
+}
+function svgCat(){
+  return `<svg viewBox="0 0 100 100" class="art">
+  <path class="cat-tail" d="M28 86 Q6 80 10 56 Q12 44 20 40" stroke="#e8913f" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <ellipse cx="46" cy="72" rx="26" ry="22" fill="#f4a95b"/><ellipse cx="50" cy="78" rx="14" ry="13" fill="#fbd3a5"/>
+  <g class="cat-head"><path d="M40 30 L42 8 L56 22Z" fill="#f4a95b"/><path d="M66 22 L78 8 L80 30Z" fill="#f4a95b"/>
+   <path d="M44 26 L45 14 L52 22Z" fill="#ffb3c7"/><path d="M69 22 L76 14 L77 26Z" fill="#ffb3c7"/>
+   <circle cx="60" cy="38" r="22" fill="#f4a95b"/>
+   <path d="M52 18 l2 7 M60 16 l0 7 M68 18 l-2 7" stroke="#d97b2c" stroke-width="3" stroke-linecap="round"/>
+   <ellipse cx="52" cy="38" rx="3.5" ry="5" fill="#2b2b2b"/><ellipse cx="68" cy="38" rx="3.5" ry="5" fill="#2b2b2b"/>
+   <circle cx="53" cy="36" r="1.3" fill="#fff"/><circle cx="69" cy="36" r="1.3" fill="#fff"/>
+   <path d="M57 46 L63 46 L60 50Z" fill="#ff7f9a"/>
+   <path d="M60 50 Q56 54 53 52 M60 50 Q64 54 67 52 M44 46 l-10 -2 M44 50 l-10 2 M76 46 l10 -2 M76 50 l10 2" stroke="#7a4a2a" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>
+  <ellipse cx="38" cy="92" rx="9" ry="6" fill="#fbd3a5"/>
+  <g class="cat-paw"><ellipse cx="58" cy="92" rx="9" ry="6" fill="#fbd3a5"/></g></svg>`;
+}
+function svgGoat(){
+  return `<svg viewBox="0 0 170 150" class="goat-art">
+  <path d="M152 64 q12 -10 8 -24" stroke="#e6e0d2" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <g fill="#e3ddcf"><rect x="70" y="96" width="11" height="44" rx="5"/><rect x="88" y="98" width="11" height="42" rx="5"/><rect x="120" y="98" width="11" height="42" rx="5"/><rect x="138" y="96" width="11" height="44" rx="5"/></g>
+  <g fill="#6b5a4a"><rect x="69" y="134" width="13" height="8" rx="3"/><rect x="87" y="134" width="13" height="8" rx="3"/><rect x="119" y="134" width="13" height="8" rx="3"/><rect x="137" y="134" width="13" height="8" rx="3"/></g>
+  <ellipse cx="108" cy="82" rx="50" ry="30" fill="#f7f4ec" stroke="#e2dccd" stroke-width="2"/>
+  <ellipse cx="122" cy="72" rx="15" ry="10" fill="#d9b48c" opacity=".75"/><ellipse cx="96" cy="94" rx="9" ry="6" fill="#d9b48c" opacity=".6"/>
+  <g class="goat-head">
+   <path d="M72 72 Q60 60 56 44" stroke="#f7f4ec" stroke-width="22" stroke-linecap="round" fill="none"/>
+   <path d="M56 30 Q66 6 86 12" stroke="#b9996b" stroke-width="7" fill="none" stroke-linecap="round"/>
+   <path d="M46 28 Q52 2 70 6" stroke="#cdb085" stroke-width="7" fill="none" stroke-linecap="round"/>
+   <ellipse cx="44" cy="46" rx="24" ry="18" fill="#f7f4ec" stroke="#e2dccd" stroke-width="2" transform="rotate(-15 44 46)"/>
+   <ellipse cx="68" cy="40" rx="13" ry="6" fill="#efd0c4" transform="rotate(25 68 40)"/>
+   <ellipse cx="26" cy="56" rx="13" ry="10" fill="#ece5d6"/><circle cx="21" cy="53" r="1.8" fill="#6b5a4a"/>
+   <ellipse cx="40" cy="40" rx="4.2" ry="4.6" fill="#3b2f25"/><circle cx="41.5" cy="38.5" r="1.5" fill="#fff"/>
+   <path d="M19 62 Q25 66 31 62" stroke="#6b5a4a" stroke-width="2" fill="none" stroke-linecap="round"/>
+   <path d="M27 64 Q25 80 31 88 Q36 76 34 64Z" fill="#e2dccd"/></g></svg>`;
+}
+function svgGate(){
+  return `<svg viewBox="0 0 124 176" width="124" height="176">
+  <g fill="#c8874a" stroke="#8a5a34" stroke-width="3">
+   <rect x="6" y="14" width="22" height="160" rx="6"/><rect x="34" y="8" width="22" height="166" rx="6"/><rect x="62" y="8" width="22" height="166" rx="6"/><rect x="90" y="14" width="22" height="160" rx="6"/></g>
+  <g fill="#a86b3c" stroke="#8a5a34" stroke-width="3"><rect x="2" y="40" width="116" height="16" rx="5"/><rect x="2" y="128" width="116" height="16" rx="5"/>
+   <path d="M10 128 L106 52 L114 60 L18 136Z"/></g>
+  <circle cx="108" cy="92" r="6" fill="#f5c542" stroke="#8a5a34" stroke-width="2"/></svg>`;
+}
+function svgQueen(){
+  const u = uid();
+  return `<svg viewBox="0 0 200 300" class="art"><defs>
+  <linearGradient id="q${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ea4b55"/><stop offset="1" stop-color="#b3202d"/></linearGradient>
+  <radialGradient id="k${u}" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#fde3cd"/><stop offset="1" stop-color="#efc29f"/></radialGradient></defs>
+  <g fill="#f3e2b8"><circle cx="70" cy="86" r="18"/><circle cx="130" cy="86" r="18"/><circle cx="66" cy="110" r="14"/><circle cx="134" cy="110" r="14"/></g>
+  <path d="M80 130 Q100 122 120 130 L130 170 Q160 230 180 286 Q100 302 20 286 Q40 230 70 170Z" fill="url(#q${u})"/>
+  <path d="M92 150 L108 150 L124 290 Q100 294 76 290Z" fill="#fbe9c9"/>
+  <g fill="#f5c542"><circle cx="100" cy="176" r="4"/><circle cx="100" cy="206" r="4"/><circle cx="100" cy="236" r="4"/><circle cx="100" cy="266" r="4"/></g>
+  <path d="M20 286 Q100 302 180 286 L178 274 Q100 290 22 274Z" fill="#f5c542"/>
+  <path d="M74 140 Q58 176 84 196" stroke="#c42a36" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <path d="M126 140 Q142 176 116 196" stroke="#c42a36" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <circle cx="92" cy="198" r="9" fill="#efc29f"/><circle cx="108" cy="198" r="9" fill="#efc29f"/>
+  <path d="M64 128 Q100 150 136 128 Q134 146 100 158 Q66 146 64 128Z" fill="#fff"/>
+  <g fill="#333"><circle cx="78" cy="138" r="2"/><circle cx="100" cy="148" r="2"/><circle cx="122" cy="138" r="2"/></g>
+  <rect x="93" y="112" width="14" height="18" fill="#efc29f"/>
+  <circle cx="100" cy="88" r="32" fill="url(#k${u})"/>
+  <g fill="#f3e2b8"><circle cx="76" cy="66" r="14"/><circle cx="92" cy="58" r="14"/><circle cx="108" cy="58" r="14"/><circle cx="124" cy="66" r="14"/><circle cx="100" cy="46" r="13"/></g>
+  <path d="M84 90 q5 -6 10 0 M106 90 q5 -6 10 0" stroke="#3a2416" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="80" cy="100" r="6" fill="#ff9aa8" opacity=".55"/><circle cx="120" cy="100" r="6" fill="#ff9aa8" opacity=".55"/>
+  <path d="M89 104 Q100 114 111 104" stroke="#a0453f" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M74 50 L76 18 L88 34 L100 8 L112 34 L124 18 L126 50 Q100 44 74 50Z" fill="#f5c542" stroke="#d49a1f" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="76" cy="18" r="4" fill="#e8283c"/><circle cx="100" cy="8" r="5" fill="#e8283c"/><circle cx="124" cy="18" r="4" fill="#e8283c"/>
+  <circle cx="100" cy="40" r="5" fill="#4aa3ff"/></svg>`;
+}
+function svgBat(){
+  return `<svg viewBox="0 0 140 90" class="art"><line x1="70" y1="0" x2="70" y2="20" stroke="#6a5a80" stroke-width="3"/>
+  <g class="bat-wing-l"><path d="M56 46 Q30 22 6 36 Q18 42 16 52 Q28 48 32 60 Q42 52 56 58Z" fill="#7b5ea7"/></g>
+  <g class="bat-wing-r"><path d="M84 46 Q110 22 134 36 Q122 42 124 52 Q112 48 108 60 Q98 52 84 58Z" fill="#7b5ea7"/></g>
+  <path d="M54 30 L56 14 L66 24Z M86 30 L84 14 L74 24Z" fill="#9b7cc9"/>
+  <circle cx="70" cy="46" r="22" fill="#9b7cc9"/>
+  <ellipse cx="62" cy="44" rx="6" ry="7" fill="#fff"/><ellipse cx="78" cy="44" rx="6" ry="7" fill="#fff"/>
+  <circle cx="63" cy="45" r="3.5" fill="#2c2440"/><circle cx="77" cy="45" r="3.5" fill="#2c2440"/>
+  <path d="M64 56 Q70 61 76 56" stroke="#2c2440" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="56" cy="54" r="4" fill="#ff9ab5" opacity=".6"/><circle cx="84" cy="54" r="4" fill="#ff9ab5" opacity=".6"/></svg>`;
+}
+function svgCrown(){
+  return `<svg viewBox="0 0 100 100"><circle cx="50" cy="52" r="46" fill="#fff" stroke="#f3dca0" stroke-width="3"/>
+  <path d="M20 70 L18 34 L34 50 L50 24 L66 50 L82 34 L80 70Z" fill="#f5c542" stroke="#d49a1f" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="20" y="66" width="60" height="12" rx="4" fill="#f0b429" stroke="#d49a1f" stroke-width="3"/>
+  <circle cx="18" cy="32" r="5" fill="#e8283c"/><circle cx="50" cy="22" r="6" fill="#4aa3ff"/><circle cx="82" cy="32" r="5" fill="#e8283c"/>
+  <circle cx="50" cy="72" r="4" fill="#ff6fa8"/><circle cx="35" cy="72" r="3" fill="#7fd36b"/><circle cx="65" cy="72" r="3" fill="#7fd36b"/></svg>`;
+}
+const ITEMS = {
+  log: () => `<rect x="8" y="36" width="76" height="34" rx="17" fill="#9a6136"/><path d="M20 47 h40 M28 59 h40" stroke="#7a4a26" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="84" cy="53" rx="11" ry="17" fill="#e2b07a" stroke="#9a6136" stroke-width="3"/><ellipse cx="84" cy="53" rx="5" ry="8" fill="none" stroke="#b9824f" stroke-width="2"/>
+    <path d="M40 36 q4 -14 14 -12 q-4 10 -14 12z" fill="#5fb35a"/>`,
+  bun: () => `<path d="M12 72 Q12 36 50 34 Q88 36 88 72 Q50 84 12 72Z" fill="#e7a85c"/>
+    <path d="M16 58 Q20 38 50 36 Q80 38 84 58 Q78 52 74 62 Q68 52 60 62 Q52 52 44 62 Q36 52 30 62 Q24 52 16 58Z" fill="#fff4f8"/>
+    <g stroke-width="3" stroke-linecap="round"><path d="M34 46 l4 -2" stroke="#ff6f9c"/><path d="M60 44 l4 2" stroke="#4aa3ff"/><path d="M70 52 l3 -3" stroke="#7fd36b"/><path d="M28 54 l3 2" stroke="#f5c542"/></g>
+    <circle cx="50" cy="30" r="9" fill="#e8283c"/><circle cx="47" cy="27" r="2.5" fill="#fff" opacity=".8"/><path d="M50 21 q4 -8 10 -10" stroke="#5fb35a" stroke-width="2.5" fill="none"/>`,
+  jam: () => `<rect x="24" y="32" width="52" height="58" rx="12" fill="#d8283f"/><rect x="30" y="38" width="8" height="40" rx="4" fill="#fff" opacity=".35"/>
+    <rect x="20" y="20" width="60" height="16" rx="5" fill="#fff" stroke="#e8283c" stroke-width="2"/>
+    <g fill="#e8283c"><rect x="26" y="22" width="6" height="6"/><rect x="38" y="22" width="6" height="6"/><rect x="50" y="22" width="6" height="6"/><rect x="62" y="22" width="6" height="6"/>
+    <rect x="32" y="28" width="6" height="6"/><rect x="44" y="28" width="6" height="6"/><rect x="56" y="28" width="6" height="6"/><rect x="68" y="28" width="6" height="6"/></g>
+    <circle cx="52" cy="64" r="14" fill="#fff"/><path d="M52 72 C42 64 46 56 52 61 C58 56 62 64 52 72Z" fill="#e8283c"/>`,
+  sun: () => `<g stroke="#ffb31a" stroke-width="7" stroke-linecap="round">${[0,1,2,3,4,5,6,7].map(i=>{const a=i*Math.PI/4;return `<line x1="${(50+Math.cos(a)*32).toFixed(1)}" y1="${(50+Math.sin(a)*32).toFixed(1)}" x2="${(50+Math.cos(a)*44).toFixed(1)}" y2="${(50+Math.sin(a)*44).toFixed(1)}"/>`}).join('')}</g>
+    <circle cx="50" cy="50" r="25" fill="#ffd43b" stroke="#ffb31a" stroke-width="3"/><circle cx="42" cy="46" r="3" fill="#7a4a10"/><circle cx="58" cy="46" r="3" fill="#7a4a10"/>
+    <path d="M41 56 Q50 64 59 56" stroke="#7a4a10" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="36" cy="55" r="4" fill="#ff9a6a" opacity=".6"/><circle cx="64" cy="55" r="4" fill="#ff9a6a" opacity=".6"/>`,
+  cot: () => `<rect x="10" y="34" width="9" height="56" rx="4" fill="#a86b3c"/><rect x="81" y="44" width="9" height="46" rx="4" fill="#a86b3c"/>
+    <rect x="16" y="58" width="68" height="14" rx="5" fill="#fff" stroke="#d9cfe8" stroke-width="2"/><ellipse cx="30" cy="54" rx="13" ry="8" fill="#fff" stroke="#d9cfe8" stroke-width="2"/>
+    <path d="M40 52 Q62 46 84 54 L84 72 L40 72Z" fill="#7fb2f0"/><path d="M48 58 h10 M64 58 h10 M52 66 h10 M68 66 h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <rect x="10" y="72" width="80" height="8" rx="3" fill="#c8874a"/>`,
+  cog: () => `<polygon points="${gearPts(50,50,44,33,10)}" fill="#9aa7b8" stroke="#6f7b8c" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="50" cy="50" r="20" fill="#c3ccd8" stroke="#6f7b8c" stroke-width="3"/><circle cx="50" cy="50" r="8" fill="#6f7b8c"/>`,
+  lot: () => `<g stroke="#6f6a78" stroke-width="2.5"><ellipse cx="28" cy="78" rx="20" ry="13" fill="#a7a1b3"/><ellipse cx="70" cy="80" rx="22" ry="12" fill="#bdb7c8"/>
+    <ellipse cx="50" cy="74" rx="18" ry="12" fill="#8f899c"/><ellipse cx="38" cy="58" rx="16" ry="11" fill="#c9c3d3"/><ellipse cx="62" cy="58" rx="15" ry="10" fill="#a7a1b3"/>
+    <ellipse cx="50" cy="42" rx="13" ry="10" fill="#bdb7c8"/></g>`,
+  hut: () => `<rect x="24" y="50" width="52" height="40" rx="3" fill="#e9c38f" stroke="#b98a52" stroke-width="2"/><path d="M12 56 L50 14 L88 56Z" fill="#e2ad48" stroke="#b98a2a" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M30 40 l-6 12 M44 26 l-8 24 M56 26 l8 24 M70 40 l6 12" stroke="#b98a2a" stroke-width="2" stroke-linecap="round"/>
+    <rect x="42" y="64" width="16" height="26" rx="8" fill="#8a5a34"/><rect x="62" y="60" width="10" height="10" rx="2" fill="#fff3c4" stroke="#b98a52" stroke-width="2"/>`,
+  nut: () => `<ellipse cx="50" cy="62" rx="22" ry="27" fill="#c07a34"/><ellipse cx="42" cy="60" rx="5" ry="12" fill="#e2a464" opacity=".7"/>
+    <path d="M24 48 Q50 18 76 48 Q50 56 24 48Z" fill="#7a4a22"/><path d="M34 40 l6 6 M46 34 l4 8 M58 34 l-2 8 M68 40 l-6 6" stroke="#5a3418" stroke-width="2"/>
+    <path d="M50 28 q2 -10 8 -12" stroke="#5a3418" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+};
+function ITEM(w){ if (w === 'cat') return svgCat(); return `<svg viewBox="0 0 100 100">${ITEMS[w]()}</svg>`; }
+function svgBridgeLog(){
+  return `<svg viewBox="0 0 330 90"><ellipse cx="165" cy="80" rx="150" ry="8" fill="rgba(0,40,80,.18)"/>
+  <rect x="14" y="18" width="300" height="52" rx="26" fill="#9a6136"/><path d="M40 34 h150 M70 52 h170 M210 34 h70" stroke="#7a4a26" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="300" cy="44" rx="16" ry="26" fill="#e2b07a" stroke="#9a6136" stroke-width="4"/><ellipse cx="300" cy="44" rx="7" ry="12" fill="none" stroke="#b9824f" stroke-width="3"/>
+  <path d="M120 18 q6 -18 20 -16 q-6 14 -20 16z" fill="#5fb35a"/></svg>`;
+}
+
+/* ---------- backgrounds ---------- */
+function tree(x, y, s, c1, c2){
+  return `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-9" y="-10" width="18" height="64" rx="7" fill="#8a5a34"/>
+  <circle cx="0" cy="-44" r="44" fill="${c1}"/><circle cx="-32" cy="-16" r="30" fill="${c1}"/><circle cx="32" cy="-18" r="32" fill="${c2}"/><circle cx="10" cy="-64" r="26" fill="${c2}"/></g>`;
+}
+function cloud(x, y, s){ return `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff" opacity=".95"><circle cx="0" cy="0" r="26"/><circle cx="30" cy="-12" r="32"/><circle cx="64" cy="0" r="24"/><rect x="0" y="0" width="64" height="24" rx="12"/></g>`; }
+function flowers(list){ return list.map(([x,y,c]) => `<g transform="translate(${x} ${y})"><circle r="6" cx="-6" fill="${c}"/><circle r="6" cx="6" fill="${c}"/><circle r="6" cy="-6" fill="${c}"/><circle r="6" cy="6" fill="${c}"/><circle r="4" fill="#ffe066"/></g>`).join(''); }
+function skyDefs(u){
+  return `<linearGradient id="sky${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a6dbff"/><stop offset=".7" stop-color="#e4f5ff"/><stop offset="1" stop-color="#fff6dc"/></linearGradient>
+  <linearGradient id="gr${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#94d47e"/><stop offset="1" stop-color="#5daf58"/></linearGradient>`;
+}
+const BG = {
+  river(){ const u = uid(); return `<svg viewBox="0 0 1180 486" preserveAspectRatio="xMidYMid slice"><defs>${skyDefs(u)}
+    <linearGradient id="wa${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9be0f7"/><stop offset="1" stop-color="#3a9fd9"/></linearGradient></defs>
+    <rect width="1180" height="486" fill="url(#sky${u})"/>${cloud(150,110,1)}${cloud(520,80,.8)}${cloud(860,120,1.1)}
+    <path d="M0 260 Q160 180 330 236 T660 226 T990 206 T1180 236 V486 H0Z" fill="#b6e3a4"/>
+    ${tree(80,262,.8,'#6cc070','#58b062')}${tree(200,272,.6,'#7dcc78','#62b866')}${tree(990,252,.75,'#6cc070','#58b062')}${tree(1110,268,.95,'#7dcc78','#5aa95f')}
+    <path d="M0 292 Q300 262 600 288 T1180 282 V486 H0Z" fill="url(#gr${u})"/>
+    <path d="M0 450 Q200 418 420 440 T640 438" stroke="#f3dfae" stroke-width="44" fill="none" stroke-linecap="round"/>
+    <path d="M1180 400 Q1040 380 960 330 T900 296" stroke="#f3dfae" stroke-width="40" fill="none" stroke-linecap="round"/>
+    <path d="M752 284 C742 336 694 376 686 486 L912 486 C902 400 854 334 842 284Z" fill="#c9a46a"/>
+    <path d="M760 284 C750 336 704 376 696 486 L902 486 C892 400 846 336 834 284Z" fill="url(#wa${u})"/>
+    <g stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".75">
+     <path class="wave" d="M780 320 q10 -6 20 0 t20 0"/><path class="wave" d="M740 372 q12 -7 24 0 t24 0"/><path class="wave" d="M800 400 q12 -7 24 0 t24 0"/>
+     <path class="wave" d="M724 440 q14 -8 28 0 t28 0"/><path class="wave" d="M820 456 q14 -8 28 0 t28 0"/><path class="wave" d="M790 350 q10 -6 20 0 t20 0"/></g>
+    <g stroke="#3f8f45" stroke-width="5" stroke-linecap="round"><path d="M676 470 l-8 -40 M684 472 l2 -46 M692 470 l10 -34"/><path d="M918 470 l-8 -36 M926 472 l2 -44 M934 470 l10 -30"/></g>
+    ${flowers([[60,360,'#ff8fb8'],[160,400,'#fff'],[250,350,'#c9a7e8'],[560,360,'#ff8fb8'],[620,410,'#fff'],[990,440,'#ff8fb8'],[1080,360,'#c9a7e8'],[1140,450,'#fff']])}
+  </svg>`; },
+  gate(){ const u = uid(); let stones = '';
+    for (let r = 0; r < 6; r++) for (let c = 0; c < 14; c++){ const x = 756 + c*32 + (r%2?16:0), y = 270 + r*32; if (x > 862 && x < 1032) continue; if (x > 1180) continue;
+      stones += `<rect x="${x}" y="${y}" width="30" height="30" rx="7" fill="${(r+c)%3?'#c9c0b2':'#b8ae9e'}"/>`; }
+    return `<svg viewBox="0 0 1180 486" preserveAspectRatio="xMidYMid slice"><defs>${skyDefs(u)}</defs>
+    <rect width="1180" height="486" fill="url(#sky${u})"/>${cloud(120,90,.9)}${cloud(460,120,.7)}
+    <path d="M0 250 Q200 190 400 236 T800 220 T1180 230 V486 H0Z" fill="#b6e3a4"/>
+    <g transform="translate(940 140)"><rect x="0" y="40" width="80" height="60" fill="#f6c6d8"/><rect x="-14" y="20" width="26" height="80" fill="#f3b3cb"/><rect x="68" y="20" width="26" height="80" fill="#f3b3cb"/>
+     <path d="M-18 22 L-1 -6 L16 22Z M64 22 L81 -6 L98 22Z" fill="#9b6fd1"/><path d="M80 -6 v-16 l14 6 -14 6" fill="#ff6f9c"/></g>
+    ${tree(110,262,.85,'#6cc070','#58b062')}${tree(250,256,.6,'#7dcc78','#62b866')}${tree(560,250,.7,'#6cc070','#58b062')}
+    <path d="M0 292 Q300 262 600 288 T1180 282 V486 H0Z" fill="url(#gr${u})"/>
+    <path d="M0 452 Q260 420 520 446 T950 440" stroke="#f3dfae" stroke-width="46" fill="none" stroke-linecap="round"/>
+    <path d="M950 446 Q960 360 955 290" stroke="#f3dfae" stroke-width="80" fill="none"/>
+    <g>${stones}</g>
+    <rect x="850" y="236" width="40" height="236" rx="8" fill="#a99f90"/><circle cx="870" cy="232" r="20" fill="#b8ae9e"/>
+    <rect x="1012" y="236" width="40" height="236" rx="8" fill="#a99f90"/><circle cx="1032" cy="232" r="20" fill="#b8ae9e"/>
+    ${flowers([[70,380,'#ff8fb8'],[180,420,'#fff'],[620,380,'#c9a7e8'],[1100,470,'#ff8fb8']])}
+  </svg>`; },
+  cave(){ const u = uid();
+    const crystal = (x, y, s, c1, c2, flip) => `<g class="crystal" transform="translate(${x} ${y}) scale(${s}) ${flip?'scale(1,-1)':''}">
+      <polygon points="0,0 -14,-50 0,-80 14,-50" fill="${c1}"/><polygon points="-18,0 -34,-30 -26,-50 -12,-26" fill="${c2}"/><polygon points="18,0 32,-36 26,-56 12,-26" fill="${c2}"/>
+      <polygon points="0,-80 14,-50 0,0" fill="#fff" opacity=".35"/></g>`;
+    return `<svg viewBox="0 0 1180 486" preserveAspectRatio="xMidYMid slice"><defs>
+    <radialGradient id="ex${u}" cx=".5" cy=".7" r=".7"><stop offset="0" stop-color="#fff6cf"/><stop offset=".6" stop-color="#f7d98a"/><stop offset="1" stop-color="#c79a52"/></radialGradient>
+    <linearGradient id="rk${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b3b66"/><stop offset="1" stop-color="#2e2444"/></linearGradient></defs>
+    <rect width="1180" height="486" fill="url(#rk${u})"/>
+    <path d="M0 0 H1180 V60 Q1100 90 1040 70 Q960 110 880 80 Q800 120 700 84 Q600 110 520 80 Q420 116 330 84 Q220 110 130 80 Q60 100 0 76Z" fill="#3a2d55"/>
+    <g fill="#3f3158"><path d="M120 76 L140 150 L160 80Z"/><path d="M420 92 L436 170 L454 90Z"/><path d="M640 92 L652 140 L668 90Z"/><path d="M930 86 L948 160 L964 84Z"/></g>
+    <path d="M990 486 L996 330 Q1066 238 1146 330 L1160 486Z" fill="url(#ex${u})"/>
+    <path d="M990 486 L996 330 Q1066 238 1146 330 L1160 486" fill="none" stroke="#2a2040" stroke-width="18"/>
+    <path d="M0 400 Q300 370 600 392 T1180 386 V486 H0Z" fill="#5a4a72"/>
+    <path d="M0 450 Q300 430 600 446 T1000 440" stroke="#6e5d88" stroke-width="40" fill="none" stroke-linecap="round"/>
+    <g fill="#463766"><ellipse cx="80" cy="300" rx="90" ry="60"/><ellipse cx="560" cy="250" rx="70" ry="40"/><ellipse cx="860" cy="300" rx="80" ry="50"/></g>
+    ${crystal(70,420,1,'#ff9ad5','#ff6fb8')}${crystal(180,404,.7,'#8fe3ff','#4fc3f7')}${crystal(640,410,.8,'#c9a7ff','#9b6fd1')}
+    ${crystal(900,420,1.1,'#8fe3ff','#4fc3f7')}${crystal(470,100,.7,'#ff9ad5','#ff6fb8',true)}${crystal(700,96,.6,'#8fe3ff','#4fc3f7',true)}
+  </svg>`; },
+  party(){ const u = uid();
+    const flags = [...Array(15)].map((_, i) => { const x = 20 + i*80, y = 122 + Math.sin(i/14*Math.PI)*34; const c = ['#ff6f9c','#f5c542','#8fe3c0','#9b6fd1','#4aa3ff'][i%5];
+      return `<path d="M${x} ${y} l40 0 l-20 38z" fill="${c}"/>`; }).join('');
+    return `<svg viewBox="0 0 1180 820" preserveAspectRatio="xMidYMid slice"><defs>${skyDefs(u)}
+    <linearGradient id="cs${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbd3e2"/><stop offset="1" stop-color="#f3b3cb"/></linearGradient></defs>
+    <rect width="1180" height="820" fill="url(#sky${u})"/>${cloud(110,200,1)}${cloud(980,230,.9)}
+    <g transform="translate(0 30)">
+     <rect x="420" y="220" width="340" height="250" fill="url(#cs${u})"/>
+     <rect x="370" y="150" width="90" height="320" fill="#f3b3cb"/><rect x="720" y="150" width="90" height="320" fill="#f3b3cb"/><rect x="540" y="110" width="100" height="140" fill="#f6c6d8"/>
+     <path d="M360 154 L415 60 L470 154Z M710 154 L765 60 L820 154Z M530 114 L590 20 L650 114Z" fill="#9b6fd1"/>
+     <path d="M415 60 v-30 l26 10 -26 10 M765 60 v-30 l26 10 -26 10 M590 20 v-30 l26 10 -26 10" fill="#ff6f9c" stroke="#7a4fb0" stroke-width="3"/>
+     <g fill="#fff3c4" stroke="#d49a1f" stroke-width="3"><rect x="398" y="210" width="34" height="50" rx="17"/><rect x="748" y="210" width="34" height="50" rx="17"/><rect x="572" y="150" width="36" height="52" rx="18"/>
+      <rect x="470" y="290" width="40" height="56" rx="20"/><rect x="670" y="290" width="40" height="56" rx="20"/></g>
+     <path d="M550 470 V380 Q590 330 630 380 V470Z" fill="#a86b3c" stroke="#7a4a26" stroke-width="4"/>
+     <g fill="#f3b3cb">${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${424+i*44}" y="200" width="28" height="24"/>`).join('')}</g>
+    </g>
+    <path d="M0 470 Q300 440 600 466 T1180 460 V820 H0Z" fill="url(#gr${u})"/>
+    <g fill="#4f9e52"><circle cx="40" cy="480" r="46"/><circle cx="110" cy="470" r="40"/><circle cx="1080" cy="476" r="44"/><circle cx="1150" cy="482" r="40"/></g>
+    <g fill="#ff8fb8"><circle cx="30" cy="460" r="6"/><circle cx="96" cy="452" r="6"/><circle cx="1090" cy="456" r="6"/><circle cx="1140" cy="470" r="6"/></g>
+    <path d="M0 116 Q590 190 1180 116" stroke="#c98d2b" stroke-width="3" fill="none"/>${flags}
+    ${flowers([[230,560,'#ff8fb8'],[300,760,'#fff'],[900,760,'#c9a7e8'],[1120,600,'#ff8fb8'],[170,690,'#fff'],[1040,780,'#ff8fb8']])}
+  </svg>`; },
+};
+function svgTable(){
+  let sc = ''; for (let x = 10; x < 520; x += 40) sc += `<circle cx="${x+10}" cy="46" r="20" fill="#ffd1e3"/>`;
+  return `<svg viewBox="0 0 520 132" width="520" height="132"><rect x="40" y="40" width="16" height="92" rx="5" fill="#a86b3c"/><rect x="464" y="40" width="16" height="92" rx="5" fill="#a86b3c"/>
+    <rect x="0" y="0" width="520" height="46" rx="10" fill="#fff0f6"/>${sc}<rect x="0" y="0" width="520" height="14" rx="7" fill="#ffe3ee"/></svg>`;
+}
+const MAP_ICONS = {
+  river: `<circle cx="28" cy="28" r="26" fill="#d5efff" stroke="#7cc6ef" stroke-width="3"/><path d="M10 24 q6 -6 12 0 t12 0 t12 0 M10 34 q6 -6 12 0 t12 0 t12 0" stroke="#3a9fd9" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+  gate: `<circle cx="28" cy="28" r="26" fill="#eaf6dc" stroke="#9fd38a" stroke-width="3"/><g fill="#c8874a" stroke="#8a5a34" stroke-width="2"><rect x="14" y="16" width="7" height="26" rx="2"/><rect x="25" y="14" width="7" height="28" rx="2"/><rect x="36" y="16" width="7" height="26" rx="2"/></g><rect x="11" y="22" width="34" height="5" rx="2" fill="#a86b3c"/>`,
+  cave: `<circle cx="28" cy="28" r="26" fill="#ece5f7" stroke="#b9a6dd" stroke-width="3"/><path d="M10 44 Q12 14 28 12 Q44 14 46 44Z" fill="#6e5d88"/><path d="M18 44 Q20 26 28 24 Q36 26 38 44Z" fill="#2e2444"/>`,
+  castle: `<circle cx="28" cy="28" r="26" fill="#ffe6f0" stroke="#f3a7c4" stroke-width="3"/><rect x="16" y="24" width="24" height="20" fill="#f3b3cb"/><rect x="12" y="18" width="9" height="26" fill="#f6c6d8"/><rect x="35" y="18" width="9" height="26" fill="#f6c6d8"/>
+    <path d="M10 19 L16.5 8 L23 19Z M33 19 L39.5 8 L46 19Z" fill="#9b6fd1"/><path d="M25 44 v-8 q3 -4 6 0 v8z" fill="#a86b3c"/>`,
+};
+const SPEAKER_SVG = `<svg viewBox="0 0 64 64"><path d="M8 24 h12 l16 -13 v42 l-16 -13 h-12z" fill="#8e5bc4" stroke="#6a3ba0" stroke-width="3" stroke-linejoin="round"/>
+  <path class="w w1" d="M44 22 q8 10 0 20" stroke="#8e5bc4" stroke-width="5" fill="none" stroke-linecap="round"/><path class="w w2" d="M50 14 q14 18 0 36" stroke="#8e5bc4" stroke-width="5" fill="none" stroke-linecap="round"/></svg>`;
+const BOOK_SVG = `<svg viewBox="0 0 70 70"><path d="M8 14 Q22 8 35 16 Q48 8 62 14 V58 Q48 52 35 60 Q22 52 8 58Z" fill="#8e5bc4" stroke="#6a3ba0" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M12 16 Q23 12 33 19 V55 Q23 50 12 54Z" fill="#fffaf0"/><path d="M37 19 Q47 12 58 16 V54 Q47 50 37 55Z" fill="#fffaf0"/><polygon points="${starPts(23,34,9,4)}" fill="#f5c542"/><polygon points="${starPts(47,34,9,4)}" fill="#ff6f9c"/></svg>`;
+const AGAIN_SVG = `<svg viewBox="0 0 70 70"><path d="M52 22 A22 22 0 1 0 57 40" stroke="#8e5bc4" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M44 8 L58 22 L40 28Z" fill="#8e5bc4"/><polygon points="${starPts(35,36,10,4.5)}" fill="#f5c542"/></svg>`;
+const CLOSE_SVG = `<svg viewBox="0 0 70 70"><path d="M20 20 L50 50 M50 20 L20 50" stroke="#8e5bc4" stroke-width="9" stroke-linecap="round"/></svg>`;
+
+/* =====================================================================
+   BUILD STATIC UI
+   ===================================================================== */
+function buildStatic(){
+  $('#group .pippa').innerHTML = svgPippa();
+  $('#group .bobo').innerHTML = svgBobo(); $('#group .bobo').classList.add('bobo-idle');
+  $('#group .cat').innerHTML = svgCat();
+  $('#speak').innerHTML = SPEAKER_SVG;
+  // map
+  const STOPS = [110, 330, 550, 770], names = ['river','gate','cave','castle'];
+  let route = `<svg class="route" viewBox="0 0 880 70"><path d="M60 35 H820" stroke="#d9b98a" stroke-width="6" stroke-dasharray="2 14" stroke-linecap="round"/></svg>`;
+  names.forEach((n, i) => route += `<div class="stop" id="stop${i}" style="left:${STOPS[i]}px"><svg viewBox="0 0 56 56">${MAP_ICONS[n]}</svg>
+     <div class="done"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#7fd36b" stroke="#fff" stroke-width="2"/><path d="M8 14 l4 5 l8 -10" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg></div></div>`);
+  route += `<div id="marker">${svgPippa('36 18 88 92')}</div>`;
+  $('#map').innerHTML = route; G.STOPS = STOPS;
+  // panel edge
+  $('#panel').innerHTML = `<svg class="edge" viewBox="0 0 1180 30" preserveAspectRatio="none"><path d="M0 14 ${[...Array(60)].map((_,i)=>`Q${i*20+10} ${i%2?2:24} ${i*20+20} 14`).join(' ')} V0 H0Z" fill="#5daf58"/></svg>`;
+  // wand
+  const sockets = SLOT_X.map((x, i) => `<polygon class="socket" id="sock${i}" points="${octPts(x,SLOT_Y,SOCKET)}" fill="rgba(255,255,255,.8)" stroke="#b48ad9" stroke-width="4" stroke-dasharray="10 7"/>`).join('');
+  $('#wandArt').innerHTML = `<svg viewBox="300 596 720 160" width="720" height="160"><defs>
+    <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe999"/><stop offset=".5" stop-color="#f5c542"/><stop offset="1" stop-color="#c98d2b"/></linearGradient>
+    <radialGradient id="sg"><stop offset="0" stop-color="#fff8c4"/><stop offset=".5" stop-color="#ffe066" stop-opacity=".55"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient></defs>
+    <rect x="340" y="656" width="560" height="32" rx="16" fill="url(#wg)" stroke="#c98d2b" stroke-width="3"/>
+    <rect x="312" y="648" width="62" height="48" rx="20" fill="#8e5bc4" stroke="#6a3ba0" stroke-width="3"/><path d="M330 650 v44 M346 650 v44 M362 650 v44" stroke="#b48ad9" stroke-width="4"/>
+    <circle class="star-glow" cx="935" cy="672" r="80" fill="url(#sg)"/>
+    <polygon points="${starPts(935,672,68,30)}" fill="url(#wg)" stroke="#c98d2b" stroke-width="4" stroke-linejoin="round"/>
+    <polygon points="${starPts(935,672,30,13)}" fill="#fff8d6" opacity=".7"/>
+    ${sockets}</svg>`;
+  $('#track').innerHTML = `<svg viewBox="0 0 470 68" width="470" height="68"><defs>
+    <linearGradient id="tg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd1e3"/><stop offset=".33" stop-color="#ffe999"/><stop offset=".66" stop-color="#bff2dc"/><stop offset="1" stop-color="#cfe2ff"/></linearGradient>
+    <clipPath id="tc"><path d="M30 14 H404 V2 L462 34 L404 66 V54 H30 A20 20 0 0 1 30 14Z"/></clipPath></defs>
+    <path d="M30 14 H404 V2 L462 34 L404 66 V54 H30 A20 20 0 0 1 30 14Z" fill="url(#tg)" stroke="#b48ad9" stroke-width="4" stroke-linejoin="round"/>
+    <g clip-path="url(#tc)"><rect class="shim" x="0" y="0" width="40" height="68" fill="#fff" opacity=".7" transform="skewX(-20)"/></g>
+    <g fill="#fff">${[70,150,230,310,380].map(x=>`<polygon points="${starPts(x,34,9,4)}"/>`).join('')}</g></svg>`;
+  // home spots
+  // party buttons
+  $('#pBook').innerHTML = BOOK_SVG + '<span class="badge" id="pBadge">0</span>';
+  $('#pAgain').innerHTML = AGAIN_SVG;
+  $('#sBook').innerHTML = BOOK_SVG + '<span class="badge" id="sBadge">0</span>';
+  $('#bookClose').innerHTML = CLOSE_SVG;
+  $('.bigcrown').innerHTML = svgCrown();
+  // start
+  $('#start .bgs').innerHTML = BG.river();
+  $('#sPippa').innerHTML = svgPippa();
+  $('#sBobo').innerHTML = svgBobo();
+  $('#play .face').innerHTML = svgPippa('26 18 108 108');
+  updateBadges();
+}
+
+/* =====================================================================
+   AUDIO: say(id) tries audio/<id>.mp3, falls back to speechSynthesis
+   ===================================================================== */
+const voiceEl = new Audio(); voiceEl.preload = 'auto';
+const missing = new Set();
+const active = new Set();
+let gen = 0, chain = Promise.resolve(), ttsVoice = null;
+function pickVoice(){
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices(), gb = vs.filter(v => /en[-_]GB/i.test(v.lang));
+  const pref = ['Serena','Kate','Stephanie','Martha','Google UK English Female','Fiona','Moira','Daniel'];
+  ttsVoice = pref.map(n => gb.find(v => v.name.includes(n))).find(Boolean) || gb[0] || vs.find(v => /^en/i.test(v.lang)) || null;
+}
+if ('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function talkingUI(){ $('#speak').classList.toggle('talking', active.size > 0); }
+function stopVoice(){
+  gen++; chain = Promise.resolve();
+  [...active].forEach(c => c.finish());
+  try { voiceEl.pause(); } catch(e){}
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch(e){}
+}
+function play(id, o = {}){
+  return new Promise(resolve => {
+    let done = false, fb = false;
+    const c = { finish(){ if (done) return; done = true; clearTimeout(c.t); active.delete(c); talkingUI(); resolve(); } };
+    active.add(c); talkingUI(); G.lastSaid = id;
+    const text = LINES[id] || id.replace(/^\w+-/, '');
+    if (G.fast){ c.t = setTimeout(c.finish, 20); return; }
+    const fallback = () => {
+      if (done || fb) return; fb = true; missing.add(id);
+      const t = id.startsWith('sound-') ? SOUND_TTS[id.slice(6)] || text : text;
+      const est = Math.max(700, t.length * 65 / (o.stretch ? .6 : 1)) + 800;
+      c.t = setTimeout(c.finish, est * 1.4);
+      if (!('speechSynthesis' in window)) { clearTimeout(c.t); c.t = setTimeout(c.finish, est * .7); return; }
+      const u = new SpeechSynthesisUtterance(t);
+      u.lang = 'en-GB'; if (ttsVoice) u.voice = ttsVoice;
+      u.rate = o.stretch ? .55 : (id.startsWith('sound-') ? .75 : .9);
+      u.pitch = o.pitch || 1.1;
+      u.onend = () => c.finish(); u.onerror = () => c.finish();
+      setTimeout(() => { if (!done) speechSynthesis.speak(u); }, 40);
+    };
+    if (missing.has(id)) return fallback();
+    voiceEl.onended = () => c.finish();
+    voiceEl.onerror = fallback;
+    voiceEl.src = 'audio/' + id + '.mp3';
+    voiceEl.playbackRate = o.stretch ? .8 : 1;
+    const p = voiceEl.play(); if (p && p.catch) p.catch(fallback);
+  });
+}
+function say(id, o){ stopVoice(); const p = play(id, o); chain = p; return p; }
+function sayQ(id, o){ const g = gen; chain = chain.then(() => g === gen ? play(id, o) : undefined); return chain; }
+
+/* ---------- WebAudio sound effects ---------- */
+let AC = null;
+function ac(){ if (!AC){ try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} } return AC; }
+function tone(f, t0, dur, type = 'sine', vol = .15, f2){
+  const a = ac(); if (!a || G.fast) return; const t = a.currentTime + t0;
+  const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.setValueAtTime(f, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .015); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .05);
+}
+function noise(t0, dur, vol = .2, ftype = 'lowpass', freq = 1200, freq2){
+  const a = ac(); if (!a || G.fast) return; const t = a.currentTime + t0;
+  const buf = a.createBuffer(1, Math.ceil(a.sampleRate * dur), a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random()*2 - 1;
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = buf; f.type = ftype; f.frequency.setValueAtTime(freq, t);
+  if (freq2) f.frequency.exponentialRampToValueAtTime(freq2, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s.connect(f).connect(g).connect(a.destination); s.start(t);
+}
+const SFX = {
+  tap(){ tone(700, 0, .1, 'sine', .1); },
+  snap(){ tone(880, 0, .09, 'triangle', .15); tone(1320, .05, .15, 'sine', .1); },
+  chime(){ [1046,1318,1568,2093].forEach((f,i) => tone(f, i*.08, .5, 'sine', .09)); },
+  sparkle(){ for (let i = 0; i < 9; i++) tone(1400 + Math.random()*1600, i*.045, .14, 'sine', .05); },
+  pop(){ tone(380, 0, .12, 'sine', .18, 900); },
+  whoosh(){ noise(0, .35, .12, 'bandpass', 400, 2400); },
+  giggle(){ [700,920,760,980,820,1040].forEach((f,i) => tone(f, i*.085, .08, 'triangle', .1, f*1.25)); },
+  splash(){ noise(0, .7, .22, 'lowpass', 2400, 300); noise(.12, .4, .1, 'highpass', 3000); },
+  thud(){ tone(130, 0, .3, 'sine', .3, 55); noise(0, .15, .1, 'lowpass', 500); },
+  bleat(){ const a = ac(); if (!a || G.fast) return; const t = a.currentTime;
+    const o = a.createOscillator(), l = a.createOscillator(), lg = a.createGain(), g = a.createGain(), f = a.createBiquadFilter();
+    o.type = 'sawtooth'; o.frequency.value = 330; l.frequency.value = 22; lg.gain.value = 26; l.connect(lg).connect(o.frequency);
+    f.type = 'lowpass'; f.frequency.value = 1600; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.12, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + .8);
+    o.connect(f).connect(g).connect(a.destination); o.start(t); l.start(t); o.stop(t + .85); l.stop(t + .85); },
+  munch(){ for (let i = 0; i < 5; i++) noise(i*.32, .12, .16, 'bandpass', 900); },
+  squeak(){ tone(1200, 0, .12, 'sine', .14, 1900); tone(1500, .14, .12, 'sine', .12, 2300); },
+  snore(){ noise(0, .9, .07, 'lowpass', 300, 600); noise(1.1, .9, .07, 'lowpass', 300, 600); },
+  meow(){ tone(600, 0, .5, 'triangle', .1, 900); tone(900, .25, .35, 'triangle', .08, 520); },
+  creak(){ tone(160, 0, 1, 'sawtooth', .04, 240); },
+  clack(){ tone(900, 0, .05, 'square', .06); tone(700, .18, .05, 'square', .06); tone(1000, .34, .05, 'square', .05); },
+  drip(){ tone(1400, 0, .12, 'sine', .08, 600); },
+  fanfare(){ [[523,0,.18],[659,.18,.18],[784,.36,.18],[1046,.54,.6],[784,.95,.16],[1046,1.12,.8]].forEach(([f,t,d]) => { tone(f, t, d, 'square', .05); tone(f, t, d, 'sine', .1); }); },
+  hum(){ [523,659,784].forEach(f => tone(f, 0, 1.4, 'sine', .05)); },
+};
+
+function silentWav(){
+  const n = 800, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => [...t].forEach((c, i) => b[o + i] = c.charCodeAt(0));
+  w(0,'RIFF'); v.setUint32(4, 36 + n, true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36,'data'); v.setUint32(40, n, true); b.fill(128, 44);
+  let s = ''; b.forEach(x => s += String.fromCharCode(x)); return 'data:audio/wav;base64,' + btoa(s);
+}
+function unlockAudio(){
+  if (G.unlocked) return; G.unlocked = true;
+  const a = ac(); if (a && a.state === 'suspended') a.resume();
+  try { voiceEl.src = silentWav();
+    const p = voiceEl.play(); if (p && p.catch) p.catch(() => {}); } catch(e){}
+  try { if ('speechSynthesis' in window){ const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } } catch(e){}
+}
+
+/* =====================================================================
+   EFFECTS
+   ===================================================================== */
+const fx = $('#fx');
+function sparkleBurst(x, y, n = 14, colors = ['#ffe066','#ff9ad5','#8fe3ff','#c9a7ff','#fff']){
+  for (let i = 0; i < n; i++){
+    const s = document.createElement('div'); s.className = 'spark'; s.style.left = x + 'px'; s.style.top = y + 'px';
+    s.style.background = colors[i % colors.length]; const sz = 14 + Math.random()*16; s.style.width = s.style.height = sz + 'px';
+    fx.appendChild(s); const a = Math.random()*Math.PI*2, d = 50 + Math.random()*110;
+    s.animate([{transform:'translate(0,0) scale(1) rotate(0)', opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px) scale(0) rotate(180deg)`, opacity:0}],
+      {duration: 700 + Math.random()*400, easing:'cubic-bezier(.2,.8,.4,1)'}).onfinish = () => s.remove();
+  }
+}
+function puff(x, y, color = '#ffc2e0', n = 9){
+  for (let i = 0; i < n; i++){
+    const p = document.createElement('div'); p.className = 'puff'; const sz = 50 + Math.random()*50;
+    Object.assign(p.style, {left:(x - sz/2) + 'px', top:(y - sz/2) + 'px', width:sz + 'px', height:sz + 'px', background:color}); fx.appendChild(p);
+    const dx = (Math.random() - .5)*140, dy = (Math.random() - .5)*90;
+    p.animate([{transform:'translate(0,0) scale(.3)', opacity:.95},{transform:`translate(${dx}px,${dy}px) scale(1.5)`, opacity:0}],
+      {duration: 900 + Math.random()*300, easing:'ease-out'}).onfinish = () => p.remove();
+  }
+}
+function floatText(cls, txt, x, y, dx = 30, dy = -120, dur = 1600){
+  const z = document.createElement('div'); z.className = cls; z.textContent = txt; z.style.left = x + 'px'; z.style.top = y + 'px'; fx.appendChild(z);
+  z.animate([{transform:'translate(0,0) scale(.6)', opacity:0},{opacity:1, offset:.2},{transform:`translate(${dx}px,${dy}px) scale(1.2)`, opacity:0}], {duration:dur, easing:'ease-out'}).onfinish = () => z.remove();
+}
+async function showWord(word, nonsense = false){
+  const w = document.createElement('div'); w.className = 'magicword' + (nonsense ? ' silly' : ''); w.innerHTML = `<span>${word}</span>`; w.style.top = '488px'; fx.appendChild(w);
+  SFX.sparkle(); sparkleBurst(590, 580, 20);
+  await w.animate([{transform:'scale(0)', opacity:0},{transform:'scale(1.15)', opacity:1, offset:.6},{transform:'scale(1)', opacity:1}], {duration:500, easing:'ease-out', fill:'forwards'}).finished;
+  await wait(nonsense ? 500 : 900);
+  if (nonsense){ w.animate([{transform:'rotate(0)'},{transform:'rotate(-8deg)'},{transform:'rotate(8deg)'},{transform:'rotate(0)'}], {duration:400}); await wait(400);
+    puff(590, 580); SFX.giggle(); w.remove(); return; }
+  await w.animate([{transform:'translateY(0) scale(1)', opacity:1},{transform:'translateY(-240px) scale(.6)', opacity:0}], {duration:600, easing:'ease-in', fill:'forwards'}).finished;
+  w.remove();
+}
+const hand = $('#hand');
+async function handMove(from, to, ms = 1200, ghostGem, side = false){
+  hand.textContent = side ? '👉' : '👆';
+  let ghost = null;
+  if (ghostGem){ ghost = ghostGem.el.cloneNode(true); ghost.classList.add('ghost'); ghost.classList.remove('hint','popin','boing'); ghost.style.transform = `translate(${from.x - GEM/2}px,${from.y - GEM/2}px)`; $('#gemLayer').appendChild(ghost); }
+  const pos = side ? (p => `translate(${p.x - 88}px,${p.y - 50}px)`) : (p => `translate(${p.x - 40}px,${p.y - 6}px)`);
+  hand.animate([{transform:pos(from), opacity:0},{transform:pos(from), opacity:1, offset:.15},{transform:pos(from) + ' scale(.9)', opacity:1, offset:.25},
+    {transform:pos(to) + ' scale(.9)', opacity:1, offset:.85},{transform:pos(to), opacity:0}], {duration:ms, easing:'ease-in-out'});
+  if (ghost) ghost.animate([{transform:`translate(${from.x - GEM/2}px,${from.y - GEM/2}px)`, opacity:0},{opacity:.6, offset:.25, transform:`translate(${from.x - GEM/2}px,${from.y - GEM/2}px)`},
+    {transform:`translate(${to.x - GEM/2}px,${to.y - GEM/2}px)`, opacity:.6, offset:.85},{transform:`translate(${to.x - GEM/2}px,${to.y - GEM/2}px)`, opacity:0}], {duration:ms, easing:'ease-in-out'});
+  await wait(ms); if (ghost) ghost.remove();
+}
+function demoSlide(){ return handMove({x:400, y:782}, {x:830, y:782}, 1600, null, true); }
+function demoDrag(){
+  const free = G.slots.indexOf(null); if (free < 0) return Promise.resolve();
+  const sc = SCENES[G.sceneIdx], want = sc.target[0][G.slots.filter(Boolean).length] || sc.target[0][0];
+  const inRow = G.gems.filter(g => g.slot < 0);
+  const g = inRow.find(x => x.letter === want) || inRow[0]; if (!g) return Promise.resolve();
+  return handMove({x:g.home.x + GEM/2, y:g.home.y + GEM/2}, {x:SLOT_X[free], y:SLOT_Y}, 1500, g);
+}
+function confetti(n = 140){
+  const cols = ['#ff6f9c','#f5c542','#8fe3c0','#9b6fd1','#4aa3ff','#ff9a6a'];
+  for (let i = 0; i < n; i++){
+    const c = document.createElement('div'); c.className = 'confetti'; c.style.left = (Math.random()*1180) + 'px'; c.style.background = cols[i % cols.length];
+    if (i % 4 === 0){ c.style.borderRadius = '50%'; c.style.width = c.style.height = '12px'; }
+    fx.appendChild(c); const dur = 2400 + Math.random()*2200, dx = (Math.random() - .5)*200;
+    c.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${dx}px,880px) rotate(${720*Math.random()+360}deg)`}],
+      {duration:dur, delay:Math.random()*900, easing:'cubic-bezier(.3,.2,.6,1)', fill:'backwards'}).onfinish = () => c.remove();
+  }
+}
+
+/* =====================================================================
+   GEMS AND WAND
+   ===================================================================== */
+const GEM_COLS = {
+  vowel: {light:'#ffb3c6', rim:'#e2456b', dark:'#a41d47', face:'#fff0f4', ink:'#b81d4a', glow:'rgba(255,120,160,.7)'},
+  c: [
+    {light:'#b8d1ff', rim:'#4a7bea', dark:'#2546a8', face:'#eef4ff', ink:'#1f47b0', glow:'rgba(110,160,255,.7)'},
+    {light:'#b4f0d2', rim:'#2fb67c', dark:'#137a50', face:'#eafff4', ink:'#137a50', glow:'rgba(80,220,160,.7)'},
+    {light:'#dcc3ff', rim:'#9b5de5', dark:'#5f2aa8', face:'#f6efff', ink:'#6a2bbf', glow:'rgba(180,130,255,.7)'},
+    {light:'#ffe0a6', rim:'#f2a531', dark:'#b86a00', face:'#fff8ea', ink:'#a65e00', glow:'rgba(255,200,90,.7)'},
+    {light:'#b0eef5', rim:'#22b8c9', dark:'#0f7f8c', face:'#ecfdff', ink:'#0f7f8c', glow:'rgba(80,210,230,.7)'},
+  ]
+};
+function setGemPos(g, p){ g.x = p.x; g.y = p.y; g.el.style.transform = `translate(${p.x}px,${p.y}px)`; }
+function clearGems(){ $('#gemLayer').innerHTML = ''; G.gems = []; G.slots = [null,null,null]; updateWand(); }
+function spawnGems(letters){
+  clearGems(); let ci = 0; const layer = $('#gemLayer');
+  letters.forEach((l, i) => {
+    const home = gemHome(i, letters.length);
+    const spot = document.createElement('div'); spot.className = 'home-spot';
+    spot.innerHTML = `<svg viewBox="0 0 104 104"><polygon points="${octPts(52,52,100)}" fill="rgba(180,140,210,.18)" stroke="rgba(180,140,210,.55)" stroke-width="3"/></svg>`;
+    spot.style.left = home.x + 'px'; spot.style.top = home.y + 'px'; layer.appendChild(spot);
+    const col = VOWELS.includes(l) ? GEM_COLS.vowel : GEM_COLS.c[ci++ % GEM_COLS.c.length];
+    const el = document.createElement('div'); el.className = 'gem popin'; el.dataset.letter = l;
+    for (const k in col) el.style.setProperty('--' + k, col[k]);
+    el.innerHTML = `<div class="gem-in" style="animation-delay:${i*90}ms"><div class="cut"></div><div class="face"></div><div class="shine"></div><div class="ltr">${l}</div></div>`;
+    layer.appendChild(el);
+    const g = {letter:l, el, home, slot:-1, x:0, y:0};
+    setGemPos(g, home); G.gems.push(g);
+    setTimeout(() => el.classList.remove('popin'), 700 + i*90);
+  });
+  letters.forEach((_, i) => setTimeout(() => SFX.pop(), i*90));
+}
+/* Shuffle the gem row so no target word can be read off it in order.
+   Otherwise she could drag the first three gems without listening. */
+function shuffledGems(sc){
+  const inOrder = (row, w) => { let k = 0; for (const l of row) if (l === w[k]) k++; return k === w.length; };
+  let row = sc.gems.slice();
+  for (let n = 0; n < 200; n++){
+    for (let i = row.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i + 1)); [row[i], row[j]] = [row[j], row[i]]; }
+    if (!sc.target.some(w => inOrder(row, w))) break;
+  }
+  return row;
+}
+function allFull(){ return G.slots.every(Boolean); }
+function updateWand(){
+  const full = allFull();
+  $('#track').classList.toggle('show', full && G.mode !== 'cut');
+  $('#wandArt').classList.toggle('full', full);
+  SLOT_X.forEach((_, i) => { const s = document.getElementById('sock' + i); if (s) s.classList.remove('lit'); });
+}
+function placeInSlot(g, s){
+  const occ = G.slots[s]; if (occ && occ !== g) sendHome(occ, true);
+  G.slots[s] = g; g.slot = s; setGemPos(g, slotPos(s));
+  g.el.classList.add('boing'); setTimeout(() => g.el.classList.remove('boing'), 460);
+  SFX.snap(); sparkleBurst(SLOT_X[s], SLOT_Y, 6);
+  say('sound-' + g.letter);
+  updateWand();
+  if (allFull()){
+    SFX.chime();
+    if (!G.slideTold){ G.slideTold = true; G.line = 'slide'; sayQ('slide'); setTimeout(() => { if (G.mode === 'play' && allFull() && !gesture) demoSlide(); }, 900); }
+  }
+}
+function sendHome(g, quiet){
+  if (g.slot >= 0 && G.slots[g.slot] === g) G.slots[g.slot] = null;
+  g.slot = -1; setGemPos(g, g.home); g.el.classList.remove('lit'); if (!quiet) SFX.whoosh();
+  updateWand();
+}
+async function returnAllGems(){
+  const list = G.slots.filter(Boolean);
+  for (const g of list){ sendHome(g, true); await wait(110); }
+  SFX.whoosh(); G.line = SCENES[G.sceneIdx] ? SCENES[G.sceneIdx].line : G.line;
+}
+function dropGem(g){
+  const cx = g.x + GEM/2, cy = g.y + GEM/2;
+  let best = 0, bd = 1e9; SLOT_X.forEach((sx, i) => { const d = Math.hypot(cx - sx, cy - SLOT_Y); if (d < bd){ bd = d; best = i; } });
+  const overWand = cy > 590 && cx > 300 && cx < 1010;
+  if (bd < 100 || overWand){
+    let s = best; if (G.slots[s] && bd >= 60){ const free = G.slots.indexOf(null); if (free >= 0) s = free; }
+    placeInSlot(g, s); G.taps = 0;
+  } else sendHome(g);
+}
+
+/* =====================================================================
+   INPUT: drag, tap, slide (pointer events with capture)
+   ===================================================================== */
+let gesture = null;
+let slide = null;
+function touched(){ resetIdle(); }
+$('#gemLayer').addEventListener('pointerdown', e => {
+  const ge = e.target.closest('.gem'); if (!ge || G.mode !== 'play' || gesture) return;
+  const g = G.gems.find(x => x.el === ge); if (!g) return;
+  e.preventDefault(); try { ge.setPointerCapture(e.pointerId); } catch(_){}
+  const p = toStage(e);
+  gesture = {type:'gem', g, id:e.pointerId, sx:p.x, sy:p.y, ox:p.x - g.x, oy:p.y - g.y, mode:'pending'};
+  touched();
+});
+$('#wandHit').addEventListener('pointerdown', e => {
+  if (G.mode !== 'play' || gesture) return; e.preventDefault();
+  try { e.target.setPointerCapture(e.pointerId); } catch(_){}
+  const p = toStage(e); touched();
+  gesture = {type:'wand', id:e.pointerId, sx:p.x, sy:p.y, mode:'pending'};
+});
+addEventListener('pointermove', e => {
+  if (!gesture || e.pointerId !== gesture.id) return;
+  const p = toStage(e), dx = p.x - gesture.sx, dy = p.y - gesture.sy, dist = Math.hypot(dx, dy);
+  if (gesture.mode === 'pending' && dist > 16){
+    if (allFull() && (gesture.type === 'wand' || (gesture.g.slot >= 0 && Math.abs(dx) > Math.abs(dy)))) { gesture.mode = 'slide'; startSlide(); }
+    else if (gesture.type === 'gem'){
+      gesture.mode = 'drag'; const g = gesture.g;
+      if (g.slot >= 0){ G.slots[g.slot] = null; g.slot = -1; updateWand(); }
+      g.el.classList.add('dragging'); g.el.classList.remove('hint');
+    }
+  }
+  if (gesture.mode === 'drag'){ setGemPos(gesture.g, {x:p.x - gesture.ox, y:p.y - gesture.oy}); }
+  if (gesture.mode === 'slide') slideMove(p);
+});
+function endGesture(e){
+  if (!gesture || e.pointerId !== gesture.id) return;
+  const gs = gesture; gesture = null;
+  if (gs.mode === 'drag'){ gs.g.el.classList.remove('dragging'); applyHintGlow(); dropGem(gs.g); return; }
+  if (gs.mode === 'slide'){ endSlide(); return; }
+  // taps
+  if (gs.type === 'gem'){
+    const g = gs.g;
+    if (g.slot >= 0){ sendHome(g); applyHintGlow(); return; }
+    g.el.classList.add('boing'); setTimeout(() => g.el.classList.remove('boing'), 460); SFX.tap(); say('sound-' + g.letter);
+    if (++G.taps >= 4){ G.taps = 0; setTimeout(() => { if (G.mode === 'play'){ sayQ('hint-drag'); demoDrag(); } }, 700); }
+  } else if (gs.type === 'wand'){
+    if (allFull()) slideHint();
+  }
+}
+addEventListener('pointerup', endGesture);
+addEventListener('pointercancel', endGesture);
+
+function startSlide(){ stopVoice(); slide = {next:0, done:false, lastSpark:0}; }
+function slideMove(p){
+  if (!slide || slide.done) return;
+  if (Math.abs(p.x - slide.lastSpark) > 30){ slide.lastSpark = p.x; sparkleBurst(p.x, Math.min(p.y, 800), 3); }
+  while (slide.next < 3 && p.x >= SLOT_X[slide.next] - 34){
+    const i = slide.next++, g = G.slots[i];
+    document.getElementById('sock' + i).classList.add('lit'); g.el.classList.add('lit');
+    tone(660 + i*220, 0, .25, 'sine', .08);
+    sayQ('sound-' + g.letter, {stretch:true});
+  }
+  if (slide.next === 3 && p.x >= SLOT_X[2] + 46){ slide.done = true; finishBlend(); }
+}
+function endSlide(){
+  if (!slide) return;
+  if (slide.done) { slide = null; return; }
+  if (slide.next === 3){ slide.done = true; slide = null; finishBlend(); return; }
+  slide = null;
+  G.slots.forEach((g, i) => { if (g) g.el.classList.remove('lit'); document.getElementById('sock' + i).classList.remove('lit'); });
+  slideHint();
+}
+function slideHint(){
+  const w = $('#wandArt'); w.classList.remove('wiggle'); void w.offsetWidth; w.classList.add('wiggle');
+  G.line = 'slide'; say('slide'); demoSlide();
+}
+
+/* =====================================================================
+   HINTS AND IDLE
+   ===================================================================== */
+let idleT = null;
+function clearIdle(){ clearTimeout(idleT); idleT = null; }
+function resetIdle(ms = 8000){ clearIdle(); if (G.mode === 'play') idleT = setTimeout(idleHint, G.fast ? 999999 : ms); }
+async function idleHint(){
+  if (G.mode !== 'play' || gesture) return resetIdle();
+  if (active.size > 0) return resetIdle(3000);
+  if (allFull()) { slideHint(); }
+  else if (G.misses >= 4) { await segmentHint(); }
+  else { G.line = 'hint-drag'; say('hint-drag'); demoDrag(); }
+  resetIdle(12000);
+}
+function applyHintGlow(){
+  const sc = SCENES[G.sceneIdx]; if (!sc) return;
+  G.gems.forEach(g => g.el.classList.remove('hint'));
+  if (G.misses >= 2){ const g = G.gems.find(x => x.letter === sc.target[0][0] && x.slot < 0); if (g) g.el.classList.add('hint'); }
+}
+async function segmentHint(){
+  const sc = SCENES[G.sceneIdx]; if (!sc) return;
+  await say('hint-listen');
+  for (const l of sc.target[0]){
+    const g = G.gems.find(x => x.letter === l); if (g) g.el.classList.add('lit');
+    await play('sound-' + l, {stretch:true}); await wait(350);
+    if (g) g.el.classList.remove('lit');
+  }
+}
+
+/* =====================================================================
+   BLENDING RESULT
+   ===================================================================== */
+function isCVC(w){ return w.length === 3 && !VOWELS.includes(w[0]) && VOWELS.includes(w[1]) && !VOWELS.includes(w[2]); }
+/* Made-up words are read aloud only when they follow English spelling.
+   English words do not end in c (loc sounds like lock), h or j, so those get a giggle instead. */
+function sayable(w){ return isCVC(w) && !'chj'.includes(w[2]) && !AVOID.includes(w); }
+function addConjured(w){ if (!G.conjured.includes(w)) G.conjured.push(w); }
+async function finishBlend(){
+  if (G.mode !== 'play') return;
+  G.mode = 'cut'; clearIdle(); updateWand();
+  const word = G.slots.map(g => g.letter).join('');
+  const sc = SCENES[G.sceneIdx], kind = sc.words[word] || 'none';
+  G.spells.push(word);
+  await chain;
+  G.slots.forEach(g => g.el.classList.remove('lit'));
+  SLOT_X.forEach((_, i) => document.getElementById('sock' + i).classList.remove('lit'));
+  if (kind === 'none'){
+    const p = showWord(word, true);
+    await wait(700);
+    if (sayable(word)){ await say('nonword-' + word); await say('silly-word'); }
+    else { await say('giggle'); await say('silly-word'); }
+    await p;
+  } else {
+    await say('word-' + word);
+    await showWord(word);
+    if (kind === 'solve'){ addConjured(word); hideBubble(); await returnAllGems(); await SOLVE[sc.id](word); return; }
+    if (kind === 'thing'){ addConjured(word); await THING[word](); }
+    if (kind === 'word'){
+      if (sc.id === 'gate'){ puff(735, 400, '#e9e4ff', 7); SFX.pop(); SFX.bleat(); }
+      else { puff(800, 420, '#d5f2ff', 7); SFX.splash(); }
+      await say(sc.wordLine);
+    }
+  }
+  G.misses++;
+  await returnAllGems();
+  await wait(300);
+  applyHintGlow();
+  G.mode = 'play'; updateWand();
+  if (G.misses >= 4) { await segmentHint(); }
+  G.line = sc.line; resetIdle();
+}
+
+/* ---------- props and character moves ---------- */
+const props = $('#props');
+function addProp(w, x, y, size = 150, cls = ''){
+  const d = document.createElement('div'); d.className = 'prop ' + cls; d.innerHTML = ITEM(w);
+  Object.assign(d.style, {left:x + 'px', top:y + 'px', width:size + 'px', height:size + 'px'});
+  const inDark = $('#dark').classList.contains('on');
+  if (inDark) d.style.filter = 'drop-shadow(0 0 18px rgba(255,230,140,.9))';
+  (inDark ? $('#aboveDark') : props).appendChild(d);
+  d.animate([{transform:'scale(0)'},{transform:'scale(1.15)', offset:.6},{transform:'scale(1)'}], {duration:500, easing:'ease-out'});
+  sparkleBurst(x + size/2, y + size/2, 16); SFX.pop(); return d;
+}
+async function removeProp(d){ if (!d) return; await d.animate([{opacity:1, transform:'scale(1)'},{opacity:0, transform:'scale(.5)'}], {duration:500, fill:'forwards'}).finished; d.remove(); }
+function boboEl(){ return $('#group .bobo'); }
+async function boboHop(dx, dy = 0, ms = 700){
+  const b = boboEl(); b.classList.remove('bobo-idle');
+  const from = b._pos || {x:0, y:0}, to = {x:dx, y:dy}; b._pos = to;
+  await b.animate([{transform:`translate(${from.x}px,${from.y}px)`},{transform:`translate(${(from.x + to.x)/2}px,${Math.min(from.y, to.y) - 110}px)`},{transform:`translate(${to.x}px,${to.y}px)`}],
+    {duration:ms, easing:'ease-in-out', fill:'forwards'}).finished;
+  SFX.squeak();
+  if (dx === 0 && dy === 0){ b.getAnimations().forEach(a => a.cancel()); b._pos = {x:0, y:0}; b.classList.add('bobo-idle'); }
+}
+function boboStageX(){ return G.groupX + 232 + 56; }
+const PROP_X = 70;   // left area of the scene where small things appear
+
+const THING = {
+  async cat(){
+    const c = $('#group .cat');
+    if (G.hasCat){ c.classList.remove('lick'); void c.offsetWidth; c.classList.add('lick'); SFX.meow(); await say('fx-cat-again'); return; }
+    G.hasCat = true; c.classList.remove('hidden'); c.classList.add('lick');
+    c.animate([{transform:'scale(0)'},{transform:'scale(1.2)', offset:.6},{transform:'scale(1)'}], {duration:500});
+    sparkleBurst(G.groupX + 46, 410, 18); SFX.pop(); setTimeout(SFX.meow, 300);
+    await say('fx-cat'); await wait(400);
+  },
+  async cot(){
+    const d = addProp('cot', PROP_X, 330, 150);
+    await wait(500); await boboHop(PROP_X + 75 - boboStageX(), -50);
+    floatText('zz', 'z', PROP_X + 90, 300); setTimeout(() => floatText('zz', 'z', PROP_X + 100, 290), 500); setTimeout(() => floatText('zz', 'Z', PROP_X + 110, 280), 1000);
+    SFX.snore(); await say('fx-cot'); await wait(700);
+    await boboHop(0, 0); await removeProp(d);
+  },
+  async cog(){ const d = addProp('cog', PROP_X, 320, 150, 'spin'); SFX.clack(); await say('fx-cog'); await wait(900); await removeProp(d); },
+  async lot(){
+    const d = addProp('lot', PROP_X, 320, 150); d.animate([{transform:'translateY(-200px)'},{transform:'translateY(0)'}], {duration:500, easing:'cubic-bezier(.5,0,.8,1.4)'});
+    setTimeout(SFX.thud, 450); setTimeout(SFX.clack, 600); await say('fx-lot'); await wait(700); await removeProp(d);
+  },
+  async hut(){
+    const d = addProp('hut', PROP_X, 300, 170);
+    await wait(500); await boboHop(PROP_X + 150 - boboStageX(), 0);
+    const b = boboEl(); b.animate([{transform:`translate(${b._pos.x}px,0) rotate(0)`},{transform:`translate(${b._pos.x - 20}px,0) rotate(-14deg)`},{transform:`translate(${b._pos.x}px,0) rotate(0)`}], {duration:1200});
+    await say('fx-hut'); await wait(400); await boboHop(0, 0); await removeProp(d);
+  },
+  async nut(){
+    const x = boboStageX() + 40;
+    const d = addProp('nut', x, 400, 70);
+    d.animate([{transform:'translateY(-300px)'},{transform:'translateY(0)'}], {duration:500, easing:'cubic-bezier(.5,0,.8,1.4)'});
+    await wait(600); await boboHop(30, 0, 400);
+    SFX.munch(); const b = boboEl(); b.classList.add('squish');
+    await d.animate([{transform:'scale(1)'},{transform:'scale(0)'}], {duration:1200, fill:'forwards'}).finished; d.remove(); b.classList.remove('squish');
+    sparkleBurst(x + 30, 430, 8, ['#c07a34','#7a4a22']);
+    await say('fx-nut'); await boboHop(0, 0, 400);
+  },
+};
+
+/* ---------- scene solves ---------- */
+const SOLVE = {
+  async river(){
+    const d = document.createElement('div'); d.className = 'prop'; d.innerHTML = svgBridgeLog();
+    Object.assign(d.style, {left:'636px', top:'366px', width:'330px', height:'90px'}); props.appendChild(d);
+    await d.animate([{transform:'translateY(-420px) rotate(-8deg)'},{transform:'translateY(0) rotate(0)', offset:.8},{transform:'translateY(-14px)', offset:.9},{transform:'translateY(0)'}],
+      {duration:900, easing:'ease-in'}).finished;
+    SFX.thud(); SFX.splash(); puff(800, 460, '#d5f2ff', 10);
+    await say('solve-log');
+    SFX.hum(); setMarker(1, true);
+    await walkGroup(1320, 3000);
+    await nextScene();
+  },
+  async gate(word){
+    const food = document.createElement('div'); food.className = 'prop'; food.innerHTML = ITEM(word);
+    Object.assign(food.style, {left:'0', top:'0', width:'100px', height:'100px'}); fx.appendChild(food);
+    await food.animate([{transform:'translate(540px,520px) scale(.6)'},{transform:'translate(600px,240px) scale(1.2)', offset:.5},{transform:'translate(640px,360px) scale(.7)'}],
+      {duration:1000, easing:'ease-in-out', fill:'forwards'}).finished;
+    food.remove();
+    const goat = $('#goat'); goat.classList.add('munch'); SFX.munch();
+    for (let i = 0; i < 4; i++) setTimeout(() => floatText('heart', '♥', 660 + i*30, 330, 10, -110), i*300);
+    await wait(1700); goat.classList.remove('munch'); SFX.bleat();
+    goat.classList.add('flip', 'walk'); goat.style.left = '1010px'; await wait(1600); goat.classList.remove('flip', 'walk');
+    $('#gatePanel').classList.add('open'); SFX.creak(); sparkleBurst(950, 380, 14);
+    await say('solve-' + word);
+    setMarker(2, true);
+    await walkGroup(1320, 3000);
+    await nextScene();
+  },
+  async cave(){
+    const sun = document.createElement('div'); sun.className = 'prop'; sun.innerHTML = ITEM('sun');
+    Object.assign(sun.style, {left:'510px', top:'84px', width:'160px', height:'160px', filter:'drop-shadow(0 0 30px #ffe066)'}); $('#aboveDark').appendChild(sun);
+    sun.animate([{transform:'scale(0) rotate(-90deg)'},{transform:'scale(1.2) rotate(10deg)', offset:.7},{transform:'scale(1) rotate(0)'}], {duration:900, easing:'ease-out'});
+    SFX.chime(); sparkleBurst(590, 140, 24);
+    $('#dark').classList.remove('on'); $('#scene').classList.add('lit'); $('#group').classList.remove('glowing');
+    const eyes = $('#batEyes'); if (eyes) eyes.style.opacity = 0;
+    await wait(1200);
+    const bat = $('#bat'); if (bat) bat.classList.remove('hidden');
+    SFX.sparkle();
+    await say('solve-sun');
+    setMarker(3, true);
+    await walkGroup(1320, 3000);
+    await nextScene();
+  },
+};
+
+/* =====================================================================
+   SCENE FLOW
+   ===================================================================== */
+function setMarker(i, done){
+  const x = G.STOPS[Math.min(i, 3)] - 62;
+  $('#marker').style.left = x + 'px';
+  if (done && i > 0) document.getElementById('stop' + (i - 1)).classList.add('ok');
+}
+function placeGroup(x){ const g = $('#group'); g.style.transition = 'none'; g.style.left = x + 'px'; void g.offsetWidth; G.groupX = x; }
+function walkGroup(x, ms){
+  const g = $('#group'); g.classList.add('walking'); g.style.transition = `left ${G.fast ? 20 : ms}ms linear`; g.style.left = x + 'px'; G.groupX = x;
+  hideBubble();
+  return wait(ms).then(() => g.classList.remove('walking'));
+}
+async function fadeOut(){ $('#fade').classList.add('on'); await wait(650); }
+async function fadeIn(){ $('#fade').classList.remove('on'); await wait(400); }
+function showBubble(w){
+  const b = $('#bubble');
+  b.innerHTML = `<svg viewBox="0 0 184 156" width="184" height="156" style="position:absolute;inset:0"><g fill="#fff" stroke="#c9b3e6" stroke-width="4">
+    <circle cx="18" cy="150" r="6"/><circle cx="34" cy="132" r="10"/>
+    <path d="M60 120 Q24 124 26 92 Q6 70 30 52 Q28 18 66 20 Q84 0 112 14 Q146 4 156 34 Q182 50 168 80 Q178 112 144 116 Q128 136 100 124 Q80 136 60 120Z"/></g></svg>
+    <div class="pic">${ITEM(w)}</div>`;
+  b.style.left = (G.groupX + 250) + 'px'; b.style.top = "128px";
+  b.classList.remove('off'); SFX.pop();
+}
+function hideBubble(){ $('#bubble').classList.add('off'); }
+$('#bubble').addEventListener('pointerdown', e => { if (G.mode !== 'play') return; e.preventDefault(); touched(); say(SCENES[G.sceneIdx].line); });
+['#group .bobo', '#pgroup .bobo', '#sBobo'].forEach(sel => $(sel).addEventListener('pointerdown', e => {
+  e.preventDefault(); unlockAudio(); const b = e.currentTarget; b.classList.add('squish'); SFX.squeak(); setTimeout(() => b.classList.remove('squish'), 520);
+}));
+$('#group').style.pointerEvents = 'none'; $('#group .bobo').style.pointerEvents = 'auto';
+
+function buildScene(sc){
+  $('#bg').innerHTML = BG[sc.id]();
+  const sp = $('#special'); sp.innerHTML = ''; $('#aboveDark').innerHTML = ''; props.innerHTML = '';
+  $('#scene').classList.remove('lit');
+  $('#dark').style.transition = 'none'; $('#dark').classList.toggle('on', sc.id === 'cave'); void $('#dark').offsetWidth; $('#dark').style.transition = '';
+  $('#group').classList.toggle('glowing', sc.id === 'cave');
+  if (sc.id === 'gate') sp.innerHTML = `<div id="gatePanel">${svgGate()}</div><div id="goat">${svgGoat()}</div>`;
+  if (sc.id === 'cave'){ sp.innerHTML = `<div id="bat" class="hidden">${svgBat()}</div>`; $('#aboveDark').innerHTML = `<div id="batEyes"><i></i><i></i></div>`; }
+}
+async function enterScene(i, opts = {}){
+  const sc = SCENES[i];
+  G.sceneIdx = i; G.misses = 0; G.taps = 0; G.mode = 'cut'; G.line = sc.line;
+  clearIdle(); hideBubble(); clearGems();
+  buildScene(sc); setMarker(i);
+  const b = boboEl(); b.getAnimations().forEach(a => a.cancel()); b._pos = {x:0, y:0};
+  placeGroup(-380);
+  await fadeIn();
+  const introP = opts.intro ? say('intro') : Promise.resolve();
+  await walkGroup(sc.groupX, 2600);
+  await introP;
+  if (sc.id === 'river'){ SFX.splash(); puff(800, 420, '#d5f2ff', 6); }
+  if (sc.id === 'gate'){ SFX.bleat(); $('#goat').animate([{transform:'translateY(0)'},{transform:'translateY(-14px)'},{transform:'translateY(0)'}], {duration:400}); }
+  if (sc.id === 'cave'){ SFX.drip(); setTimeout(SFX.drip, 700); }
+  await wait(500);
+  showBubble(sc.bubble);
+  await wait(400);
+  spawnGems(shuffledGems(sc));
+  G.mode = 'play'; updateWand();
+  say(sc.line).then(() => { if (G.mode === 'play' && !gesture) resetIdle(); });
+  resetIdle(14000);
+}
+async function nextScene(){
+  await fadeOut();
+  if (G.sceneIdx < 2) enterScene(G.sceneIdx + 1); else party();
+}
+
+/* =====================================================================
+   PARTY AND STICKER BOOK
+   ===================================================================== */
+async function party(){
+  G.mode = 'party'; G.sceneIdx = 3; G.line = 'party-arrive'; clearIdle(); clearGems(); hideBubble();
+  const P = $('#party'); P.classList.remove('hidden'); $('#pButtons').classList.add('hidden');
+  P.querySelector('.bgp').innerHTML = BG.party();
+  $('#table').innerHTML = svgTable(); $('#items').innerHTML = '';
+  $('#queen').innerHTML = svgQueen();
+  $('#pgroup .pippa').innerHTML = svgPippa(); $('#pgroup .bobo').innerHTML = svgBobo(); $('#pgroup .cat').innerHTML = svgCat();
+  $('#pgroup .cat').classList.toggle('hidden', !G.hasCat);
+  $('#pgroup').classList.add('cheer');
+  setMarker(3, true);
+  await fadeIn();
+  SFX.fanfare();
+  await say('party-arrive');
+  $('#pgroup').classList.remove('cheer');
+  // items onto the table
+  const list = G.conjured.slice(), n = list.length, front = Math.min(n, 5), els = [];
+  list.forEach((w, i) => {
+    const row = i < 5 ? 1 : 0, idx = row ? i : i - 5, cnt = row ? front : n - 5;
+    const x = 260 - (cnt*100)/2 + idx*100 + 2, y = row ? 50 : -84;
+    const d = document.createElement('div'); d.className = 'item'; d.innerHTML = `<div class="pic">${ITEM(w)}</div><div class="lbl">${w}</div>`;
+    Object.assign(d.style, {left:x + 'px', top:y + 'px', opacity:0, zIndex:row ? 2 : 1}); $('#items').appendChild(d); els.push(d);
+  });
+  for (let i = 0; i < els.length; i++){
+    const d = els[i]; d.style.opacity = 1;
+    d.animate([{transform:'translateY(-160px) scale(.4)', opacity:0},{transform:'translateY(0) scale(1.1)', opacity:1, offset:.7},{transform:'translateY(0) scale(1)'}], {duration:500, easing:'ease-out'});
+    SFX.pop(); const r = d.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    sparkleBurst((r.left - s.left)/G.scale + 48, (r.top - s.top)/G.scale + 40, 8);
+    await wait(420);
+  }
+  await wait(300);
+  // Elizabeth reads the list back, each item bounces as it is named
+  await say('party-made');
+  for (let i = 0; i < n; i++){
+    if (i === n - 1 && n > 1) await say('item-and');
+    els[i].classList.remove('say'); void els[i].offsetWidth; els[i].classList.add('say');
+    await say('item-' + list[i]);
+  }
+  await wait(300);
+  const q = $('#queen'); q.classList.add('bow');
+  await say('queen-thanks', {pitch:.95});
+  q.classList.remove('bow');
+  SFX.fanfare(); confetti(); $('#pgroup').classList.add('cheer');
+  await wait(1200);
+  // crown sticker flies into the book
+  $('#pButtons').classList.remove('hidden');
+  const cr = document.createElement('div'); cr.className = 'flycrown'; cr.innerHTML = svgCrown(); fx.appendChild(cr);
+  await cr.animate([{transform:'translate(480px,260px) scale(0) rotate(-40deg)'},{transform:'translate(480px,260px) scale(1.1) rotate(8deg)', offset:.7},{transform:'translate(480px,260px) scale(1) rotate(0)'}],
+    {duration:600, easing:'ease-out', fill:'forwards'}).finished;
+  SFX.chime(); sparkleBurst(590, 370, 22);
+  G.line = 'sticker'; await say('sticker');
+  const bb = $('#pBook').getBoundingClientRect(), sr = stage.getBoundingClientRect();
+  const bx = (bb.left - sr.left)/G.scale + 56 - 110, by = (bb.top - sr.top)/G.scale + 56 - 110;
+  await cr.animate([{transform:'translate(480px,260px) scale(1)'},{transform:`translate(${bx}px,${by}px) scale(.25) rotate(360deg)`}], {duration:900, easing:'ease-in', fill:'forwards'}).finished;
+  cr.remove(); SFX.pop();
+  const before = G.book.words.slice();
+  G.book.crowns++; G.conjured.forEach(w => { if (!G.book.words.includes(w)) G.book.words.push(w); }); saveBook(G.book); updateBadges();
+  $('#pBook').animate([{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}], {duration:500});
+  sparkleBurst((bb.left - sr.left)/G.scale + 56, (bb.top - sr.top)/G.scale + 56, 14);
+  await wait(700);
+  $('#pgroup').classList.remove('cheer');
+  openBook(G.book.words.filter(w => !before.includes(w)), true);
+}
+function loadBook(){ try { const b = JSON.parse(localStorage.getItem('pww-book')); if (b && Array.isArray(b.words)) return b; } catch(e){} return {crowns:0, words:[]}; }
+function saveBook(b){ try { localStorage.setItem('pww-book', JSON.stringify(b)); } catch(e){} }
+function updateBadges(){ const n = G.book.words.length; ['#pBadge','#sBadge'].forEach(s => { const e = $(s); if (e){ e.textContent = n; e.style.display = n ? '' : 'none'; } }); }
+let bookFromParty = false;
+function openBook(fresh = [], fromParty = false){
+  bookFromParty = fromParty;
+  const b = G.book;
+  $('#crownCount').textContent = b.crowns;
+  $('#crownRow').innerHTML = Array.from({length:Math.min(b.crowns, 10)}, () => `<div class="mc">${svgCrown()}</div>`).join('');
+  $('#stickers').innerHTML = ALL_THINGS.map(w => b.words.includes(w)
+    ? `<div class="sticker got ${fresh.includes(w) ? 'new' : ''}" data-w="${w}"><div class="pic">${ITEM(w)}</div><div class="lbl">${w}</div></div>`
+    : `<div class="sticker locked"><div class="pic">${ITEM(w)}</div><div class="lbl"></div></div>`).join('');
+  $('#book').classList.add('show'); SFX.whoosh();
+  if (G.unlocked){ if (fromParty) say('book-look'); }
+}
+function closeBook(){
+  $('#book').classList.remove('show'); SFX.whoosh();
+  if (bookFromParty || G.mode === 'party'){ bookFromParty = false; G.line = 'play-again'; say('play-again'); $('#pAgain').classList.add('pulse'); }
+}
+$('#stickers').addEventListener('pointerdown', e => {
+  const s = e.target.closest('.sticker.got'); if (!s) return; e.preventDefault(); unlockAudio();
+  s.classList.remove('say', 'new'); void s.offsetWidth; s.classList.add('say'); say('word-' + s.dataset.w);
+});
+$('#bookClose').addEventListener('pointerdown', e => { e.preventDefault(); closeBook(); });
+$('#pBook').addEventListener('pointerdown', e => { e.preventDefault(); openBook([], false); });
+$('#sBook').addEventListener('pointerdown', e => { e.preventDefault(); unlockAudio(); openBook([], false); });
+$('#pAgain').addEventListener('pointerdown', e => { e.preventDefault(); restart(); });
+
+/* ---------- start and restart ---------- */
+async function startGame(){
+  G.mode = 'cut'; G.conjured = []; G.spells = []; G.hasCat = false; G.slideTold = false;
+  $('#group .cat').classList.add('hidden');
+  for (let i = 0; i < 4; i++) document.getElementById('stop' + i).classList.remove('ok');
+  $('#speak').classList.remove('hidden');
+  await enterScene(0, {intro:true});
+}
+async function restart(){
+  stopVoice(); $('#pAgain').classList.remove('pulse');
+  await fadeOut(); $('#party').classList.add('hidden'); fx.innerHTML = '';
+  startGame();
+}
+$('#play').addEventListener('pointerdown', e => {
+  e.preventDefault(); unlockAudio(); SFX.chime();
+  $('#fade').classList.add('on');
+  setTimeout(() => { $('#start').classList.add('hidden'); startGame(); }, 500);
+});
+$('#speak').addEventListener('pointerdown', e => {
+  e.preventDefault(); touched();
+  const b = $('#speak'); b.animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}], {duration:300});
+  if (G.mode === 'cut' || (G.mode === 'party' && $('#pButtons').classList.contains('hidden'))) return;
+  if (G.mode === 'play' && allFull()) { slideHint(); return; }
+  if (G.mode === 'play' && G.line === 'hint-drag') { say('hint-drag'); demoDrag(); return; }
+  if (G.line) say(G.line);
+});
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+buildStatic();
+
+/* ---------- debug hook for testers ---------- */
+window.__game = {
+  G, LINES, SCENES,
+  get state(){ return {mode:G.mode, scene:G.sceneIdx >= 0 && G.sceneIdx < 3 ? SCENES[G.sceneIdx].id : (G.sceneIdx === 3 ? 'party' : 'start'),
+    misses:G.misses, slots:G.slots.map(g => g ? g.letter : null), conjured:G.conjured.slice(), spells:G.spells.slice(), hasCat:G.hasCat, book:G.book, lastSaid:G.lastSaid}; },
+  set fast(v){ G.fast = !!v; }, get fast(){ return G.fast; },
+  start(){ $('#start').classList.add('hidden'); return startGame(); },
+  /* Spell a word as if Emma dragged the gems and slid along the wand. */
+  async spell(word){
+    if (G.mode !== 'play') return 'not ready: ' + G.mode;
+    G.slots.filter(Boolean).forEach(g => sendHome(g, true));
+    const used = [];
+    for (let i = 0; i < 3; i++){ const g = G.gems.find(x => x.letter === word[i] && !used.includes(x)); if (!g) return 'no gem ' + word[i]; used.push(g); placeInSlot(g, i); }
+    startSlide(); slideMove({x:SLOT_X[2] + 60, y:780});
+    return 'ok';
+  },
+  skipTo(i){ stopVoice(); $('#start').classList.add('hidden'); $('#speak').classList.remove('hidden'); if (i >= 3) return party(); return enterScene(i); },
+  resetBook(){ G.book = {crowns:0, words:[]}; saveBook(G.book); updateBadges(); },
+};
+</script>
+</body>
+</html>

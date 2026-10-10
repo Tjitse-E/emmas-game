@@ -34,10 +34,10 @@ Notes:
 
 ## Sound: ElevenLabs
 
-- Speech: ElevenLabs text-to-speech, voice **Elizabeth** (British English), for instructions, words, letter sounds and praise.
+- Speech: ElevenLabs text-to-speech. Voice **Elizabeth** (British English) is the narrator and speaks instructions, words, letter sounds and praise. Characters have their own voices, listed in [VOICES.md](VOICES.md).
 - Sound effects and music: ElevenLabs sound effects and music generation, where needed.
 - Audio is generated ahead of time and saved as files (for example `ideas/<idea-slug>/audio/*.mp3`). The game never calls the API from the browser, so the API key never reaches the client.
-- The API key is read from the environment (`ELEVENLABS_API_KEY`) by a generation script. It is never committed.
+- The API key is `ELEVENLABS_API` in `.env` (gitignored). The generation script loads `.env` itself. It is never committed.
 
 ## Deployment
 

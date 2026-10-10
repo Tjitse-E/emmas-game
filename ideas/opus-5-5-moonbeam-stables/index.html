@@ -1,0 +1,1487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Moonbeam Stables</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Nunito","Trebuchet MS",system-ui,sans-serif;color:#4a2c1a}
+body{background:radial-gradient(circle at 50% 35%,#ffe8c2,#e9b77c)}
+#stage{position:absolute;left:0;top:0;width:1180px;height:820px;transform-origin:0 0;overflow:hidden;background:#f3d29c}
+button{all:unset;box-sizing:border-box;cursor:pointer;display:block}
+.scene{position:absolute;inset:0;display:none;overflow:hidden}
+.scene.on{display:block}
+svg{display:block}
+
+/* ---------- start ---------- */
+#start{background:linear-gradient(#ffc9e0 0%,#ffe2c9 45%,#fff3d6 70%)}
+.sunrise{position:absolute;left:50%;top:430px;width:900px;height:900px;margin-left:-450px;border-radius:50%;
+  background:repeating-conic-gradient(rgba(255,255,255,.35) 0 8deg,rgba(255,255,255,0) 8deg 20deg);animation:spin 60s linear infinite}
+.sun{position:absolute;left:50%;top:360px;width:240px;height:240px;margin-left:-120px;border-radius:50%;
+  background:radial-gradient(circle,#fff6b8,#ffd25e 60%,#ffb347);box-shadow:0 0 90px 30px rgba(255,210,94,.7)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cloud{position:absolute;width:180px;height:60px;background:#fff;border-radius:60px;opacity:.9}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:80px;height:80px;left:25px;top:-40px}
+.cloud::after{width:60px;height:60px;left:90px;top:-28px}
+.drift{animation:drift 40s linear infinite}
+@keyframes drift{from{transform:translateX(-260px)}to{transform:translateX(1400px)}}
+.hills{position:absolute;left:0;right:0;bottom:0}
+.title{position:absolute;left:0;right:0;top:34px;text-align:center;margin:0;font-size:104px;line-height:.95;font-weight:900;letter-spacing:1px;
+  color:#fff;text-shadow:0 6px 0 #d96aa7,0 10px 0 #b84b8b,0 18px 30px rgba(120,30,80,.35)}
+.title small{display:block;font-size:56px;color:#fff6c9;text-shadow:0 5px 0 #e39a3b,0 9px 0 #b9721e}
+#playBtn{position:absolute;left:50%;top:470px;width:220px;height:220px;margin-left:-110px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#ffb6dd,#ff5fa8 55%,#e23d8a);box-shadow:0 14px 0 #b02a6b,0 22px 40px rgba(120,20,70,.4);
+  animation:pulse 1.6s ease-in-out infinite;z-index:5}
+#playBtn svg{width:110px;height:110px;margin:55px 0 0 64px}
+#playBtn::after{content:"";position:absolute;inset:-18px;border-radius:50%;border:8px solid rgba(255,255,255,.7);animation:ring 1.6s ease-out infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+@keyframes ring{from{transform:scale(.85);opacity:1}to{transform:scale(1.25);opacity:0}}
+.start-pony{position:absolute;width:420px;height:372px}
+
+/* ---------- stable ---------- */
+#stable{background:#e0a466}
+#track{position:absolute;left:0;top:0;width:3540px;height:820px;transition:transform .65s cubic-bezier(.45,.05,.3,1)}
+.stall{position:absolute;top:0;width:1180px;height:820px;overflow:hidden}
+.wall{position:absolute;inset:0;background:
+  linear-gradient(180deg,rgba(255,240,200,.35),rgba(120,60,20,.15)),
+  repeating-linear-gradient(90deg,#d99a5c 0 112px,#c7854a 112px 118px,#dfa264 118px 230px,#c7854a 230px 236px)}
+.beam{position:absolute;left:0;right:0;top:0;height:64px;background:linear-gradient(#8a5128,#a5642f);box-shadow:0 6px 0 rgba(80,40,10,.25)}
+.beam::after{content:"";position:absolute;left:0;right:0;bottom:8px;height:6px;background:rgba(255,220,160,.3)}
+.floor{position:absolute;left:0;right:0;top:600px;bottom:0;background:
+  repeating-linear-gradient(-20deg,rgba(214,160,60,.0) 0 14px,rgba(214,160,60,.55) 14px 17px),
+  repeating-linear-gradient(25deg,rgba(255,240,170,0) 0 22px,rgba(255,240,170,.6) 22px 25px),
+  linear-gradient(#f1cf72,#e8bc58)}
+.opening{position:absolute;background:linear-gradient(#7c4a26,#9b6236 70%,#a86c3a);border:16px solid #8a5128;border-bottom:none;
+  border-radius:260px 260px 0 0/110px 110px 0 0;box-shadow:inset 0 20px 40px rgba(40,15,0,.45)}
+.opening .win{position:absolute;left:50%;top:50px;width:150px;height:110px;margin-left:-75px;border-radius:75px 75px 10px 10px;
+  background:linear-gradient(#9fe0ff,#e3f7ff);border:10px solid #6b3a18;box-shadow:0 0 40px rgba(255,240,180,.6)}
+.opening .win::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:8px;margin-left:-4px;background:#6b3a18}
+.hay{position:absolute;bottom:0;height:90px;border-radius:50% 50% 0 0;background:
+  repeating-linear-gradient(70deg,#f6d77d 0 6px,#e7b84d 6px 9px)}
+.rays{position:absolute;left:0;top:0;width:1180px;height:820px;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,250,210,0) 30%,rgba(255,250,210,.22) 38%,rgba(255,250,210,0) 46%,rgba(255,250,210,.16) 55%,rgba(255,250,210,0) 62%)}
+.door{position:absolute;left:170px;top:118px;width:250px;height:446px;border-radius:16px;
+  background:repeating-linear-gradient(90deg,#b8763e 0 58px,#9d6230 58px 62px);border:12px solid #7e4a22;box-shadow:8px 10px 0 rgba(70,35,10,.25)}
+.door svg.brace{position:absolute;inset:0;width:100%;height:100%}
+.plate{position:absolute;display:flex;align-items:center;justify-content:center;border-radius:20px;
+  background:linear-gradient(#fff8e6,#f3dfb2);border:6px solid #c99a3c;box-shadow:0 6px 0 rgba(80,40,10,.3);
+  font-size:70px;font-weight:800;color:#5a2f12;letter-spacing:2px}
+.plate::before,.plate::after{content:"";position:absolute;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:#c99a3c}
+.plate::before{left:10px}.plate::after{right:10px}
+.slate{position:absolute;width:180px;height:150px;border-radius:14px;background:radial-gradient(circle at 40% 35%,#4f6158,#2f3d37);
+  border:10px solid #c48a4e;box-shadow:0 8px 0 rgba(60,30,10,.3);display:flex;align-items:center;justify-content:center;
+  font-family:"Chalkboard SE","Chalkduster",ui-rounded,"Comic Sans MS",sans-serif;font-size:104px;color:#fbfbf3;
+  text-shadow:0 0 2px #fff,1px 2px 0 rgba(255,255,255,.25);transform-origin:50% -30px}
+.slate::before{content:"";position:absolute;left:50%;top:-66px;width:110px;height:58px;margin-left:-55px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 58'%3E%3Cpath d='M6 58 L55 6 L104 58' fill='none' stroke='%23e8d5b0' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat}
+.slate::after{content:"";position:absolute;left:50%;top:-72px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#7b7b7b}
+.slate.pulse,.plate.pulse{animation:swing .9s ease-in-out 2}
+@keyframes swing{25%{transform:rotate(6deg) scale(1.08)}75%{transform:rotate(-6deg) scale(1.08)}}
+.star-spot{position:absolute;width:100px;height:100px;border-radius:50%;border:5px dashed rgba(255,240,200,.75)}
+.star-spot svg{width:120px;height:120px;margin:-15px;transform:scale(0);transition:transform .6s cubic-bezier(.3,1.8,.5,1)}
+.star-spot.earned{border-color:transparent}
+.star-spot.earned svg{transform:scale(1)}
+.rosettes{position:absolute;width:110px;height:200px;pointer-events:none}
+.rosettes .mini{position:absolute;left:0;width:96px;height:130px}
+.bell{position:absolute;left:1026px;top:96px;width:130px;height:170px;z-index:4}
+.bell .bellbody{transform-origin:65px 30px}
+.bell.ring .bellbody{animation:ding .9s ease-in-out}
+@keyframes ding{15%{transform:rotate(22deg)}35%{transform:rotate(-18deg)}55%{transform:rotate(12deg)}75%{transform:rotate(-6deg)}}
+.bell.glow{filter:drop-shadow(0 0 18px #fff3a0) drop-shadow(0 0 8px #ffd34d)}
+.manger{position:absolute;z-index:3;border-radius:22px;background:
+  repeating-linear-gradient(0deg,#a8682f 0 40px,#8f5626 40px 44px);border:10px solid #6d3f1b;box-shadow:0 10px 0 rgba(60,30,10,.35),inset 0 8px 16px rgba(0,0,0,.25)}
+.manger.hot{box-shadow:0 0 0 8px #fff4a8,0 10px 0 rgba(60,30,10,.35),inset 0 8px 16px rgba(0,0,0,.25)}
+.slot{position:absolute;border-radius:18px;background:rgba(255,225,170,.25);box-shadow:inset 0 3px 8px rgba(0,0,0,.25)}
+.slot svg{width:100%;height:100%;opacity:.35}
+.slot.glow{animation:slotglow .5s ease-in-out 4}
+@keyframes slotglow{50%{background:rgba(255,250,170,.9)}}
+.crate{position:absolute;z-index:3;border-radius:12px;background:repeating-linear-gradient(0deg,#d9a45f 0 46px,#b07a3c 46px 52px);
+  border:12px solid #8f5a26;box-shadow:0 10px 0 rgba(60,30,10,.3)}
+.crate.hot{box-shadow:0 0 0 8px #fff4a8,0 10px 0 rgba(60,30,10,.3)}
+.crate.wiggle,.carrot.wiggle{animation:wig .25s 4}
+@keyframes wig{25%{rotate:-6deg}75%{rotate:6deg}}
+.carrot{position:absolute;left:0;top:0;width:96px;height:96px;z-index:5;touch-action:none}
+.carrot svg{width:100%;height:100%;filter:drop-shadow(0 4px 2px rgba(80,30,0,.3));transition:transform .15s}
+.carrot.drag{z-index:50}
+.carrot.drag svg{transform:scale(1.18) rotate(-8deg);filter:drop-shadow(0 14px 8px rgba(80,30,0,.35))}
+.carrot.eaten svg{transition:transform .25s,opacity .25s;transform:scale(.2) rotate(40deg);opacity:0}
+
+#basket{position:absolute;left:20px;top:596px;width:250px;height:214px;z-index:6;transition:transform .5s cubic-bezier(.4,1.4,.5,1)}
+#basket.away{transform:translateX(-330px)}
+#basket.bump{animation:bump .3s}
+@keyframes bump{50%{transform:scale(1.07)}}
+.arrow{position:absolute;top:322px;width:112px;height:112px;z-index:8;border-radius:28px;
+  background:linear-gradient(#c98a4b,#a5642f);border:6px solid #6d3f1b;box-shadow:0 8px 0 #5a3214,0 12px 20px rgba(0,0,0,.25);
+  transition:opacity .3s,transform .3s}
+.arrow svg{width:70px;height:70px;margin:15px}
+.arrow.left{left:14px}.arrow.right{right:14px}
+.arrow.hide{opacity:0;pointer-events:none;transform:scale(.6)}
+.arrow.beckon{animation:beckon 1s ease-in-out infinite}
+@keyframes beckon{50%{transform:scale(1.12)}}
+
+/* ---------- ponies ---------- */
+.pony{position:absolute;z-index:2}
+.pony .hopper,.pony .flip{width:100%;height:100%}
+.pony .flip{transition:transform .5s cubic-bezier(.4,1.4,.5,1)}
+.pony.mirror .flip{transform:scaleX(-1)}
+.pony.mirror.sulk .flip{transform:scaleX(1)}
+.pony.sulk:not(.mirror) .flip{transform:scaleX(-1)}
+.psvg{width:100%;height:100%;overflow:visible}
+.psvg *{transform-box:view-box}
+.glint{animation:twinkle 1.6s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:1}}
+.pony .eye{animation:blink 4.6s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.12)}}
+.pony .head{transition:transform .35s cubic-bezier(.4,1.6,.5,1)}
+.pony.idle .head{animation:headIdle 3.4s ease-in-out infinite}
+@keyframes headIdle{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+.pony.graze .head{animation:graze 5s ease-in-out infinite}
+@keyframes graze{0%,15%,85%,100%{transform:rotate(0)}35%,65%{transform:rotate(36deg)}}
+.pony.eat .head{animation:none;transform:rotate(26deg)}
+.pony.eat .mouth{animation:chew .22s infinite}
+@keyframes chew{50%{transform:scaleY(1.8) translateY(5px)}}
+.pony.nudge .head{animation:nudge .6s ease-in-out 3}
+@keyframes nudge{0%,100%{transform:rotate(0)}50%{transform:rotate(30deg)}}
+.pony.sulk .head{animation:none;transform:rotate(14deg)}
+.pony.nuzzle .head{animation:none;transform:rotate(-10deg)}
+.pony.shake .mane,.pony.shake .tail,.pony.shake .forelock{animation:shake .18s 8}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(7deg)}75%{transform:rotate(-7deg)}}
+.pony .body,.pony .belly{transition:transform .45s cubic-bezier(.3,1.8,.5,1)}
+.pony .body{transform-origin:240px 290px}.pony .belly{transform-origin:246px 300px}
+.pony.full .body{transform:scale(1.1,1.3)}
+.pony.full .belly{transform:scale(1.3,2)}
+.pony.gallop .leg.near.f,.pony.gallop .leg.far.b{animation:legA .34s linear infinite}
+.pony.gallop .leg.near.b,.pony.gallop .leg.far.f{animation:legB .34s linear infinite}
+@keyframes legA{0%,100%{transform:rotate(30deg)}50%{transform:rotate(-30deg)}}
+@keyframes legB{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(30deg)}}
+.pony.gallop .hopper{animation:bob .34s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-12px) rotate(-2deg)}}
+.pony.gallop .mane,.pony.gallop .tail{animation:shake .34s infinite}
+.pony.hop .hopper{animation:hop .5s}
+@keyframes hop{40%{transform:translateY(-34px)}}
+.raincloud{position:absolute;left:50%;top:-30px;width:120px;height:70px;margin-left:-60px;opacity:0;transform:translateY(20px);transition:.4s;pointer-events:none}
+.pony.sulk .raincloud{opacity:1;transform:none}
+
+/* ---------- hud ---------- */
+.hud{position:absolute;z-index:40;display:none}
+.hud.on{display:block}
+#speaker{left:16px;top:16px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffe1f0 60%,#ffc2e0);
+  border:6px solid #fff;box-shadow:0 6px 0 rgba(150,60,100,.35),0 10px 20px rgba(0,0,0,.15)}
+#speaker svg{width:60px;height:60px;margin:14px}
+#speaker.talk svg .wave{animation:wave .6s ease-in-out infinite}
+@keyframes wave{50%{opacity:.2}}
+#tracker{left:470px;top:10px;width:240px;height:84px;border-radius:42px;background:rgba(255,248,230,.85);box-shadow:0 6px 0 rgba(90,45,15,.25);display:none}
+#tracker.on{display:flex;justify-content:space-around;align-items:center}
+#tracker .ts{width:66px;height:66px}
+#tracker .ts svg{width:100%;height:100%}
+#tracker .ts .fillstar{transform:scale(0);transform-origin:50% 50%;transform-box:fill-box;transition:transform .5s cubic-bezier(.3,1.8,.5,1)}
+#tracker .ts.on .fillstar{transform:scale(1)}
+#again{position:absolute;left:50%;top:330px;width:180px;height:180px;margin-left:-90px;border-radius:50%;z-index:45;display:none;
+  background:radial-gradient(circle at 35% 30%,#bff7d6,#3fcf8e 60%,#22a56c);box-shadow:0 12px 0 #177a4f,0 20px 30px rgba(0,0,0,.3);animation:pulse 1.6s ease-in-out infinite}
+#again svg{width:110px;height:110px;margin:35px}
+#fx{position:absolute;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+#fade{position:absolute;inset:0;background:#fff7ea;opacity:0;pointer-events:none;z-index:90;transition:opacity .45s}
+#fade.on{opacity:1;pointer-events:auto}
+.hand{position:absolute;left:0;top:0;width:110px;height:110px;font-size:96px;line-height:110px;text-align:center;filter:drop-shadow(0 6px 6px rgba(0,0,0,.3))}
+.ghost{position:absolute;left:0;top:0;width:96px;height:96px;opacity:.75}
+.floatnum{position:absolute;font-size:64px;font-weight:900;color:#fff;text-shadow:0 4px 0 #e2742a,0 0 12px rgba(255,140,40,.7)}
+.heart,.spark{position:absolute;left:0;top:0}
+
+/* ---------- paddock ---------- */
+#paddock,#ride,#reward{background:linear-gradient(#8fd6ff 0%,#cdeeff 45%,#e9f8ff 60%)}
+.field{position:absolute;left:0;right:0;top:470px;bottom:0;background:
+  radial-gradient(ellipse at 20% 30%,rgba(255,255,255,.15),transparent 40%),linear-gradient(#8fdc6a,#5fbf4a)}
+.flowers{position:absolute;inset:0;pointer-events:none;font-size:34px}
+.flowers span{position:absolute}
+.barn{position:absolute;left:0;top:230px;width:250px;height:290px}
+.gate{position:absolute;top:150px;width:58px;height:126px;background:repeating-linear-gradient(90deg,#fff 0 6px,#e85d8f 6px 28px);border:5px solid #fff;
+  transform-style:preserve-3d;transition:transform 1.2s cubic-bezier(.4,1.3,.5,1)}
+.gate.l{left:68px;transform-origin:0 50%}.gate.r{left:126px;transform-origin:100% 50%}
+.barn.open .gate.l{transform:perspective(400px) rotateY(-75deg)}
+.barn.open .gate.r{transform:perspective(400px) rotateY(75deg)}
+.tag{position:absolute;border-radius:24px;padding:8px 14px 6px;z-index:10;
+  background:linear-gradient(#fffaf0,#ffe9c6);border:6px solid #e0a03e;box-shadow:0 8px 0 rgba(120,70,20,.3);
+  transform:scale(0);transition:transform .45s cubic-bezier(.3,1.7,.5,1),opacity .4s;touch-action:none}
+.tag.show{transform:scale(1)}
+.tag.gone{opacity:0;pointer-events:none}
+.tag::before{content:"";position:absolute;left:50%;top:-46px;width:6px;height:40px;margin-left:-3px;background:#c0392b;border-radius:3px}
+.tag .letters{display:flex;justify-content:center;gap:2px}
+.tag .lc{display:flex;flex-direction:column;align-items:center;padding:0 3px}
+.tag .l{text-align:center;font-size:74px;line-height:80px;font-weight:800;color:#5a2f12;transition:color .2s,transform .2s}
+.tag .d{height:24px;display:flex;justify-content:center;align-items:center}
+.tag .d i{display:block;width:18px;height:18px;border-radius:50%;background:#f0c27a;opacity:.55;transition:.2s}
+.tag.active .d i{opacity:1}
+.tag .l.lit{color:#e2337f;transform:translateY(-6px) scale(1.12)}
+.tag .d i.lit{background:#e2337f;transform:scale(1.4)}
+.tag.blended{background:linear-gradient(#fff,#ffe1f0);border-color:#e2337f;animation:pulse .5s 3}
+.tag.blended .l{color:#e2337f}
+.tag.hintme{animation:beckon .9s ease-in-out 3}
+.tag .l.pulse{animation:pulse .4s 2;color:#e2337f}
+.tag.board{border-color:#b9773a;background:linear-gradient(#fff6e2,#f5dcae);box-shadow:0 8px 0 rgba(120,70,20,.3),0 0 0 4px #fff inset}
+.tag.board::before,.tag.board::after{content:"";position:absolute;top:auto;bottom:-30px;left:30px;width:14px;height:30px;margin:0;border-radius:4px;background:#b9773a}
+.tag.board::after{left:auto;right:30px}
+.tag.wiggle{animation:wig .25s 4}
+.pony.wanted .psvg{filter:drop-shadow(0 0 8px #fff) drop-shadow(0 0 18px #ff4f9a) drop-shadow(0 0 4px #ff4f9a)}
+
+/* ---------- ride ---------- */
+.layer{position:absolute;left:0;right:0;background-repeat:repeat-x}
+#rideFar{top:300px;height:260px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1180' height='260'%3E%3Cpath d='M0 180 C 150 60 300 60 420 150 C 520 90 650 40 800 140 C 900 90 1050 80 1180 180 L1180 260 L0 260Z' fill='%23a6e08a'/%3E%3Cpath d='M0 220 C 200 140 380 150 560 210 C 760 150 960 140 1180 220 L1180 260 L0 260Z' fill='%2388d06c'/%3E%3C/svg%3E")}
+#rideGround{top:540px;height:280px;background-color:#6cc552;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='280'%3E%3Crect width='600' height='280' fill='%236cc552'/%3E%3Crect y='150' width='600' height='14' fill='%23c99a5a' opacity='.35'/%3E%3Cg fill='%2357b041'%3E%3Cpath d='M40 60 l8 -24 l8 24z M120 230 l8 -24 l8 24z M300 90 l8 -24 l8 24z M470 220 l8 -24 l8 24z M540 40 l8 -24 l8 24z'/%3E%3C/g%3E%3Cg%3E%3Ccircle cx='210' cy='50' r='9' fill='%23fff'/%3E%3Ccircle cx='210' cy='50' r='4' fill='%23ffd34d'/%3E%3Ccircle cx='400' cy='240' r='9' fill='%23ffb3d9'/%3E%3Ccircle cx='400' cy='240' r='4' fill='%23fff'/%3E%3Ccircle cx='80' cy='200' r='9' fill='%23fff'/%3E%3Ccircle cx='80' cy='200' r='4' fill='%23ffd34d'/%3E%3C/g%3E%3C/svg%3E")}
+.fence{position:absolute;top:520px;width:170px;height:180px;z-index:3}
+.fence.under{z-index:1}
+.finish{position:absolute;top:250px;width:260px;height:450px;z-index:1}
+#ridePony{position:absolute;left:120px;top:369px;width:380px;height:336px;z-index:2}
+#rideCount{position:absolute;left:50%;top:14px;width:330px;margin-left:-165px;height:96px;border-radius:48px;background:rgba(255,255,255,.85);
+  display:flex;justify-content:space-around;align-items:center;box-shadow:0 6px 0 rgba(40,90,40,.2);z-index:5}
+#rideCount .fc{width:80px;height:70px;opacity:.3;transition:.4s}
+#rideCount .fc.on{opacity:1;transform:scale(1.1)}
+.bignum{position:absolute;left:50%;top:180px;width:300px;margin-left:-150px;text-align:center;font-size:200px;font-weight:900;color:#fff;
+  text-shadow:0 8px 0 #e2337f,0 0 30px rgba(226,51,127,.5);z-index:20;pointer-events:none}
+
+/* ---------- reward ---------- */
+.bunting{position:absolute;left:0;right:0;top:0;height:120px}
+.stands{position:absolute;left:0;right:0;top:300px;height:200px;background:repeating-linear-gradient(0deg,#f7e3c2 0 40px,#e9caa0 40px 44px)}
+.arena{position:absolute;left:0;right:0;top:470px;bottom:0;background:linear-gradient(#f2d39a,#e6bd78)}
+.podium{position:absolute;left:440px;top:590px;width:300px;height:200px;border-radius:20px 20px 0 0;background:linear-gradient(#fff,#e9e4ff);
+  box-shadow:0 -6px 0 #c9b8ff inset,0 10px 30px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center}
+#bigRosette{position:absolute;left:430px;top:150px;width:320px;height:440px;z-index:5}
+.puffle{position:absolute;width:120px;height:120px;z-index:6}
+.puffle.cheer{animation:cheer .5s ease-in-out infinite}
+@keyframes cheer{50%{transform:translateY(-26px)}}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- START -->
+  <div id="start" class="scene on">
+    <div class="sunrise"></div><div class="sun"></div>
+    <div class="cloud drift" style="top:120px;animation-delay:-5s"></div>
+    <div class="cloud drift" style="top:230px;animation-delay:-24s;transform:scale(.7)"></div>
+    <svg class="hills" viewBox="0 0 1180 330" width="1180" height="330"><path d="M0 120 C 200 20 380 40 560 110 C 760 30 980 20 1180 110 L1180 330 L0 330Z" fill="#a8e38c"/><path d="M0 200 C 260 120 520 140 700 200 C 880 140 1040 140 1180 190 L1180 330 L0 330Z" fill="#7fd06a"/></svg>
+    <h1 class="title">Moonbeam<small>Stables</small></h1>
+    <div class="start-pony" id="startJet" style="left:770px;top:420px"></div>
+    <div class="start-pony" id="startBob" style="left:-20px;top:430px"></div>
+    <button id="playBtn" aria-label="Play"><svg viewBox="0 0 100 100"><path d="M18 8 L92 50 L18 92 Z" fill="#fff" stroke="#fff" stroke-width="10" stroke-linejoin="round"/></svg></button>
+  </div>
+
+  <!-- STABLE -->
+  <div id="stable" class="scene">
+    <div id="track"></div>
+    <div id="basket"></div>
+    <button class="arrow left hide" id="arrowL" aria-label="Back"><svg viewBox="0 0 100 100"><path d="M64 14 L28 50 L64 86" fill="none" stroke="#fff3d6" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="arrow right" id="arrowR" aria-label="Next"><svg viewBox="0 0 100 100"><path d="M36 14 L72 50 L36 86" fill="none" stroke="#fff3d6" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+
+  <!-- PADDOCK -->
+  <div id="paddock" class="scene">
+    <div class="cloud drift" style="top:70px;animation-delay:-12s"></div>
+    <div class="cloud drift" style="top:150px;animation-delay:-30s;transform:scale(.6)"></div>
+    <div style="position:absolute;right:90px;top:40px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,#fff6b8,#ffd25e);box-shadow:0 0 60px 20px rgba(255,220,100,.6)"></div>
+    <svg style="position:absolute;left:0;top:280px" width="1180" height="220" viewBox="0 0 1180 220"><path d="M0 120 C 200 30 400 40 600 110 C 800 40 1000 30 1180 100 L1180 220 L0 220Z" fill="#b5e89a"/></svg>
+    <div class="field"></div>
+    <svg style="position:absolute;left:0;top:400px" width="1180" height="110" viewBox="0 0 1180 110">
+      <g fill="#fff" stroke="#e8d9c5" stroke-width="2"><rect x="0" y="22" width="1180" height="16" rx="8"/><rect x="0" y="62" width="1180" height="16" rx="8"/>
+      <g id="posts"></g></g></svg>
+    <div class="barn" id="barn">
+      <svg width="250" height="290" viewBox="0 0 250 290"><path d="M10 110 L125 20 L240 110 L240 290 L10 290Z" fill="#f27aa8"/><path d="M0 116 L125 12 L250 116" fill="none" stroke="#fff" stroke-width="16" stroke-linejoin="round"/>
+      <circle cx="125" cy="88" r="30" fill="#fff6c9"/><path d="M134 68 a22 22 0 1 0 0 40 a17 17 0 1 1 0-40z" fill="#ffd34d"/>
+      <rect x="62" y="144" width="126" height="146" fill="#7a3a52"/></svg>
+      <div class="gate l"></div><div class="gate r"></div>
+    </div>
+    <div class="flowers" id="flowers"></div>
+  </div>
+
+  <!-- RIDE -->
+  <div id="ride" class="scene">
+    <div class="cloud drift" style="top:80px;animation-duration:25s"></div>
+    <div class="cloud drift" style="top:170px;animation-duration:32s;animation-delay:-14s;transform:scale(.7)"></div>
+    <div class="layer" id="rideFar"></div>
+    <div class="layer" id="rideGround"></div>
+    <div id="rideCount"></div>
+    <div id="ridePony" class="pony"></div>
+  </div>
+
+  <!-- REWARD -->
+  <div id="reward" class="scene">
+    <svg class="bunting" viewBox="0 0 1180 120" id="bunting"></svg>
+    <div class="stands"></div>
+    <div class="arena"></div>
+    <div class="podium"><svg width="120" height="120" viewBox="0 0 100 100"><path d="M50 6 L62 38 L96 38 L68 58 L79 92 L50 72 L21 92 L32 58 L4 38 L38 38Z" fill="#ffd34d" stroke="#e6a817" stroke-width="4" stroke-linejoin="round"/></svg></div>
+    <div id="bigRosette"></div>
+    <div id="rewardPony" class="pony"></div>
+  </div>
+
+  <button id="speaker" class="hud" aria-label="Say it again"><svg viewBox="0 0 100 100"><path d="M14 38 h18 l24 -20 v64 l-24 -20 h-18z" fill="#e2337f" stroke="#e2337f" stroke-width="6" stroke-linejoin="round"/><path class="wave" d="M68 34 q12 16 0 32" fill="none" stroke="#e2337f" stroke-width="8" stroke-linecap="round"/><path class="wave" d="M78 22 q22 28 0 56" fill="none" stroke="#e2337f" stroke-width="8" stroke-linecap="round" style="animation-delay:.2s"/></svg></button>
+  <div id="tracker" class="hud"></div>
+  <button id="again" aria-label="Play again"><svg viewBox="0 0 100 100"><path d="M78 50 A28 28 0 1 1 64 26" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"/><path d="M56 8 L80 24 L56 40Z" fill="#fff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/></svg></button>
+  <div id="fx"></div>
+  <div id="fade"></div>
+</div>
+
+<script>
+'use strict';
+/* ============================================================
+   Spoken lines (mirror of audio/lines.json, inlined so the file
+   works without fetching).
+   ============================================================ */
+const LINES = {
+  "intro": "Good morning, stable keeper! The ponies are hungry.",
+  "jet-wants": "Jet wants five carrots.",
+  "bob-wants": "Bob has three. Bob wants eight.",
+  "twins-intro": "Tim and Tom are twins. They must have the same. Share the carrots.",
+  "twins-share": "Share the carrots.",
+  "num-1": "one",
+  "num-2": "two",
+  "num-3": "three",
+  "num-4": "four",
+  "num-5": "five",
+  "num-6": "six",
+  "num-7": "seven",
+  "num-8": "eight",
+  "num-9": "nine",
+  "num-10": "ten",
+  "jet-happy": "Five carrots! Jet is happy.",
+  "bob-happy": "Eight carrots! Bob is happy.",
+  "jet-too-many": "Too many! Jet wanted five.",
+  "bob-too-many": "Too many! Bob wanted eight.",
+  "more-please": "More, please!",
+  "twins-same": "Four and four. The same!",
+  "tim-fewer": "Tim has fewer!",
+  "tom-fewer": "Tom has fewer!",
+  "give-tim": "Give Tim a carrot.",
+  "give-tom": "Give Tom a carrot.",
+  "twins-use-all": "Use all the carrots in the box.",
+  "hint-drag": "Drag a carrot to the manger.",
+  "hint-bell": "Ring the bell when you are ready.",
+  "hint-take-out": "Take some carrots out.",
+  "next-pony": "Another pony is hungry!",
+  "all-full": "All the ponies are happy. Let's go to the field!",
+  "paddock": "Which pony do you want to ride? Tap a pony.",
+  "hint-slide": "Slide your finger along the name.",
+  "want-jet": "Jet! Find Jet's name on the fence.",
+  "want-bob": "Bob! Find Bob's name on the fence.",
+  "want-tim": "Tim! Find Tim's name on the fence.",
+  "want-tom": "Tom! Find Tom's name on the fence.",
+  "find-jet": "Find Jet's name.",
+  "find-bob": "Find Bob's name.",
+  "find-tim": "Find Tim's name.",
+  "find-tom": "Find Tom's name.",
+  "says-jet": "That says Jet.",
+  "says-bob": "That says Bob.",
+  "says-tim": "That says Tim.",
+  "says-tom": "That says Tom.",
+  "sound-j": "<phoneme alphabet=\"ipa\" ph=\"dʒ\">j</phoneme>",
+  "sound-e": "<phoneme alphabet=\"ipa\" ph=\"e\">e</phoneme>",
+  "sound-t": "<phoneme alphabet=\"ipa\" ph=\"t\">t</phoneme>",
+  "sound-b": "<phoneme alphabet=\"ipa\" ph=\"b\">b</phoneme>",
+  "sound-o": "<phoneme alphabet=\"ipa\" ph=\"ɒ\">o</phoneme>",
+  "sound-i": "<phoneme alphabet=\"ipa\" ph=\"ɪ\">i</phoneme>",
+  "sound-m": "<phoneme alphabet=\"ipa\" ph=\"m\">m</phoneme>",
+  "name-jet": "Jet!",
+  "name-bob": "Bob!",
+  "name-tim": "Tim!",
+  "name-tom": "Tom!",
+  "come-jet": "Here comes Jet!",
+  "come-bob": "Here comes Bob!",
+  "come-tim": "Here comes Tim!",
+  "come-tom": "Here comes Tom!",
+  "ride-intro": "Off we go! Tap to jump over the fences.",
+  "hint-jump": "Tap to jump!",
+  "fence-1": "One fence!",
+  "fence-2": "Two fences!",
+  "fence-3": "Three fences!",
+  "finale": "Well done, stable keeper!",
+  "rosette-jet": "A rosette for Jet's door!",
+  "rosette-bob": "A rosette for Bob's door!",
+  "rosette-tim": "A rosette for Tim's door!",
+  "rosette-tom": "A rosette for Tom's door!",
+  "hint-tap-pony": "Tap a pony."
+};
+/* The browser voice cannot read phoneme tags, so the fallback uses the
+   nearest spelling it can say. The generated Elizabeth files use the
+   pure sounds from LINES. */
+const FALLBACK = { "sound-j": "juh", "sound-e": "eh", "sound-t": "tuh", "sound-b": "buh", "sound-o": "aw", "sound-i": "ih", "sound-m": "mmm" };
+
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+const fx = $('#fx');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let S = 1;
+function fit() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  S = Math.min(vw / 1180, vh / 820);
+  const x = (vw - 1180 * S) / 2, y = (vh - 820 * S) / 2;
+  stage.style.transform = `translate(${x}px,${y}px) scale(${S})`;
+}
+window.addEventListener('resize', fit); fit();
+function toStage(e) { const r = stage.getBoundingClientRect(); return { x: (e.clientX - r.left) / S, y: (e.clientY - r.top) / S }; }
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+/* ============================================================
+   Speech: audio/<id>.mp3 first, speechSynthesis en-GB fallback.
+   ============================================================ */
+const voiceEl = new Audio();
+voiceEl.preload = 'auto';
+let filesOk = null;            // null = unknown, false = no audio folder
+const missing = new Set();
+let speakToken = 0, speaking = false, speakResolve = null, enVoice = null;
+function pickVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  const gb = vs.filter(v => /en[-_]GB/i.test(v.lang));
+  enVoice = gb.find(v => /Serena|Kate|Stephanie|Martha|Female|Libby|Sonia/i.test(v.name)) || gb[0] || vs.find(v => /^en/i.test(v.lang)) || null;
+}
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function setTalking(on) { speaking = on; $('#speaker').classList.toggle('talk', on); }
+function stopSpeech() {
+  speakToken++;
+  try { voiceEl.pause(); } catch (e) {}
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+  if (speakResolve) { const r = speakResolve; speakResolve = null; r(false); }
+  setTalking(false);
+}
+function tts(text, cb) {
+  if (!('speechSynthesis' in window)) { setTimeout(cb, 500 + text.length * 55); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-GB'; u.rate = 0.9; u.pitch = 1.1; if (enVoice) u.voice = enVoice;
+  let done = false;
+  const fin = () => { if (done) return; done = true; clearTimeout(tm); cb(); };
+  const tm = setTimeout(fin, 1800 + text.length * 110);
+  u.onend = fin; u.onerror = fin;
+  speechSynthesis.speak(u);
+}
+function say(id) {
+  stopSpeech();
+  const token = speakToken;
+  setTalking(true); markActivity();
+  return new Promise(res => {
+    speakResolve = res;
+    const finish = () => { if (token !== speakToken) return; speakResolve = null; setTalking(false); markActivity(); res(true); };
+    const text = FALLBACK[id] || (LINES[id] || id).replace(/<[^>]+>/g, '');
+    let fell = false;
+    const viaTTS = () => { if (fell || token !== speakToken) return; fell = true; missing.add(id); tts(text, finish); };
+    if (filesOk === false || missing.has(id)) { fell = true; tts(text, finish); return; }
+    voiceEl.onended = () => { if (token === speakToken) finish(); };
+    voiceEl.onerror = () => { if (token === speakToken) viaTTS(); };
+    voiceEl.src = 'audio/' + id + '.mp3';
+    try { const p = voiceEl.play(); if (p && p.catch) p.catch(() => { if (token === speakToken) viaTTS(); }); }
+    catch (e) { viaTTS(); }
+  });
+}
+async function sayList(ids) { for (const id of ids) { const ok = await say(id); if (!ok) return false; } return true; }
+function silentWav() {
+  const n = 800, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+function probeAudio() {
+  try {
+    fetch('audio/intro.mp3', { method: 'HEAD' }).then(r => { filesOk = r.ok; }).catch(() => { filesOk = false; });
+  } catch (e) { filesOk = false; }
+}
+
+/* ============================================================
+   Sound effects (WebAudio, generated in code)
+   ============================================================ */
+let AC = null, master = null;
+function ac() {
+  if (!AC) {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return null;
+    AC = new C(); master = AC.createGain(); master.gain.value = 0.55; master.connect(AC.destination);
+  }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone({ f = 440, f2 = 0, type = 'sine', t = 0, d = .3, v = .2, a = .01 }) {
+  const c = ac(); if (!c) return;
+  const o = c.createOscillator(), g = c.createGain(), now = c.currentTime + t;
+  o.type = type; o.frequency.setValueAtTime(f, now);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, now + d);
+  g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(v, now + a); g.gain.exponentialRampToValueAtTime(0.0001, now + d);
+  o.connect(g); g.connect(master); o.start(now); o.stop(now + d + .05);
+}
+let noiseBuf = null;
+function noise({ t = 0, d = .2, v = .2, f = 1000, f2 = 0, q = 1, type = 'bandpass', a = .005 }) {
+  const c = ac(); if (!c) return;
+  if (!noiseBuf) { noiseBuf = c.createBuffer(1, c.sampleRate * 2, c.sampleRate); const ch = noiseBuf.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1; }
+  const s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain(), now = c.currentTime + t;
+  s.buffer = noiseBuf; fl.type = type; fl.frequency.setValueAtTime(f, now); fl.Q.value = q;
+  if (f2) fl.frequency.exponentialRampToValueAtTime(f2, now + d);
+  g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(v, now + a); g.gain.exponentialRampToValueAtTime(0.0001, now + d);
+  s.connect(fl); fl.connect(g); g.connect(master); s.start(now, Math.random()); s.stop(now + d + .05);
+}
+function voiceSweep(points, { type = 'sawtooth', v = .12, vib = 0, vibF = 18, bp = 1200, q = 2 } = {}) {
+  const c = ac(); if (!c) return;
+  const o = c.createOscillator(), g = c.createGain(), fl = c.createBiquadFilter(), now = c.currentTime;
+  o.type = type; fl.type = 'bandpass'; fl.frequency.value = bp; fl.Q.value = q;
+  const end = points[points.length - 1][0];
+  o.frequency.setValueAtTime(points[0][1], now);
+  points.forEach(([t, f]) => o.frequency.linearRampToValueAtTime(f, now + t));
+  g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(v, now + .05);
+  g.gain.setValueAtTime(v, now + end - .15); g.gain.exponentialRampToValueAtTime(0.0001, now + end);
+  if (vib) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = vibF; lg.gain.value = vib; l.connect(lg); lg.connect(o.frequency); l.start(now); l.stop(now + end + .1); }
+  o.connect(fl); fl.connect(g); g.connect(master); o.start(now); o.stop(now + end + .1);
+}
+const sfx = {
+  pick() { tone({ f: 520, f2: 760, d: .1, v: .12 }); },
+  drop() { tone({ f: 340, f2: 200, type: 'triangle', d: .14, v: .22 }); noise({ d: .06, v: .08, f: 2500 }); },
+  pop() { tone({ f: 600, f2: 1100, d: .12, v: .14 }); },
+  poof() { noise({ d: .25, v: .12, f: 800, f2: 3000 }); },
+  bell() { [0, .42].forEach(t => [[1, .22], [2.76, .09], [5.4, .05], [8.9, .025]].forEach(([p, v]) => tone({ f: 740 * p, t, d: 1.6 / Math.sqrt(p), v }))); },
+  crunch() { noise({ d: .07, v: .35, f: 2600, q: .7 }); noise({ t: .07, d: .06, v: .25, f: 1800, q: .7 }); },
+  burp() { voiceSweep([[0, 120], [.25, 95], [.6, 70]], { type: 'sawtooth', v: .3, vib: 12, vibF: 30, bp: 500, q: 1 }); },
+  giggle() { for (let i = 0; i < 5; i++) tone({ f: 900 + i * 40, f2: 1300 + i * 40, t: .1 + i * .13, d: .09, v: .1 }); },
+  neigh() { voiceSweep([[0, 520], [.25, 1150], [.45, 950], [.7, 1050], [1.1, 420]], { v: .1, vib: 60, vibF: 22, bp: 1400, q: 3 }); },
+  rooster() { voiceSweep([[0, 420], [.18, 620], [.3, 560], [.45, 760], [.7, 820], [1.25, 520]], { type: 'square', v: .07, vib: 25, vibF: 14, bp: 1100, q: 2 }); },
+  chime() { [1047, 1319, 1568, 2093].forEach((f, i) => tone({ f, t: i * .09, d: .5, v: .12 })); },
+  sparkle() { for (let i = 0; i < 6; i++) tone({ f: 1800 + Math.random() * 1600, t: i * .06, d: .25, v: .05 }); },
+  fanfare() { [[523, 0, .18], [659, .18, .18], [784, .36, .18], [1047, .54, .7]].forEach(([f, t, d]) => { tone({ f, t, d, v: .14, type: 'triangle' }); tone({ f: f * 2, t, d, v: .04 }); }); },
+  cheer() { noise({ d: 2.6, v: .14, f: 1400, q: .5, a: .4 }); for (let i = 0; i < 16; i++) noise({ t: .1 + Math.random() * 2.2, d: .05, v: .2, f: 2200, q: 1.5 }); },
+  whoosh() { noise({ d: .45, v: .18, f: 400, f2: 2400, q: 1.2 }); },
+  hoof(t = 0) { tone({ f: 140, f2: 60, d: .09, v: .25, t }); noise({ t, d: .03, v: .08, f: 3000 }); },
+  boing() { tone({ f: 300, f2: 160, d: .2, v: .14 }); tone({ f: 160, f2: 320, t: .2, d: .2, v: .1 }); },
+  pin() { tone({ f: 2200, d: .08, v: .12 }); tone({ f: 1400, t: .05, d: .15, v: .1, type: 'triangle' }); },
+  blip() { tone({ f: 880, d: .12, v: .12 }); }
+};
+
+/* ============================================================
+   Art
+   ============================================================ */
+const PONIES = {
+  jet: { name: 'Jet', coat: '#fdfbff', shade: '#cfc8e8', muzzle: '#ffffff', mane1: '#4fc3ff', mane2: '#8b7bff', hoof: '#b3abd6', sounds: ['j', 'e', 't'] },
+  bob: { name: 'Bob', coat: '#c98f62', shade: '#9c6a43', muzzle: '#ecc7a3', mane1: '#ff6fb7', mane2: '#ffb8dc', hoof: '#7a5034', sounds: ['b', 'o', 'b'] },
+  tim: { name: 'Tim', coat: '#fff0dc', shade: '#dcc39f', muzzle: '#fffaf2', mane1: '#a77bff', mane2: '#dcc2ff', hoof: '#c9a98a', sounds: ['t', 'i', 'm'] },
+  tom: { name: 'Tom', coat: '#fff0dc', shade: '#dcc39f', muzzle: '#fffaf2', mane1: '#22c995', mane2: '#9ff0d2', hoof: '#c9a98a', sounds: ['t', 'o', 'm'] }
+};
+let uid = 0;
+function glints(pts) {
+  return pts.map(([x, y], i) => `<path class="glint" style="animation-delay:${((i * .53) % 1.6).toFixed(2)}s" d="M${x} ${y - 9}L${x + 2.5} ${y - 2.5}L${x + 9} ${y}L${x + 2.5} ${y + 2.5}L${x} ${y + 9}L${x - 2.5} ${y + 2.5}L${x - 9} ${y}L${x - 2.5} ${y - 2.5}Z" fill="#fff"/>`).join('');
+}
+function ponySVG(k, opts = {}) {
+  const p = PONIES[k], g = 'mg' + k + (uid++);
+  const leg = (cls, x, col) => `<g class="leg ${cls}" style="transform-origin:${x + 18}px 300px"><rect x="${x}" y="290" width="36" height="134" rx="18" fill="${col}"/><rect x="${x - 2}" y="410" width="40" height="30" rx="12" fill="${p.hoof}"/></g>`;
+  const curls = [[362, 88, 30], [340, 118, 30], [324, 150, 30], [310, 184, 28], [298, 216, 26], [290, 246, 20], [336, 92, 22], [314, 130, 24], [296, 166, 22], [282, 202, 20]];
+  const bridle = opts.bridle ? `<path d="M388 70 C 404 110 424 150 436 196" stroke="#d6336c" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M420 136 C 430 182 452 204 498 186" stroke="#d6336c" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="436" cy="198" r="9" fill="none" stroke="#ffd34d" stroke-width="5"/>` : '';
+  return `<svg class="psvg" viewBox="0 0 520 460" aria-hidden="true">
+<defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${p.mane1}"/><stop offset="1" stop-color="${p.mane2}"/></linearGradient></defs>
+<g class="tail" style="transform-origin:120px 250px"><path d="M118 236 C 60 210 14 268 36 330 C 48 366 20 394 44 434 C 66 428 76 404 80 386 C 92 420 124 412 120 378 C 114 336 120 296 132 268 Z" fill="url(#${g})"/><circle cx="64" cy="250" r="26" fill="url(#${g})"/><path d="M60 300 C 50 330 60 360 52 400" stroke="#fff" stroke-opacity=".5" stroke-width="5" fill="none" stroke-linecap="round"/>${glints([[50, 280], [74, 352], [98, 300], [60, 412]])}</g>
+${leg('far b', 122, p.shade)}${leg('far f', 322, p.shade)}
+<ellipse class="body" cx="240" cy="262" rx="152" ry="92" fill="${p.coat}"/>
+<ellipse class="belly" cx="246" cy="300" rx="104" ry="44" fill="${p.muzzle}" opacity=".8"/>
+${leg('near b', 152, p.coat)}${leg('near f', 350, p.coat)}
+<path d="M282 236 C 294 180 318 132 352 98 L 436 148 C 414 182 400 226 392 272 C 360 296 300 292 282 236 Z" fill="${p.coat}"/>
+<g class="mane" style="transform-origin:350px 160px">${curls.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#${g})"/>`).join('')}<path d="M352 80 C 330 110 312 160 296 230" stroke="#fff" stroke-opacity=".55" stroke-width="6" fill="none" stroke-linecap="round"/>${glints([[340, 110], [318, 172], [300, 222], [358, 84], [288, 192]])}</g>
+<g class="head" style="transform-origin:360px 190px">
+<path d="M368 80 L 374 20 L 410 68 Z" fill="${p.coat}"/><path d="M376 72 L 379 38 L 400 66 Z" fill="#ffb3cc"/>
+<ellipse cx="402" cy="128" rx="80" ry="70" fill="${p.coat}"/>
+<ellipse cx="460" cy="168" rx="54" ry="44" fill="${p.muzzle}"/>
+<ellipse cx="488" cy="158" rx="5.5" ry="8" fill="${p.shade}"/>
+<path class="mouth" d="M452 192 Q 470 204 490 188" stroke="${p.shade}" stroke-width="6" fill="none" stroke-linecap="round" style="transform-origin:470px 194px"/>
+<ellipse cx="436" cy="160" rx="15" ry="10" fill="#ff8fb3" opacity=".55"/>
+<g class="eye" style="transform-origin:414px 124px"><ellipse cx="414" cy="124" rx="17" ry="22" fill="#2d1b3d"/><circle cx="420" cy="114" r="7" fill="#fff"/><circle cx="408" cy="133" r="3.5" fill="#fff"/></g>
+<path d="M427 107 l11 -9 M431 115 l13 -4 M431 124 l13 1" stroke="#2d1b3d" stroke-width="4" stroke-linecap="round"/>
+${bridle}
+<g class="forelock" style="transform-origin:396px 80px"><circle cx="392" cy="62" r="24" fill="url(#${g})"/><circle cx="414" cy="70" r="17" fill="url(#${g})"/><circle cx="372" cy="74" r="17" fill="url(#${g})"/><circle cx="430" cy="82" r="10" fill="url(#${g})"/>${glints([[394, 58], [416, 72]])}</g>
+</g></svg>`;
+}
+function makePony(k, opts = {}) {
+  const el = document.createElement('div');
+  el.className = 'pony idle' + (opts.mirror ? ' mirror' : '');
+  el.dataset.k = k;
+  el.innerHTML = `<div class="hopper"><div class="flip">${ponySVG(k, opts)}</div></div>` +
+    (opts.cloud ? `<svg class="raincloud" viewBox="0 0 120 70"><g fill="#9aa7b8"><circle cx="35" cy="32" r="22"/><circle cx="62" cy="24" r="24"/><circle cx="88" cy="34" r="20"/><rect x="20" y="30" width="84" height="22" rx="11"/></g><g stroke="#6fb7ff" stroke-width="5" stroke-linecap="round"><path d="M40 58 l-4 9"/><path d="M62 58 l-4 9"/><path d="M84 58 l-4 9"/></g></svg>` : '');
+  return el;
+}
+const CARROT_BODY = 'M30 36 Q 50 22 70 36 Q 67 64 53 96 Q 50 101 47 96 Q 33 64 30 36Z';
+const CARROT = `<svg viewBox="0 0 100 100"><g transform="rotate(38 50 52)"><path d="M50 32 C 42 18 36 8 40 0 C 48 6 52 18 51 32Z" fill="#46bf55"/><path d="M50 32 C 56 16 64 8 72 6 C 70 18 62 26 52 34Z" fill="#33a646"/><path d="M49 33 C 38 22 28 20 20 24 C 30 32 40 35 48 35Z" fill="#62d46d"/><path d="${CARROT_BODY}" fill="#ff8a2a"/><path d="M34 38 Q 50 28 66 38 Q 64 46 62 50 Q 50 44 36 50 Z" fill="#ffb064" opacity=".75"/><path d="M37 54 l9 2 M56 48 l8 -2 M41 67 l8 1 M53 74 l7 -1 M46 85 l6 0" stroke="#d9601a" stroke-width="3.5" stroke-linecap="round"/></g></svg>`;
+const SLOT_SVG = `<svg viewBox="0 0 100 100"><g transform="rotate(38 50 52)"><path d="${CARROT_BODY}" fill="rgba(70,30,5,.35)" stroke="#ffe2b0" stroke-width="3" stroke-dasharray="6 5"/></g></svg>`;
+const STAR = (fill = '#ffd34d', stroke = '#e6a817') => `<svg viewBox="0 0 100 100"><path d="M50 6 L62 38 L96 38 L68 58 L79 92 L50 72 L21 92 L32 58 L4 38 L38 38Z" fill="${fill}" stroke="${stroke}" stroke-width="5" stroke-linejoin="round"/><path d="M40 34 L50 14" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/></svg>`;
+function rosetteSVG(c1, c2) {
+  let ruff = '';
+  for (let i = 0; i < 20; i++) { const a = i / 20 * Math.PI * 2; ruff += `<circle cx="${(100 + Math.cos(a) * 74).toFixed(1)}" cy="${(100 + Math.sin(a) * 74).toFixed(1)}" r="22" fill="${i % 2 ? c1 : c2}"/>`; }
+  return `<svg viewBox="0 0 200 280" width="100%" height="100%"><path d="M70 150 L40 270 L68 250 L88 276 L104 160Z" fill="${c1}"/><path d="M130 150 L160 270 L132 250 L112 276 L96 160Z" fill="${c2}"/>${ruff}<circle cx="100" cy="100" r="72" fill="${c1}"/><circle cx="100" cy="100" r="58" fill="#fff"/><circle cx="100" cy="100" r="50" fill="#ffd34d" stroke="#e6a817" stroke-width="5"/><path d="M100 64 L109 89 L136 89 L114 104 L122 130 L100 114 L78 130 L86 104 L64 89 L91 89Z" fill="#fff"/></svg>`;
+}
+const FENCE_SVG = `<svg viewBox="0 0 170 180" width="170" height="180"><rect x="8" y="20" width="22" height="160" rx="8" fill="#fff" stroke="#d9c3a5" stroke-width="3"/><rect x="140" y="20" width="22" height="160" rx="8" fill="#fff" stroke="#d9c3a5" stroke-width="3"/><g><rect x="0" y="50" width="170" height="24" rx="12" fill="#ff6fa8"/><rect x="20" y="50" width="26" height="24" fill="#fff"/><rect x="72" y="50" width="26" height="24" fill="#fff"/><rect x="124" y="50" width="26" height="24" fill="#fff"/></g><g><rect x="0" y="104" width="170" height="24" rx="12" fill="#ff6fa8"/><rect x="20" y="104" width="26" height="24" fill="#fff"/><rect x="72" y="104" width="26" height="24" fill="#fff"/><rect x="124" y="104" width="26" height="24" fill="#fff"/></g><circle cx="19" cy="18" r="12" fill="#ffd34d"/><circle cx="151" cy="18" r="12" fill="#ffd34d"/></svg>`;
+function puffleSVG(c1, c2) {
+  let pts = '';
+  for (let i = 0; i < 40; i++) { const a = i / 40 * Math.PI * 2, r = i % 2 ? 46 : 54; pts += `${(60 + Math.cos(a) * r).toFixed(1)},${(64 + Math.sin(a) * r).toFixed(1)} `; }
+  return `<svg viewBox="0 0 120 120" width="120" height="120"><path d="M30 26 L22 0 L46 18Z M90 26 L98 0 L74 18Z" fill="${c2}"/><polygon points="${pts}" fill="${c1}" stroke="${c2}" stroke-width="3" stroke-linejoin="round"/><ellipse cx="40" cy="106" rx="14" ry="8" fill="#ffb347"/><ellipse cx="80" cy="106" rx="14" ry="8" fill="#ffb347"/><circle cx="44" cy="54" r="17" fill="#fff"/><circle cx="76" cy="54" r="17" fill="#fff"/><circle cx="47" cy="56" r="9" fill="#2d1b3d"/><circle cx="73" cy="56" r="9" fill="#2d1b3d"/><circle cx="50" cy="52" r="3" fill="#fff"/><circle cx="76" cy="52" r="3" fill="#fff"/><path d="M54 72 L66 72 L60 82Z" fill="#ff8fb3"/><path d="M48 86 Q 60 96 72 86" stroke="#2d1b3d" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`;
+}
+
+/* ============================================================
+   Game state
+   ============================================================ */
+const G = {
+  scene: 'start', cur: 0, busy: false, ended: false, hintFn: null, instr: null, chosen: null,
+  rosettes: { jet: 0, bob: 0, tim: 0, tom: 0 }, idleHints: 0
+};
+try { const saved = JSON.parse(localStorage.getItem('moonbeam-rosettes') || 'null'); if (saved) Object.assign(G.rosettes, saved); } catch (e) {}
+function saveRosettes() { try { localStorage.setItem('moonbeam-rosettes', JSON.stringify(G.rosettes)); } catch (e) {} }
+
+let lastAct = Date.now();
+function markActivity() { lastAct = Date.now(); }
+stage.addEventListener('pointerdown', () => { markActivity(); G.idleHints = 0; ac(); }, true);
+setInterval(() => {
+  if (!G.hintFn || G.busy || speaking || drag) return;
+  if (Date.now() - lastAct > 8000 && G.idleHints < 4) { G.idleHints++; markActivity(); G.hintFn(); }
+}, 500);
+
+$('#speaker').addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  $('#speaker').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], 300);
+  if (!G.instr) return;
+  if (Array.isArray(G.instr)) sayList(G.instr); else say(G.instr);
+});
+
+/* ---------- effects ---------- */
+let handEls = [];
+function clearHint() { handEls.forEach(h => h.remove()); handEls = []; document.querySelectorAll('.glow,.hintme').forEach(el => el.classList.remove('glow', 'hintme')); }
+function showHand(from, to, { carrot = false, loops = 2, tap = false } = {}) {
+  clearHint();
+  const h = document.createElement('div'); h.className = 'hand'; h.textContent = '👆'; fx.appendChild(h); handEls.push(h);
+  const tf = (p, s = 1) => `translate(${p.x - 40}px,${p.y - 10}px) scale(${s})`;
+  let frames;
+  if (tap) frames = [{ transform: tf(from), opacity: 0 }, { transform: tf(from), opacity: 1, offset: .2 }, { transform: tf(from, .8), offset: .4 }, { transform: tf(from), offset: .6 }, { transform: tf(from, .8), offset: .8 }, { transform: tf(from), opacity: 0 }];
+  else frames = [{ transform: tf(from), opacity: 0 }, { transform: tf(from), opacity: 1, offset: .15 }, { transform: tf(to), opacity: 1, offset: .75 }, { transform: tf(to), opacity: 0 }];
+  const an = h.animate(frames, { duration: tap ? 1400 : 1900, iterations: loops, easing: 'ease-in-out' });
+  if (carrot && !tap) {
+    const gc = document.createElement('div'); gc.className = 'ghost'; gc.innerHTML = CARROT; fx.appendChild(gc); handEls.push(gc);
+    const cf = p => `translate(${p.x - 48}px,${p.y - 48}px)`;
+    gc.animate([{ transform: cf(from), opacity: 0 }, { transform: cf(from), opacity: .8, offset: .15 }, { transform: cf(to), opacity: .8, offset: .75 }, { transform: cf(to), opacity: 0 }], { duration: 1900, iterations: loops, easing: 'ease-in-out' });
+  }
+  an.onfinish = () => clearHint();
+}
+function hearts(x, y, n = 6) {
+  for (let i = 0; i < n; i++) {
+    const h = document.createElement('div'); h.className = 'heart';
+    h.innerHTML = `<svg width="44" height="40" viewBox="0 0 44 40"><path d="M22 38 C 4 24 0 16 0 10 C 0 4 5 0 11 0 C 16 0 20 3 22 7 C 24 3 28 0 33 0 C 39 0 44 4 44 10 C 44 16 40 24 22 38Z" fill="${['#ff6fa8', '#ff9ccb', '#e2337f'][i % 3]}"/></svg>`;
+    fx.appendChild(h);
+    const dx = (Math.random() - .5) * 160, dy = -120 - Math.random() * 120;
+    h.animate([{ transform: `translate(${x}px,${y}px) scale(.3)`, opacity: 1 }, { transform: `translate(${x + dx}px,${y + dy}px) scale(1.1)`, opacity: 0 }], { duration: 1300 + Math.random() * 500, delay: i * 90, easing: 'ease-out', fill: 'both' }).onfinish = () => h.remove();
+  }
+}
+function sparkles(x, y, n = 12, color = '#fff6a0') {
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('div'); s.className = 'spark';
+    s.innerHTML = `<svg width="30" height="30" viewBox="-15 -15 30 30"><path d="M0 -14 L3 -3 L14 0 L3 3 L0 14 L-3 3 L-14 0 L-3 -3Z" fill="${color}"/></svg>`;
+    fx.appendChild(s);
+    const a = Math.random() * Math.PI * 2, r = 60 + Math.random() * 110;
+    s.animate([{ transform: `translate(${x - 15}px,${y - 15}px) scale(.4) rotate(0)`, opacity: 1 }, { transform: `translate(${x - 15 + Math.cos(a) * r}px,${y - 15 + Math.sin(a) * r}px) scale(1.2) rotate(180deg)`, opacity: 0 }], { duration: 800 + Math.random() * 500, easing: 'ease-out' }).onfinish = () => s.remove();
+  }
+}
+function confetti(n = 140) {
+  const cols = ['#ff6fa8', '#ffd34d', '#4fc3ff', '#8b7bff', '#3fd6a8', '#ffffff', '#ff9a3c'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    const w = 12 + Math.random() * 12, h = 8 + Math.random() * 16;
+    c.style.cssText = `position:absolute;left:0;top:0;width:${w}px;height:${h}px;background:${cols[i % cols.length]};border-radius:${Math.random() < .4 ? '50%' : '3px'}`;
+    fx.appendChild(c);
+    const x = Math.random() * 1180, dx = (Math.random() - .5) * 300, r = Math.random() * 1080;
+    c.animate([{ transform: `translate(${x}px,-40px) rotate(0)` }, { transform: `translate(${x + dx}px,860px) rotate(${r}deg)` }], { duration: 2400 + Math.random() * 2200, delay: Math.random() * 1400, easing: 'cubic-bezier(.3,.1,.6,1)', fill: 'both' }).onfinish = () => c.remove();
+  }
+}
+function floatNum(x, y, n) {
+  const d = document.createElement('div'); d.className = 'floatnum'; d.textContent = n; fx.appendChild(d);
+  d.animate([{ transform: `translate(${x - 20}px,${y - 50}px) scale(.5)`, opacity: 0 }, { transform: `translate(${x - 20}px,${y - 90}px) scale(1.2)`, opacity: 1, offset: .3 }, { transform: `translate(${x - 20}px,${y - 140}px) scale(1)`, opacity: 0 }], { duration: 1100, easing: 'ease-out' }).onfinish = () => d.remove();
+}
+function pulse(el, cls = 'pulse') { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 1900); }
+async function fadeTo(scene, mid) {
+  $('#fade').classList.add('on'); await sleep(480);
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('on'));
+  $('#' + scene).classList.add('on'); G.scene = scene;
+  if (mid) await mid();
+  await sleep(60); $('#fade').classList.remove('on'); await sleep(420);
+}
+
+/* ============================================================
+   Stable build
+   ============================================================ */
+const STALLS = [
+  { key: 'jet', kind: 'single', target: 5, pre: 0, wants: 'jet-wants' },
+  { key: 'bob', kind: 'single', target: 8, pre: 3, wants: 'bob-wants' },
+  { key: 'twins', kind: 'twins', wants: 'twins-intro' }
+];
+const SM = { x: 470, y: 556, size: 100, gap: 8, pad: 20 }; // single manger
+function slotGrid(x, y, cols, rows, size, gap, pad) {
+  const s = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) s.push({ x: x + pad + size / 2 + c * (size + gap), y: y + pad + size / 2 + r * (size + gap) });
+  return s;
+}
+function mangerEl(stall, x, y, cols, rows, size, gap, pad) {
+  const m = document.createElement('div'); m.className = 'manger';
+  const w = pad * 2 + cols * size + (cols - 1) * gap, h = pad * 2 + rows * size + (rows - 1) * gap;
+  Object.assign(m.style, { left: x - 10 + 'px', top: y - 10 + 'px', width: w + 20 + 'px', height: h + 20 + 'px' });
+  slotGrid(0, 0, cols, rows, size, gap, pad).forEach(s => {
+    const sl = document.createElement('div'); sl.className = 'slot';
+    Object.assign(sl.style, { left: s.x - size / 2 + 'px', top: s.y - size / 2 + 'px', width: size + 'px', height: size + 'px' });
+    sl.innerHTML = SLOT_SVG; m.appendChild(sl);
+  });
+  stall.appendChild(m);
+  return { el: m, rect: { x, y, w, h } };
+}
+function doorBrace() { return `<svg class="brace" viewBox="0 0 226 422" preserveAspectRatio="none"><path d="M10 20 L216 402 M216 20 L10 402" stroke="#8a5128" stroke-width="22" stroke-linecap="round"/><rect x="0" y="0" width="226" height="22" fill="#8a5128"/><rect x="0" y="400" width="226" height="22" fill="#8a5128"/><rect x="-6" y="60" width="40" height="18" rx="6" fill="#4d4d4d"/><rect x="-6" y="340" width="40" height="18" rx="6" fill="#4d4d4d"/></svg>`; }
+function bellEl() {
+  const b = document.createElement('div'); b.className = 'bell';
+  b.innerHTML = `<svg viewBox="0 0 130 170" width="130" height="170"><defs><radialGradient id="brass${uid}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff2a8"/><stop offset=".45" stop-color="#f2c43b"/><stop offset="1" stop-color="#b9821a"/></radialGradient></defs>
+  <rect x="20" y="0" width="90" height="16" rx="8" fill="#6d3f1b"/><rect x="60" y="10" width="10" height="24" fill="#6d3f1b"/>
+  <g class="bellbody"><circle cx="65" cy="150" r="13" fill="#9a6b12"/><path d="M65 26 C 34 26 30 60 28 96 C 26 118 14 126 10 138 L120 138 C 116 126 104 118 102 96 C 100 60 96 26 65 26Z" fill="url(#brass${uid++})" stroke="#9a6b12" stroke-width="4"/><rect x="6" y="132" width="118" height="16" rx="8" fill="#e6b22e" stroke="#9a6b12" stroke-width="3"/><path d="M48 48 C 42 64 42 86 40 104" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".6" fill="none"/></g></svg>`;
+  return b;
+}
+function buildStable() {
+  const track = $('#track'); track.innerHTML = '';
+  STALLS.forEach((st, i) => {
+    const s = document.createElement('div'); s.className = 'stall'; s.style.left = i * 1180 + 'px'; st.el = s;
+    s.innerHTML = `<div class="wall"></div><div class="beam"></div><div class="floor"></div>`;
+    st.boxes = [];
+    if (st.kind === 'single') {
+      s.insertAdjacentHTML('beforeend', `<div class="opening" style="left:440px;top:84px;width:580px;height:520px"><div class="win"></div><div class="hay" style="left:20px;width:260px"></div><div class="hay" style="left:300px;width:220px;height:70px"></div></div>
+        <div class="door">${doorBrace()}</div>`);
+      const plate = document.createElement('div'); plate.className = 'plate'; plate.textContent = PONIES[st.key].name;
+      Object.assign(plate.style, { left: '185px', top: '138px', width: '220px', height: '100px' }); s.appendChild(plate); st.plate = plate;
+      plate.addEventListener('pointerdown', e => { e.stopPropagation(); pulse(plate); say('name-' + st.key); });
+      const slate = document.createElement('div'); slate.className = 'slate'; slate.textContent = st.target;
+      Object.assign(slate.style, { left: '205px', top: '290px' }); s.appendChild(slate); st.slate = slate;
+      slate.addEventListener('pointerdown', e => { e.stopPropagation(); pulse(slate); if (!st.done) say(st.wants); });
+      const spot = document.createElement('div'); spot.className = 'star-spot'; spot.innerHTML = STAR();
+      Object.assign(spot.style, { left: '196px', top: '460px' }); s.appendChild(spot); st.spot = spot;
+      const ros = document.createElement('div'); ros.className = 'rosettes'; Object.assign(ros.style, { left: '300px', top: '440px' }); s.appendChild(ros); st.rosEls = { [st.key]: ros };
+      const pony = makePony(st.key); Object.assign(pony.style, { left: '470px', top: '132px', width: '560px', height: '495px' }); s.appendChild(pony); st.pony = pony;
+      pony.addEventListener('pointerdown', e => { e.stopPropagation(); if (!G.busy) { pulse(pony, 'hop'); sfx.neigh(); } });
+      const m = mangerEl(s, SM.x, SM.y, 5, 2, SM.size, SM.gap, SM.pad);
+      st.manger = { kind: 'manger', stallIdx: i, el: m.el, rect: m.rect, slots: slotGrid(SM.x, SM.y, 5, 2, SM.size, SM.gap, SM.pad), items: [], owner: st.key };
+      st.boxes.push(st.manger);
+    } else {
+      s.insertAdjacentHTML('beforeend', `<div class="opening" style="left:40px;top:84px;width:1100px;height:520px;border-radius:300px 300px 0 0/90px 90px 0 0"><div class="win" style="top:200px;left:30%"></div><div class="win" style="top:200px;left:70%"></div><div class="hay" style="left:40px;width:300px"></div><div class="hay" style="right:40px;width:300px"></div></div>`);
+      const slate = document.createElement('div'); slate.className = 'slate';
+      slate.innerHTML = `<svg width="150" height="100" viewBox="0 0 150 100"><circle cx="28" cy="50" r="22" fill="#a77bff"/><circle cx="122" cy="50" r="22" fill="#22c995"/><path d="M56 38 H94 M56 62 H94" stroke="#fbfbf3" stroke-width="10" stroke-linecap="round"/></svg>`;
+      Object.assign(slate.style, { left: '500px', top: '160px' }); s.appendChild(slate); st.slate = slate;
+      slate.addEventListener('pointerdown', e => { e.stopPropagation(); pulse(slate); if (!st.done) say('twins-intro'); });
+      const spot = document.createElement('div'); spot.className = 'star-spot'; spot.innerHTML = STAR();
+      Object.assign(spot.style, { left: '710px', top: '186px' }); s.appendChild(spot); st.spot = spot;
+      st.rosEls = {};
+      [['tim', 140, 176], ['tom', 860, 896]].forEach(([k, px, rx]) => {
+        const plate = document.createElement('div'); plate.className = 'plate'; plate.textContent = PONIES[k].name;
+        Object.assign(plate.style, { left: px + 'px', top: '300px', width: '180px', height: '90px', fontSize: '62px' }); s.appendChild(plate);
+        plate.addEventListener('pointerdown', e => { e.stopPropagation(); pulse(plate); say('name-' + k); });
+        const ros = document.createElement('div'); ros.className = 'rosettes'; Object.assign(ros.style, { left: rx + 'px', top: '100px' }); s.appendChild(ros); st.rosEls[k] = ros;
+      });
+      const tim = makePony('tim', { cloud: true }); Object.assign(tim.style, { left: '70px', top: '420px', width: '330px', height: '292px' }); s.appendChild(tim);
+      const tom = makePony('tom', { cloud: true, mirror: true }); Object.assign(tom.style, { left: '780px', top: '420px', width: '330px', height: '292px' }); s.appendChild(tom);
+      st.ponies = { tim, tom };
+      [tim, tom].forEach(p => p.addEventListener('pointerdown', e => { e.stopPropagation(); if (!G.busy) { pulse(p, 'hop'); sfx.neigh(); } }));
+      const crate = document.createElement('div'); crate.className = 'crate'; Object.assign(crate.style, { left: '400px', top: '440px', width: '380px', height: '210px' }); s.appendChild(crate);
+      st.crate = { kind: 'crate', stallIdx: i, el: crate, rect: { x: 400, y: 440, w: 380, h: 210 }, slots: slotGrid(400, 440, 4, 2, 84, 6, 16).map(p => ({ x: p.x + 5, y: p.y + 5 })), items: [] };
+      const tm = mangerEl(s, 60, 692, 5, 1, 92, 6, 12), om = mangerEl(s, 612, 692, 5, 1, 92, 6, 12);
+      st.tim = { kind: 'manger', stallIdx: i, el: tm.el, rect: tm.rect, slots: slotGrid(60, 692, 5, 1, 92, 6, 12), items: [], owner: 'tim' };
+      st.tom = { kind: 'manger', stallIdx: i, el: om.el, rect: om.rect, slots: slotGrid(612, 692, 5, 1, 92, 6, 12), items: [], owner: 'tom' };
+      st.boxes.push(st.crate, st.tim, st.tom);
+    }
+    const bell = bellEl(); s.appendChild(bell); st.bell = bell;
+    bell.addEventListener('pointerdown', e => { e.stopPropagation(); ringBell(i); });
+    s.insertAdjacentHTML('beforeend', '<div class="rays"></div>');
+    track.appendChild(s);
+    renderRosettes(st);
+  });
+  // basket
+  const bk = $('#basket');
+  let pile = '';
+  [[40, 30, -30], [80, 14, -10], [120, 26, 15], [150, 10, 30], [60, 50, 5], [110, 44, -20], [160, 48, 10]].forEach(([x, y, r]) => { pile += `<g transform="translate(${x} ${y}) rotate(${r} 45 45) scale(.9)">${CARROT.replace('<svg viewBox="0 0 100 100">', '').replace('</svg>', '')}</g>`; });
+  bk.innerHTML = `<svg viewBox="0 0 250 214" width="250" height="214">${pile}<path d="M10 92 L240 92 L214 206 L36 206Z" fill="#c98a4b" stroke="#7e4a22" stroke-width="6" stroke-linejoin="round"/>
+    <g stroke="#a5642f" stroke-width="5">${[118, 144, 170].map(y => `<path d="M${16 + (y - 92) * .23} ${y} L${234 - (y - 92) * .23} ${y}"/>`).join('')}${[50, 90, 125, 160, 200].map(x => `<path d="M${x} 96 L${x + (125 - x) * .12} 202"/>`).join('')}</g>
+    <rect x="2" y="82" width="246" height="22" rx="11" fill="#e0a264" stroke="#7e4a22" stroke-width="6"/></svg>`;
+  // tracker
+  $('#tracker').innerHTML = [0, 1, 2].map(i => `<div class="ts" id="ts${i}"><svg viewBox="0 0 100 100"><path d="M50 6 L62 38 L96 38 L68 58 L79 92 L50 72 L21 92 L32 58 L4 38 L38 38Z" fill="rgba(170,120,70,.25)" stroke="rgba(170,120,70,.5)" stroke-width="5" stroke-linejoin="round"/><path class="fillstar" d="M50 6 L62 38 L96 38 L68 58 L79 92 L50 72 L21 92 L32 58 L4 38 L38 38Z" fill="#ffd34d" stroke="#e6a817" stroke-width="5" stroke-linejoin="round"/></svg></div>`).join('');
+}
+const ROS_DX = 5, ROS_DY = 14;
+function renderRosettes(st) {
+  const cols = { jet: ['#4fc3ff', '#8b7bff'], bob: ['#ff6fb7', '#ffb8dc'], tim: ['#a77bff', '#dcc2ff'], tom: ['#22c995', '#9ff0d2'] };
+  Object.entries(st.rosEls).forEach(([k, el]) => {
+    const n = Math.min(G.rosettes[k] || 0, 4);
+    el.innerHTML = '';
+    for (let j = 0; j < n; j++) { const m = document.createElement('div'); m.className = 'mini'; m.style.top = j * ROS_DY + 'px'; m.style.left = j * ROS_DX + 'px'; m.innerHTML = rosetteSVG(...cols[k]); el.appendChild(m); }
+  });
+}
+
+/* ---------- carrots ---------- */
+function makeCarrot(st, x, y) {
+  const el = document.createElement('div'); el.className = 'carrot'; el.innerHTML = CARROT;
+  st.el.appendChild(el);
+  const c = { el, x, y, box: null, st };
+  el._c = c; place(c, x, y, false);
+  el.addEventListener('pointerdown', onCarrotDown);
+  return c;
+}
+function place(c, x, y, anim = true) {
+  c.x = x; c.y = y;
+  c.el.style.transition = anim ? 'transform .3s cubic-bezier(.3,1.5,.5,1)' : 'none';
+  c.el.style.transform = `translate(${x - 48}px,${y - 48}px)`;
+}
+function addTo(box, c, anim = true) { box.items.push(c); c.box = box; relayout(box, anim); }
+function removeFrom(c) { const b = c.box; if (!b) return; b.items.splice(b.items.indexOf(c), 1); c.box = null; relayout(b); }
+function relayout(b, anim = true) { b.items.forEach((c, i) => { const s = b.slots[i]; if (c.x !== s.x || c.y !== s.y) place(c, s.x, s.y, anim); }); }
+function boxAt(st, p) {
+  let best = null, bd = 50;
+  st.boxes.forEach(b => {
+    const dx = Math.max(b.rect.x - p.x, 0, p.x - b.rect.x - b.rect.w), dy = Math.max(b.rect.y - p.y, 0, p.y - b.rect.y - b.rect.h);
+    const d = Math.hypot(dx, dy); if (d < bd) { bd = d; best = b; }
+  });
+  return best;
+}
+function discard(c) {
+  c.el.style.transition = 'transform .4s ease-in, opacity .4s';
+  c.el.style.transform = `translate(${144 - 48}px,${690 - 48}px) scale(.4)`; c.el.style.opacity = '0';
+  setTimeout(() => c.el.remove(), 420);
+  pulse($('#basket'), 'bump');
+}
+let drag = null;
+function canTouchStall(st) { return G.scene === 'stable' && !G.busy && !G.ended && !st.done && STALLS[G.cur] === st; }
+function onCarrotDown(e) {
+  const c = e.currentTarget._c;
+  e.stopPropagation(); e.preventDefault();
+  if (drag || !canTouchStall(c.st)) return;
+  const origin = c.box;
+  startDrag(e, e.currentTarget, c, origin);
+  removeFrom(c);
+  if (c.st.kind === 'twins') unsulk();
+}
+function startDrag(e, capEl, c, origin) {
+  const p = toStage(e);
+  drag = { c, origin, id: e.pointerId, sx: p.x, sy: p.y, moved: false, capEl };
+  try { capEl.setPointerCapture(e.pointerId); } catch (_) {}
+  c.el.classList.add('drag'); place(c, p.x, p.y, false); sfx.pick(); clearHint();
+  capEl.addEventListener('pointermove', onDragMove);
+  capEl.addEventListener('pointerup', onDragUp);
+  capEl.addEventListener('pointercancel', onDragUp);
+}
+function onDragMove(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const p = toStage(e);
+  if (Math.hypot(p.x - drag.sx, p.y - drag.sy) > 14) drag.moved = true;
+  place(drag.c, p.x, p.y, false);
+  const st = drag.c.st, hot = boxAt(st, p);
+  st.boxes.forEach(b => b.el.classList.toggle('hot', b === hot && b.items.length < b.slots.length));
+}
+function onDragUp(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const { c, origin, capEl, moved } = drag;
+  capEl.removeEventListener('pointermove', onDragMove); capEl.removeEventListener('pointerup', onDragUp); capEl.removeEventListener('pointercancel', onDragUp);
+  try { capEl.releasePointerCapture(e.pointerId); } catch (_) {}
+  drag = null;
+  const st = c.st; st.boxes.forEach(b => b.el.classList.remove('hot'));
+  c.el.classList.remove('drag');
+  const p = toStage(e);
+  let target = boxAt(st, p);
+  if (!moved && origin === 'basket') target = st.manger;           // a tap on the basket sends one carrot
+  if (target && target.items.length >= target.slots.length) target = null;
+  if (target) {
+    addTo(target, c); sfx.drop();
+    if (target.kind === 'manger') {
+      const n = target.items.length, s = target.slots[n - 1];
+      say('num-' + n); floatNum(s.x, s.y, n);
+    }
+  } else if (st.kind === 'single') {
+    discard(c); sfx.poof();
+    if (origin && origin.kind === 'manger' && origin.items.length) say('num-' + origin.items.length);
+  } else {
+    addTo(st.crate, c); sfx.boing();
+  }
+}
+$('#basket').addEventListener('pointerdown', e => {
+  e.stopPropagation(); e.preventDefault();
+  const st = STALLS[G.cur];
+  if (drag || st.kind !== 'single' || !canTouchStall(st)) return;
+  const p = toStage(e);
+  const c = makeCarrot(st, p.x, p.y);
+  pulse($('#basket'), 'bump');
+  startDrag(e, $('#basket'), c, 'basket');
+});
+
+/* ---------- navigation ---------- */
+function updateArrows() {
+  const stable = G.scene === 'stable';
+  $('#arrowL').classList.toggle('hide', !stable || G.cur === 0 || G.busy);
+  $('#arrowR').classList.toggle('hide', !stable || G.cur === 2 || G.busy);
+  const st = STALLS[G.cur];
+  $('#basket').classList.toggle('away', st.kind !== 'single' || G.ended);
+}
+async function goStall(i, { instant = false, silent = false } = {}) {
+  if (i < 0 || i > 2) return;
+  clearHint();
+  G.cur = i;
+  const tr = $('#track');
+  if (instant) { tr.style.transition = 'none'; tr.style.transform = `translateX(${-i * 1180}px)`; void tr.offsetWidth; tr.style.transition = ''; }
+  else { tr.style.transform = `translateX(${-i * 1180}px)`; sfx.whoosh(); }
+  document.querySelectorAll('.arrow').forEach(a => a.classList.remove('beckon'));
+  updateArrows();
+  if (!instant) await sleep(680);
+  if (!silent) arrive(i);
+}
+function arrive(i) {
+  if (G.scene !== 'stable' || G.ended) return;
+  const st = STALLS[i];
+  if (st.done) {
+    G.instr = 'next-pony';
+    G.hintFn = () => { const j = STALLS.findIndex(s => !s.done); if (j < 0) return; say('next-pony'); const a = j > i ? $('#arrowR') : $('#arrowL'); a.classList.add('beckon'); };
+    return;
+  }
+  G.instr = st.wants;
+  pulse(st.slate);
+  if (st.kind === 'single') {
+    if (st.pre) { st.manger.items.forEach(c => { c.el.classList.remove('wiggle'); void c.el.offsetWidth; c.el.classList.add('wiggle'); }); setTimeout(() => pulse(st.slate), 1700); }
+    say(st.wants);
+    G.hintFn = () => singleHint(st);
+  } else {
+    say('twins-intro');
+    G.hintFn = () => twinsHint(st);
+  }
+}
+$('#arrowL').addEventListener('pointerdown', e => { e.stopPropagation(); if (!G.busy && !drag) goStall(G.cur - 1, { silent: G.ended }); });
+$('#arrowR').addEventListener('pointerdown', e => { e.stopPropagation(); if (!G.busy && !drag) goStall(G.cur + 1, { silent: G.ended }); });
+let swipe = null;
+$('#stable').addEventListener('pointerdown', e => { if (drag) return; swipe = { x: e.clientX, y: e.clientY, id: e.pointerId }; });
+window.addEventListener('pointerup', e => {
+  if (!swipe || e.pointerId !== swipe.id) return;
+  const dx = (e.clientX - swipe.x) / S, dy = (e.clientY - swipe.y) / S; swipe = null;
+  if (G.scene !== 'stable' || G.busy || drag || Math.abs(dx) < 90 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+  goStall(G.cur + (dx < 0 ? 1 : -1), { silent: G.ended });
+});
+
+/* ---------- hints ---------- */
+// The idle hint never tells her whether the count is right. It shows how
+// to add a carrot, then repeats the order on the slate and points at the bell.
+function singleHint(st) {
+  const n = st.manger.items.length;
+  if (n <= st.pre) { say('hint-drag'); const s = st.manger.slots[n]; showHand({ x: 144, y: 690 }, s, { carrot: true }); }
+  else { pulse(st.slate); sayList([st.wants, 'hint-bell']); st.bell.classList.add('glow'); }
+}
+function takeOutHint(st) {
+  const n = st.manger.items.length; if (!n) return singleHint(st);
+  say('hint-take-out'); showHand(st.manger.slots[n - 1], { x: 144, y: 690 }, { carrot: true });
+}
+function twinsHint(st) {
+  if (st.crate.items.length) {
+    say('twins-share'); st.crate.el.classList.add('glow');
+    const from = st.crate.slots[st.crate.items.length - 1];
+    const to = st.tim.items.length <= st.tom.items.length ? st.tim : st.tom;
+    showHand(from, to.slots[Math.min(to.items.length, 4)], { carrot: true });
+  } else { say('hint-bell'); st.bell.classList.add('glow'); showHand({ x: 1090, y: 200 }, null, { tap: true }); }
+}
+
+/* ---------- bell + feeding ---------- */
+function ringBell(i) {
+  const st = STALLS[i];
+  st.bell.classList.remove('ring'); void st.bell.offsetWidth; st.bell.classList.add('ring'); sfx.bell();
+  clearHint();
+  if (G.scene !== 'stable' || G.busy || G.ended || st.done || drag || G.cur !== i) return;
+  if (st.kind === 'single') feedSingle(st); else feedTwins(st);
+}
+async function eatAll(box, pony) {
+  pony.classList.remove('idle'); pony.classList.add('eat');
+  await sleep(380);
+  const items = [...box.items].reverse(); box.items = [];
+  for (const c of items) { c.el.classList.add('eaten'); sfx.crunch(); await sleep(190); }
+  await sleep(250);
+  items.forEach(c => c.el.remove());
+  pony.classList.remove('eat'); pony.classList.add('idle');
+}
+function ptOf(el) { const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(); return { x: (r.left + r.width / 2 - sr.left) / S, y: (r.top + r.height / 2 - sr.top) / S }; }
+async function earnStar(st, i) {
+  st.spot.classList.add('earned'); sfx.chime();
+  const p = ptOf(st.spot); sparkles(p.x, p.y, 16);
+  const fly = document.createElement('div'); fly.style.cssText = 'position:absolute;left:0;top:0;width:90px;height:90px'; fly.innerHTML = STAR(); fx.appendChild(fly);
+  const tgt = ptOf($('#ts' + i));
+  await fly.animate([{ transform: `translate(${p.x - 45}px,${p.y - 45}px) scale(1)` }, { transform: `translate(${(p.x + tgt.x) / 2 - 45}px,${Math.min(p.y, tgt.y) - 120}px) scale(1.5) rotate(180deg)` }, { transform: `translate(${tgt.x - 45}px,${tgt.y - 45}px) scale(.7) rotate(360deg)` }], { duration: 1100, easing: 'ease-in-out', fill: 'forwards' }).finished.catch(() => {});
+  fly.remove(); $('#ts' + i).classList.add('on'); sfx.sparkle();
+}
+async function afterStar(i) {
+  await sleep(600);
+  G.busy = false; updateArrows();
+  if (STALLS.every(s => s.done)) { toPaddock(); return; }
+  const next = STALLS.findIndex((s, j) => !s.done && j > i);
+  goStall(next >= 0 ? next : STALLS.findIndex(s => !s.done));
+}
+async function feedSingle(st) {
+  const i = STALLS.indexOf(st), n = st.manger.items.length, pony = st.pony;
+  G.busy = true; G.hintFn = null; updateArrows();
+  if (n < st.target) {
+    st.misses = (st.misses || 0) + 1;
+    pony.classList.remove('idle'); pony.classList.add('nudge');
+    await say('more-please');
+    pony.classList.remove('nudge'); pony.classList.add('idle');
+    // Count what is in the manger together, then repeat the order. The empty
+    // slots up to the target only light up after a second early bell.
+    for (let k = 0; k < n; k++) {
+      const c = st.manger.items[k], s = st.manger.slots[k];
+      if (c) { c.el.classList.remove('wiggle'); void c.el.offsetWidth; c.el.classList.add('wiggle'); }
+      floatNum(s.x, s.y, k + 1);
+      if (!(await say('num-' + (k + 1)))) break;
+    }
+    pulse(st.slate);
+    await say(st.wants);
+    G.busy = false; updateArrows(); G.hintFn = () => singleHint(st);
+    showHand({ x: 144, y: 690 }, st.manger.slots[n], { carrot: true });
+    if (st.misses >= 2) st.manger.el.querySelectorAll('.slot').forEach((sl, j) => { if (j >= n && j < st.target) sl.classList.add('glow'); });
+    return;
+  }
+  await eatAll(st.manger, pony);
+  if (n === st.target) {
+    st.done = true;
+    pony.classList.add('shake'); hearts(840, 260, 8); sfx.neigh();
+    setTimeout(() => pony.classList.remove('shake'), 1500);
+    const sp = say(st.key + '-happy');
+    await earnStar(st, i);
+    await sp;
+    afterStar(i);
+  } else {
+    pony.classList.add('full'); await sleep(450);
+    sfx.burp(); await sleep(650); sfx.giggle();
+    await sleep(300);
+    await say(st.key + '-too-many');
+    pulse(st.slate);
+    pony.classList.remove('full'); await sleep(600);
+    for (let k = 0; k < n; k++) { const c = makeCarrot(st, st.manger.slots[k].x, st.manger.slots[k].y - 60); c.el.style.opacity = '0'; addTo(st.manger, c); requestAnimationFrame(() => { c.el.style.opacity = '1'; }); sfx.pop(); await sleep(110); }
+    G.busy = false; updateArrows(); G.hintFn = () => takeOutHint(st);
+    await sleep(400); takeOutHint(st);
+  }
+}
+let sulkTimer = null;
+function unsulk() { const st = STALLS[2]; if (!st.ponies) return; clearTimeout(sulkTimer); Object.values(st.ponies).forEach(p => p.classList.remove('sulk')); }
+async function feedTwins(st) {
+  const a = st.tim.items.length, b = st.tom.items.length;
+  G.busy = true; G.hintFn = null; updateArrows();
+  if (st.crate.items.length) {
+    pulse(st.crate.el, 'wiggle');
+    await say('twins-use-all');
+    G.busy = false; updateArrows(); G.hintFn = () => twinsHint(st); twinsHint(st);
+    return;
+  }
+  if (a === b) {
+    st.done = true;
+    await Promise.all([eatAll(st.tim, st.ponies.tim), eatAll(st.tom, st.ponies.tom)]);
+    Object.values(st.ponies).forEach(p => p.classList.add('nuzzle', 'shake'));
+    st.ponies.tim.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(40px)' }, { transform: 'translateX(0)' }], { duration: 1600, easing: 'ease-in-out' });
+    st.ponies.tom.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-40px)' }, { transform: 'translateX(0)' }], { duration: 1600, easing: 'ease-in-out' });
+    hearts(590, 470, 10); sfx.neigh();
+    const sp = say('twins-same');
+    await earnStar(st, 2);
+    await sp;
+    Object.values(st.ponies).forEach(p => p.classList.remove('nuzzle', 'shake'));
+    afterStar(2);
+  } else {
+    const fewer = a < b ? 'tim' : 'tom', more = fewer === 'tim' ? 'tom' : 'tim';
+    st.ponies[fewer].classList.add('sulk'); sfx.boing();
+    await say(fewer + '-fewer');
+    G.busy = false; updateArrows();
+    const hintFn = () => { say('give-' + fewer); const mb = st[more], fb = st[fewer]; showHand(mb.slots[mb.items.length - 1], fb.slots[fb.items.length], { carrot: true }); };
+    G.hintFn = hintFn; G.instr = ['twins-intro'];
+    sulkTimer = setTimeout(unsulk, 7000);
+    await sleep(300); hintFn();
+  }
+}
+
+/* ============================================================
+   Round flow
+   ============================================================ */
+function resetRound() {
+  G.busy = false; G.ended = false; G.chosen = null; G.hintFn = null; G.instr = null;
+  clearHint(); stopSpeech();
+  buildStable();
+  STALLS.forEach(st => { st.done = false; st.misses = 0; });
+  const bob = STALLS[1];
+  for (let k = 0; k < bob.pre; k++) addTo(bob.manger, makeCarrot(bob, bob.manger.slots[k].x, bob.manger.slots[k].y), false);
+  const tw = STALLS[2];
+  for (let k = 0; k < 8; k++) addTo(tw.crate, makeCarrot(tw, tw.crate.slots[k].x, tw.crate.slots[k].y), false);
+  $('#again').style.display = 'none';
+}
+async function startRound() {
+  resetRound();
+  await fadeTo('stable', async () => { await goStall(0, { instant: true, silent: true }); });
+  $('#speaker').classList.add('on'); $('#tracker').classList.add('on');
+  G.instr = 'intro'; G.busy = true; updateArrows();
+  sfx.rooster(); await sleep(1300);
+  sfx.neigh(); pulse(STALLS[0].pony, 'hop'); await sleep(500);
+  setTimeout(() => sfx.neigh(), 350);
+  await say('intro');
+  G.busy = false; updateArrows();
+  arrive(0);
+}
+let started = false;
+$('#playBtn').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (started) return;           // a quick double tap must not start two rounds
+  started = true;
+  ac(); sfx.chime();
+  try { voiceEl.src = silentWav(); voiceEl.play().catch(() => {}); } catch (_) {}
+  try { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } } catch (_) {}
+  probeAudio();
+  startRound();
+});
+$('#again').addEventListener('pointerdown', e => { e.stopPropagation(); sfx.chime(); startRound(); });
+
+/* ---------- paddock ---------- */
+const PAD = { jet: { left: 30, top: 522, w: 270 }, bob: { left: 312, top: 548, w: 270 }, tim: { left: 594, top: 522, w: 270 }, tom: { left: 876, top: 548, w: 270 } };
+const BOARD_X = [370, 590, 810, 1030];   // name boards hang on the fence, in a new order every round
+let phonQ = Promise.resolve();
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function buildPaddock() {
+  const pd = $('#paddock');
+  pd.querySelectorAll('.pony,.tag').forEach(el => el.remove());
+  $('#barn').classList.remove('open');
+  if (!$('#flowers').childElementCount) {
+    let f = ''; const em = ['🌼', '🌸', '🌷', '🌼'];
+    for (let i = 0; i < 22; i++) f += `<span style="left:${(i * 53 + (i % 3) * 17) % 1160}px;top:${520 + (i * 37) % 280}px">${em[i % 4]}</span>`;
+    $('#flowers').innerHTML = f;
+    let posts = ''; for (let x = 20; x < 1180; x += 130) posts += `<rect x="${x}" y="0" width="22" height="110" rx="6"/>`;
+    $('#posts').innerHTML = posts;
+  }
+  G.tags = {}; G.want = null; G.padMiss = 0;
+  const keys = Object.keys(PAD);
+  keys.forEach(k => {
+    const P = PAD[k], h = P.w * 460 / 520;
+    const p = makePony(k, { bridle: true }); Object.assign(p.style, { left: P.left + 'px', top: P.top + 'px', width: P.w + 'px', height: h + 'px', opacity: 0 });
+    p.addEventListener('pointerdown', ponyDown);
+    pd.appendChild(p); P.el = p;
+  });
+  // The boards never stand in the same order as the ponies, so the place of a board does not give its name away.
+  let order;
+  do { order = shuffle(keys.slice()); } while (order.some((k, j) => k === keys[j]));
+  order.forEach((k, j) => {
+    const tag = document.createElement('div'); tag.className = 'tag board';
+    tag.innerHTML = `<div class="letters">${[...PONIES[k].name].map(ch => `<div class="lc"><div class="l">${ch}</div><div class="d"><i></i></div></div>`).join('')}</div>`;
+    tag.style.top = '284px';
+    tag._k = k; tag._prog = 0; tag._sounds = PONIES[k].sounds;
+    tag.addEventListener('pointerdown', tagDown);
+    pd.appendChild(tag); G.tags[k] = tag; tag.style.left = BOARD_X[j] - tag.offsetWidth / 2 + 'px';
+  });
+}
+async function toPaddock() {
+  G.busy = true; G.hintFn = null; updateArrows();
+  await sleep(300);
+  await say('all-full');
+  await fadeTo('paddock', async () => { $('#tracker').classList.remove('on'); buildPaddock(); });
+  await sleep(300);
+  $('#barn').classList.add('open'); sfx.whoosh();
+  await sleep(700);
+  const keys = Object.keys(PAD);
+  await Promise.all(keys.map(async (k, j) => {
+    await sleep(j * 380);
+    const P = PAD[k], el = P.el;
+    el.style.opacity = 1; el.classList.remove('idle'); el.classList.add('gallop');
+    if (j % 2 === 0) sfx.neigh();
+    const steps = setInterval(() => { sfx.hoof(); sfx.hoof(.09); }, 340);
+    await el.animate([{ transform: `translate(${90 - P.left}px,${-80}px) scale(.45)` }, { transform: 'translate(0,0) scale(1)' }], { duration: 1500, easing: 'cubic-bezier(.3,.2,.4,1)', fill: 'backwards' }).finished.catch(() => {});
+    clearInterval(steps);
+    el.classList.remove('gallop'); el.classList.add('idle');
+  }));
+  for (const k of Object.keys(G.tags)) { G.tags[k].classList.add('show'); sfx.pop(); await sleep(160); }
+  G.busy = false;
+  G.instr = 'paddock';
+  G.hintFn = paddockHint;
+  await say('paddock');
+}
+function ponyPoint(k) { const P = PAD[k]; return { x: P.left + P.w * .78, y: P.top + P.w * .28 }; }
+// Idle hint: first show how to pick a pony. Once a pony is picked, show how to slide
+// along a board. Only after two wrong boards (or a long wait) does the hand go to the right one.
+function paddockHint() {
+  if (!G.want) { say('hint-tap-pony'); showHand(ponyPoint('bob'), null, { tap: true }); return; }
+  const help = G.padMiss >= 2 || G.idleHints >= 3;
+  sayList(['find-' + G.want, 'hint-slide']);
+  slideHint(help ? G.tags[G.want] : Object.values(G.tags)[0]);
+}
+function ponyDown(e) {
+  e.preventDefault();
+  const k = e.currentTarget.dataset.k;
+  if (G.scene !== 'paddock' || G.busy || G.chosen) return;
+  clearHint();
+  const el = PAD[k].el;
+  pulse(el, 'hop'); sfx.neigh();
+  if (G.want !== k) {
+    if (G.want) PAD[G.want].el.classList.remove('wanted');
+    G.want = k; G.padMiss = 0;
+    el.classList.add('wanted');
+    const p = ponyPoint(k); hearts(p.x, p.y, 6);
+    Object.values(G.tags).forEach(t => { resetTag(t); pulse(t, 'wiggle'); });
+  }
+  G.instr = 'want-' + k;
+  say('want-' + k);
+}
+function slideHint(tag) {
+  tag.classList.add('hintme');
+  const lcs = tag.querySelectorAll('.lc'), a = ptOf(lcs[0]), b = ptOf(lcs[lcs.length - 1]);
+  showHand({ x: a.x + 10, y: a.y + 30 }, { x: b.x + 10, y: b.y + 30 }, { loops: 2 });
+}
+function tagDown(e) {
+  e.preventDefault();
+  const tag = e.currentTarget;
+  if (G.scene !== 'paddock' || G.busy || G.chosen || tag._done) return;
+  clearHint();
+  if (!G.want) {           // pick a pony first, then find its name
+    say('paddock');
+    Object.keys(PAD).forEach((k, j) => setTimeout(() => pulse(PAD[k].el, 'hop'), j * 180));
+    return;
+  }
+  Object.values(G.tags).forEach(t => { if (t !== tag && !t._done) resetTag(t); });
+  try { tag.setPointerCapture(e.pointerId); } catch (_) {}
+  tag.classList.add('active');
+  clearTimeout(tag._reset);
+  blendAt(tag, e, true);
+  tag.onpointermove = ev => blendAt(tag, ev, false);
+  tag.onpointerup = tag.onpointercancel = () => {
+    tag.onpointermove = null;
+    if (tag._done) return;
+    tag._reset = setTimeout(() => {
+      if (tag._done || G.chosen || G.busy) return;
+      resetTag(tag); say('hint-slide'); slideHint(tag);
+    }, 2600);
+  };
+}
+function resetTag(t) { t._prog = 0; t._done = false; t.classList.remove('active', 'blended'); t.onpointermove = null; t.querySelectorAll('.lit').forEach(x => x.classList.remove('lit')); clearTimeout(t._reset); }
+// Sliding plays the letter sounds only. The word is not said for her: the board calls
+// the pony whose name it shows, so she must blend the sounds to call the pony she picked.
+function blendAt(tag, e, isDown) {
+  const len = tag._sounds.length;
+  let idx = 0;
+  tag.querySelectorAll('.lc').forEach((lc, j) => { if (lc.getBoundingClientRect().left <= e.clientX) idx = j; });
+  if (isDown && idx > tag._prog) { pulse(tag.querySelectorAll('.l')[tag._prog], 'pulse'); return; }
+  while (tag._prog <= idx && tag._prog < len) {
+    const j = tag._prog++;
+    tag.querySelectorAll('.l')[j].classList.add('lit'); tag.querySelectorAll('.d i')[j].classList.add('lit');
+    const id = 'sound-' + tag._sounds[j];
+    phonQ = phonQ.then(() => say(id)).then(() => sleep(60));
+  }
+  if (tag._prog === len && !tag._done && G.want) {
+    tag._done = true; clearTimeout(tag._reset); tag.onpointermove = null;
+    G.busy = true;
+    const k = tag._k;
+    phonQ = phonQ.then(async () => {
+      await sleep(450);
+      if (k === G.want) {
+        tag.classList.add('blended'); sfx.chime();
+        await say('name-' + k);
+        G.busy = false;
+        choosePony(k);
+      } else await wrongBoard(tag);
+    });
+  }
+}
+// A wrong board calls the wrong pony. It trots up to the fence, Elizabeth says what the
+// board says, and it trots back to graze. The picked pony shakes its mane: not me.
+async function wrongBoard(tag) {
+  const k = tag._k, el = PAD[k].el, want = G.want, mine = PAD[want].el;
+  G.padMiss++;
+  pulse(tag, 'wiggle'); sfx.boing();
+  el.classList.remove('idle'); el.classList.add('gallop'); sfx.neigh();
+  const trot = el.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-60px)', offset: .4 }, { transform: 'translateY(-60px)', offset: .6 }, { transform: 'translateY(0)' }], { duration: 2000, easing: 'ease-in-out' });
+  await say('says-' + k);
+  await trot.finished.catch(() => {});
+  el.classList.remove('gallop'); el.classList.add('idle');
+  mine.classList.add('shake'); setTimeout(() => mine.classList.remove('shake'), 1500);
+  resetTag(tag);
+  await say('find-' + want);
+  G.busy = false; markActivity();
+  if (G.padMiss >= 2 && !G.chosen && G.want === want) slideHint(G.tags[want]);
+}
+async function choosePony(k) {
+  if (G.chosen) return;
+  G.chosen = k; G.busy = true; G.hintFn = null; clearHint();
+  Object.entries(G.tags).forEach(([kk, t]) => { if (kk !== k) t.classList.add('gone'); });
+  Object.keys(PAD).forEach(kk => { if (kk !== k) { PAD[kk].el.classList.remove('idle'); PAD[kk].el.classList.add('graze'); } });
+  const el = PAD[k].el, P = PAD[k];
+  sfx.neigh();
+  G.tags[k].classList.add('gone');
+  el.classList.remove('idle'); el.classList.add('gallop'); el.style.zIndex = 20;
+  const steps = setInterval(() => { sfx.hoof(); sfx.hoof(.09); sfx.hoof(.18); }, 340);
+  say('come-' + k);
+  await el.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${470 - P.left}px,${470 - P.top - P.w * .3}px) scale(${360 / P.w})` }], { duration: 1500, easing: 'ease-in-out', fill: 'forwards' }).finished.catch(() => {});
+  clearInterval(steps);
+  el.classList.remove('gallop'); el.classList.add('idle'); hearts(650, 420, 8); sparkles(650, 500, 14);
+  await sleep(1400);
+  startRide(k);
+}
+
+/* ---------- ride ---------- */
+const R = { running: false, speed: 300, off: 0, last: 0, fence: null, jump: null, cleared: 0, misses: 0, finish: null, nextAt: 0, around: false, hoofT: 0 };
+const PONY_X = 330;
+function startRide(k) {
+  fadeTo('ride', async () => {
+    const rp = $('#ridePony');
+    rp.className = 'pony gallop';
+    rp.innerHTML = `<div class="hopper"><div class="flip">${ponySVG(k, { bridle: true })}</div></div>`;
+    rp.style.transform = '';
+    document.querySelectorAll('#ride .fence,#ride .finish,#ride .bignum').forEach(x => x.remove());
+    $('#rideCount').innerHTML = [0, 1, 2].map(i => `<div class="fc" id="fc${i}">${FENCE_SVG.replace('width="170" height="180"', 'width="80" height="70"')}</div>`).join('');
+    Object.assign(R, { running: true, off: 0, last: 0, fence: null, jump: null, cleared: 0, misses: 0, finish: null, nextAt: 3.6, around: false, t: 0, hoofT: 0 });
+  }).then(async () => {
+    G.busy = false;
+    G.instr = 'ride-intro'; G.hintFn = null;
+    say('ride-intro');
+    requestAnimationFrame(rideLoop);
+  });
+}
+$('#ride').addEventListener('pointerdown', e => { e.preventDefault(); if (R.running) tryJump(); });
+function tryJump(auto) {
+  if (R.jump || R.around) return;
+  let dur = .75;
+  const f = R.fence;
+  if (f && !f.done) {
+    const dx = f.x - PONY_X;
+    if (dx > -30 && dx < 520) { dur = Math.max(.6, 2 * Math.max(dx, 40) / R.speed); f.willClear = true; }
+  }
+  dur = Math.min(dur, 3.4);
+  R.jump = { t: 0, dur, h: Math.min(260, 150 + dur * 50) };
+  sfx.whoosh(); if (!auto) sfx.sparkle();
+}
+function spawnFence() {
+  const el = document.createElement('div'); el.className = 'fence'; el.innerHTML = FENCE_SVG;
+  $('#ride').appendChild(el);
+  R.fence = { el, x: 1280, done: false, willClear: false };
+}
+function rideLoop(ts) {
+  if (!R.running) return;
+  if (!R.last) R.last = ts;
+  const dt = Math.min(.05, (ts - R.last) / 1000); R.last = ts; R.t += dt;
+  const sp = R.around ? R.speed * .55 : R.speed;
+  R.off += sp * dt;
+  $('#rideFar').style.backgroundPosition = `${-R.off * .25}px 0`;
+  $('#rideGround').style.backgroundPosition = `${-R.off}px 0`;
+  // hooves
+  R.hoofT += dt;
+  if (!R.jump && R.hoofT > .34) { R.hoofT = 0; sfx.hoof(); sfx.hoof(.09); sfx.hoof(.18); }
+  // fences
+  if (!R.fence && !R.finish && R.t > R.nextAt) {
+    if (R.cleared < 3) spawnFence();
+    else { const el = document.createElement('div'); el.className = 'finish'; el.innerHTML = `<svg viewBox="0 0 260 450" width="260" height="450"><rect x="10" y="40" width="24" height="410" rx="8" fill="#fff"/><rect x="226" y="40" width="24" height="410" rx="8" fill="#fff"/><path d="M0 40 Q130 -20 260 40 L260 100 Q130 40 0 100Z" fill="#ff6fa8"/><g fill="#ffd34d">${[30, 75, 120, 165, 210].map(x => `<path d="M${x} 90 l14 30 l14 -30z"/>`).join('')}</g><circle cx="130" cy="44" r="26" fill="#ffd34d" stroke="#fff" stroke-width="6"/></svg>`; $('#ride').appendChild(el); R.finish = { el, x: 1300 }; }
+  }
+  const f = R.fence;
+  if (f) {
+    f.x -= sp * dt;
+    f.el.style.transform = `translateX(${f.x - 85}px)`;
+    if (!f.done && R.misses >= 2 && !R.jump && f.x - PONY_X < 170) tryJump(true);
+    if (!f.done && f.x <= PONY_X + 40) {
+      f.done = true;
+      if (R.jump) { fenceCleared(); }
+      else { R.misses++; trotAround(f); }
+    }
+    if (f.x < -200) { f.el.remove(); R.fence = null; R.nextAt = R.t + (R.cleared >= 3 ? .4 : 1.1); }
+  }
+  if (R.finish) {
+    R.finish.x -= sp * dt; R.finish.el.style.transform = `translateX(${R.finish.x - 130}px)`;
+    if (R.finish.x < PONY_X - 40) { R.running = false; rideDone(); return; }
+  }
+  // jump
+  const rp = $('#ridePony');
+  if (R.jump) {
+    R.jump.t += dt;
+    const q = Math.min(1, R.jump.t / R.jump.dur);
+    const y = -Math.sin(Math.PI * q) * R.jump.h, rot = (q < .5 ? -10 : 8) * Math.sin(Math.PI * q);
+    rp.style.transform = `translateY(${y}px) rotate(${rot}deg)`;
+    rp.classList.toggle('gallop', false);
+    if (Math.random() < .3) sparkles(PONY_X - 120, 520 + y, 1, '#fff');
+    if (q >= 1) { R.jump = null; rp.style.transform = ''; rp.classList.add('gallop'); sfx.hoof(); }
+  }
+  requestAnimationFrame(rideLoop);
+}
+function fenceCleared() {
+  R.cleared++; R.misses = 0;
+  $('#fc' + (R.cleared - 1)).classList.add('on');
+  sfx.chime(); sparkles(PONY_X, 450, 18);
+  const b = document.createElement('div'); b.className = 'bignum'; b.textContent = R.cleared; $('#ride').appendChild(b);
+  b.animate([{ transform: 'scale(.3)', opacity: 0 }, { transform: 'scale(1.2)', opacity: 1, offset: .3 }, { transform: 'scale(1)', opacity: 1, offset: .7 }, { transform: 'scale(1)', opacity: 0 }], { duration: 1500 }).onfinish = () => b.remove();
+  say('fence-' + R.cleared);
+}
+async function trotAround(f) {
+  R.around = true;
+  f.el.style.zIndex = 4;
+  const rp = $('#ridePony');
+  await rp.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: 'translate(10px,-70px) scale(.8)', offset: .4 }, { transform: 'translate(10px,-70px) scale(.8)', offset: .6 }, { transform: 'translate(0,0) scale(1)' }], { duration: 1300, easing: 'ease-in-out' }).finished.catch(() => {});
+  R.around = false;
+  say('hint-jump');
+}
+async function rideDone() {
+  sfx.fanfare();
+  await sleep(600);
+  showReward();
+}
+
+/* ---------- reward ---------- */
+async function showReward() {
+  const k = G.chosen, cols = { jet: ['#4fc3ff', '#8b7bff'], bob: ['#ff6fb7', '#ffb8dc'], tim: ['#a77bff', '#dcc2ff'], tom: ['#22c995', '#9ff0d2'] }[k];
+  await fadeTo('reward', async () => {
+    let b = ''; const bc = ['#ff6fa8', '#ffd34d', '#4fc3ff', '#3fd6a8', '#8b7bff'];
+    for (let i = 0; i < 24; i++) b += `<path d="M${i * 50} 20 L${i * 50 + 50} 20 L${i * 50 + 25} 70Z" fill="${bc[i % 5]}"/>`;
+    $('#bunting').innerHTML = `<path d="M0 20 Q 590 50 1180 20" stroke="#fff" stroke-width="4" fill="none"/>${b}`;
+    $('#bigRosette').innerHTML = rosetteSVG(...cols);
+    const rp = $('#rewardPony'); rp.className = 'pony idle';
+    rp.innerHTML = `<div class="hopper"><div class="flip">${ponySVG(k, { bridle: true })}</div></div>`;
+    Object.assign(rp.style, { left: '30px', top: '330px', width: '440px', height: '389px' });
+    $('#reward').querySelectorAll('.puffle').forEach(p => p.remove());
+    [['#ffc2e0', '#ff8fc8', 780, 610], ['#c9f1ff', '#7fd2ff', 900, 650], ['#fff1a8', '#ffd34d', 1030, 600], ['#d9c8ff', '#a98bff', 890, 350], ['#c8f7e2', '#5fd9a8', 1020, 380], ['#ffd9c2', '#ff9a6c', 765, 390]].forEach(([c1, c2, x, y], j) => {
+      const p = document.createElement('div'); p.className = 'puffle cheer'; p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.animationDelay = (j * .13) + 's';
+      p.innerHTML = puffleSVG(c1, c2); $('#reward').appendChild(p);
+    });
+  });
+  G.instr = 'finale';
+  $('#bigRosette').animate([{ transform: 'scale(0) rotate(-180deg)' }, { transform: 'scale(1.15) rotate(10deg)', offset: .7 }, { transform: 'scale(1) rotate(0)' }], { duration: 900, easing: 'ease-out' });
+  sfx.fanfare(); sfx.cheer(); confetti(160);
+  setTimeout(() => sparkles(590, 300, 24), 700);
+  await sleep(500);
+  await say('finale');
+  pulse($('#rewardPony'), 'hop'); sfx.neigh();
+  await sleep(1800);
+  finishRound();
+}
+async function finishRound() {
+  const k = G.chosen, idx = k === 'jet' ? 0 : k === 'bob' ? 1 : 2;
+  G.ended = true;
+  G.rosettes[k] = (G.rosettes[k] || 0) + 1; saveRosettes();
+  await fadeTo('stable', async () => { await goStall(idx, { instant: true, silent: true }); updateArrows(); });
+  const st = STALLS[idx], target = st.rosEls[k];
+  const cols = { jet: ['#4fc3ff', '#8b7bff'], bob: ['#ff6fb7', '#ffb8dc'], tim: ['#a77bff', '#dcc2ff'], tom: ['#22c995', '#9ff0d2'] }[k];
+  const fly = document.createElement('div'); fly.style.cssText = 'position:absolute;left:0;top:0;width:200px;height:280px'; fly.innerHTML = rosetteSVG(...cols); fx.appendChild(fly);
+  const tp = ptOf(target), n = Math.min(G.rosettes[k], 4) - 1;
+  const tx = tp.x - 55 + n * ROS_DX, ty = tp.y - 100 + n * ROS_DY;
+  await fly.animate([{ transform: 'translate(490px,250px) scale(1.2)' }, { transform: `translate(${tx - 52}px,${ty - 75}px) scale(.48)` }], { duration: 1200, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' }).finished.catch(() => {});
+  fly.remove(); renderRosettes(st); sfx.pin(); sparkles(tp.x, tp.y - 30, 14);
+  G.instr = 'rosette-' + k;
+  await say('rosette-' + k);
+  $('#again').style.display = 'block';
+  G.hintFn = null;
+}
+
+/* ---------- start screen art ---------- */
+$('#startJet').innerHTML = makePony('jet').outerHTML;
+$('#startBob').innerHTML = makePony('bob').outerHTML;
+$('#startJet .pony').style.cssText = 'left:0;top:0;width:100%;height:100%'; $('#startJet .pony').classList.add('mirror');
+$('#startBob .pony').style.cssText = 'left:0;top:0;width:100%;height:100%';
+
+/* ---------- debug hook ---------- */
+window.__game = {
+  G, STALLS, R, LINES,
+  get scene() { return G.scene; },
+  counts() { return STALLS.map(s => s.kind === 'single' ? { key: s.key, manger: s.manger ? s.manger.items.length : 0, target: s.target, done: !!s.done } : { key: s.key, crate: s.crate ? s.crate.items.length : 0, tim: s.tim ? s.tim.items.length : 0, tom: s.tom ? s.tom.items.length : 0, done: !!s.done }); },
+  goStall: i => goStall(i),
+  fill(a, b) {
+    const st = STALLS[G.cur];
+    if (st.kind === 'single') { st.manger.items.forEach(c => c.el.remove()); st.manger.items = []; for (let k = 0; k < a; k++) addTo(st.manger, makeCarrot(st, 0, 0), false); }
+    else { [st.crate, st.tim, st.tom].forEach(bx => { bx.items.forEach(c => c.el.remove()); bx.items = []; }); for (let k = 0; k < a; k++) addTo(st.tim, makeCarrot(st, 0, 0), false); for (let k = 0; k < b; k++) addTo(st.tom, makeCarrot(st, 0, 0), false); for (let k = 0; k < 8 - a - b; k++) addTo(st.crate, makeCarrot(st, 0, 0), false); }
+  },
+  ring: () => ringBell(G.cur),
+  pick: k => { const P = PAD[k]; if (P && P.el) P.el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); },
+  blend: k => { const t = G.tags && G.tags[k]; if (!t || G.busy || !G.want) return; resetTag(t); const r = t.getBoundingClientRect(); blendAt(t, { clientX: r.right - 5, clientY: r.top + 20 }, false); },
+  jump: () => tryJump(),
+  rosettes: () => ({ ...G.rosettes })
+};
+</script>
+</body>
+</html>

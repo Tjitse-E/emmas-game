@@ -1,0 +1,12 @@
+# .env holds the ElevenLabs API key. Codex must not read it.
+# Codex only loads this file once the project is trusted.
+default_permissions = "emmas-game"
+
+[permissions.emmas-game]
+extends = ":workspace"
+
+[permissions.emmas-game.filesystem.":workspace_roots"]
+"." = "write"
+".env" = "deny"
+"**/.env" = "deny"
+"**/.env.*" = "deny"

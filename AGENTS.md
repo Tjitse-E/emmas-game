@@ -8,6 +8,7 @@ Read these first:
 - [GOAL.md](GOAL.md): what she must learn and how we work.
 - [IDEAS.md](IDEAS.md): the index of game ideas and their status.
 - [STACK.md](STACK.md): languages, iPad target, testing, sound and deployment.
+- [VOICES.md](VOICES.md): the ElevenLabs voice for each character and the voice rules.
 
 ## Rules
 
@@ -15,6 +16,7 @@ Read these first:
 - Emma cannot read instructions yet. Everything she must understand is spoken and shown with pictures.
 - Build for iPad touch first. Test every mockup with `playwright-cli` at iPad resolution (see STACK.md) before calling it done.
 - Every idea lives in `ideas/<idea-slug>/` with a `README.md` and an `index.html` mockup. Add each new idea to the table in IDEAS.md.
-- Speech uses ElevenLabs voice Elizabeth. Generate audio ahead of time. Never put the API key in client code or in git.
+- Speech uses ElevenLabs. Elizabeth is the narrator and the only voice for letter sounds and words Emma learns from. Characters use the voices in VOICES.md. Never use browser speech as the voice Emma hears. Generate audio ahead of time. Never put the API key in client code or in git.
+- The ElevenLabs API key is `ELEVENLABS_API` in `.env`. Agents never read, print, source or copy `.env`. Scripts that need the key load `.env` themselves (for example Node's `process.loadEnvFile()`), so the command that runs them does not mention `.env`. This is enforced: `.claude/settings.json` denies the file to Claude Code and `.codex/config.toml` denies it to Codex.
 - Use our own characters. No trademarked characters (for example, real Furbies or Disney princesses).
 - Code, comments, docs and commit messages are in English.
