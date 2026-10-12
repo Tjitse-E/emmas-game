@@ -6,7 +6,7 @@ import { makeRng } from '../../src/core/rng.ts';
 
 const NAMES = ['Tam', 'Pip', 'Ken', 'Tim', 'tim', 'Sam', 'Dan', 'Meg', 'Pat', 'Nan', 'Ben', 'Lily'];
 const herd = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `b${i + 1}`, order: i + 1 }));
-const names = (n: number) => new Map(herd(n).map((b, i) => [b.id, NAMES[i] ?? null] as const));
+const names = (n: number) => new Map<string, string | null>(herd(n).map((b, i) => [b.id, NAMES[i] ?? null] as const));
 const yes = () => true;
 
 describe('rollCallCount', () => {
