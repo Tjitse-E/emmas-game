@@ -62,7 +62,7 @@ dustpan | R19 | a dustpan
 ear | R19 | a soft lilac unicorn ear, standing up, with a pink inside
 earmuff | R19 | fluffy earmuffs
 earring | R19 | an earring
-egg | R19 | a cream egg
+egg | R19 | a whole smooth cream hen egg, not cracked, not chocolate
 eggcup | R19 | an egg cup
 envelope | R19 | an envelope
 feather | R19 | a feather
@@ -79,7 +79,7 @@ gem | R19 | a pink gem
 goal | R19 | a football goal
 goblet | R19 | a golden goblet
 gong | R19 | a gong
-grape | R19 | a grape
+grape | R19 | one single round green grape with a tiny stalk
 hammock | R19 | a hammock
 hamper | R19 | a picnic hamper
 handbag | R19 | a handbag
