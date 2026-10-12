@@ -10,7 +10,7 @@ const NAMING_A = ['S01', 'S02', 'S03', 'S04', 'S05', 'S07', 'S09', 'S11', 'S12',
 
 // R06 and R25 are display-only tricky-word steps (spec 3.9). S03D, S06 and S10 are served by label bubbles (places).
 export const HEARTBEAT_PLACES: PlaceDecl[] = [
-  { id: 'nest', strand: 'm', steps: ['M01', 'M02', 'M05', 'M09', 'M10', 'M11', 'M12'], wave: 'A', school: false },
+  { id: 'nest', strand: 'm', steps: ['M01', 'M02', 'M05', 'M09', 'M10', 'M11', 'M12', 'M12A', 'M12B', 'M12C', 'M12D', 'M12E', 'M12F'], wave: 'A', school: false },
   { id: 'nest', strand: 'm', steps: ['M04', 'M13', 'M14'], wave: 'B', school: false },
   { id: 'wish', strand: 'r', steps: WISH_A, wave: 'A', school: true },
   { id: 'wish', strand: 'r', steps: ['R12', 'R27', 'R28', 'R29'], wave: 'B', school: true },

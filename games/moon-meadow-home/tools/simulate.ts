@@ -3,13 +3,14 @@
 // Usage: npm run simulate -- [--seed 1] [--accuracy 0.85] [--weeks 12] [--profile year1] [--release 1.0]
 //        [--true R21,S12,M10 | --true none] [--visits 2-3] [--moments 15-19]
 // For the year1 profile the probe answers follow Emma's level (R21, S12, M10) unless --true says otherwise.
+// The main run leaves out the 1.0.1 maths lift, so its pacing stays comparable with 1.0. For the year1 profile a
+// second run with the lift (docs/v3/next/plan.md N9) prints how many days her maths takes to pass M12F.
 import { parseArgs } from 'node:util';
-import type { Release, StepId, Strand } from '../src/core/content/types.ts';
+import { RELEASES, type Release, type StepId, type Strand } from '../src/core/content/types.ts';
 import { readContent } from './lib/read-content.ts';
 import { formatReport, simulate } from './lib/sim.ts';
 
 const EMMA: Partial<Record<Strand, StepId>> = { r: 'R21', s: 'S12', m: 'M10' };
-const RELEASES: readonly Release[] = ['1.0', '1.1', '1.2', '1.3', 'later'];
 
 function fail(msg: string): never {
   console.error(msg);
@@ -65,7 +66,7 @@ for (const step of Object.values(trueLevel(values.true, profile) ?? {})) {
   if (!content.steps[step]) fail(`--true: unknown step ${step}`);
 }
 
-const report = simulate({
+const options = {
   content,
   seed: num('seed', values.seed),
   accuracy: num('accuracy', values.accuracy),
@@ -74,9 +75,20 @@ const report = simulate({
   momentsPerVisit: range('moments', values.moments),
   profile,
   trueLevel: trueLevel(values.true, profile),
-});
+};
+const report = simulate({ ...options, lift: false });
 
 const s = content.budget.share;
 console.log(`Release ${content.release}, profile ${profile}, seed ${values.seed}, accuracy ${values.accuracy}, ${values.weeks} weeks`);
 console.log(`Shares: current ${s.current}, review ${s.review}, mixed ${s.mixed}`);
 console.log(formatReport(report));
+
+if (profile === 'year1' && content.steps.M12F?.loaded) {
+  const lifted = simulate({ ...options, lift: true });
+  const m12f = lifted.steps.find(st => st.step === 'M12F');
+  const days = m12f?.passT != null ? ((m12f.passT - lifted.startT) / 86_400_000).toFixed(0) : null;
+  console.log('');
+  console.log('With the 1.0.1 maths lift:');
+  console.log(`  maths steps passed ${lifted.passedCount.m}, current now ${lifted.finalCurrent.m ?? '-'}`);
+  console.log(`  M12F passed ${days === null ? `not within ${values.weeks} weeks` : `after ${days} days`}`);
+}

@@ -4,7 +4,7 @@ import { HEARTBEAT_PLACES, placesUpTo } from '../../src/core/heartbeat/places.ts
 describe('HEARTBEAT_PLACES', () => {
   it('serves the wave A egg steps and not the wave B ones', () => {
     const nest = placesUpTo('A').filter((p) => p.id === 'nest').flatMap((p) => p.steps);
-    expect(nest).toEqual(expect.arrayContaining(['M01', 'M02', 'M05', 'M09', 'M10', 'M11', 'M12']));
+    expect(nest).toEqual(expect.arrayContaining(['M01', 'M02', 'M05', 'M09', 'M10', 'M11', 'M12', 'M12A', 'M12B', 'M12C', 'M12D', 'M12E', 'M12F']));
     expect(nest).not.toContain('M13');
   });
   it('lets the wish serve the plural school step and the twin steps', () => {
