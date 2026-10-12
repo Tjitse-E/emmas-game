@@ -7,6 +7,7 @@ import { currentStep, isSecure, stepStatus } from '../../core/learning/index.ts'
 import type { Learner } from '../../core/learning/index.ts';
 import type { Content, EggKind, MomentKind } from '../../core/content/types.ts';
 import { nameKey } from '../../core/keys.ts';
+import { nameGpcs } from '../../core/naming/review.ts';
 import type { Rng } from '../../core/rng.ts';
 import type { LearnLog } from '../../core/actions/heartbeat.ts';
 import type { NameEntry, Scaffold, Served, Source, StationId, StepState, Strand, WordEntry } from '../../core/heartbeat/types.ts';
@@ -104,28 +105,8 @@ export function pickFor(p: Pick, step: string, items: string[], slot: Pick['slot
   return { ...p, step, items, slot, scaffold, probe: false };
 }
 
-/** Spelling ladder in plain graphemes, for makeSpellCtx. Clusters, marks and tricky words have no grapheme. */
-export function spellLadder(c: Content): { id: string; items: string[] }[] {
-  return c.order.s.map((id) => ({
-    id,
-    items: (c.steps[id]?.items ?? []).map((it) => (it.gpc ? gpcText(c, it.gpc) : it.kind === 'capital' ? 'capital' : '')).filter(Boolean),
-  }));
-}
-
-/** Reading ladder in plain graphemes and endings ('-s'). */
-export function readLadder(c: Content): { id: string; items: string[] }[] {
-  return c.order.r.map((id) => ({
-    id,
-    items: (c.steps[id]?.items ?? []).map((it) => (it.gpc ? gpcText(c, it.gpc) : it.ending && it.ending !== 'none' ? `-${it.ending}` : '')).filter(Boolean),
-  }));
-}
-
-/** GPC ids of a baby's name: the name bank's split when the name is in the bank, else the gems read as usual GPCs. */
-export function nameGpcs(c: Content, name: string, gems: readonly string[], listName: string | null): string[] {
-  const bank = c.names.find((n) => n.slug === nameKey(listName ?? name)) ?? c.names.find((n) => n.slug === nameKey(name));
-  if (bank) return [...bank.gpcs];
-  return gems.map((g) => g.toLowerCase()).filter((g) => Object.hasOwn(c.gpcs, g));
-}
+export { spellLadder, readLadder } from '../../core/phonics/ladders.ts';
+export { nameGpcs } from '../../core/naming/review.ts';
 
 /** The planner requests of the heartbeat places (Wave A moments; phrase moments come with Tasks 26 and 27). */
 export const REQUESTS: Record<HbSlot, ItemRequest> = {

@@ -9,6 +9,8 @@
   import { sleep } from '../platform/timing.ts';
   import Unicorn from '../art/Unicorn.svelte';
   import { hasDoor, pageCount, pageDoors, pageOf, stableLayout } from '../core/heartbeat/stables.ts';
+  import { DOOR_DECOR_KINDS, FLOWER_COLOUR, PAINT_COLOUR, doorDecor, doorDecorKey, nextDecor, type DoorDecorKind } from '../core/heartbeat/decor.ts';
+  import { elementRect } from '../platform/stage.svelte.ts';
   import { StallsCtrl } from './heartbeat/stalls.ctrl.ts';
   import { bridge, liveDeps } from './heartbeat/deps.ts';
   import { heartbeat, HOME_SCENE } from './heartbeat/flow.svelte.ts';
@@ -49,6 +51,26 @@
   const pages = pageCount(layout);
   const doorEls: Record<number, HTMLElement> = {};
   let finished = false;
+  // Stall-door free play (R57), in the view mode only: tap a door, then the paint pot, flower box or lantern.
+  let picked = $state<number | null>(null);
+  const decorOf = $derived.by(() => {
+    void game.version;   // the fold may update the state in place, so the version is what changes
+    const decor = (game.state.cosmetics as unknown as { decor?: Record<string, { item: string }> }).decor ?? {};
+    return (n: number) => doorDecor(decor, n);
+  });
+  const TOOL_ART: Record<DoorDecorKind, string> = { paint: 'item-paint-pot', flowers: 'item-flower-box', lantern: 'item-lantern-lit' };
+  function decorate(kind: DoorDecorKind): void {
+    if (picked === null) return;
+    const el = doorEls[picked];
+    const r = el ? elementRect(el) : { x: 0, y: 0, w: 0, h: 0 };
+    game.dispatch({ type: 'hb.decor', decor: doorDecorKey(picked, kind), item: nextDecor(kind, decorOf(picked)[kind]),
+      x: Math.round(r.x + r.w / 2), y: Math.round(r.y + r.h / 2) });
+    void deps.audio.sfx(kind === 'lantern' ? 'chime' : 'pop');
+  }
+  function tapDoor(n: number): void {
+    if (mode === 'view') { picked = picked === n || !occupied.has(n) ? null : n; return; }
+    void ctrl?.tapDoor(n);
+  }
 
   async function home(): Promise<void> {
     if (finished) return;
@@ -98,9 +120,14 @@
           <div class="frame">
             {#each row as d (d.number)}
               {@const who = d.baby ? byId[d.baby] : undefined}
+              {@const dec = decorOf(d.number)}
               <button class="door" class:glow={baby?.order === d.number && !visiting} class:sleepy={tapped?.number === d.number && tapped.who === 'sleepy'}
-                data-touch aria-label="door {d.number}" bind:this={doorEls[d.number]} use:press={() => void ctrl?.tapDoor(d.number)}>
-                <span class="door-pic"><ArtImg id="item-stall-door" size={92} /></span>
+                class:picked={picked === d.number} data-touch aria-label="door {d.number}" bind:this={doorEls[d.number]} use:press={() => tapDoor(d.number)}>
+                <span class="door-pic"><ArtImg id="item-stall-door" size={92} />
+                  {#if PAINT_COLOUR[dec.paint]}<span class="paint" style:background={PAINT_COLOUR[dec.paint]}></span>{/if}
+                </span>
+                {#if FLOWER_COLOUR[dec.flowers]}<span class="flowerbox"><ArtImg id="item-flower-box" size={56} tint={FLOWER_COLOUR[dec.flowers]} /></span>{/if}
+                {#if dec.lantern === 'lantern-lit'}<span class="lamp"><ArtImg id="item-lantern-lit" size={40} /></span>{/if}
                 {#if who}
                   <span class="head"><Unicorn breed={who.breed} stage={who.stage} colours={who.colours} traits={who.traits} height={64} headOnly label="" /></span>
                 {/if}
@@ -132,6 +159,13 @@
       {/each}
     </div>
   {/if}
+  {#if mode === 'view' && picked !== null}
+    <div class="decor-tools">
+      {#each DOOR_DECOR_KINDS as k (k)}
+        <button class="decor-tool" data-touch aria-label="decorate {k}" use:press={() => decorate(k)}><ArtImg id={TOOL_ART[k]} size={80} /></button>
+      {/each}
+    </div>
+  {/if}
   {#if mode === 'view'}
     <button class="back" data-touch aria-label="meadow" use:press={() => void home()}>
       <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M30 10 L16 24 L30 38" fill="none" stroke="#6b4a8a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" /></svg>
@@ -147,6 +181,13 @@
   .frame { display: grid; grid-template-columns: repeat(5, 98px); gap: 8px 6px; }
   .door { position: relative; width: 98px; height: 206px; background: none; border: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
   .door-pic { display: block; height: 130px; }
+  .door-pic { position: relative; }
+  .paint { position: absolute; inset: 8px 14px 6px; border-radius: 40px 40px 6px 6px; mix-blend-mode: multiply; opacity: 0.75; pointer-events: none; }
+  .flowerbox { position: absolute; top: 74px; left: 50%; transform: translateX(-50%); pointer-events: none; z-index: 2; }
+  .lamp { position: absolute; top: 2px; left: -4px; pointer-events: none; z-index: 2; }
+  .door.picked .door-pic { outline: 5px solid #ffd25e; outline-offset: 2px; border-radius: 40px 40px 8px 8px; }
+  .decor-tools { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%); display: flex; gap: 24px; z-index: 3; }
+  .decor-tool { width: 104px; height: 104px; border-radius: 30px; background: #fff; border: 4px solid #ffd25e; display: grid; place-items: center; padding: 0; }
   .door.glow { animation: pulse calc(900ms * var(--speed, 1)) ease-in-out infinite; }
   .head { position: absolute; top: 30px; left: 50%; width: 64px; height: 64px; overflow: hidden; border-radius: 40%; transform: translateX(-50%); pointer-events: none; }
   .sleepy .head { animation: nod calc(600ms * var(--speed, 1)) 2; }

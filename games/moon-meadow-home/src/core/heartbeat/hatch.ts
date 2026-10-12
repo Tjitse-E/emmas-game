@@ -26,3 +26,18 @@ export function rollHatch(input: { kind: EggKind; result: Result; golden: boolea
   };
   return { breed: BREED_OF[input.kind], colours, traits };
 }
+
+/** Every breed, the egg kind that brings it, or the building whose egg brings it (contracts C7). */
+export type BreedInfo = { id: BreedId; egg: EggKind | null; building: string | null };
+export const BREEDS: readonly BreedInfo[] = [
+  { id: 'moon', egg: 'moon', building: null }, { id: 'nestling', egg: 'small-nest', building: null },
+  { id: 'pebble', egg: 'two-stone', building: null }, { id: 'cosy', egg: 'blanket', building: null },
+  { id: 'berry', egg: 'berry', building: null }, { id: 'snow', egg: 'snow', building: null },
+  { id: 'bubble', egg: null, building: 'bath-pond' }, { id: 'post', egg: null, building: 'post-box' },
+  { id: 'sparkle', egg: null, building: 'salon' },
+];
+
+/** Building eggs bring one breed each (spec 2.6). A building baby is not a checked hatch, so it is never shiny. */
+export function rollBuildingHatch(breed: BreedId, rng: Rng): HatchRoll {
+  return { breed, colours: randomColours(rng), traits: { shiny: false, speckled: false, golden: false, founder: false } };
+}
