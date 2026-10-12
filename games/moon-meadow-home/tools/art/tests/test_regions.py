@@ -49,6 +49,29 @@ class RegionsTest(unittest.TestCase):
         self.assertEqual(self.at(170, 145), regions.BODY)   # a near-white highlight takes the coat it sits on
         self.assertEqual(self.at(326, 112), regions.FIXED)  # a cream muzzle keeps its colour
 
+    @staticmethod
+    def blushed(eye: bool) -> np.ndarray:
+        im = Image.new('RGB', (600, 300), (255, 255, 255))
+        d = ImageDraw.Draw(im)
+        d.rectangle([300, 20, 590, 280], fill=C['mane'], outline=(200, 100, 140), width=4)  # the mane
+        d.ellipse([10, 10, 290, 290], fill=C['body'], outline=(150, 120, 180), width=5)    # the coat
+        if eye:
+            d.ellipse([160, 60, 200, 100], fill=(40, 20, 60))                              # eye
+        d.ellipse([134, 112, 226, 168], fill=(252, 238, 244))                              # near-white halo
+        d.ellipse([140, 110, 220, 160], fill=(240, 170, 190))                              # pink blob
+        return regions.classify(unmatte_white(im))
+
+    def test_blushed_cheek_with_a_soft_halo_is_fixed(self):
+        # Newer breeds blush with a soft near-white halo around the cheek, so more than half of the ring around
+        # the pink blob is unclassified sheen. Next to an eye the blob is a cheek and keeps its colour.
+        c = self.blushed(eye=True)
+        self.assertEqual(int(c[135, 180]), regions.FIXED)
+        self.assertEqual(int(c[150, 450]), regions.MANE)
+
+    def test_haloed_blob_away_from_the_eyes_stays_mane(self):
+        # A braid end or a curl on the chest also sits in the coat with sheen around it: it stays mane.
+        self.assertEqual(int(self.blushed(eye=False)[135, 180]), regions.MANE)
+
     def test_outlines_follow_their_fill(self):
         self.assertEqual(self.at(102, 170), regions.BODY)
         self.assertEqual(self.at(22, 170), regions.MANE)

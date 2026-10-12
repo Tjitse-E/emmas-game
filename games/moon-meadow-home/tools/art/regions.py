@@ -7,6 +7,8 @@ BG, BODY, MANE, MANE2, FIXED = 0, 1, 2, 3, 4
 NAMES = {BODY: 'body', MANE: 'mane', MANE2: 'mane2', FIXED: 'fixed'}
 CANON = {'body': (217, 198, 240), 'mane': (244, 163, 193), 'mane2': (143, 211, 191)}
 FILL_ROUNDS = 80   # wide sheen patches need more than the 12 rounds outlines need
+KNOWN_RING = 0.5       # classified share of the ring a pink or green blob needs before it counts as enclosed
+KNOWN_RING_FACE = 0.25  # the same next to an eye: a blushed cheek has a soft sheen halo around it
 HORN = {'bronze': (196, 132, 82), 'silver': (205, 208, 216), 'pearl': (242, 236, 228)}
 
 
@@ -47,7 +49,7 @@ def classify(rgba: Image.Image) -> np.ndarray:
     areas = np.bincount(lab.ravel(), minlength=n + 1)
     eyes = np.isin(lab, [k for k in range(1, n + 1) if areas[k] >= 40])
     cls[dilate(eyes, 2) & fg] = FIXED
-    _enclosed_to_fixed(cls, fg)
+    _enclosed_to_fixed(cls, fg, eyes=eyes)
     # Other small mane specks (gloss flecks inside a highlight) are not a part of their own: they take the
     # class around them, like the highlight they sit in.
     for c in (MANE, MANE2):
@@ -68,12 +70,16 @@ def classify(rgba: Image.Image) -> np.ndarray:
     return cls
 
 
-def _enclosed_to_fixed(cls: np.ndarray, fg: np.ndarray, share: float = 0.75, max_part: float = 0.08) -> None:
+def _enclosed_to_fixed(cls: np.ndarray, fg: np.ndarray, share: float = 0.75, max_part: float = 0.08,
+                       eyes: np.ndarray | None = None) -> None:
     """Pink or green blobs that sit inside the coat (blushed cheeks, inner ears) are fixed colour, not mane.
-    Unclassified sheen around a blob does not count, but at least half of the ring must be classified;
+    Unclassified sheen around a blob does not count, but KNOWN_RING of the ring must be classified
+    (KNOWN_RING_FACE for a blob within 4 percent of the picture height of an eye, the blushed cheek);
     only blobs below max_part of all mane pixels qualify."""
     H, W = cls.shape
     total = int(((cls == MANE) | (cls == MANE2)).sum())
+    ey, ex = np.nonzero(eyes) if eyes is not None else (np.zeros(0, int), np.zeros(0, int))
+    m = round(0.04 * H)
     for c in (MANE, MANE2):
         lab, n = label_components(cls == c)
         areas = np.bincount(lab.ravel(), minlength=n + 1)
@@ -86,7 +92,9 @@ def _enclosed_to_fixed(cls: np.ndarray, fg: np.ndarray, share: float = 0.75, max
             ring = dilate(comp, 2) & ~comp
             known = ring & ~(fg[y0:y1, x0:x1] & (cls[y0:y1, x0:x1] == 0))
             around = cls[y0:y1, x0:x1][known]
-            if len(around) >= 0.5 * ring.sum() and np.isin(around, (BODY, FIXED)).mean() >= share:
+            face = bool(((ey >= y0 - m) & (ey < y1 + m) & (ex >= x0 - m) & (ex < x1 + m)).any())
+            need = KNOWN_RING_FACE if face else KNOWN_RING
+            if len(around) >= need * ring.sum() and np.isin(around, (BODY, FIXED)).mean() >= share:
                 cls[y0:y1, x0:x1][comp] = FIXED
 
 
