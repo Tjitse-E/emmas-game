@@ -10,6 +10,7 @@ Everything the games need to speak and play letter sounds. All speech is pre-gen
 | `review.html` | Listening sheet for every clip and letter sound, grouped by game, plus the picture menu. |
 | `home.js` | The round home button (top right, 80 px) that every game loads. It stops all sound and opens the picture menu (`/index.html`). |
 | `test.html`, `test-audio/` | A small test page for the player. |
+| `../games/moon-meadow-home/public/audio/<pack>/` | v3 audio packs, made from `content/lines` and the content banks by `tools/audio/build-lines.ts`. |
 | `../scripts/generate-audio.py` | Makes the clips of one game from its `lines.json`. |
 | `../scripts/generate-phonics.py` | Makes the letter sounds. |
 
@@ -119,7 +120,7 @@ Doubled letters (ff ll ss zz) and c, k, ck share one clip. Each alias also has i
 | `speaking` | True from a `say()` call until its promise resolves. |
 | `missing` | Ids of missing clips, each listed once. |
 
-Additions beyond the shared contract: `playUrl(url)` (used by the listening sheet), `has(id)` (Promise, is the clip in the manifest), `phonicsIndex()` (Promise with `index.json`), `muted` and `context`.
+Additions beyond the shared contract: `playUrl(url)` (used by the listening sheet), `has(id)` (Promise, is the clip in the manifest), `phonicsIndex()` (Promise with `index.json`), `muted` and `context` For v3 (Moon Meadow Home) also `addPack(name, base, {fresh})` (several clip folders, each with its own `manifest.json`, searched in the order added; `fresh` revalidates the manifest), `forget(ids)` (drop decoded clips), `onMissing(fn)` (called once per new missing id, returns an unsubscribe) and `reportMissing(id)` (record a missing clip without playing it). Without `addPack` the player behaves as before.
 
 Missing clips: when `manifest.json` does not list an id, or the file does not load, `say()` logs `console.warn('[audio] missing <id>')`, adds the id to `missing` and resolves after 300 ms. A missing letter sound does the same with its `snd-` id. All promises resolve, also when the AudioContext is still locked.
 

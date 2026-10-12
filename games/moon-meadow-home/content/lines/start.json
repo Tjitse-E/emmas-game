@@ -1,0 +1,7 @@
+{"scene": "start", "lines": [
+  {"id": "lumi-hello", "speaker": "queen", "text": "Hello, Emma! I'm Queen Lumi."},
+  {"id": "lumi-hello-back", "speaker": "queen", "text": "Hello, Emma!", "also": ["places"], "note": "Returning arrival at the meadow (places A7, R54)."},
+  {"id": "lumi-meadow-yours", "speaker": "queen", "text": "This meadow is yours. Will you make it a home for my unicorns?"},
+  {"id": "lumi-crown", "speaker": "queen", "text": "Here is your crown. You are my Nest Keeper now!"},
+  {"id": "g-egg-waiting", "speaker": "narrator", "text": "An egg is waiting.", "also": ["places"], "note": "Returning arrival goal at the meadow (places A7, R54)."}
+]}
