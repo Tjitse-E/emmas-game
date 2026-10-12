@@ -142,9 +142,10 @@
       registerHook('naming.addSlot', () => ctrl.addSlot()),
       registerHook('naming.removeSlot', (i: number) => ctrl.removeSlot(i)),
       registerHook('naming.mode', () => ctrl.mode),
-      registerHook('naming.named', () => ctrl.named),
       registerHook('naming.bells', () => ctrl.bells.map((b) => b.name)),
     ];
+    // Kept after the scene closes, so a flow can read the name it gave after the heartbeat moved on.
+    registerHook('naming.named', () => ctrl.named);
     return () => { for (const off of offs) off(); };
   });
   onDestroy(() => { goal.clear(); deps.hints.end(); });

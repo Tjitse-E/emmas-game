@@ -57,7 +57,7 @@ export class StallsCtrl {
 
   async beginVisit(): Promise<void> {
     const t = this.target;
-    if (t === null) return;
+    if (t === null || this.done) return;
     this.startedAt = this.d.now();
     this.firstTouch = null;
     this.d.hints.begin({

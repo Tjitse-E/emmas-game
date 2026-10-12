@@ -13,7 +13,8 @@ export const heartbeatHooks: { onMovedIn: ((babyId: string) => void)[] } = { onM
 /** Where the heartbeat goes home to. The meadow is places' scene (Task PL-A7). */
 export const HOME_SCENE = 'meadow';
 
-const rt = $state<{ state: HbState }>({ state: IDLE });
+/** Plain (not reactive) on purpose: send() compares states by identity. */
+const rt: { state: HbState } = { state: IDLE };
 let moonVisit: string | null = null;   // the visit in which the moon's new name last played
 
 const opts = () => ({ skipWishAfterThree: game.world?.settings.skipWishAfterThree ?? false });
@@ -46,7 +47,7 @@ async function route(): Promise<void> {
   const s = rt.state;
   switch (s.stage) {
     case 'egg-choice': await game.go('egg-choice'); break;
-    case 'egg': if (game.scene !== 'nest') await game.go('nest'); break;
+    case 'egg': await game.go('nest'); break;
     case 'naming': await game.go('naming', { target: { kind: 'baby', baby: s.baby }, then: 'heartbeat' }); break;
     case 'wish': await game.go('wish', { baby: s.baby, then: 'heartbeat' }); break;
     case 'move-in': await game.go('stalls', { baby: s.baby, mode: 'move-in' }); break;
@@ -87,7 +88,10 @@ export const heartbeat = {
    * Returns false when an unnamed baby was found and naming took over.
    */
   atNest(): boolean {
-    if (rt.state.stage === 'egg') return true;
+    if (rt.state.stage === 'egg' || rt.state.stage === 'egg-choice') {
+      rt.state = { ...rt.state, stage: 'egg' };
+      return true;
+    }
     const unnamed = firstUnnamed();
     if (unnamed) {
       rt.state = { ...IDLE, eggsInRow: rt.state.eggsInRow };
@@ -124,3 +128,8 @@ export const heartbeat = {
     return true;
   },
 };
+
+// Test builds: window.__game.call('hb.start' | 'hb.goodnight' | 'hb.wish' | 'hb.state') for the heartbeat flows.
+if (import.meta.env.MODE !== 'production') {
+  void import('./test-hooks.ts').then((m) => m.installHeartbeatHooks(heartbeat));
+}
