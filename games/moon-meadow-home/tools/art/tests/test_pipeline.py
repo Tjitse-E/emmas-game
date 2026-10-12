@@ -184,6 +184,108 @@ class PipelineTest(unittest.TestCase):
         entries = pipeline.load_list('words-top')
         self.assertEqual([(e.id, e.kind, e.step) for e in entries], [('teapot', 'word', 'R18'), ('item-x', 'item', None)])
 
+    def test_plan_sheets_from_a_named_list(self):
+        (paths.LISTS / 'words-top.txt').write_text(
+            '# learning top-up, plurals first\nhorses | R19 | a toy horse\nteapot | R18 | a teapot\n'
+            'acorn | S10 | an acorn\n')
+        paths.REVIEW.mkdir(parents=True)
+        (paths.REVIEW / 'words-a.json').write_text(json.dumps({'teapot': 'ok'}))
+        code, out = self.run_cmd('plan-sheets', '--batch', 'words-b', '--source', 'words-top')
+        self.assertEqual(code, 0, out)
+        plan = json.loads((paths.LISTS / 'sheets/words-b.json').read_text())
+        self.assertEqual(plan['source'], 'words-top')
+        self.assertEqual([s['ids'] for s in plan['sheets']], [['horses', 'acorn']])
+        self.assertEqual(plan['sheets'][0]['descs'], ['a toy horse', 'an acorn'])
+        self.assertEqual(plan['entries']['horses']['kind'], 'word')
+        self.assertEqual(plan['entries']['horses']['step'], 'R19')
+        self.assertIn('1 sheets, 2 pictures, 0 svg, 1 already ok', out)
+
+    def test_plan_sheets_names_a_missing_or_broken_list(self):
+        with self.assertRaises(SystemExit) as e:
+            self.run_cmd('plan-sheets', '--batch', 'b', '--source', 'nothing-here')
+        self.assertIn('no list', str(e.exception))
+        (paths.LISTS / 'broken.txt').write_text('teapot a teapot\n')
+        with self.assertRaises(SystemExit) as e:
+            self.run_cmd('plan-sheets', '--batch', 'b', '--source', 'broken')
+        self.assertIn('broken.txt line 1', str(e.exception))
+
+    def lumi_pictures(self, open_mouth=True, drift=False):
+        """A queen in a moon on white, and the same picture with an open mouth (or a moved one when drift)."""
+        paths.RAW.mkdir(parents=True, exist_ok=True)
+        closed = Image.new('RGB', (1024, 1024), (255, 255, 255))
+        d = ImageDraw.Draw(closed)
+        d.ellipse([212, 112, 812, 912], fill=(250, 236, 170), outline=(200, 160, 60), width=8)
+        d.ellipse([362, 262, 662, 662], fill=(246, 240, 252), outline=(170, 150, 200), width=6)
+        d.arc([462, 520, 562, 580], 20, 160, fill=(120, 60, 80), width=6)
+        closed.save(paths.RAW / 'lumi.png')
+        if not open_mouth:
+            return
+        opened = closed.copy()
+        if drift:
+            opened = Image.new('RGB', (1024, 1024), (255, 255, 255))
+            ImageDraw.Draw(opened).ellipse([100, 300, 900, 1000], fill=(200, 230, 250), outline=(60, 90, 160), width=8)
+        else:
+            ImageDraw.Draw(opened).ellipse([487, 545, 537, 580], fill=(138, 58, 85))
+        opened.save(paths.RAW / 'lumi-mouth.png')
+
+    def test_lumi_face_and_mouth_reach_the_manifest_after_review(self):
+        self.lumi_pictures()
+        code, out = self.run_cmd('lumi')
+        self.assertEqual(code, 0, out)
+        lumi = json.loads((paths.META / 'lumi.json').read_text())['lumi']
+        self.assertEqual((lumi['face'], lumi['mouth']), ('lumi/lumi.webp', 'lumi/lumi-mouth.webp'))
+        self.assertEqual(max(lumi['w'], lumi['h']), 600)
+        with Image.open(paths.PUBLIC_ART / lumi['face']) as face:
+            self.assertEqual(face.size, (lumi['w'], lumi['h']))
+            self.assertEqual(face.getpixel((0, 0))[3], 0)  # cut out of the white background
+        x, y, w, h = lumi['mouthBox']
+        with Image.open(paths.PUBLIC_ART / lumi['mouth']) as mouth:
+            self.assertEqual(mouth.size, (w, h))
+        self.assertTrue(0.35 * lumi['w'] < x + w / 2 < 0.65 * lumi['w'])
+        self.assertTrue(0.5 * lumi['h'] < y + h / 2 < 0.75 * lumi['h'])
+        self.assertLess(w, lumi['w'] * 0.25)
+        self.assertTrue((paths.SOURCES / 'lumi.webp').exists())
+        self.assertTrue((paths.SOURCES / 'lumi-mouth.webp').exists())
+        self.assertTrue((paths.WORK / 'contact/lumi.png').exists())
+        self.assertEqual(self.verdicts('lumi'), {'lumi': 'pending'})
+
+        self.run_cmd('manifest')
+        self.assertIsNone(json.loads((paths.PUBLIC_ART / 'manifest.json').read_text())['lumi'])
+        self.set_verdicts('lumi', lumi='ok')
+        code, out = self.run_cmd('manifest')
+        self.assertEqual(code, 0, out)
+        self.assertEqual(json.loads((paths.PUBLIC_ART / 'manifest.json').read_text())['lumi'], lumi)
+
+    def test_lumi_draws_the_mouth_when_the_open_picture_drifted(self):
+        self.lumi_pictures(drift=True)
+        code, out = self.run_cmd('lumi')
+        self.assertEqual(code, 1)
+        self.assertIn('"lumi": {"mouth": [x, y]}', out)
+        (paths.LISTS / 'anchor-overrides.json').write_text(json.dumps({'lumi': {'mouth': [300, 400]}}))
+        code, out = self.run_cmd('lumi')
+        self.assertEqual(code, 0, out)
+        self.assertIn('drawn mouth', out)
+        lumi = json.loads((paths.META / 'lumi.json').read_text())['lumi']
+        x, y, w, h = lumi['mouthBox']
+        self.assertAlmostEqual(x + w / 2, 300, delta=2)
+        self.assertAlmostEqual(y + h / 2, 400, delta=2)
+        self.assertAlmostEqual(w, 0.09 * lumi['w'] + 4, delta=3)
+        with Image.open(paths.PUBLIC_ART / lumi['mouth']) as mouth:
+            px = mouth.convert('RGBA').getpixel((w // 2, h // 2))
+        self.assertEqual(px, (0x8a, 0x3a, 0x55, 255))
+
+    def test_lumi_without_an_open_picture_uses_the_mouth_point(self):
+        self.lumi_pictures(open_mouth=False)
+        (paths.LISTS / 'anchor-overrides.json').write_text(json.dumps({'lumi': {'mouth': [300, 360]}}))
+        code, out = self.run_cmd('lumi')
+        self.assertEqual(code, 0, out)
+        self.assertIn('drawn mouth', out)
+
+    def test_lumi_needs_a_picture(self):
+        code, out = self.run_cmd('lumi')
+        self.assertEqual(code, 1)
+        self.assertIn('no Lumi picture', out)
+
     def test_backgrounds_use_early_picture_without_codex(self):
         (paths.LISTS / 'backgrounds.txt').write_text('bg-meadow | A | meadow | a meadow\nbg-salon | C | salon | x\n')
         Image.new('RGB', (1672, 941), (140, 200, 110)).save(paths.SRC / 'bg-meadow.png')

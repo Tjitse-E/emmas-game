@@ -78,6 +78,13 @@ class RigTest(unittest.TestCase):
                                  overrides={'moon.baby': {'neck': [10, 20]}})
             self.assertEqual(e['anchors']['neck'], [10, 20])
 
+    def test_rejects_a_picture_whose_colours_drifted(self):
+        from PIL import ImageDraw
+        im = Image.new('RGBA', (300, 300), (0, 0, 0, 0))
+        ImageDraw.Draw(im).ellipse([20, 20, 280, 280], fill=(120, 200, 90, 255))  # a green blob, no lilac body
+        with tempfile.TemporaryDirectory() as d, self.assertRaises(rig.DriftError):
+            rig.build_sprite(im, 'nestling', 'baby', 'bronze', Path(d) / 'unicorns')
+
 
 if __name__ == '__main__':
     unittest.main()

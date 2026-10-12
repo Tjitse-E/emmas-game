@@ -74,11 +74,14 @@ def load_list(source: str) -> list[Entry]:
     if not p.exists():
         raise SystemExit(f'no list {p}')
     out = []
-    for ln in p.read_text().splitlines():
+    for no, ln in enumerate(p.read_text().splitlines(), 1):
         ln = ln.strip()
         if not ln or ln.startswith('#'):
             continue
-        iid, step, desc = [s.strip() for s in ln.split('|', 2)]
+        parts = [s.strip() for s in ln.split('|', 2)]
+        if len(parts) != 3 or not parts[2]:
+            raise SystemExit(f'{p.name} line {no}: write it as "id | step-or-kind | description"')
+        iid, step, desc = parts
         if not paths.is_valid_id(iid):
             raise SystemExit(f'bad id {iid} in {p.name}')
         word = paths.is_word_id(iid)
@@ -661,6 +664,103 @@ def cmd_derive(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- Queen Lumi (Task A11a)
+
+LUMI_LONG = 600
+LUMI_MOUTH = (0x8a, 0x3a, 0x55, 255)
+
+
+def fit_pair(closed: Image.Image, open_: Image.Image | None, long_side: int,
+             pad: float = 0.04) -> tuple[Image.Image, Image.Image | None]:
+    """Fit the cut-out closed picture to `long_side` as `fit_long` does, and the open one with the same crop and
+    scale, so the mouth overlay lines up with the face."""
+    box = closed.getchannel('A').getbbox()
+    m = round(long_side * pad)
+    bw, bh = box[2] - box[0], box[3] - box[1]
+    k = (long_side - 2 * m) / max(bw, bh)
+    ow, oh = round(bw * k), round(bh * k)
+
+    def place(im: Image.Image) -> Image.Image:
+        out = Image.new('RGBA', (ow + 2 * m, oh + 2 * m), (0, 0, 0, 0))
+        out.alpha_composite(im.crop(box).resize((ow, oh), Image.LANCZOS), (m, m))
+        return out
+    return place(closed), (place(open_) if open_ is not None else None)
+
+
+def drawn_mouth(face_size: tuple[int, int], point) -> tuple[Image.Image, tuple[int, int, int, int]]:
+    """A dark rose ellipse 9 percent of the face wide and 4 percent high, centred on `point`, with a 2 px edge."""
+    w, h = face_size
+    ew, eh = max(4, round(0.09 * w)), max(2, round(0.04 * h))
+    bw, bh = ew + 4, eh + 4
+    big = Image.new('RGBA', (bw * 4, bh * 4), (0, 0, 0, 0))
+    ImageDraw.Draw(big).ellipse([8, 8, 8 + ew * 4 - 1, 8 + eh * 4 - 1], fill=LUMI_MOUTH)
+    overlay = big.resize((bw, bh), Image.LANCZOS)
+    x = min(max(0, round(point[0] - bw / 2)), w - bw)
+    y = min(max(0, round(point[1] - bh / 2)), h - bh)
+    return overlay, (x, y, bw, bh)
+
+
+def lumi_contact(face: Image.Image, mouth: Image.Image, box: tuple[int, int, int, int]) -> Path:
+    """Lumi with her mouth closed and open side by side on white, the open one with the mouth box drawn."""
+    w, h = face.size
+    sheet = Image.new('RGBA', (w * 2, h), (255, 255, 255, 255))
+    sheet.alpha_composite(face, (0, 0))
+    talking = face.copy()
+    talking.alpha_composite(mouth, box[:2])
+    sheet.alpha_composite(talking, (w, 0))
+    x, y, bw, bh = box
+    ImageDraw.Draw(sheet).rectangle([w + x - 1, y - 1, w + x + bw, y + bh], outline=(40, 120, 220, 255), width=1)
+    out = contact_dir() / 'lumi.png'
+    out.parent.mkdir(parents=True, exist_ok=True)
+    sheet.save(out)
+    return out
+
+
+def cmd_lumi(args) -> int:
+    closed_src = Path(args.source) if args.source else paths.RAW / 'lumi.png'
+    open_src = Path(args.mouth) if args.mouth else paths.RAW / 'lumi-mouth.png'
+    if not closed_src.exists():
+        print(f'no Lumi picture at {closed_src}: generate it with prompts.lumi_prompt first')
+        return 1
+    original = Image.open(closed_src).convert('RGB')
+    closed = imageops.unmatte_white(original)
+    open_rgba = None
+    if open_src.exists():
+        open_original = Image.open(open_src).convert('RGB')
+        # The open picture takes the closed one's cut-out, so only a change inside the face can show.
+        open_rgba = open_original.resize(original.size, Image.LANCZOS).convert('RGBA')
+        open_rgba.putalpha(closed.getchannel('A'))
+    face, open_fit = fit_pair(closed, open_rgba, LUMI_LONG)
+    found = derive.lumi_mouth(face, open_fit) if open_fit is not None else None
+    if found is not None:
+        mouth, box = found
+        how = 'mouth from the open picture'
+    else:
+        point = _read_json(paths.LISTS / 'anchor-overrides.json', {}).get('lumi', {}).get('mouth')
+        if point is None:
+            why = 'the open picture moved more than the mouth' if open_fit is not None else f'no {open_src.name}'
+            print(f'lumi: {why}. Look at the face and write its mouth point (in the {face.width} x {face.height} '
+                  'face) into art-src/lists/anchor-overrides.json as "lumi": {"mouth": [x, y]}, then run lumi again')
+            return 1
+        mouth, box = drawn_mouth(face.size, point)
+        how = f'drawn mouth at {point[0]}, {point[1]}'
+    out = paths.PUBLIC_ART / 'lumi'
+    imageops.save_webp(face, out / 'lumi.webp', quality=90)
+    imageops.save_webp(mouth, out / 'lumi-mouth.webp', quality=90)
+    entry = {'face': 'lumi/lumi.webp', 'mouth': 'lumi/lumi-mouth.webp', 'w': face.width, 'h': face.height,
+             'mouthBox': list(box)}
+    _write_json(paths.META / 'lumi.json', {'lumi': entry})
+    imageops.save_webp(original.convert('RGBA'), paths.SOURCES / 'lumi.webp', lossless=True)
+    if open_src.exists():
+        imageops.save_webp(Image.open(open_src).convert('RGBA'), paths.SOURCES / 'lumi-mouth.webp', lossless=True)
+    sheet = lumi_contact(face, mouth, box)
+    # A new picture is looked at again, even when an older one was ok.
+    _write_json(paths.REVIEW / 'lumi.json', {**review.load('lumi', paths.REVIEW), 'lumi': 'pending'})
+    print(f'lumi: {face.width} x {face.height}, {how}, mouth box {list(box)}')
+    print(f'look at {sheet.relative_to(paths.GAME) if sheet.is_relative_to(paths.GAME) else sheet}')
+    return 0
+
+
 def cmd_placeholder(args) -> int:
     out = paths.PUBLIC_ART / 'placeholder'
     m = placeholder.build(out)
@@ -710,6 +810,9 @@ def parser() -> argparse.ArgumentParser:
     s.add_argument('--stage', required=True, choices=('baby', 'foal'))
     s.add_argument('--source', help='picture to rig (default: the style reference for moon baby, else art-src/raw/<breed>-<stage>.png)')
     add('derive', cmd_derive)
+    s = add('lumi', cmd_lumi)
+    s.add_argument('--source', help='Lumi with her mouth closed (default: art-src/raw/lumi.png)')
+    s.add_argument('--mouth', help='the same picture with her mouth open (default: art-src/raw/lumi-mouth.png)')
     add('placeholder', cmd_placeholder)
     s = add('manifest', cmd_manifest)
     s.add_argument('--strict', action='store_true')
