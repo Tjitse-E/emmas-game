@@ -39,7 +39,27 @@ All paths below are relative to `games/moon-meadow-home/` unless they start with
 - C8: pairing uses the sync client `sync` exported by `src/game.svelte.ts` (integration Task I-5): `sync.pair(code)`, `sync.status()`, `sync.unpair()`. Register the test hook `pairForTest(code)`.
 - Decisions D6 and D14 are replaced by R27 and R8. The others stand.
 
-**Batches.** A1: A2, A8 (pure part). A2: A1, A5, A6, A9 (logic). A3: A12 (logic), A14. A4: A1b, A3, A4, A16. A5: A10, A11. A6: A7, A13, A15, A17. B1: B1, B2, B3. B2: B4, B5, B6, B7, B8, B9. B3: B10. C1: C1, C3, C4, C5, C6. C2: C2. C3: C8, C9. Lane port 8773.
+**Batches.** A1: A1a, A2, A8 (pure part). A2: A1, A5, A6, A9 (logic). A3: A12 (logic), A14. A4: A1b, A3, A4, A16. A5: A15, A10, A11. A6: A7, A13, A17. B1: B1, B2, B3. B2: B4, B5, B6, B7, B8, B9. B3: B10. C1: C3, C4, C5, C6. C2: C1, C2. C3: C8, C9. Lane port 8773. Work in `.worktrees/places` (R42).
+
+### Validation round 2 (binding)
+
+Decisions R34 to R64 in master section 2.1. Where this block and a task below differ, this block wins.
+
+- Lane order (rule 3.1). New Task A1a (batch A1): `src/core/places/types.ts` with the value types only (`AnyStrand`, `Strand`, `Result`, `WordView`, `ServedItem`, `ItemResult`, and `Rng` re-exported from `src/core/rng.ts`); no import of core's events. A2 and A8 import from it. Task A1 (batch A2) adds the state, fold and translator on core's events, imports `ActionCtx` and `Action` as types from `src/types/contracts.ts` (R41), and creates `src/places/scenes.ts` (an empty scene map) and `src/places/hook.ts` (an empty hook extension), so A7, A10, A11 and A15 only add to them.
+- Task A1 (contracts C2). The code below still shows its own `GameEvent`, `{ item, result }` items and `content/places/release.json`. Rewrite it to contracts C2 before anything else in the task, and replace every test assertion that pins an old field. A place learning result is the action `place/learn { payload, baby }`, whose `payload` comes from `learnResultPayload(pick, outcome)` in A1b; the translator returns `[{ ...payload, baby }]`. `place/idle` carries `level` (changed in place). `place/setting` uses the contract keys (R39). `place/favourite { baby, on }` returns `favourite.set` (R57). `PLACE_SAMPLE_ACTIONS` holds one sample per action type. Write `tests/places/contract.test.ts` first, the same shape as heartbeat's lane test (heartbeat validation block), over `PLACE_SAMPLE_ACTIONS`, and make it pass in batch A2. Its ctx is a hand-built `ActionCtx` with `state.places = initPlaces()`, two babies `b1` and `b2` in `world.herd` and `world.byId`, `content` from learning's mini fixture and `now: 2000`; master Task I-1 repeats the check with a fully folded ctx. The `place/learn` sample carries a literal payload in the shape `learnResultPayload` returns.
+- A1b (batch A4): wires `learnResultPayload(pick, outcome)` into every place result.
+- A3 (R51): `createMoment` checks `audio.hasClip(goal)` at start; without the clip the moment opens at the focused-hint level, with the moonbeam on the target and one ghost-hand demo straight away. `Moment` adds `target(): string | null` (the aria-label of the right answer) and `hookWrong(kind?)`.
+- A6: export `openingDefs` (the queue ids) for master Task I-4. `moon-hint`, `welcome` and `moving-day` are not queue openings.
+- A7 (R54, R57, R63). Arrival goal: on the first meadow arrival of a visit with `visitIndex > 1`, an opening that is due speaks first; then the herd runs to the fence, `lumi-hello-back`, `g-egg-waiting`, the moonbeam on the nest, and the hint ladder (idle repeat of `g-egg-waiting`, then a ghost tap on the nest). Once per visit. Pure rule `arrivalLines({ visitIndex, arrivedThisVisit, openingDue })` with a test. Favourites stand first among the 12 meadow babies. The v2 gifts in `state.cosmetics` stand in the meadow as decorations. Mount `<PinGate />` here (moved from A15). Lite unicorns: measure frame times over the first 3 seconds with `requestAnimationFrame`; when the median is above 24 ms, set `lite` on every `Unicorn` and keep the choice in `localStorage` (`mmh-lite`, read and written in try/catch).
+- A12 and A13 (R38, replaces D9). Each Building Day part serves its strand's current item plus one review item (two moments per part). When a step of that strand passed in this visit, the part serves that step's items. The sign logs each slot under the step of its own grapheme as `review` (passed or placed step) or `mixed`; a slot whose step is neither passed nor placed is given, not checked; never `current`. Tests in `tests/places/building.test.ts`: a part yields one current and one review request; after `step.passed` S10 in this visit, the spelling part requests S10's items; the sign's results carry no `current` slot.
+- A15 (batch A5, R56). Adds: a Learning section from learning's `learnerReport` (per strand: current step and level, placing and its range, ceiling reached, secure, side, school and reopened steps, and the week's Dutch pairs with counts); the quarantine count and list from `game.data.quarantine()`; the share of openings that came from jewels (`report.ts`); in Overrides, a profile switch (`fresh` or `year1`) through `game/override` `{ op: 'profile' }`; in Backup, "import v2 from this browser again" (`readV2Local()` then `importText`). `PinGate` takes optional `onopen` and `onclose` callbacks; master Task I-2 mounts it on Welcome and Moving Day. After a restore, call `wakeVisit()` from `src/game.svelte.ts`. Test hooks for the eviction flow: `parentExport` (the export text), `parentUnlock` (enters the PIN), `parentImport(text)`, `hatchedSinceRestore` (count of `egg.hatched` after the last import). `parent.test.ts` adds a test per section. Settings keys are the contract keys (changed in place).
+- A16 and later (R53): no `name-cousin-*` lines (removed in place); cousins use the name bank's clips. Wave B and C lines go to `content/lines/places.json` in B4 to B9 and C1 to C6; lines for the `area-stable-yard` and `area-village-lane` packs go to `content/lines/places-stable-yard.json` and `places-village-lane.json` with that `pack`.
+- A17 (master 5.1 check 11): `pond.flow.sh` plays, at levels 1, 2 and 3, a basket wish with `wrong("one-for-many")` and `wrong("many-for-one")`, and at level 3 the two count mistakes (`count-low`, `count-high`). `label.flow.sh` plays the S10 wrong ending, the bare word on a full jar and the ending on a jar of one. Flow files are `flows/places/<name>.flow.sh` (renamed in place); `flows/places/run.sh` and `y1.sh` are not written; run with platform's `flows/run.sh`.
+- B1 (R58): decorations repeat in rounds. After the 12 plots are used, the same 12 come back in new colours (`<id>-r2`, `-r3`, ...). `jewelPlot` never returns null. Test: 30 jewels in a row all get a plot.
+- B9 (R57): a favourite heart on the baby page dispatches `place/favourite`.
+- C1 moves to batch C2 (it reads learning's Salon phrases from C1). Cousins are Dot and Fen; Bex is a reserve cousin behind a novelty. Card phrase words keep their heart marks (R36).
+- C5 (R37): the titles flow reads `tools/audio/numbers-gap.json` when it exists and accepts exactly those missing `num-*` ids.
+- C8 (R39): `SETTING_KEYS` and `settingsView` use `parent-pin`, `birthday` (`MM-DD`) and `skip-wish-after-three` (changed in place). `pairForTest` is registered by master Task I-6, not here.
 
 ## Global Constraints
 
@@ -226,7 +246,7 @@ Every file below is owned by this workstream. No other workstream edits them. Fi
 | `content/places/pin-sets.json` | Pin sets and moment pins. |
 | `content/places/dressing.json` | Crowns, capes, garlands. |
 | `content/places/notes.json` | The 13 notes to Lumi. |
-| `content/places/cousins.json` | Dot, Fen and Bex. |
+| `content/places/cousins.json` | Dot and Fen; Bex is a reserve cousin behind a novelty. Clips are the name bank's `nameId(name, '!')`. |
 | `content/places/salon.json` | Salon words, phrases, "and" pairs, bead colours. |
 | `content/places/year1.json` | Asking sets and two-state objects. |
 | `content/places/jewels.json` | Jewel faces for steps whose first item is not a grapheme, and number jewel stones. |
@@ -264,7 +284,7 @@ These are assumptions about other workstreams. Each is the exact shape this plan
 | TS imports | `.ts` extensions in relative imports (Node type stripping, as core's `events.ts`). No enums. `allowImportingTsExtensions` on. | Skeleton tsconfig. |
 | Visit time zone | `visit.start.tz` is the offset in minutes east of UTC (`-new Date().getTimezoneOffset()`), so Cyprus in winter is `120`. | Core events. |
 | Ladder item ids | R19 and S10 items are `-s`, `-es` and (R19 only) `none`. S18: `card-order`. S21: `capital-start`, `mark-.`. S23: `mark-?`, `mark-!`, `and`. S08 and S17: the tricky words as written (`I` with a capital). S19: `pair-<letter>` and `order-<letter>`. R33: `mark-?`, `mark-.`, `mark-!`. R37: `un` and `base`. M08 carriers: `AB`, `ABB`, `ABC`, `AAB`. M03 carrier: `fewest`. | Content workstream ladder files. |
-| Settings read by others | The heartbeat reads `world.places.settings.skipWishAfterThree` (spec 2.2, off by default). | Heartbeat. |
+| Settings read by others | The heartbeat reads `game.world.settings.skipWishAfterThree`, which the world view builds from the `skip-wish-after-three` setting (spec 2.2, off by default). | Heartbeat. |
 | Local save server | `node server/admin.ts pair --family test` prints a six-digit pairing code (used by the Wave C parent flow). | Sync workstream. |
 
 ### From heartbeat (nest, hatch, naming, wishes, stalls, goodnight, Moving Day)
@@ -605,10 +625,10 @@ describe('place fold', () => {
   it('remembers the first bath only and folds settings', () => {
     const s = foldAll([
       ev('care.done', { baby: 'a', care: 'bath' }), ev('care.done', { baby: 'b', care: 'bath' }),
-      ev('care.done', { baby: 'c', care: 'brush' }), ev('settings.set', { key: 'parentPin', value: '1357' }),
+      ev('care.done', { baby: 'c', care: 'brush' }), ev('settings.set', { key: 'parent-pin', value: '1357' }),
     ]);
     expect(s.firstBath).toBe('a');
-    expect(s.settings.parentPin).toBe('1357');
+    expect(s.settings['parent-pin']).toBe('1357');
   });
 
   it('ignores events it does not know', () => {
@@ -839,7 +859,7 @@ describe('place actions', () => {
     const cases: [Parameters<typeof applyPlaceAction>[0], string][] = [
       [{ type: 'place/enter', place: 'bath-pond' }, 'place.enter'],
       [{ type: 'place/leave', place: 'bath-pond' }, 'place.leave'],
-      [{ type: 'place/idle', strand: 'r', step: 'R19', place: 'bath-pond' }, 'learn.idle'],
+      [{ type: 'place/idle', strand: 'r', step: 'R19', place: 'bath-pond', level: 2 }, 'learn.idle'],
       [{ type: 'place/jar', jar: 'j1', word: 'foxes', plural: true, count: 3, picture: 'fox', baby: 'a' }, 'jar.labelled'],
       [{ type: 'place/care', baby: 'a', care: 'bath' }, 'care.done'],
       [{ type: 'place/part', plot: 'row-2', part: 'walls' }, 'building.part'],
@@ -848,7 +868,7 @@ describe('place actions', () => {
       [{ type: 'place/pin', baby: 'a', pin: 'rose', source: 'post', key: 'post:v1:0' }, 'pin.given'],
       [{ type: 'place/photo', place: 'salon', cousin: 'dot', babies: ['a'] }, 'photo.taken'],
       [{ type: 'place/ribbon', baby: 'a', on: true }, 'ribbon.set'],
-      [{ type: 'place/setting', key: 'parentPin', value: '1357' }, 'settings.set'],
+      [{ type: 'place/setting', key: 'parent-pin', value: '1357' }, 'settings.set'],
       [{ type: 'place/override', strand: 's', step: 'S10', as: 'placed' }, 'learn.override'],
       [{ type: 'place/exclude', device: 'abcd1234' }, 'exclude'],
       [{ type: 'place/title', title: 'nest-keeper' }, 'title.given'],
@@ -879,7 +899,7 @@ export type PlaceAction =
   | { type: 'place/enter'; place: PlaceId }
   | { type: 'place/leave'; place: PlaceId }
   | { type: 'place/result'; result: LearnResultPayload }
-  | { type: 'place/idle'; strand: Strand | 'name'; step: StepId; place: PlaceId }
+  | { type: 'place/idle'; strand: Strand | 'name'; step: StepId; place: PlaceId; level: 1 | 2 }
   | { type: 'place/jar'; jar: string; word: string; plural: boolean; count: number; picture: string; baby: string | null }
   | { type: 'place/care'; baby: string; care: 'bath' }
   | { type: 'place/part'; plot: PlotId; part: string }
@@ -907,7 +927,7 @@ export function applyPlaceAction(a: PlaceAction, ctx: { world: { places: PlacesS
     case 'place/enter': return [make('place.enter', { place: a.place })];
     case 'place/leave': return [make('place.leave', { place: a.place })];
     case 'place/result': return [make('learn.result', { ...a.result })];
-    case 'place/idle': return [make('learn.idle', { strand: a.strand, step: a.step, place: a.place })];
+    case 'place/idle': return [make('learn.idle', { strand: a.strand, step: a.step, place: a.place, level: a.level })];
     case 'place/jar': return [make('jar.labelled', { jar: a.jar, word: a.word, plural: a.plural, count: a.count, picture: a.picture, baby: a.baby })];
     case 'place/care': return [make('care.done', { baby: a.baby, care: a.care })];
     case 'place/part': return s.buildings[a.plot]?.parts.includes(a.part) ? [] : [make('building.part', { plot: a.plot, part: a.part })];
@@ -1553,7 +1573,7 @@ describe('moment controller', () => {
     h.advance(10_000);
     h.advance(10_000);
     expect(h.log).toEqual(['say:pd-wish-goal', 'say:pd-wish-goal', 'focused']);
-    expect(h.actions).toEqual([{ type: 'place/idle', strand: 'r', step: 'R19', place: 'bath-pond' }]);
+    expect(h.actions).toEqual([{ type: 'place/idle', strand: 'r', step: 'R19', place: 'bath-pond', level: 2 }]);
   });
 
   it('restarts the idle timer on a touch and stops running speech', async () => {
@@ -1653,7 +1673,7 @@ export function createMoment(o: MomentOpts, d: MomentDeps): Moment {
       if (f.kind === 'repeat-goal') void d.say(o.goal);
       if (f.kind === 'focused') void o.focused();
       if (f.kind === 'ghost-answer') void o.ghost();
-      if (f.kind === 'idle-flag') d.dispatch({ type: 'place/idle', strand: o.strand, step: o.step, place: o.place });
+      if (f.kind === 'idle-flag') d.dispatch({ type: 'place/idle', strand: o.strand, step: o.step, place: o.place, level: 2 });
     }
   };
   const arm = () => {
@@ -4254,7 +4274,7 @@ describe('parent corner helpers', () => {
   it('uses 2468 until a PIN is set (decision D18)', () => {
     expect(DEFAULT_PIN).toBe('2468');
     expect(pinOf({})).toBe('2468');
-    expect(pinOf({ parentPin: '1357' })).toBe('1357');
+    expect(pinOf({ 'parent-pin': '1357' })).toBe('1357');
     expect(checkPin('2468', {})).toBe(true);
     expect(checkPin('2469', {})).toBe(false);
   });
@@ -4317,7 +4337,10 @@ import type { GameEvent, LearnerView, Rng, StepId, StepView, Strand } from '../c
 export const DEFAULT_PIN = '2468';
 export const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
 
-export const pinOf = (settings: Record<string, unknown>): string => (typeof settings.parentPin === 'string' && /^\d{4}$/.test(settings.parentPin) ? settings.parentPin : DEFAULT_PIN);
+export const pinOf = (settings: Record<string, unknown>): string => {
+  const pin = settings['parent-pin'];   // contracts SettingKey
+  return typeof pin === 'string' && /^\d{4}$/.test(pin) ? pin : DEFAULT_PIN;
+};
 export const checkPin = (entered: string, settings: Record<string, unknown>): boolean => entered === pinOf(settings);
 
 export function keypadOrder(rng: Rng): number[] {
@@ -4624,9 +4647,6 @@ All place lines for the three waves go in one file now, so the audio workstream 
     {"id": "sl-beads", "speaker": "narrator", "text": "Finish the bead row."},
     {"id": "sl-photo", "speaker": "narrator", "text": "Smile! A photo for the album."},
     {"id": "sl-free", "speaker": "narrator", "text": "Now style your own babies!"},
-    {"id": "name-cousin-dot", "speaker": "narrator", "text": "Dot!"},
-    {"id": "name-cousin-fen", "speaker": "narrator", "text": "Fen!"},
-    {"id": "name-cousin-bex", "speaker": "narrator", "text": "Bex!"},
     {"id": "sl-ph-big-red-bow", "speaker": "narrator", "text": "A big red bow."},
     {"id": "sl-ph-tiny-red-bow", "speaker": "narrator", "text": "A tiny red bow."},
     {"id": "sl-ph-big-pink-bow", "speaker": "narrator", "text": "A big pink bow."},
@@ -4812,7 +4832,7 @@ git commit -m "Add every spoken line for the meadow places"
 ### Task A17: Wave A flows and acceptance
 
 **Files:**
-- Create: `flows/places/lib.sh`, `flows/places/meadow.sh`, `flows/places/label.sh`, `flows/places/pond.sh`, `flows/places/building.sh`, `flows/places/parent.sh`, `flows/places/run.sh`
+- Create: `flows/places/lib.sh`, `flows/places/meadow.flow.sh`, `flows/places/label.flow.sh`, `flows/places/pond.flow.sh`, `flows/places/building.flow.sh`, `flows/places/parent.flow.sh`
 
 **Interfaces:**
 - Consumes: the hook from Tasks A7, A10, A11, A13, A15 and core's hook (`seed`, `fast`, `mute`, `play`, `herd`, `newVisit`, `setStep`, `answer`, `wrong`, `idle`, `jump`, `errors`, `setScaffold`). This task adds two hook needs to "Contracts I need": `__game.setScaffold(strand, step, level)` and `__game.errors(): string[]` (console errors and uncaught errors captured in the test build).
@@ -4886,7 +4906,7 @@ flow_close() { playwright-cli -s="$1" close >/dev/null || true; }
 
 - [ ] **Step 2: Write the Wave A flows**
 
-`flows/places/meadow.sh`:
+`flows/places/meadow.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -4905,7 +4925,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/label.sh`:
+`flows/places/label.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -4932,7 +4952,7 @@ flow_close "$S"
 
 The wrong build in this flow uses empty own slots, which `checkLabel` reports as a `stem` mistake at levels 2 and 3 and an ending mistake at level 1; either way the moment records a miss, and `__game.answer()` then finishes it through the active moment.
 
-`flows/places/pond.sh`:
+`flows/places/pond.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -4955,7 +4975,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/building.sh`:
+`flows/places/building.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -4984,7 +5004,7 @@ flow_close "$S"
 
 The row comes in visit 3, because the hammer bubble needs the bubbles opening, which visit 3 announces. The herd is then 12 (six, one, the pond's circle baby and four), so row 2 is earned.
 
-`flows/places/parent.sh`:
+`flows/places/parent.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -6627,7 +6647,7 @@ git commit -m "Add the Home Book with herd, baby pages, pins, breeds, album, hom
 ### Task B10: Wave B flows
 
 **Files:**
-- Create: `flows/places/jewel.sh`, `flows/places/queue.sh`, `flows/places/dressing.sh`, `flows/places/post.sh`, `flows/places/notes.sh`, `flows/places/book.sh`
+- Create: `flows/places/jewel.flow.sh`, `flows/places/queue.flow.sh`, `flows/places/dressing.flow.sh`, `flows/places/post.flow.sh`, `flows/places/notes.flow.sh`, `flows/places/book.flow.sh`
 
 **Interfaces:**
 - Consumes: hooks from Tasks B4, B5, B8, B9; core hook `pass(strand, step)` (emits a real `step.passed` in the test build; added to "Contracts I need"); hook `openings.force(id)` (test build only: dispatches `place/announce`).
@@ -6635,7 +6655,7 @@ git commit -m "Add the Home Book with herd, baby pages, pins, breeds, album, hom
 
 - [ ] **Step 1: Write the flows**
 
-`flows/places/jewel.sh`:
+`flows/places/jewel.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -6658,7 +6678,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/queue.sh` (the spec's "opening queue over 6 simulated visits"):
+`flows/places/queue.flow.sh` (the spec's "opening queue over 6 simulated visits"):
 
 ```sh
 #!/bin/sh
@@ -6676,7 +6696,7 @@ flow_close "$S"
 
 `two-egg` is announced by the heartbeat at the nest; if the heartbeat has not shown the two-egg choice in visit 4 of the flow, `dressing` waits a visit and the expectation fails. In that case the flow is right and the heartbeat must call `openingDue` on its first egg of the visit.
 
-`flows/places/dressing.sh`:
+`flows/places/dressing.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -6692,7 +6712,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/post.sh`:
+`flows/places/post.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -6711,7 +6731,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/notes.sh`:
+`flows/places/notes.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -6729,7 +6749,7 @@ flow_close "$S"
 
 `notes.spell(gems)` maps the letters onto the word's graphemes when they join (for example `s`, `h`, `e` onto `sh`, `e`).
 
-`flows/places/book.sh`:
+`flows/places/book.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -6794,9 +6814,9 @@ Starts after Wave B passes. Item 25 (save server, pairing and sync) belongs to t
 ```json
 {
   "cousins": [
-    { "id": "dot", "name": "Dot", "clip": "name-cousin-dot", "colours": { "body": "#f9d3e3", "mane": "#9cc8f2", "mane2": "#ffffff" }, "release": "1.2" },
-    { "id": "fen", "name": "Fen", "clip": "name-cousin-fen", "colours": { "body": "#cdeedd", "mane": "#c3a6ef", "mane2": "#ffffff" }, "release": "1.2" },
-    { "id": "bex", "name": "Bex", "clip": "name-cousin-bex", "colours": { "body": "#fff1c9", "mane": "#f5a3c7", "mane2": "#ffffff" }, "release": "1.2", "novelty": "cousin-bex" }
+    { "id": "dot", "name": "Dot", "clip": "name-dot", "colours": { "body": "#f9d3e3", "mane": "#9cc8f2", "mane2": "#ffffff" }, "release": "1.2" },
+    { "id": "fen", "name": "Fen", "clip": "name-fen", "colours": { "body": "#cdeedd", "mane": "#c3a6ef", "mane2": "#ffffff" }, "release": "1.2" },
+    { "id": "bex", "name": "Bex", "clip": "name-bex", "colours": { "body": "#fff1c9", "mane": "#f5a3c7", "mane2": "#ffffff" }, "release": "1.2", "novelty": "cousin-bex" }
   ]
 }
 ```
@@ -7881,7 +7901,7 @@ git commit -m "Add Year 1 meadow wishes: asking bubbles and two-state wishes"
 - Consumes: `idleFlags` (A14); sync `pair`, `syncNow`, `status`; save `storageStatus`.
 - Produces:
   - `missingClips(ev: GameEvent[]): { id: string; count: number; last: number }[]`
-  - `SETTING_KEYS = ['parentPin', 'birthday', 'skipWishAfterThree'] as const`
+  - `SETTING_KEYS = ['parent-pin', 'birthday', 'skip-wish-after-three'] as const` (contracts `SettingKey`)
   - `settingsView(settings: Record<string, unknown>): { parentPin: string; birthday: string | null; skipWishAfterThree: boolean }`
   - Hook `parent` gains `{ setting(key: string, value: unknown): void; pair(code: string): Promise<string>; missing(): string[] }`
 
@@ -7900,8 +7920,8 @@ describe('parent corner, second part', () => {
 
   it('reads settings with safe defaults', () => {
     expect(settingsView({})).toEqual({ parentPin: '2468', birthday: null, skipWishAfterThree: false });
-    expect(settingsView({ parentPin: '1357', birthday: '2020-05-14', skipWishAfterThree: true })).toEqual({ parentPin: '1357', birthday: '2020-05-14', skipWishAfterThree: true });
-    expect(settingsView({ parentPin: 'abc', birthday: 'soon' })).toEqual({ parentPin: '2468', birthday: null, skipWishAfterThree: false });
+    expect(settingsView({ 'parent-pin': '1357', birthday: '05-14', 'skip-wish-after-three': true })).toEqual({ parentPin: '1357', birthday: '05-14', skipWishAfterThree: true });
+    expect(settingsView({ 'parent-pin': 'abc', birthday: '2020-05-14' })).toEqual({ parentPin: '2468', birthday: null, skipWishAfterThree: false });
   });
 });
 ```
@@ -7927,11 +7947,11 @@ export function missingClips(ev: GameEvent[]): { id: string; count: number; last
   return [...by.values()].sort((a, b) => b.last - a.last);
 }
 
-export const SETTING_KEYS = ['parentPin', 'birthday', 'skipWishAfterThree'] as const;
+export const SETTING_KEYS = ['parent-pin', 'birthday', 'skip-wish-after-three'] as const;   // contracts SettingKey
 
 export function settingsView(settings: Record<string, unknown>): { parentPin: string; birthday: string | null; skipWishAfterThree: boolean } {
-  const birthday = typeof settings.birthday === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(settings.birthday) ? settings.birthday : null;
-  return { parentPin: pinOf(settings), birthday, skipWishAfterThree: settings.skipWishAfterThree === true };
+  const birthday = typeof settings.birthday === 'string' && /^\d{2}-\d{2}$/.test(settings.birthday) ? settings.birthday : null;   // 'MM-DD'
+  return { parentPin: pinOf(settings), birthday, skipWishAfterThree: settings['skip-wish-after-three'] === true };
 }
 ```
 
@@ -7944,7 +7964,7 @@ Expected: PASS.
 
 - `Missing.svelte`: the table from `missingClips(allEvents())` with a "Copy ids" button, and a note that each id goes into the next generator run.
 - `IdleFlags.svelte`: the table from `idleFlags(allEvents())`; flagged rows (three or more visits) first, in red.
-- `Settings.svelte`: change PIN (four digits, twice, then `place/setting` with `parentPin`); Emma's birthday (a date input, `place/setting` with `birthday`, used by the calendar sets in a later release); "Extra eggs after three in a row skip the first wish" switch (`skipWishAfterThree`, off by default, spec 2.2; the heartbeat reads `world.places.settings.skipWishAfterThree`).
+- `Settings.svelte`: change PIN (four digits, twice, then `place/setting` with `parent-pin`); Emma's birthday (month and day, stored as `MM-DD`, `place/setting` with `birthday`, used by the calendar sets in a later release); "Extra eggs after three in a row skip the first wish" switch (`skip-wish-after-three`, off by default, spec 2.2; the heartbeat reads `game.world.settings.skipWishAfterThree`).
 - `Pairing.svelte`: `status()` shows paired or not, the last successful sync time and the last error. A six-digit code field and "Pair this iPad" call `pair(code)` and show the answer in plain words ("Paired", "That code did not work", "Too many tries, wait 15 minutes", "No connection"). "Sync now" calls `syncNow()`. When `status().needsPairing`, a warning at the top of the parent corner says "Pair this iPad again."
 - `ParentCorner.svelte`: order becomes warnings, Report, Names, Missing clips, Idle flags, Overrides, Settings, Backup, Pairing.
 
@@ -7965,8 +7985,8 @@ git commit -m "Add missing clips, idle flags, settings and pairing to the parent
 ### Task C9: Wave C flows and final acceptance
 
 **Files:**
-- Create: `flows/places/salon.sh`, `flows/places/valley.sh`, `flows/places/lane.sh`, `flows/places/titles.sh`, `flows/places/along.sh`, `flows/places/y1.sh`
-- Modify: `flows/places/parent.sh` (pairing against the local server)
+- Create: `flows/places/salon.flow.sh`, `flows/places/valley.flow.sh`, `flows/places/lane.flow.sh`, `flows/places/titles.flow.sh`, `flows/places/along.flow.sh`
+- Modify: `flows/places/parent.flow.sh` (pairing against the local server)
 
 **Interfaces:**
 - Consumes: hooks from Tasks C2 to C8; core's server with the save API on the lane port 8773 and a temp `MOON_DATA`; the sync workstream's `node server/admin.ts pair --family test` that prints a code.
@@ -7974,7 +7994,7 @@ git commit -m "Add missing clips, idle flags, settings and pairing to the parent
 
 - [ ] **Step 1: Write the flows**
 
-`flows/places/salon.sh`:
+`flows/places/salon.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -7993,7 +8013,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/valley.sh`:
+`flows/places/valley.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -8010,7 +8030,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/lane.sh`:
+`flows/places/lane.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -8027,7 +8047,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/titles.sh`:
+`flows/places/titles.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -8043,7 +8063,7 @@ flow_clean "$S"
 flow_close "$S"
 ```
 
-`flows/places/along.sh`:
+`flows/places/along.flow.sh`:
 
 ```sh
 #!/bin/sh
@@ -8076,7 +8096,7 @@ flow_close "$S"
 
 For the second act, `MeadowWishes.svelte` reads `game.params.kind`; the hook's `task()` returns `{ kind: 'two-state', answer: 'do' | 'undo' }` with the direction that is right.
 
-Extend `flows/places/parent.sh` before `flow_clean`:
+Extend `flows/places/parent.flow.sh` before `flow_clean`:
 
 ```sh
 CODE=$(node games/moon-meadow-home/server/admin.ts pair --family test | grep -Eo '[0-9]{6}' | head -1)

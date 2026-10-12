@@ -32,7 +32,47 @@ cd /Users/tjitse/sites/emmas-game/games/moon-meadow-home
 - Releases (R27): `content/release.json` is the only release file. The integrator sets it to `1.0`, `1.1` and `1.3` at the start of Waves A, B and C.
 - Phrases (R8): this plan's `content/phrases/*.json` is the only source of note, Salon card, asking-bubble, two-state and tricky-act text. Places renders notes and card lines from the phrase `act`; heartbeat renders phrase wishes, asking bubbles and two-state wishes.
 
-**Batches.** learn-data: A1: A1 to A5; A2: A6 to A10; B1: B1, B2; C1: C1, C2, C3. learn-engine: A2: A11 to A15; A3: A16 to A20; A4: A21; A6: A22; B1: B3, B4, B5; B2: B6; C1: C4; C2: C5; C3: C6. Lane port 8776.
+**Batches.** learn-data: A1: A1 to A5; A2: A6 to A10; B1: B1, B2; C1: C1, C2, C3. learn-engine: A2: A11 to A15; A3: A16 to A20; A4: A21; A6: A22; B1: B3, B4, B5; B2: B6; C1: C4; C2: C5; C3: C6. Lane port 8776. Work in `.worktrees/learn-data` and `.worktrees/learn-engine` (R42).
+
+### Validation round 2 (binding)
+
+Decisions R34 to R64 in master section 2.1. Where this block and a task below differ, this block wins.
+
+- R34 station wishes. A1: `MomentKind` adds `station-wish`. A6: `moments.json` adds `{ "id": "station-wish", "strand": "r", "release": "1.0", "needs": [] }`; its carriers are the six station words (`kind: "station"`). A17: `nextItem` for `station-wish` returns only a `review` or `mixed` pick of a passed or placed step whose items the station word holds, else `null` (the station then plays free care). A15: for `moment === 'station-wish'` the fold updates the item boxes only; it never sets `startT`, never calls `moveScaffold`, `pushWindow` or `recordReview`. Test in `tests/learning/fold.test.ts`:
+
+  ```ts
+  it('ten first-try station wishes never pass or move a step (R34)', () => {
+    const base = foldLearner(placedAt('R13'), c);
+    const before = { level: base.steps.R13?.level, window: base.steps.R13?.window.length ?? 0 };
+    const l = foldLearner([...placedAt('R13'), ...Array.from({ length: 10 }, (_, i) =>
+      result({ strand: 'r', step: 'R13', moment: 'station-wish', slot: 'review', items: [{ id: 'r:g:ai', r: 'first' }], scaffold: 3, day: i }))], c);
+    expect(l.steps.R13?.level).toBe(before.level);
+    expect(l.steps.R13?.window.length ?? 0).toBe(before.window);
+    expect(pendingLearnFacts(l, c).filter((f) => f.type === 'step.passed')).toEqual([]);
+  });
+  ```
+
+  `placedAt` and `result` are the fold test's existing helpers (add them there if the file names them differently).
+- R35 steps loaded after placement. A15: when a strand's `placement.done` exists, a loaded step of that strand that is not in its `placed` or `side` list, is not a contrast, school or display step, and sits below the placement's `current` in `c.order`, counts as `placed`. It is derived in the fold; no event is written. Test:
+
+  ```ts
+  it('a step loaded by a later release below her placement counts as placed (R35)', () => {
+    const events = [placementDone('r', 'R13', ['R01', 'R02', 'R11'], [])];    // R12 was not loaded at 1.0
+    const l = foldLearner(events, contentAt('1.3'));
+    expect(stepStatus(l, contentAt('1.3'), 'R12')).toBe('placed');
+    expect(currentStep(l, contentAt('1.3'), 'r')).toBe('R13');
+  });
+  ```
+
+  `contentAt(release)` builds the mini fixture with that release (A2 builder). C6 repeats the check on the real content at `1.3`. This keeps Decision 12 (master 2.4 L3) safe for a Wave A player who meets release 1.2.
+- R36 display tricky words. A7: every word of the display steps R06, R17 and R25 and of the checked tricky-word steps gets `heart` (indexes into `gpcs` of the heart-part graphemes: `the` `[1]`, `said` `[1]`, `was` `[1]`, `you` `[1]`, `I` `[0]`). A5: validator error `TRICKY_HEART` for a tricky word without `heart`. A10: every display tricky word is in `words-phase2` with its clip (`word-the`, "The."). A17: for a `wish` pick whose carrier is a thing word, set `display: ['the']` on about half the picks (rng) once R06 is loaded; `display` words are never in `items`. Test: such a pick has no item for `the`, and `learnResultPayload` of it carries the same items as without `display`. B1, C1, C2: phrase `words` keep their `heart` marks for Salon cards, notes and meadow phrases.
+- R40: `src/core/content/gpc.ts` re-exports `slugName` from `../keys.ts` (A1), and `src/core/learning/ids.ts` re-exports `nameKey` (A11, changed in place). No local copy.
+- R59: A17's `nextItem` uses `ctx.testScaffold?.[step]` instead of the learned level when it is set.
+- R62 word pictures. A5: `tools/validate-content.ts --assets=warn` reports `ASSET_PIC` and `ASSET_CLIP` as warnings. A22 (the learning gate test) fails only when a loaded step that can be current has fewer than 3 servable carriers (6 for R19 and S10), where servable means an `ok` clip in the committed audio manifests and a picture in `public/art/manifest.json`. A10's `pictures-needed.json` is the list art draws from (art AR-A13b); keep each entry's `prompt`.
+- A9: the bank includes Dot, Fen and Bex (`source: "fantasy"`, priority 1) so the cousins speak with name clips (`nameId(name, '!')`).
+- A20: `StrandReport` adds `dutchPairs: { pair: string; count: number }[]` (this week's Dutch-tagged errors per pair, spec 3.8 rule 2) for the parent corner (places A15).
+- A10, B1, C1, C6 commits list the seven learning packs by name (changed in place); never `public/audio` or `public/audio/*`.
+- Decisions 7 and 12 stand as master 2.4 L2 and L3. The parent corner switches the profile (places A15).
 
 ## Global Constraints
 
@@ -2205,7 +2245,7 @@ Expected: `0 errors`. Warnings for `NAME_COUNT` are fine only if the count is be
 - [ ] **Step 6: Commit**
 
 ```bash
-git add games/moon-meadow-home/tools/lib/lines.ts games/moon-meadow-home/tools/build-lines.ts games/moon-meadow-home/tools/list-pictures.ts games/moon-meadow-home/src/core/content/static.ts games/moon-meadow-home/public/audio/*/lines.json games/moon-meadow-home/content/pictures-needed.json games/moon-meadow-home/tests/content/lines.test.ts games/moon-meadow-home/tests/content/real-content.test.ts
+git add games/moon-meadow-home/tools/lib/lines.ts games/moon-meadow-home/tools/build-lines.ts games/moon-meadow-home/tools/list-pictures.ts games/moon-meadow-home/src/core/content/static.ts games/moon-meadow-home/public/audio/{words-phase2,words-phase3-4,words-year1,names-t1,phrases-meadow,phrases-notes,phrases-salon}/lines.json games/moon-meadow-home/content/pictures-needed.json games/moon-meadow-home/tests/content/lines.test.ts games/moon-meadow-home/tests/content/real-content.test.ts
 git commit -m "Generate word, number and name line packs and the picture list"
 ```
 
@@ -2431,7 +2471,8 @@ export function itemStrand(id: ItemId): LearnStrand | null {
   if (id[1] === ':' && (id[0] === 'r' || id[0] === 's' || id[0] === 'm')) return id[0];
   return null;
 }
-export const nameKey = (name: string): string => name.toLowerCase().replace(/[^a-z]/g, '');
+export { nameKey, slugName } from '../keys.ts';   // one name key for items and clips (contracts C12)
+import { nameKey } from '../keys.ts';
 export const nameItemId = (name: string): ItemId => `name:${nameKey(name)}`;
 export const isNameItem = (id: ItemId): boolean => id.startsWith('name:');
 export const graphemeItem = (strand: 'r' | 's', gpc: GpcId): ItemId => `${strand}:g:${gpc}`;
@@ -4681,7 +4722,7 @@ Expected: `0 errors`, or only `ASSET_*` errors, which go to the audio and art wo
 - [ ] **Step 4: Commit**
 
 ```bash
-git add games/moon-meadow-home/content/release.json games/moon-meadow-home/public/audio/*/lines.json games/moon-meadow-home/content/pictures-needed.json
+git add games/moon-meadow-home/content/release.json games/moon-meadow-home/public/audio/{words-phase2,words-phase3-4,words-year1,names-t1,phrases-meadow,phrases-notes,phrases-salon}/lines.json games/moon-meadow-home/content/pictures-needed.json
 git commit -m "Load release 1.1 learning content"
 ```
 
@@ -4799,7 +4840,7 @@ Expected: PASS. (`real-phrases.test.ts` also needs C2's meadow phrases for R12, 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add games/moon-meadow-home/content/phrases/salon.json games/moon-meadow-home/content/ladders/reading.json games/moon-meadow-home/src/core/planner/carriers.ts games/moon-meadow-home/tools/lib/validate.ts games/moon-meadow-home/tools/lib/lines.ts games/moon-meadow-home/public/audio games/moon-meadow-home/content/pictures-needed.json games/moon-meadow-home/tests/planner/salon.test.ts games/moon-meadow-home/tests/content/real-phrases.test.ts
+git add games/moon-meadow-home/content/phrases/salon.json games/moon-meadow-home/content/ladders/reading.json games/moon-meadow-home/src/core/planner/carriers.ts games/moon-meadow-home/tools/lib/validate.ts games/moon-meadow-home/tools/lib/lines.ts games/moon-meadow-home/public/audio/phrases-salon/lines.json games/moon-meadow-home/content/pictures-needed.json games/moon-meadow-home/tests/planner/salon.test.ts games/moon-meadow-home/tests/content/real-phrases.test.ts
 git commit -m "Add Sparkle Salon card lines for adjectives, and, sentences and suffixes"
 ```
 
@@ -5154,7 +5195,7 @@ Expected: tests PASS, `0 errors`, no stuck strand. R12, R24 and R27 to R29 load 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add games/moon-meadow-home/content/release.json games/moon-meadow-home/public/audio/*/lines.json games/moon-meadow-home/content/pictures-needed.json
+git add games/moon-meadow-home/content/release.json games/moon-meadow-home/public/audio/{words-phase2,words-phase3-4,words-year1,names-t1,phrases-meadow,phrases-notes,phrases-salon}/lines.json games/moon-meadow-home/content/pictures-needed.json
 git commit -m "Load release 1.2 learning content"
 ```
 

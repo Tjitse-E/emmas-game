@@ -32,7 +32,57 @@
 - A13: STACK.md "Testing" serves the repo with `node games/moon-meadow-home/server/serve.ts` (`PORT`, `HOST`, `MOON_DIST`), lanes never on 8765.
 - B1: the service worker registers only on `https:` or on `127.0.0.1` with `?sw=1`; plain http on the home network never registers it.
 
-**Batches (master 3.2, 3.3).** A0: A1. A1: A3, A4, A5. A2: A12, A13. A3: A9, A10, A11. B1: B1, B2, B4. Lane port 8771.
+**Batches (master 3.2, 3.3).** A0: A1. A1: A3, A4, A5. A2: A9a. A3: A9, A10, A11. A4: A12. A6: A13. B1: B1, B2, B4. Lane port 8771. Work in `.worktrees/platform` (R42).
+
+### Validation round 2 (binding)
+
+Decisions R34 to R64 in master section 2.1. Where this block and a task below differ, this block wins.
+
+- A1 (R40, R41, R43, R60): also write `src/core/keys.ts` (contracts section 12 verbatim) with `tests/core/keys.test.ts` (master 2.3), and `src/types/contracts.ts` (a verbatim copy of `docs/v3/plan/contracts.ts`). Both `.gitignore` files are shown in Step 3 and Step 3's root append; platform is their only editor. `npm install` runs outside the sandbox, or with `--cache "$TMPDIR/npm-cache"` and `registry.npmjs.org` in `allowed_domains`. `serve:test` passes `MOON_DATA=${MOON_DATA:-$TMPDIR/mmh-test-data}` (master 2.3).
+- New Task A9a (batch A2, R50): `src/polyfills.ts` and `public/feature-check.js`, with `tests/platform/polyfills.test.ts` (delete the three globals in a fresh context, import the file, check each works).
+
+  ```ts
+  // src/polyfills.ts. Safari 15.0 to 15.3 lack these, and Vite lowers syntax only (R50). main.ts imports this first.
+  if (!Object.hasOwn) {
+    Object.defineProperty(Object, 'hasOwn', { value: (o: object, k: PropertyKey) => Object.prototype.hasOwnProperty.call(o, k), configurable: true, writable: true });
+  }
+  for (const proto of [Array.prototype, String.prototype] as { at?: unknown }[]) {
+    if (!proto.at) {
+      Object.defineProperty(proto, 'at', {
+        value(this: ArrayLike<unknown>, n: number) { n = Math.trunc(n) || 0; if (n < 0) n += this.length; return n < 0 || n >= this.length ? undefined : this[n]; },
+        configurable: true, writable: true,
+      });
+    }
+  }
+  if (typeof globalThis.structuredClone !== 'function') {
+    (globalThis as { structuredClone?: unknown }).structuredClone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
+  }
+  export {};
+  ```
+
+  ```js
+  // public/feature-check.js. A classic script that runs before the app module (no inline script, so the CSP stays strict).
+  // On a Safari too old for the app, or when the app has not booted after 10 seconds, show a picture and a link back to v2.
+  (function () {
+    var ok = typeof Promise === 'function' && 'indexedDB' in window && !!window.CSS && !!CSS.supports && CSS.supports('aspect-ratio: 1');
+    function fallback() {
+      if (window.__mmhBooted) return;
+      var a = document.createElement('a');
+      a.href = '../../ideas/opus-5-5-unicorn-egg-nest-v2/';
+      a.setAttribute('aria-label', 'unicorn egg nest');
+      a.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#cfe8ff';
+      a.innerHTML = '<svg width="320" height="320" viewBox="0 0 320 320" aria-hidden="true"><ellipse cx="160" cy="180" rx="110" ry="130" fill="#fff3d6" stroke="#e0b96a" stroke-width="8"/><circle cx="160" cy="160" r="36" fill="#f5a3c7"/></svg>';
+      document.body.appendChild(a);
+    }
+    if (!ok) { document.addEventListener('DOMContentLoaded', fallback); return; }
+    setTimeout(fallback, 10000);
+  })();
+  ```
+
+- A9: `index.html` loads `<script src="./feature-check.js"></script>` before the module script. `main.ts` starts with `import './polyfills.ts';` and sets `window.__mmhBooted = true` after the Play gate mounts. Boot waits with `Promise.allSettled([audio.init(...), loadArtManifest(undefined, artFile)])`, so a failed manifest or audio index never hides Play (R49); in test builds `artFile` is `new URLSearchParams(location.search).get('art') ?? undefined` (the `no-art-manifest` flow). `startGame` clears `starting` in a `finally`. The eager glob for `./game.svelte.ts` stays until integration Task I-1 switches it (R60).
+- A10 (master C10, R14): `src/test-hook.ts` defines `said()` and `audioMissing()` as synchronous methods that return `audio.said` and `audio.missing`, and `pass`, `setScaffold`, `announce`, `target`, `pairForTest` and `wrong(kind?)` as `callHook` forwards (the store registers the handlers). `flows/lib.sh` exports `MMH_GAME_DIR` (the game folder) and passes `MOON_DATA` through from `run.sh`; `tap` uses `mousemove`, `mousedown`, `mouseup` on the `aria-label`; a new `hold <label> <ms>` helper does `mousedown`, waits, `mouseup`; `open_app` opens `$MMH_URL` as given, query string included. `flows/run.sh` probes the app page itself and reuses a server that is up (the corrected script is in Step 3); with `MMH_NO_BUILD=1` it never builds.
+- A12 moves to batch A4 (it needs the built shell from A9). A13 moves to batch A6 (it documents every Wave A task). A13's STACK.md "Hosting" names `dist-emma`, `tools/promote.sh`, `tools/go-live.sh`, the worktree rule and the npm sandbox rule.
+- B1: the integrator installs `vite-plugin-pwa@1.3.0` at the B1 start and adds its plugin line to `vite.config.ts`; this task writes the registration code and flows only, and never edits `package.json` (R60).
 
 ## Global Constraints
 
@@ -70,7 +120,7 @@ All paths below `games/moon-meadow-home/` unless they start with a repo-root fol
 |---|---|
 | `package.json` | Pinned dependencies and every npm script of the game. |
 | `package-lock.json` | Lock file. |
-| `.gitignore` | `node_modules/`, `dist/`, `dist-test/`, `.data/`, `public/phonics/`. |
+| `.gitignore` | `node_modules/`, `dist/`, `dist-test*/`, `dist-emma*/`, `.data/`, `public/phonics/`. |
 | `tsconfig.json` | One strict TypeScript config for app, tests, tools and server. |
 | `vite.config.ts` | Vite build (relative base, `safari15`, `dist` or `dist-test`), dev server, Vitest config. B1 adds the PWA plugin. |
 | `svelte.config.js` | Runes mode. |
@@ -348,7 +398,8 @@ Expected: no `ERESOLVE`. Check `package.json`: every version is exact (no `^`). 
 ```
 node_modules/
 dist/
-dist-test/
+dist-test*/
+dist-emma*/
 .data/
 public/phonics/
 ```
@@ -463,9 +514,15 @@ Append to the repo-root `.gitignore`:
 
 ```
 games/*/dist/
-games/*/dist-test/
+games/*/dist-test*/
+games/*/dist-emma*/
 games/*/.data/
+.worktrees/
+# Emma's real v2 export, used as a local test fixture only (spec 6.1)
+games/moon-meadow-home/tests/fixtures/local/
 ```
+
+Platform owns both `.gitignore` files (contracts C0). No other lane edits them.
 
 - [ ] **Step 4: Write a first test**
 
@@ -3550,16 +3607,20 @@ REPO="$(git rev-parse --show-toplevel)"
 cd "$REPO"
 PKG=games/moon-meadow-home
 PORT="${MMH_PORT:-8766}"
-HEALTH="http://127.0.0.1:$PORT/games/moon-meadow-home/test/api/health"
+LANE="${MMH_LANE:-gate}"
+export MMH_PORT="$PORT"
+export MMH_URL="${MMH_URL:-http://127.0.0.1:$PORT/games/moon-meadow-home/}"
+export MOON_DATA="${MOON_DATA:-${TMPDIR:-/tmp}/mmh-$LANE-data}"   # lib.sh and pair_code read the same folder
 
-npm --prefix "$PKG" run build:test >/dev/null
-
-if ! curl -fsS "$HEALTH" >/dev/null 2>&1; then
-  npm --prefix "$PKG" run serve:test >"${TMPDIR:-/tmp}/mmh-serve-test.log" 2>&1 &
+# Probe the app page itself: there is no api/health before Wave C.
+if ! curl -fsS -o /dev/null "$MMH_URL" 2>/dev/null; then
+  if [ "${MMH_NO_BUILD:-0}" != 1 ]; then npm --prefix "$PKG" run build:test -- --outDir "dist-test-$LANE" >/dev/null; fi
+  ( cd "$PKG" && MOON_DIST="dist-test-$LANE" PORT="$PORT" HOST=127.0.0.1 node server/serve.ts ) >"${TMPDIR:-/tmp}/mmh-serve-$LANE.log" 2>&1 &
   SERVER_PID=$!
   trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
-  curl -fsS --retry 30 --retry-delay 1 --retry-connrefused "$HEALTH" >/dev/null
+  curl -fsS -o /dev/null --retry 30 --retry-delay 1 --retry-connrefused "$MMH_URL"
 fi
+# A server that is already up (gate.sh, a lane that started its own) is reused as it is.
 
 flows=("$@")
 if [ ${#flows[@]} -eq 0 ]; then

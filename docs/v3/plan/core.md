@@ -41,7 +41,18 @@ All code in this plan was written and run before the plan was saved: 115 Vitest 
 - C5: `createSync({ port, apiBase: new URL('api/', document.baseURI).href })`; integration Task I-5 wires it into the store.
 - C6: `server/DEPLOY.md` is the only deploy note.
 
-**Batches.** A1: A1, A2, A3, A4, A5, A11. A2: A6, A7, A8, A9, A10, A12. B1: B1, B2. C1: C1, C2, C3, C4. C2: C5, C6. Lane port 8799.
+**Batches.** A1: A1, A2, A3, A4, A5, A11. A2: A6, A7, A8, A9, A10, A12. B1: B1, B2. C1: C1, C2, C3, C4. C2: C5, C6. Lane port 8799. Work in `.worktrees/core` (R42).
+
+### Validation round 2 (binding)
+
+Decisions R34 to R64 in master section 2.1. Where this block and a task below differ, this block wins.
+
+- `.gitignore` (R60): platform owns both files and already lists `.data/` and `games/moon-meadow-home/tests/fixtures/local/`. Tasks A6 and A11 do not edit `.gitignore`; A6 Step 5 now only checks the rule with `git check-ignore`.
+- A3: `learn.result.moment` accepts any key, so `station-wish` (R34) needs no change; add it to the sample table.
+- A7: `PinRef.at` is the event time `e.t` (a number, contracts C3), and both `Baby` literals carry `listName: null` and `comeAlong: false` (fixed in the code below). `baby.named` sets `listName`; `name.clipHeard` sets `clipHeard`.
+- A9: `GameData` also exposes `quarantine(): Promise<{ id: string; type: string; reason: string }[]>` (rows of the quarantine store) for the parent corner (R56), with one test.
+- A11 (R47): the server prints one start line with both addresses (`http://<os.hostname()>:<PORT>/` and the first IPv4 LAN address from `os.networkInterfaces()`), and one log line per request: ISO time, method, path, status, `User-Agent`. Logging goes to stdout through an injectable `log` function; the test checks a request's User-Agent reaches it. `MOON_DIST` may be `dist-emma`. `GET api/health` stays a Wave C route; flows probe the app page instead.
+- K7: the start rule is master Task I-2 (R46): v2 is read on every start while the log has no `import.v2` and no non-v2 hatch. Unnamed v2 babies are named one per heartbeat after Moving Day, not during it (R55, master 2.4 L4).
 
 ## Conventions
 
@@ -2077,11 +2088,10 @@ export function parseSaveFile(text: string): ParsedSave {
 
 - [ ] **Step 5: Keep Emma's real v2 export out of git**
 
-Append to the repo root `.gitignore`:
+Platform Task A1 already ignores `games/moon-meadow-home/tests/fixtures/local/` (platform owns `.gitignore`, contracts C0). Check it, and do not edit `.gitignore`:
 
-```
-# Emma's real v2 export, used as a local test fixture only (spec 6.1)
-games/moon-meadow-home/tests/fixtures/local/
+```sh
+git check-ignore -q games/moon-meadow-home/tests/fixtures/local/x.json && echo ignored
 ```
 
 - [ ] **Step 6: Run the tests to see them pass**
@@ -2417,17 +2427,17 @@ function applyImport(s: HerdState, e: Extract<GameEvent, { type: 'import.v2' }>)
       const before = existing.stickers.filter(x => x === 'pin').length;
       if (v.stickers.length > existing.stickers.length) existing.stickers = [...v.stickers];
       const after = existing.stickers.filter(x => x === 'pin').length;
-      for (let i = before; i < after; i++) addPin(existing, { pin: `v2-pin-${i + 1}`, kind: 'sticker', set: null, at: e.id });
+      for (let i = before; i < after; i++) addPin(existing, { pin: `v2-pin-${i + 1}`, kind: 'sticker', set: null, at: e.t });
       continue;
     }
     const b: Baby = {
       id: v.baby, name: null, gems: [], route: null, ordinal: 0, colours: { ...v.colours }, traits: { ...v.traits },
       breed: 'moon', kind: 'moon', egg: 'v2', source: 'v2', hatchedAt: e.t, v2Night: v.night,
-      v2Hearts: v.hearts, hearts: v.hearts, sash: [], pouch: [], stickers: [...v.stickers], outfit: {}, favourite: false, clipHeard: false,
+      v2Hearts: v.hearts, hearts: v.hearts, sash: [], pouch: [], stickers: [...v.stickers], outfit: {}, favourite: false, clipHeard: false, listName: null, comeAlong: false,
     };
     if (v.name) giveName(s, b, v.name, v.gems, 'import');
     let pins = 0;
-    for (const st of v.stickers) if (st === 'pin') addPin(b, { pin: `v2-pin-${++pins}`, kind: 'sticker', set: null, at: e.id });
+    for (const st of v.stickers) if (st === 'pin') addPin(b, { pin: `v2-pin-${++pins}`, kind: 'sticker', set: null, at: e.t });
     s.babies[b.id] = b;
     s.order.push(b.id);
   }
@@ -2446,7 +2456,7 @@ export const herdSlice: Slice<'herd', HerdState> = {
           s.babies[e.baby] = {
             id: e.baby, name: null, gems: [], route: null, ordinal: 0, colours: { ...e.colours }, traits: { ...e.traits },
             breed: e.breed, kind: e.kind, egg: e.egg, source: e.source, hatchedAt: e.t, v2Night: null,
-            v2Hearts: 0, hearts: 0, sash: [], pouch: [], stickers: [], outfit: {}, favourite: false, clipHeard: false,
+            v2Hearts: 0, hearts: 0, sash: [], pouch: [], stickers: [], outfit: {}, favourite: false, clipHeard: false, listName: null, comeAlong: false,
           };
           s.order.push(e.baby);
         }
@@ -2465,7 +2475,7 @@ export const herdSlice: Slice<'herd', HerdState> = {
         if (Object.hasOwn(s.babies, e.baby)) { s.babies[e.baby].clipHeard = true; heart(s, e.baby, e.heart); }
         break;
       case 'pin.given':
-        if (Object.hasOwn(s.babies, e.baby)) addPin(s.babies[e.baby], { pin: e.pin, kind: e.kind, set: e.set, at: e.id });
+        if (Object.hasOwn(s.babies, e.baby)) addPin(s.babies[e.baby], { pin: e.pin, kind: e.kind, set: e.set, at: e.t });
         break;
       case 'outfit.saved':
         if (Object.hasOwn(s.babies, e.baby)) s.babies[e.baby].outfit = { ...e.outfit };

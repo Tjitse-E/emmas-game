@@ -26,10 +26,23 @@
 - A7: `SCENES` come from the `scene` field of the line files (`common`, `start`, `moving-day`, `heartbeat`, `places`, and the area files).
 - A8: `sayName(name, mark)` returns `Promise<boolean>` (true when a clip played). The facade is contracts C8. `audio.init` runs in platform's `main.ts` before Play.
 - A9: `npm run check:audio` also fails on an id defined twice across all `lines.json` files. Narrator-only prefixes include `ord-` and `model-`.
-- A10 and later runs follow the order and estimates in master section 3.5. Numbers 61 to 100 (Task C1) are not generated this session. `names-t1` is generated from learning's `lines.json`, which lists v2 names first.
+- A10 and later runs follow the order and estimates in master section 3.5. Numbers 61 to 100 (Task C1) are generated in run 12, cut from the top if the budget runs short (master R37). `names-t1` is generated from learning's `lines.json`, which lists v2 names first.
 - B3, C2 (R29): the name bank is learning's `content/names/tier1.json` (`RawName`: `name`, `gpcs`, `source`, `priority`), not `content/names/t1.json`; nearest names come from learning's `nearestNames` (Task B5). `name.built` is core's shape (lowercase gem strings, phonemes as one space-separated string). The admin token is `MOON_ADMIN_TOKEN`, which the tool loads itself with `process.loadEnvFile()`. On the Mac the tool reads `<repo>/.data/moon-meadow/families/emma/events.jsonl` with core's `unknownNamesFrom` and needs no token. `G/server/data/admin-token` is not used.
 
-**Batches.** A0: A1, A2 (run 0). A1: A3, A4, A5. A2: A6, A7, A8, A9. Runs per master 3.5 from A2 on. B1: B1, B2. B2: B3. C1: C1. C2: C2, C3. C3: C4. Lane port 8775.
+**Batches.** A0: A1, A2 (run 0). A1: A3, A4, A5. A2: A6, A7, A8, A9; runs 1a, 2. A3: runs 3, 4, 5, 7. A4: run 1b. B1: B1, B2 (run 9). B2: B3, run 10. B3: run 8. C1: C1, run 12, run 6. C2: C2, C3. C3: run 11, C4 (run 13). Code tasks in `.worktrees/audio`; generation runs in the main tree (R42). Lane port 8775.
+
+### Validation round 2 (binding)
+
+Decisions R34 to R64 in master section 2.1. Where this block and a task below differ, this block wins.
+
+- Run order and budget (master 3.5): goal and game lines first (1a, then 1b as soon as `places.json` is merged), Wave A numbers (2), words and plurals (3, 4, 5), names (7, at least 300). Run 0 measures the speech-to-text cost of one check and writes it to `tools/audio/budget.json` as `sttPerCheck`; every later `--max-chars` adds it. Run 12 (Wave C) generates `num-61` to `num-100`, `num-movein-61` to `-100` and `num-herd-61` to `-100` (R37, about 2,300). If the budget runs short, run 12 is cut from the top and `tools/audio/numbers-gap.json` lists the ids not made.
+- A4 (R40): `src/audio/ids.ts` re-exports `slugName`, `nameId`, `phraseId`, `numId`, `bondId`, `ordId` and `wordId` from `src/core/keys.ts` (`slugName` changed in place) and keeps only audio's own helpers (number words, `parcelId`).
+- A6 and A8 (R60): no edits to `package.json` or `vite.config.ts`. The integrator adds the `sharedAudio` plugin line at the A2 start and the scripts in master 2.3 already exist.
+- A3: `shared/audio.js` exposes `reportMissing(id)`, the body of `warnMissing`, so the facade can record a missing clip without playing it.
+- A7 and A8 (R52): `speak`, `say` and `sayAll` take `SpeakId` (the generated `ClipId` union or a dynamic prefix), so tsc refuses an unknown static id. In fast mode `sayOne` still records a static id with no file through `markMissing(id)` (which calls `player.reportMissing(id)`; changed in place). A dynamic `num-`, `word-` or `phrase-` id without a clip is skipped and recorded in `missing`; a `name-` id is not (an unknown name is normal, and `sayName` returns false).
+- A8 (R64): the facade keeps at most 60 decoded dynamic clips (least recently used first out, through `player.forget(id)`), and `release(scene)` also forgets the dynamic clips that scene played. Test with a fake player: after 61 different word clips, the first is forgotten.
+- A9: `npm run check:audio` fails when a line of `common`, `start`, `moving-day`, `heartbeat` or `places` has no clip in its pack manifest (the goal lines, R51). Go-live depends on it.
+- B1 and C1 (R53): write number lines only. Place lines are places' (`places.json`, `places-stable-yard.json`, `places-village-lane.json`) and heartbeat's (`heartbeat.json`); B1 does not touch `meadow.json` or `nest.json` and does not create `dressing-corner`, `post-box` or `home-book` files; C1 does not create `salon`, `valley`, `letter-lane` or `meadow-slate` files. Run 8 runs in batch B3 and run 11 in batch C3, after those lines are merged. `content/lines/core.json` is not used.
 
 ## Decisions this plan makes
 
@@ -38,7 +51,7 @@
 | AD1 | Source of lines | Hand-written lines live in `games/moon-meadow-home/content/lines/<scene>.json`. Numbers, words, plurals, phrases and names are derived by code. Nobody edits a pack's `lines.json` by hand. |
 | AD2 | Packs | `core`, `numbers`, `words-phase2`, `words-phase3-4`, `words-year1`, `phrases`, `names-t1`, `names-new`, `area-stable-yard`, `area-village-lane`, `places`. Folder: `games/moon-meadow-home/public/audio/<pack>/`. Letter sounds stay in `shared/audio/phonics/` and are copied into the build at `audio/phonics/`. |
 | AD3 | Voices | Per `VOICES.md`: `narrator` (Elizabeth) for every goal, hint, feedback, number, name, word and phrase; `queen` (Lumi, Posh) for story lines only; `foal` (Flicker) for giggles and tiny fixed words. Ids starting `word-`, `name-`, `num-`, `sound-`, `phrase-` and `ord-` must be narrator, enforced by the build tool and by the generator. |
-| AD4 | Ids | `g-` goal, `h-` hint, `fb-` feedback, `lumi-` queen, `foal-` foal, `word-<slug>`, `phrase-<slug>[-q|-x]`, `name-<slugName>` ("Pip!") and `name-<slugName>-q` ("Pip?"), `num-<n>` ("Seven."), `num-<kind>-<n>`, `num-bond-<a>-<b>`, `num-parcel-<n>-<plural>`, `ord-<n>` ("The Second!"). Ids never contain digits that are not numbers. |
+| AD4 | Ids | `g-` goal, `h-` hint, `fb-` feedback, `lumi-` queen, `foal-` foal, `word-<slug>`, `phrase-<slug>`, `-q` or `-x`, `name-<slugName>` ("Pip!") and `name-<slugName>-q` ("Pip?"), `num-<n>` ("Seven."), `num-<kind>-<n>`, `num-bond-<a>-<b>`, `num-parcel-<n>-<plural>`, `ord-<n>` ("The Second!"). Ids never contain digits that are not numbers. |
 | AD5 | No splicing | Clips join only at sentence boundaries. A name is always its own clip. "Let's write hat. Listen: hat." is played as `g-write-label` ("Let's write a label. Listen.") then `word-hat` ("Hat."). "Bella wants to visit door fourteen." is `name-bella` then `num-visit-14` ("Off to door fourteen!"). |
 | AD6 | v2 reuse | Where a v2 line fits, the v3 line copies its text, speaker and seed exactly. Same request, same hash, so the clip comes from the raw cache in `.cache/tts/` for 0 credits (verified: all 246 v2 clips hash-match today). 40 core lines, 52 number lines and every v2 name's "!" clip are free. |
 | AD7 | Speech-to-text replaces the ear check this session | `--stt` checks narrator and queen clips with `scribe_v2`. A sound-alike key accepts spelling variants (Lin/Lynn, Mitt/Mit, "A net"/Annette, "41"/"forty-one"). Words and phrases fail when the transcript is another word of the same pack (pan heard for pen, cape for cap). A failing clip is regenerated with a new seed up to 2 times. A learning clip (`word-`, `phrase-`, `name-`, `num-`, `ord-`) that still fails gets `"ok": false` in its manifest, and the app treats it as absent: the planner never serves that word, and a name falls back to the no-clip path. Game lines that still fail are kept and listed for Tjitse. |
@@ -74,7 +87,7 @@ Credits at the start of the session: 34,007. Cap for this build: 24,000. Floor: 
 | | | Retries after speech-to-text | 1,000 | inside each run | |
 | | | **Total before run 13** | **about 22,650** | | |
 
-If a run costs more than its estimate, the next runs keep their order and the cut falls on run 13, then on run 12 (the highest numbers first), never on runs 1 to 7. Run 13 gets about 1,350 credits, about 95 more names.
+If a run costs more than its estimate, the next runs keep their order and the cut falls on run 13, then on run 12 (the highest numbers first), never on runs 1 to 7. The run order and totals in master plan section 3.5 win over this table (run 1 is split into 1a and 1b; the total before run 13 is about 23,860). Run 13 gets what is left under the cap, about 140 credits; the names Emma needs are in run 7.
 
 ---
 
@@ -1428,10 +1441,9 @@ export function phraseId(id: string): PhraseId {
   return `phrase-${id}`;
 }
 
-/** Name key: lowercase ASCII letters only (contracts C12). */
-export function slugName(name: string): string {
-  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
-}
+/** Name key: lowercase ASCII letters only (contracts C12). One owner file: src/core/keys.ts. */
+export { slugName } from '../core/keys.ts';
+import { slugName } from '../core/keys.ts';
 
 export function nameId(name: string, mark: NameMark): NameClipId {
   const key = slugName(name);
@@ -2743,6 +2755,7 @@ export function createAudio<Id extends string = string, Scene extends string = s
   const clean = (ids: ReadonlyArray<string | null | undefined>): string[] => ids.filter((id): id is string => !!id && playable(id));
   const sayOne = async (id: string): Promise<void> => {
     said.push(id);
+    if (fast && !isDynamic(id) && !index.has(id)) markMissing(id);   // fast mode still records a static clip with no file (validation round 2)
     if (fast) return;
     talk(id);
     try { await player.say(id); } finally { talk(null); }

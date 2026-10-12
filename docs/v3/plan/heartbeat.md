@@ -29,7 +29,63 @@ All paths below are relative to `games/moon-meadow-home/` unless they start with
 - Task 23B: exports `currentEggBreed(state, learner, content)`, `ownSlots(graphemes, learner, content)`, `planTray(graphemes, step, scaffold, rng)`, `canReviewName(baby: WorldBaby, learner, content)` and `BREEDS` (from `hatch.ts`) as contracts C7.
 - Tasks 26 and 27 move to batch C2 (they need learning's meadow phrases from Task C2). Task 27 owns asking bubbles and two-state wishes; places Task C7 is dropped (R9).
 
-**Batches.** A1: 1 to 9. A2: 10 to 14. A3: 15, 16. A4: 17. A5: 17B, 18 to 23, 23B. B1: 24. B2: 25. C1: 28, 29. C2: 26, 27. Lane port 8772.
+**Batches.** A1: 1, 2, 3, 5, 6, 7, 8, 9. A2: 4. A3: 10, 11, 12, 13, 14, 15, 16. A4: 17. A5: 17B, 18 to 23, 23B. B1: 24. B2: 25. C1: 28, 29. C2: 26, 27. Lane port 8772. Work in `.worktrees/heartbeat` (R42).
+
+### Validation round 2 (binding)
+
+Decisions R34 to R64 in master section 2.1. Where this block and a task below differ, this block wins.
+
+- Batch moves (rule 3.1, no import from a lane of the same batch). Task 1 takes `numId`, `bondId`, `ordId` and `HEARTBEAT_NUMBER_IDS` from `src/core/keys.ts` (skeleton, R40), not from `src/audio/ids.ts`. Task 4 moves to batch A2 (art's `src/art/palette.ts` lands in A1). Tasks 10 to 14 move to batch A3 (they need `content.gpcs` from learning A10, batch A2), with 15 and 16 after them in the same lane.
+- Task 14 (R40): `nameKey` in `check.ts` is a re-export of `src/core/keys.ts` (changed in place). Name items are `nameItemId(name)`.
+- Task 15 (R19, contracts C2). The code below still shows the old drafts. Rewrite it to these shapes before anything else in the task, and replace every test assertion that pins an old field:
+  - `hb.learn { payload, baby }` returns `[{ ...payload, baby }]`. `payload` is built by `learnResultPayload(pick, outcome)` in `learn-bridge.ts` (17B); the translator never builds a `learn.result` itself and never sees heartbeat's `Served` type.
+  - `hb.hatched` returns `egg.hatched { baby, egg, kind, breed, colours, traits, source }` with `kind` a learning `EggKind` or `'building'` and all four traits.
+  - `naming.spelled`, `naming.partial`, `naming.assign` return `baby.named { baby, name, gems, route, listName }` and `name.built { visit: null, baby, gems, phonemes, route, outcome, listName, strong }` (no `target`, `ordinal`, `clipKey`, `unknown`).
+  - `hb.care` returns `care.done { baby, station }`; `hb.sky-named` returns `sky.named { sky: index + 1, name }`; `hb.row-named` returns `row.named { row, name }`; `hb.decor` returns `decor.placed { decor, item, area: 'stalls', x, y }` (R57); `hb.test-hatch` as before.
+  - Export `HEARTBEAT_SAMPLE_ACTIONS` and `NAMING_SAMPLE_ACTIONS` with one sample per action type. The `hb.learn` sample carries a literal payload in the shape `learnResultPayload` returns (learning A19 lands in the same batch).
+  - Write this lane test first, `tests/heartbeat/contract.test.ts`, and make it pass in this batch:
+
+  ```ts
+  // Every heartbeat and naming sample action yields drafts that core's validator accepts (contracts C2).
+  import { describe, expect, it } from 'vitest';
+  import { validateEvent, SCHEMA_VERSION } from '../../src/core/events.ts';
+  import { HEARTBEAT_SAMPLE_ACTIONS, applyHeartbeat } from '../../src/core/actions/heartbeat.ts';
+  import { NAMING_SAMPLE_ACTIONS, applyNaming } from '../../src/core/actions/naming.ts';
+
+  const VISIT_SCOPED = ['place.enter', 'place.leave', 'learn.result', 'learn.idle', 'name.built'];
+  /** The fields integration's finishDraft adds (master Task I-1). */
+  const finish = (d: Record<string, unknown>) => ({
+    ...d,
+    ...(VISIT_SCOPED.includes(d.type as string) && d.visit === undefined ? { visit: 'v1' } : {}),
+    ...(d.type === 'learn.result' ? { baby: d.baby ?? null, heart: false } : {}),
+    ...(d.type === 'care.done' ? { heart: true } : {}),
+  });
+  let seq = 0;
+  const stamp = (d: Record<string, unknown>) => ({ id: `abcdefgh:${++seq}`, hlc: '1760000000000-0000', t: 1, dev: 'abcdefgh', v: SCHEMA_VERSION, ...d });
+
+  describe('heartbeat drafts match contracts C2', () => {
+    const cases = [['hb', HEARTBEAT_SAMPLE_ACTIONS, applyHeartbeat], ['naming', NAMING_SAMPLE_ACTIONS, applyNaming]] as const;
+    for (const [name, actions, apply] of cases) {
+      it(name, () => {
+        expect(actions.length).toBeGreaterThan(0);
+        for (const a of actions) for (const d of apply(a as never)) {
+          const r = validateEvent(stamp(finish(d as never)) as never);
+          expect(r.ok, `${(a as { type: string }).type}: ${JSON.stringify(r)}`).toBe(true);
+        }
+      });
+    }
+  });
+  ```
+- Task 17 (R36): `PrintWithDots` takes `heart?: number[]` and `dots?: boolean` (default true). Heart-part graphemes get a soft heart glow and no sound dot, and a tap on them plays nothing. The pure helper `printParts(gpcs, heart)` returns `{ text, dot, heart }[]`; test it in `tests/heartbeat/print.test.ts`: for `the` (`gpcs ['th', 'e']`, `heart [1]`) the `e` part has `heart: true` and `dot: false`.
+- Task 17B (R34, R36): a station wish requests `moments: ['station-wish']` (the `MOMENT_OF_PLACE` entry is changed in place); its result is logged as the pick's slot (`review` or `mixed`). When the pick has `display`, the wish scene prints those words before the carrier. Test in `tests/heartbeat/learn-bridge.test.ts`: a pick with `display: ['the']` produces a payload whose items equal the pick's items (no item for `the`).
+- Task 20 (R36): after the act, Elizabeth says each display word's clip, then the carrier's clip (`speak(wordId('the'), carrierClip)`), two sentences. The wish scene hook takes `wrong(kind)` with `one-for-many` and `many-for-one` and makes that mistake. `target()` returns the aria-label of the right answer.
+- Task 22: the goodnight count is printed with its word on a panel (`41 unicorns`, `1 unicorn`) through `PrintWithDots` with `dots={false}`, shown while Elizabeth reads it. `goodnight-ctrl.test.ts` asserts `ctrl.countText` for 41 and 1. `afterRollCall` runs once and ends with `game.endVisit('goodnight')`, which routes to the rest scene (R45; changed in place).
+- Task 23 (R54): in visit 1, after the third hatch of the visit, and only when `moon-hint` is not announced, the ghost hand taps toward the moon button and Elizabeth says `g-moon`; then `game.dispatch({ type: 'game/announce', opening: 'moon-hint' })`. Pure rule `moonHintDue({ visitIndex, hatchesThisVisit, announced })` with a test (true only at visit 1, third hatch, not announced). The flows are `flows/heartbeat/heartbeat.flow.sh` and `naming.flow.sh` (changed in place). `heartbeat.flow.sh` also plays the first-wish basket at levels 1, 2 and 3 (`setStep("r", "R19")`, `setScaffold("r", "R19", n)`) with `wrong("one-for-many")` and `wrong("many-for-one")` at each level before the right answer (master 5.1 check 11). `heartbeat.start()` picks the first baby with `name === null`, so unnamed v2 babies are named one per heartbeat after Moving Day (R55).
+- Task 23B (R57): stall-door free play: each door has a paint pot, a flower box and a lantern; a tap cycles that decoration and dispatches `hb.decor`. Never checked, never logged as learning. Art ids are `item-brush`, `item-treat`, `item-heart` (renamed in place from `tool-*`); add those three and the door decorations to `art-src/lists/requests.txt`.
+- Tasks 24 and 25: create and extend `flows/heartbeat/eggs-b.flow.sh` (changed in place); each Files list reads `Create: flows/heartbeat/eggs-b.flow.sh` (24) and `Modify: flows/heartbeat/eggs-b.flow.sh` (25), not `flows/heartbeat.sh`.
+- Tasks 26 and 27: create and extend `flows/heartbeat/year1.flow.sh` (phrase wishes, asking bubbles, two-state wishes); master Gate C runs `heartbeat/year1`.
+- Task 29 (R39): the switch is the setting `skip-wish-after-three`, read through `game.world.settings.skipWishAfterThree`.
+- Lines (R53): heartbeat adds its own Wave B and C lines to `content/lines/heartbeat.json` in Tasks 24 to 27; audio run 8 (B3) and run 11 (C3) generate them.
 
 ## Global constraints
 
@@ -202,7 +258,7 @@ type LearnResultDraft = {
   ms: number;
   scaffold: 1 | 2 | 3;
   error?: 'vowel' | 'dutch' | 'reversal' | 'off-by-one' | 'one-hour-off' | 'other';
-  place: 'nest' | 'wish' | 'twin-wish' | 'station' | 'naming' | 'door' | 'rollcall'; // LEARN leaves 'station' out of pass windows (spec 2.5)
+  place: 'nest' | 'wish' | 'twin-wish' | 'station' | 'naming' | 'door' | 'rollcall'; // a station logs moment 'station-wish': review only, never in a pass window (spec 2.5)
   probe: boolean;
   source: 'current' | 'review' | 'mixed' | 'school' | 'probe' | 'golden' | 'side';
   baby?: string;                // the baby the moment was for (hearts, wish stickers)
@@ -268,7 +324,7 @@ export const game: {
   readonly scene: SceneId; readonly params: Record<string, unknown>;
   dispatch(action: { type: string }): void;
   go(scene: SceneId, params?: Record<string, unknown>): void;
-  endVisit(): void;            // writes visit.end and shows the start screen
+  endVisit(reason: 'goodnight' | 'idle' | 'hidden'): void;   // writes visit.end; the store routes to the rest scene
   readonly content: Content;           // LEARN's Content; the heartbeat reads it only through learn-bridge.ts
   readonly planContext: PlanContext;   // LEARN's C-STORE item 2
   readonly rng: Rng;                   // seeded in the test build
@@ -392,7 +448,7 @@ export function artUrl(id: string): string | null;  // from public/art/manifest.
 // src/art/UnicornHead.svelte props: { baby: Baby; size?: number; nightcap?: boolean }
 ```
 
-Art ids this workstream asks for: `egg-moon`, `egg-nest`, `egg-two-stone`, `egg-blanket`, `egg-berry`, `egg-snow`, `egg-golden`, `egg-speckled`, `nest`, `blanket`, `bell`, `bell-gold`, `name-tree`, `garden-flowers`, `garden-gems`, `garden-sky`, `garden-sweets`, `basket`, `station-hay`, `station-brush`, `station-hat`, `station-nap`, `station-swing`, `station-bath`, `door`, `tent`, `lantern`, `moonflower`, `sky-unicorn`, `bg-nest`, `bg-wish`, `bg-stables`, `bg-sky`, `tool-brush`, `tool-treat`, `tool-heart`, and the `picture` of every basket word. When `artUrl` returns null the scene draws its own SVG from `Fallback.svelte`. Word pictures always exist, because the planner never serves a word without a picture (C10).
+Art ids this workstream asks for: `egg-moon`, `egg-nest`, `egg-two-stone`, `egg-blanket`, `egg-berry`, `egg-snow`, `egg-golden`, `egg-speckled`, `nest`, `blanket`, `bell`, `bell-gold`, `name-tree`, `garden-flowers`, `garden-gems`, `garden-sky`, `garden-sweets`, `basket`, `station-hay`, `station-brush`, `station-hat`, `station-nap`, `station-swing`, `station-bath`, `door`, `tent`, `lantern`, `moonflower`, `sky-unicorn`, `bg-nest`, `bg-wish`, `bg-stables`, `bg-sky`, `item-brush`, `item-treat`, `item-heart`, and the `picture` of every basket word. When `artUrl` returns null the scene draws its own SVG from `Fallback.svelte`. Word pictures always exist, because the planner never serves a word without a picture (C10).
 
 ### C13. Meadow parts (MEADOW)
 
@@ -3515,9 +3571,7 @@ export function displayName(gems: string[]): string {
   const s = gems.map((g) => g.toLowerCase()).join('');
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
-export function nameKey(name: string): string {
-  return name.toLowerCase();
-}
+export { nameKey } from '../keys.ts';   // contracts C12, the one name key
 
 export function classifySpell(target: string, placed: string, isFinal: boolean): ErrorTag {
   const t = target.toLowerCase();
@@ -4696,7 +4750,7 @@ export function itemIdFor(c: Content, strand: Strand, id: string): string | null
   return (cands.find((it) => (c.gpcs[it.gpc].phonemes as string[]).map((p) => toToken(p, ipa)).join('+') === usual) ?? cands[0])?.id ?? null;
 }
 
-const MOMENT_OF_PLACE: Record<string, string> = { nest: 'egg-moon', wish: 'wish', 'twin-wish': 'twin-wish', station: 'wish', naming: 'naming-bells', door: 'door-visit', rollcall: 'roll-call' };
+const MOMENT_OF_PLACE: Record<string, string> = { nest: 'egg-moon', wish: 'wish', 'twin-wish': 'twin-wish', station: 'station-wish', naming: 'naming-bells', door: 'door-visit', rollcall: 'roll-call' };
 
 export function toLearnPayload(d: LearnResultDraft, c: Content): Record<string, unknown> {
   const items = d.items.map((i) => ({ id: itemIdFor(c, d.strand, i.id), r: i.result })).filter((i): i is { id: string; r: typeof d.result } => i.id !== null);
@@ -6976,7 +7030,7 @@ Expected: PASS.
 
 - [ ] **Step 5: Write `Goodnight.svelte`**
 
-The sky fills the top 360 px: one star per baby, and each full ten drawn as a sky unicorn (`sky-unicorn` art) with its name under it. The bottom shows one stable page with heads at the doors and the lantern holding the printed name (with its crowned capital and ordinal) of the current pick. After roll call, the count lines play, a new sky unicorn gets named with the `Naming` component (target `{ kind: 'sky', index }`), Lumi says goodnight, and the scene calls `game.endVisit()` (C6).
+The sky fills the top 360 px: one star per baby, and each full ten drawn as a sky unicorn (`sky-unicorn` art) with its name under it. The bottom shows one stable page with heads at the doors and the lantern holding the printed name (with its crowned capital and ordinal) of the current pick. After roll call, the count lines play, a new sky unicorn gets named with the `Naming` component (target `{ kind: 'sky', index }`), Lumi says goodnight, and the scene calls `game.endVisit('goodnight')` (C6), which routes to the rest scene.
 
 ```svelte
 <script lang="ts">
@@ -7016,11 +7070,14 @@ The sky fills the top 360 px: one star per baby, and each full ten drawn as a sk
   const sky = skyState(w.herd.length, w.skyNames);
   let naming = $state<number | null>(null);
 
+  let afterStarted = false;   // the $effect below reruns on every tick: run the end once
   async function afterRollCall() {
+    if (afterStarted) return;
+    afterStarted = true;
     const next = await ctrl.sky();
     if (next !== null) { naming = next; return; }
     await ctrl.bye();
-    game.endVisit();
+    game.endVisit('goodnight');
   }
   $effect(() => { if (v.stage === 'sky') void afterRollCall(); });
   onMount(async () => {
@@ -7057,7 +7114,7 @@ The sky fills the top 360 px: one star per baby, and each full ten drawn as a sk
     {/each}
   </div>
   {#if naming !== null}
-    <div class="sky-naming"><Naming target={{ kind: 'sky', index: naming }} onnamed={async (n) => { ctrl.skyNamed(naming!, n); naming = null; await ctrl.bye(); game.endVisit(); }} /></div>
+    <div class="sky-naming"><Naming target={{ kind: 'sky', index: naming }} onnamed={async (n) => { ctrl.skyNamed(naming!, n); naming = null; await ctrl.bye(); game.endVisit('goodnight'); }} /></div>
   {/if}
 </section>
 
@@ -7098,7 +7155,7 @@ git commit -m "Add goodnight with roll call, the herd count and sky unicorns"
 ### Task 23: The heartbeat runtime, the moon's new names, test hooks and browser flows
 
 **Files:**
-- Create: `src/scenes/heartbeat/flow.svelte.ts`, `src/scenes/heartbeat/moon-name.ts`, `src/scenes/heartbeat/test-hooks.ts`, `src/scenes/heartbeat/Moonflowers.svelte`, `flows/heartbeat.sh`, `flows/naming.sh`, `flows/run-heartbeat-all.sh`
+- Create: `src/scenes/heartbeat/flow.svelte.ts`, `src/scenes/heartbeat/moon-name.ts`, `src/scenes/heartbeat/test-hooks.ts`, `src/scenes/heartbeat/Moonflowers.svelte`, `flows/heartbeat/heartbeat.flow.sh`, `flows/heartbeat/naming.flow.sh`
 - Test: `tests/heartbeat/moon-name.test.ts`, `tests/heartbeat/line-coverage.test.ts`
 
 **Interfaces:**
@@ -7558,7 +7615,7 @@ Expected: `All heartbeat flows passed.` Screenshots land in `$TMPDIR/mmh-flows/`
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/scenes/heartbeat/flow.svelte.ts src/scenes/heartbeat/moon-name.ts src/scenes/heartbeat/test-hooks.ts src/scenes/heartbeat/Moonflowers.svelte flows/heartbeat.sh flows/naming.sh flows/run-heartbeat-all.sh tests/heartbeat/moon-name.test.ts tests/heartbeat/line-coverage.test.ts
+git add src/scenes/heartbeat/flow.svelte.ts src/scenes/heartbeat/moon-name.ts src/scenes/heartbeat/test-hooks.ts src/scenes/heartbeat/Moonflowers.svelte flows/heartbeat/heartbeat.flow.sh flows/heartbeat/naming.flow.sh tests/heartbeat/moon-name.test.ts tests/heartbeat/line-coverage.test.ts
 git commit -m "Wire the heartbeat flow, the moon's new names, test hooks and browser flows"
 ```
 
@@ -7576,7 +7633,7 @@ The meadow hub is PLACES' scene, but it mounts the heartbeat's living layer: the
 - Test: `tests/heartbeat/meadow.test.ts`
 
 **Interfaces:**
-- Consumes: Tasks 4, 7, 8, 11, 13, 15, 17, 19, 23; LEARN's `content` from `src/core/content/static.ts` and `currentStep(l, c, strand)`; art ids `tool-brush`, `tool-treat`, `tool-heart` (C12 addition; the fallback draws a round badge).
+- Consumes: Tasks 4, 7, 8, 11, 13, 15, 17, 19, 23; LEARN's `content` from `src/core/content/static.ts` and `currentStep(l, c, strand)`; art ids `item-brush`, `item-treat`, `item-heart` (C12 addition; the fallback draws a round badge).
 - Produces:
 
 ```ts
@@ -8058,13 +8115,13 @@ Expected: PASS, including line coverage.
 
 - [ ] **Step 5: Flow check (outside the sandbox)**
 
-Add `beat M04 no no`, `beat M13 yes no` and `beat M14 no no` to `flows/heartbeat.sh` after `beat M12 no yes`, and change `herd 7` to `herd 10`. Then `npm run build:test` and `sh flows/run-heartbeat-all.sh`.
+Add `beat M04 no no`, `beat M13 yes no` and `beat M14 no no` to a new `flows/heartbeat/eggs-b.flow.sh` (a copy of the egg part of `heartbeat.flow.sh`) after `beat M12 no yes`, with `herd 10`. Then `MMH_LANE=heartbeat MMH_PORT=8772 bash flows/run.sh heartbeat/eggs-b`.
 Expected: all flows pass.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/core/maths/eggs.ts src/core/heartbeat/lines.ts src/core/heartbeat/places.ts src/scenes/heartbeat/nest.ctrl.ts src/scenes/Nest.svelte content/lines/heartbeat.json flows/heartbeat.sh tests/heartbeat/eggs-b.test.ts
+git add src/core/maths/eggs.ts src/core/heartbeat/lines.ts src/core/heartbeat/places.ts src/scenes/heartbeat/nest.ctrl.ts src/scenes/Nest.svelte content/lines/heartbeat.json flows/heartbeat/eggs-b.flow.sh tests/heartbeat/eggs-b.test.ts
 git commit -m "Add berry and snow eggs"
 ```
 
@@ -8235,7 +8292,7 @@ Expected: PASS.
 
 - [ ] **Step 5: Flow check (outside the sandbox)**
 
-Add to `flows/heartbeat.sh`, before goodnight:
+Add to `flows/heartbeat/eggs-b.flow.sh`, before goodnight:
 
 ```sh
 ev "() => { window.__game.announce('two-egg'); window.__hb.start(); return 'ok'; }" >/dev/null
@@ -8257,7 +8314,7 @@ Expected: flows pass.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/scenes/heartbeat/egg-choice.ctrl.ts src/scenes/EggChoice.svelte src/scenes/heartbeat/learn-bridge.ts src/scenes/heartbeat/flow.svelte.ts src/scenes/Hatch.svelte src/scenes/heartbeat/test-hooks.ts src/core/heartbeat/lines.ts content/lines/heartbeat.json flows/heartbeat.sh tests/heartbeat/egg-choice.test.ts
+git add src/scenes/heartbeat/egg-choice.ctrl.ts src/scenes/EggChoice.svelte src/scenes/heartbeat/learn-bridge.ts src/scenes/heartbeat/flow.svelte.ts src/scenes/Hatch.svelte src/scenes/heartbeat/test-hooks.ts src/core/heartbeat/lines.ts content/lines/heartbeat.json flows/heartbeat/eggs-b.flow.sh tests/heartbeat/egg-choice.test.ts
 git commit -m "Add the golden egg and the two-egg choice"
 ```
 

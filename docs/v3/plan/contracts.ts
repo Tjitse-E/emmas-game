@@ -5,8 +5,10 @@
 // plan (docs/v3/plan/<stream>.md) still shows another name or shape, this file wins.
 //
 // It is reference code: builders copy the block they own into the owner's file, and import the
-// rest from the owner's module (the `owner:` line above each block). It type-checks on its own:
-//   tsc --noEmit --strict --target es2022 --module esnext --moduleResolution bundler \
+// rest from the owner's module (the `owner:` line above each block). The skeleton task copies this whole file
+// verbatim to G/src/types/contracts.ts, so lanes can `import type` a shape before its owner module exists (R41).
+// It type-checks on its own with TypeScript 6.0.3:
+//   tsc --noEmit --strict --erasableSyntaxOnly --verbatimModuleSyntax --target es2022 --module esnext --moduleResolution bundler \
 //       --lib es2023,dom docs/v3/plan/contracts.ts
 // Functions shown with a body are the exact implementation. `declare` lines are signatures only.
 
@@ -16,10 +18,14 @@
 
 /** All app paths are relative to games/moon-meadow-home/ (G). */
 export const OWNERS = {
-  'package.json, tsconfig.json, vite.config.ts, svelte.config.js, index.html, src/main.ts, src/App.svelte': 'platform',
+  'package.json, tsconfig.json, vite.config.ts, svelte.config.js, index.html, src/main.ts, src/App.svelte': 'platform (package.json changes, the vite.config.ts plugin lines and the main.ts store import: integrator, R60)',
+  '.gitignore (repo root), .gitignore (G)': 'platform (the only lane that edits them, R60)',
+  'src/core/keys.ts, src/types/contracts.ts, src/polyfills.ts, public/feature-check.js': 'platform (keys.ts and types/contracts.ts verbatim from this file, R40, R41, R50)',
   'src/platform/**, src/ui/ghost-hand.svelte.ts, src/ui/GhostHand.svelte, src/ui/moonbeam.svelte.ts, src/ui/Moonbeam.svelte, src/ui/targets.ts': 'platform',
   'src/test-hook.ts, flows/lib.sh, flows/run.sh': 'platform',
   'src/core/rng.ts': 'platform (written in the skeleton task, verbatim from section 1 below)',
+  'flows/heartbeat/**': 'heartbeat',
+  'flows/places/** (lib.sh and <name>.flow.sh only)': 'places',
   'src/core/hash.ts, src/core/ids.ts, src/core/hlc.ts, src/core/checks.ts, src/core/events.ts, src/core/migrate.ts, src/core/factory.ts, src/core/merge.ts': 'core',
   'src/core/fold/**, src/core/world/**, src/core/save/**, src/save/**, src/sync/**, server/**': 'core',
   'ideas/opus-5-5-unicorn-egg-nest-v2/move.html': 'core',
@@ -29,18 +35,21 @@ export const OWNERS = {
   'src/scenes/*.svelte (Nest, Hatch, Naming, Wish, Stalls, Goodnight, EggChoice), src/scenes/heartbeat/**, src/scenes/naming/**': 'heartbeat',
   'src/ui/Gem.svelte, src/ui/GemSlots.svelte, src/ui/GemTray.svelte, src/ui/SoundSlider.svelte, src/ui/Stone.svelte, src/ui/StoneTray.svelte, src/ui/PrintWithDots.svelte': 'heartbeat',
   'content/lines/heartbeat.json, tools/heartbeat-lines.ts': 'heartbeat',
-  'src/core/places/**, src/core/report/**, src/scenes/places/**, src/places/**, src/parent/**, content/places/**, content/lines/places.json, tools/report.ts': 'places',
+  'src/core/places/**, src/core/report/**, src/scenes/places/**, src/places/**, src/parent/**, content/places/**, content/lines/places*.json, tools/report.ts': 'places',
   'src/ui/moment.ts, src/ui/moment-deps.ts, src/ui/ReplayButton.svelte, src/ui/Bubble.svelte, src/ui/MeadowArrow.svelte, src/ui/Crown.svelte, src/ui/JewelBox.svelte, src/ui/places-svg.ts': 'places',
-  'src/art/**, src/stress/**, stress.html, tools/art/**, art-src/**, public/art/**, flows/art-stress.sh': 'art',
-  'src/audio/**, tools/audio/**, tools/pull-unknown-names.ts, tools/names-lib.ts, tools/vite-shared-audio.ts, content/lines/{common,start,moving-day,core}.json, public/audio/{core,numbers,places,names-new,area-*}/**': 'audio',
+  'src/art/**, src/stress/**, stress.html, tools/art/**, flows/art-stress.sh': 'art-app (code and tests, R61)',
+  'art-src/**, public/art/** (manifest.json only through `pipeline manifest`)': 'art-gen (data, R61)',
+  'src/audio/**, tools/audio/**, tools/pull-unknown-names.ts, tools/names-lib.ts, tools/vite-shared-audio.ts, content/lines/{common,start,moving-day}.json, public/audio/{core,numbers,places,names-new,area-*}/**': 'audio',
   'public/audio/{words-*,names-t1,phrases-*}/lines.json': 'learning (lines.json only; audio generates the mp3 and manifest)',
   'scripts/generate-audio.py, scripts/generate-phonics.py, shared/audio.js, shared/audio.d.ts, shared/review.html': 'audio',
-  'src/game.svelte.ts, src/game/**, src/core/actions.ts, src/scenes/Welcome.svelte, src/scenes/MovingDay.svelte, flows/integration/**, tools/gate.sh': 'integration',
+  'src/game.svelte.ts, src/game/**, src/core/actions.ts, src/scenes/Welcome.svelte, src/scenes/MovingDay.svelte, src/scenes/Rest.svelte, flows/integration/**, flows/gate-*.txt, tools/gate.sh, tools/promote.sh, tools/go-live.sh': 'integration',
+  'README.md section "Play tonight", ideas/opus-5-5-unicorn-egg-nest-v2/index.html (the v3 moon link only)': 'integration (Task I-3G, R47)',
+  '.worktrees/** (lane worktrees, gitignored)': 'integrator creates and removes them (R42)',
 } as const;
 
 /** Ports. 8765 is Emma's live server and is never used by an agent test. */
 export const PORTS = {
-  emma: 8765,          // node games/moon-meadow-home/server/serve.ts (Tjitse's Mac, home network)
+  emma: 8765,          // MOON_DIST=dist-emma node games/moon-meadow-home/server/serve.ts (Tjitse's Mac, home network, R47)
   integration: 8766,   // flows/run.sh default
   platform: 8771, heartbeat: 8772, places: 8773, art: 8774, audio: 8775, learning: 8776,
   coreSync: 8799,      // two-context sync flows and server tests
@@ -129,7 +138,8 @@ export type MomentKind =
   | 'first-sound' | 'naming-bells' | 'naming-garden' | 'label' | 'label-plural' | 'sign' | 'note' | 'letter-order'
   | 'egg-moon' | 'egg-small-nest' | 'egg-two-stone' | 'egg-blanket' | 'egg-berry' | 'egg-snow'
   | 'door-visit' | 'roll-call-door' | 'trim' | 'beads' | 'post-pin' | 'post-sash' | 'parcel' | 'wall'
-  | 'roll-call' | 'envelope';
+  | 'roll-call' | 'envelope'
+  | 'station-wish';   // R34: a care-station wish; review or mixed picks only, never in a pass window
 
 export type V2Baby = {
   baby: string; v2id: number; name: string | null; gems: string[]; colours: Colours; traits: Traits;
@@ -323,6 +333,8 @@ export type RawWord = {
   kind: WordKind; prompt?: string; tags?: WordTag[]; syllables?: number; compound?: boolean;
   affix?: 'ing' | 'ed' | 'est' | 'er' | 'un';
   plural?: { w: string; ending: 's' | 'es' }; irregular?: { w: string };
+  /** R36: indexes into `gpcs` of the heart-part graphemes of a tricky word ('the': [1], 'said': [1]). Shown with a heart glow, never sounded out. */
+  heart?: number[];
 };
 export type RawName = {
   name: string; gpcs: GpcId[]; source: 'uk' | 'cyprus' | 'fantasy' | 'nature' | 'decodable' | 'v2';
@@ -407,7 +419,11 @@ export declare const CONTENT_HASH: string;
  * ===================================================================================== */
 
 export type AssetIndex = { clip(id: string): boolean; picture(id: string): boolean };
-export type PlanContext = { c: Content; l: Learner; now: number; assets: AssetIndex };
+export type PlanContext = {
+  c: Content; l: Learner; now: number; assets: AssetIndex;
+  /** R59: test builds only (the setScaffold hook). The planner uses it instead of the learned level. */
+  testScaffold?: Partial<Record<StepId, 1 | 2 | 3>>;
+};
 export type ItemRequest = {
   strand: Strand; moments: MomentKind[]; place: string; firstWish?: boolean; tags?: WordTag[];
   doors?: { built: number; own: number | null }; avoid?: string[]; accept?: (p: Pick) => boolean;
@@ -431,6 +447,8 @@ export type Carrier =
 export type Pick = {
   strand: LearnStrand; step: StepId | null; slot: Slot; moment: MomentKind;
   items: ItemId[]; carrier: Carrier; scaffold: 1 | 2 | 3; probe: boolean; pair?: string;
+  /** R36: display-only tricky words printed with the carrier ('the' before a wish word). Never items, never logged. */
+  display?: string[];
 };
 export type Outcome = { result: Result; ms: number | null; place: string; error?: ErrorTag | null; slots?: ItemResult[] };
 export type EggOffer = { kind: EggKind; pick: Pick | null };   // pick null: a free egg, hatches unchecked
@@ -481,6 +499,7 @@ export const SCENE_IDS = [
   'meadow', 'toy-shelf', 'label', 'bath-pond', 'building-day', 'dressing-corner', 'post-box', 'home-book',
   'salon', 'valley', 'letter-lane', 'hundred-party',                    // places
   'parent',                                                             // places (src/parent/ParentCorner.svelte)
+  'rest',                                                               // integration: end of every visit, the moon starts the next (R45)
   'platform-demo',                                                      // platform, test builds only
 ] as const;
 export type SceneId = (typeof SCENE_IDS)[number];
@@ -524,9 +543,10 @@ export declare const game: {
   go(scene: string, params?: Record<string, unknown>): Promise<void>;
   planContext(): PlanContext;
   rng: Rng;                              // seeded in test builds (__game.seed)
-  readonly visitOpen: boolean;           // false after visit.end until the next Play
+  readonly visitOpen: boolean;           // false after visit.end until the rest scene's moon starts the next visit
+  ready(): Promise<void>;                // R44: the store opens at module load; await before dispatch
   now(): number;                         // platform clock
-  endVisit(reason: 'goodnight' | 'idle' | 'hidden'): void;
+  endVisit(reason: 'goodnight' | 'idle' | 'hidden'): void;   // writes visit.end, then router.reset('rest') (R45)
   markRefolded(): void;                  // after a sync or import
   readonly data: unknown;                // core GameData (parent corner backup, sync)
 };
@@ -569,7 +589,9 @@ export declare function isAnnounced(world: World, opening: string): boolean;
 /** Moment controller (places src/ui/moment.ts). Heartbeat's hint runner wraps it. */
 export type Moment = {
   start(): Promise<void>; touch(): void; miss(): void; answer(chosenTouchAt?: number): { result: Result; ms: number };
-  replay(): Promise<void>; dispose(): void; hookAnswer(): void; hookWrong(): void; hookIdle(): void;
+  replay(): Promise<void>; dispose(): void; hookAnswer(): void; hookWrong(kind?: string): void; hookIdle(): void;
+  /** aria-label of the right answer, so a flow can tap it for real. */
+  target(): string | null;
 };
 export declare function activeMoment(): Moment | null;
 
@@ -580,6 +602,10 @@ export declare function activeMoment(): Moment | null;
 export type NameMark = '!' | '?';
 export type SfxName = 'pop' | 'chime' | 'sparkle' | 'whoosh' | 'soft-no' | 'fanfare' | 'splash' | 'munch' | 'tick' | 'magic' | 'hatch';
 export type HoldHandle = { stop(): void; done: Promise<void> };
+/** R52: static clip ids are the generated union (audio src/audio/clip-ids.generated.ts); dynamic ones carry a known prefix. */
+export type ClipId = string;   // narrowed to the generated union in the app
+export type DynamicClipId = `word-${string}` | `name-${string}` | `num-${string}` | `phrase-${string}` | `ord-${string}` | `sound-${string}`;
+export type SpeakId = ClipId | DynamicClipId;
 export interface Audio {
   init(opts: { base: string }): Promise<void>;       // main.ts: base = import.meta.env.BASE_URL + 'audio/'
   unlock(): Promise<void>;                            // Play button pointerdown
@@ -587,9 +613,9 @@ export interface Audio {
   has(id: string): boolean;                           // alias of hasClip
   hasName(name: string): boolean;                     // hasClip(nameId(name, '!'))
   nameClip(name: string, mark: NameMark): string | null;   // '?' falls back to '!'
-  say(id: string | null | undefined): Promise<void>;
-  speak(...ids: Array<string | null | undefined>): Promise<void>;   // missing dynamic ids are dropped silently
-  sayAll(ids: ReadonlyArray<string | null | undefined>): Promise<void>;
+  say(id: SpeakId | null | undefined): Promise<void>;
+  speak(...ids: Array<SpeakId | null | undefined>): Promise<void>;   // a missing dynamic id is skipped but recorded in `missing`
+  sayAll(ids: ReadonlyArray<SpeakId | null | undefined>): Promise<void>;
   replay(...ids: Array<string | null | undefined>): Promise<void>;
   sayName(name: string, mark: NameMark): Promise<boolean>;            // false and silent when no clip
   listen(id: string | null | undefined): Promise<void>;               // a clip Emma asked for: never cut off
@@ -607,7 +633,7 @@ export interface Audio {
   setFast(on: boolean): void;
   readonly said: readonly string[];
   readonly speaking: boolean;
-  readonly missing: readonly string[];
+  readonly missing: readonly string[];   // also filled in fast mode (R52)
 }
 export declare const audio: Audio;
 
@@ -636,8 +662,8 @@ export interface ArtManifest {
   pictures: Record<string, PictureEntry>; backgrounds: Record<string, BackgroundEntry>;
   unicorns: Record<string, unknown>; lumi: unknown | null; patterns: { speckle: string } | null;
 }
-export declare function loadArtManifest(base?: string, file?: string): Promise<ArtManifest>;   // main.ts awaits before Play
-export declare function hasPicture(id: string): boolean;
+export declare function loadArtManifest(base?: string, file?: string): Promise<ArtManifest>;   // main.ts awaits before Play; never rejects (R49)
+export declare function hasPicture(id: string): boolean;   // false while no manifest is loaded
 export declare function picture(id: string): PictureEntry | undefined;
 export declare function background(id: string): BackgroundEntry | undefined;
 export declare function artUrl(src: string): string;    // takes an entry's src, not an id
@@ -670,6 +696,7 @@ export const SCENE_ART_IDS = {
   bgMeadow: 'bg-meadow', bgNest: 'bg-nest', bgStables: 'bg-stable-yard', bgSky: 'bg-sky', bgBuilding: 'bg-building-yard',
   bgPond: 'bg-bath-pond', bgPost: 'bg-post-box', bgDressing: 'bg-dressing-corner', bgSalon: 'bg-salon',
   bgValley: 'bg-valley-map', bgLetters: 'bg-letter-lane',
+  careBrush: 'item-brush', careTreat: 'item-treat', careHeart: 'item-heart', moon: 'item-moon',   // heartbeat 23B, rest scene
 } as const;
 export function eggArtId(kind: EggKind, skin: 'golden' | 'speckled' | null): string {
   return skin ? `egg-${skin}` : `egg-${BREED_OF[kind]}`;
@@ -699,15 +726,17 @@ export interface TestHook {
   setScaffold(strand: Strand, step: StepId, level: 1 | 2 | 3): Promise<unknown>;
   pass(strand: Strand, step: StepId): Promise<unknown>;    // a real step.passed
   answer(): Promise<unknown>;                              // scene hook first, else activeMoment()
-  wrong(): Promise<unknown>;
+  wrong(kind?: string): Promise<unknown>;                  // kind: 'one-for-many', 'many-for-one', 'count-low', 'count-high', 'ending', 'bare-word'
   idle(): Promise<unknown>;
+  target(): Promise<string | null>;                        // aria-label of the right answer, for real taps
+  pairForTest(code: string): Promise<unknown>;             // Wave C, registered by integration I-6
   importFixture(name: string): Promise<unknown>;           // tests/fixtures/<name>.json, e.g. 'v2-save'
   herd(n: number): Promise<unknown>;                       // hatches and names n babies through real events
   newVisit(): Promise<unknown>;                            // visit.end, clock +6 h, visit.start
   announce(opening: string): Promise<unknown>;             // an opening.announced event
   syncNow(): Promise<unknown>;                             // Wave C
-  said(): readonly string[];                               // audio.said
-  audioMissing(): readonly string[];                       // audio.missing; flows assert it is empty
+  said(): readonly string[];                               // synchronous, reads audio.said (platform A10)
+  audioMissing(): readonly string[];                       // synchronous, reads audio.missing; flows assert it is empty
   errors(): string[];                                      // console errors, window errors, CSP violations
   call(name: string, ...args: unknown[]): Promise<unknown>;
   places?: unknown;                                        // registerHookExtension('places', placesHook())
@@ -735,13 +764,15 @@ export type UnknownNamesResponse = {
 };
 export type SyncStatus = { state: 'unpaired' | 'idle' | 'syncing' | 'offline' | 'error' | 'unauthorised'; family: string | null; lastSuccess: number | null; lastError: string | null; nextTry: number | null; unsent: number; rejected: number };
 export interface SyncClient { pair(code: string): Promise<unknown>; syncNow(): Promise<void>; status(): SyncStatus; start(): void; stop(): void; unpair(): Promise<void>; onChange(fn: () => void): () => void }
-/** Server env: PORT (8765), HOST (0.0.0.0 for Emma, 127.0.0.1 for tests), MOON_DIST (dist or dist-test-<stream>),
+/** Server env: PORT (8765), HOST (0.0.0.0 for Emma, 127.0.0.1 for tests), MOON_DIST (dist-emma for Emma, dist-test-<lane> for tests),
  *  MOON_BASE ('/games/moon-meadow-home/'), MOON_DATA, MOON_CSP ('off' to disable), TRUST_PROXY.
  *  names:pull reads MOON_ADMIN_TOKEN, which tools/pull-unknown-names.ts loads with process.loadEnvFile(). */
 export const SERVER_ENV = ['PORT', 'HOST', 'MOON_DIST', 'MOON_BASE', 'MOON_DATA', 'MOON_CSP', 'TRUST_PROXY'] as const;
 
 /* =====================================================================================
  * 12. Ids: items, clips and names. The builders below are exact.
+ *     owner: platform writes this section verbatim to src/core/keys.ts in the skeleton task (R40). Learning gpc.ts
+ *     and ids.ts, heartbeat check.ts and audio ids.ts re-export from it; nobody keeps a copy.
  * ===================================================================================== */
 
 /**

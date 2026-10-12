@@ -24,7 +24,22 @@
 - The style-exploration files already in `art-src/` (`bg-*.png`, `breed-*.png`) may be used as sources; they go through review like any Codex output.
 - Ids that other streams use are listed in `SCENE_ART_IDS` (contracts C9). Keep those ids in the lists.
 
-**Batches.** art-gen: A0: A1 to A5; then rolling across A1 to A6: A3 calibration, A13, A11 sprites and Lumi, A12 (60 minutes), A14; B1: B1 to B5; C1: C1 to C3. art-app: A1: A6; A2: A7, A8, A9, A10; A6: A11 (second stress run), A14 check; C3: C4. Lane port 8774.
+**Batches.** art-gen (main tree): A0: A1 to A5 (A2 includes the four `ui-*` lines in `items.txt` and the `test_lists.py` counts); A1: A13 (seed words), A14a; A3: A13b, A11b (breed sprites), A12 (60 minutes); A4: A11b (Lumi, after A11a is merged); B1: B1 to B5; C1: C1 to C3. art-app (`.worktrees/art-app`): A1: A6; A2: A7, A8, A9, A10; A3: A11a; A6: A11c, A14b; C3: C4. Lane port 8774.
+
+### Validation round 2 (binding)
+
+Decisions R34 to R64 in master section 2.1. Where this block and a task below differ, this block wins.
+
+- Ownership (R61). From batch A1 on, `art-app` owns all code and tests (`tools/art/**`, `src/art/**`, `src/stress/**`, `stress.html`, `flows/art-stress.sh`), and `art-gen` owns all data (`art-src/**`, `public/art/**`). Only `art-gen` runs `pipeline manifest`, so only it writes `public/art/manifest.json`. In batch A0, `art-gen` is the only art lane and writes Tasks A1 to A5 code and tests as planned.
+- A2: the four SVG-only UI lines of A14 (`ui-ghost-hand`, `ui-replay`, `ui-turn-ipad`, `ui-play`) go into `items.txt` here, with the `test_lists.py` counts in the same commit. Add `item-moon` (the rest scene), `item-brush`, `item-treat`, `item-heart` (heartbeat 23B) as Wave A items. The `pin` word prompt is a round badge pin with a star (changed in place; nothing sharp).
+- A6 (R49): `loadArtManifest` catches a missing, unreadable or wrong-version manifest, logs it once with `console.warn`, and uses an empty manifest, so every picture takes its SVG fallback; it never rejects. `hasPicture` and `picture` return `false` and `undefined` while nothing is loaded. Tests: a 404 manifest resolves to an empty manifest; `hasPicture('hat')` before loading is false.
+- A9 (R63): `Unicorn` takes `lite?: boolean`. In lite mode it draws one pre-tinted flat sprite per breed and stage (no multiply blend, no mask layers). A8's derive step writes the flat sprites (`<breed>-<stage>-flat.webp`) next to the layered ones.
+- A11 is split. A11a (`art-app`, batch A3): the `lumi` pipeline command, the drift test (Step 1 and 2), and `plan-sheets --source <list name>` reading `art-src/lists/<list name>.txt`. A11b (`art-gen`, batches A3 and A4): Steps 3 and 4 (breed sprites from A3, Lumi after A11a is merged), then `pipeline manifest`. A11c (`art-app`, batch A6): Step 5, the stress run against the lane server (`MMH_URL`), not a Vite dev server.
+- New Task A13b (`art-gen`, batches A3 and A4, R62): read learning's `content/pictures-needed.json` (merged in batch A2), write every id not in `words.txt` with its prompt into `art-src/lists/words-top.txt` (same line format), then `plan-sheets --batch words-b --source words-top`, `gen`, `cut`, look at every picture, `redo` once, `svg` for the rest, `manifest`. Commit after each step as A13 does. If `--source` does not take a list name yet, run A13b after A11a is merged. Order: the R19 and S10 plural words first.
+- A14 is split. A14a (`art-gen`, from batch A1): Steps that generate, review and build the 67 Wave A items and 6 backgrounds; nest, egg and bell items first. A14b (`art-app`, batch A6): `tools/art/tests/test_wave_a.py` and the Wave A art check.
+- Usage limits: when Codex stops on the subscription's limit, `art-gen` waits at most 60 minutes per stop. After that, the remaining items and backgrounds take their SVG fallbacks and the remaining words stay hidden by the planner; the run continues in the next batch.
+- B5 covers the Wave B requests only; the word top-up is A13b.
+- C4 and A11c use the lane server, never a Vite dev server.
 
 ## Global Constraints
 
@@ -709,7 +724,7 @@ R41 | jewel stew glue statue screw
 
 ```
 tap: a shiny kitchen water tap
-pin: a sewing pin with a round pink head
+pin: a round badge pin with a little gold star on it, like the pins on a unicorn's sash (nothing sharp)
 pan: a small cooking pan with a handle
 map: a folded paper treasure map
 mat: a small striped doormat
