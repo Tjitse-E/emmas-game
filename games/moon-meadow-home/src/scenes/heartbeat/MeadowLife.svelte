@@ -16,11 +16,8 @@
   import { bridge } from './deps.ts';
   import ArtImg from './ArtImg.svelte';
   import Moonflowers from './Moonflowers.svelte';
-  import { hasPicture } from '../../art/manifest.ts';
-  import { testSeed } from '../../platform/hooks.ts';
-  import { makeRng } from '../../core/rng.ts';
-  import { trayFoods } from '../../core/heartbeat/feed.ts';
   import { feedState } from '../feed/flags.ts';
+  import { pickTray, trayRng, trayWordMap } from '../feed/tray.ts';
   import FoodTray from '../feed/FoodTray.svelte';
   import Munch from '../feed/Munch.svelte';
 
@@ -36,13 +33,8 @@
   const TOOLS: Exclude<CareTool, 'food'>[] = ['brush', 'heart'];
   const TOOL_ART: Record<Exclude<CareTool, 'food'>, string> = { brush: SCENE_ART_IDS.careBrush, heart: SCENE_ART_IDS.careHeart };
   // The tray: three foods she can read when there are, new on each meadow arrival (N23). Only pictured foods with a clip.
-  const trayWords = new Map([...bridge.words()].filter(([, w]) => w.food && hasPicture(w.picture) && audio.hasClip(w.clip)));
-  const readable = (step: string): boolean => {
-    const st = bridge.stepStatusOf(step);
-    return st === 'passed' || st === 'placed' || step === bridge.currentStepOf('r');
-  };
-  const seed = testSeed();
-  const tray = trayFoods(trayWords.values(), (w) => readable(w.step), seed !== null ? makeRng(seed + 4111) : game.rng);
+  const trayWords = trayWordMap();
+  const tray = pickTray(trayWords, trayRng(4111));
   feedState.tray = [...tray];
   let munch = $state<{ baby: string; picture: string; n: number } | null>(null);
   const babies = $derived(meadowBabies(game.world.herd));

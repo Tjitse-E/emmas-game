@@ -160,7 +160,7 @@
       use:drag={{ data: 'baby', disabled: ctrl.task.kind !== 'station' || v.done,
         onDrop: (d) => { if (d.targetId?.startsWith('station-')) void ctrl.toStation(d.targetId.slice(8) as StationId); } }}>
       <Unicorn breed={who.breed} stage={who.stage} colours={who.colours} traits={who.traits} height={250} pose={v.done ? 'happy' : 'idle'} label="" />
-      {#if hungry && v.done}<Munch picture={ctrl.task.word.picture} size={84} left={232} top={60} />{/if}
+      {#if hungry && v.done}<Munch picture={ctrl.task.word.picture} size={84} left={228} top={82} />{/if}
     </div>
     {#if ctrl.task.kind !== 'station'}
       <div class="basket basket-{ctrl.task.basket.length}" bind:this={basketEl}>

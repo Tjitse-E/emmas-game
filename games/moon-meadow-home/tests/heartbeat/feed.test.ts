@@ -3,7 +3,7 @@ import { content } from '../../src/core/content/static.ts';
 import { wordEntries } from '../../src/scenes/heartbeat/learn-bridge.ts';
 import {
   LOOK_ALIKE, UNICORN_FOODS, foodPool, hungryDue, isUnicornFood, mangerPlan, mangerWants, rackGoalLines, rackHintLines,
-  rackMissLines, rackSuccessLines, rackTask, trayFoods, withoutLookAlikes,
+  rackMissLines, rackSlots, rackSuccessLines, rackTask, trayFoods, withoutLookAlikes,
 } from '../../src/core/heartbeat/feed.ts';
 import { makeRng } from '../../src/core/rng.ts';
 import type { Pick } from '../../src/core/planner/index.ts';
@@ -115,5 +115,17 @@ describe('the hay rack', () => {
     expect(rackMissLines(-3)).toEqual(['num-more-3']);
     expect(rackSuccessLines(t)).toEqual(['fb-rack-full', 'num-bond-9-6']);
     expect(rackHintLines(t)).toEqual(['h-count-gaps', 'num-1', 'num-2', 'num-3', 'num-4', 'num-5', 'num-6']);
+  });
+  it('lays the slots out in frames of ten and shows the crossing', () => {
+    const t = rackTask(pick(13, 9))!;
+    const empty = rackSlots(t, null);
+    expect(empty.frames.map((f) => f.length)).toEqual([10, 3]);
+    expect(empty.frames[0].filter((x) => x === 0)).toHaveLength(9);
+    const right = rackSlots(t, 4);
+    expect(right.frames[0]).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+    expect(right.frames[1]).toEqual([1, 1, 1]);
+    expect(right.spill).toBe(0);
+    expect(rackSlots(t, 6).spill).toBe(2);
+    expect(rackSlots(rackTask(pick(8, 3))!, 2).frames).toEqual([[0, 0, 0, 1, 1, -1, -1, -1]]);
   });
 });

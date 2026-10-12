@@ -148,6 +148,21 @@ export function rackSuccessLines(t: EggTask): string[] {
   return ['fb-rack-full', bondId(t.warm, t.target)];
 }
 
+/**
+ * The hay rack's slots in frames of ten (one frame up to 10, two over 10, as nestsOf), per slot: 0 already in,
+ * 1 filled by the dropped pile, -1 empty. `spill` is how many bundles of a too-big pile do not fit.
+ */
+export function rackSlots(t: EggTask, filled: number | null): { frames: (0 | 1 | -1)[][]; spill: number } {
+  const sizes = t.cups <= 10 ? [t.cups] : [10, t.cups - 10];
+  const add = filled ?? 0;
+  let i = 0;
+  const frames = sizes.map((n) => Array.from({ length: n }, (): 0 | 1 | -1 => {
+    const k = i++;
+    return k < t.warm ? 0 : k < t.warm + add ? 1 : -1;
+  }));
+  return { frames, spill: Math.max(0, t.warm + add - t.cups) };
+}
+
 /** Level 2: count the empty slots, one to the answer. */
 export function rackHintLines(t: EggTask): string[] {
   const out = ['h-count-gaps'];
