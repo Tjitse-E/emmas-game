@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Seven heartbeats over every Wave A egg step (M01, M02, M05, M09, M10, M11, M12): nest, hatch, naming, the wish
 # (the first three as R19 one-or-many wishes at levels 1, 2 and 3 with both mistakes, master 5.1 check 11),
-# move-in and door visits (tapped for real), then goodnight: roll call, the count, a sky unicorn, the rest scene.
+# move-in and door visits (tapped for real), then goodnight stage by stage (the lantern walk, the stable, bed, the
+# window, the count, a sky unicorn) to the rest scene.
 . "$(dirname "$0")/../lib.sh"
 . "$(dirname "$0")/lib-hb.sh"
 pw delete-data >/dev/null 2>&1 || true
@@ -45,15 +46,6 @@ expect_eq "$(state herd)" 7 'herd after seven heartbeats'
 hook "call('hb.goodnight')" >/dev/null
 wait_for "() => ['goodnight', 'rest'].includes(window.__game.state().scene)"
 shot goodnight
-for _ in $(seq 1 12); do
-  [ "$(state scene)" = goodnight ] || break
-  st="$(val "async () => { try { return await window.__game.call('goodnight.stage'); } catch { return 'wait'; } }")"
-  case "$st" in
-    rollcall) t="$(val "async () => (await window.__game.target()) ?? 'none'")"; case "$t" in door*) tap "$t" ;; esac ;;
-    sky-name) hook "call('naming.gold', ['S', 'a', 'm'])" >/dev/null ;;
-  esac
-  sleep 0.3
-done
-scene_is rest
+goodnight_through
 expect_eq "$(val '() => window.__game.said().includes("lumi-goodnight-emma")')" true 'Lumi says goodnight'
 finish
