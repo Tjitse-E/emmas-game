@@ -9,3 +9,4 @@ bg-dressing-corner | B | dressing | a pretty open gazebo dressing corner with a 
 bg-salon | C | salon | a bright cosy hair salon for unicorns with a big mirror on the left and shelves of brushes and bows. Open floor in the centre
 bg-valley-map | C | valley | a painted map of a small valley seen from above at an angle: a meadow at the bottom, a stable yard, a village lane, a hill with an old castle, and sky at the top, soft paths between them and empty plots of grass
 bg-letter-lane | C | letters | a little lane in the stable yard with a path and soft grass. The lane centre is open
+bg-stable-night | A | stables | the inside of a cosy wooden unicorn stable at night seen from the front: warm golden lantern light, wooden beams and a wooden back wall with no windows, a soft straw floor. The middle and the floor are open and empty, with no stalls, no animals and no furniture in the middle
