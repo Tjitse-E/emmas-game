@@ -17,3 +17,5 @@ export type { ErrorInput } from './errors.ts';
 // Places' plan imports the visit signals from here; the planner owns them.
 export { visitStats, isTired, spellingShareLow, wantsLabelBubble, leastPractisedStrand, visitRange, shouldVisitDoor } from '../planner/visit.ts';
 export type { VisitStats } from '../planner/visit.ts';
+export { learnerReport, isSecure } from './report.ts';
+export type { StrandReport } from './report.ts';

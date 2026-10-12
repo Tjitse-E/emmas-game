@@ -93,7 +93,8 @@ export type VisitState = {
   recent: string[];               // carrier keys, newest last
 };
 export type FluencyState = { median: number | null; computedAt: number; samples: number[] };
-export type RecentResult = { t: number; r: Result; err: ErrorTag | null; slot: Slot };
+/** pair: the contrast pair of a Dutch-tagged error, when the result names it (a pair item or a twin carrier). */
+export type RecentResult = { t: number; r: Result; err: ErrorTag | null; slot: Slot; pair?: string };
 export type Learner = {
   v: 1;
   profile: string;
