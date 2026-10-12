@@ -6,6 +6,7 @@ import { nameKey } from '../../src/core/keys.ts';
 import type { Pick } from '../../src/core/planner/index.ts';
 import type { Served } from '../../src/core/heartbeat/types.ts';
 import { servedFromPick } from '../../src/scenes/heartbeat/learn-bridge.ts';
+import { BY_WORD } from './words.ts';
 
 export function fakeDeps(opts: { names?: string[]; seed?: number; clips?: (id: string) => boolean } = {}) {
   const said: string[] = [];
@@ -52,5 +53,5 @@ export function served(p: Partial<Pick> = {}, over: Partial<Served> = {}): Serve
     strand: 'm', step: 'M09', slot: 'current', moment: 'egg-moon', items: ['m:miss:10-3'],
     carrier: { kind: 'maths', task: { op: 'missing', whole: 10, part: 3 } }, scaffold: 1, probe: false, ...p,
   };
-  return { ...servedFromPick(pick, new Map())!, ...over };
+  return { ...servedFromPick(pick, BY_WORD)!, ...over };
 }
