@@ -2,3 +2,5 @@
 {"t": "2026-10-12T12:13:21", "lines": "stt-probe", "made": 0, "chars": 0, "credits": 2, "credits_before": null, "stt_calls": 6, "stt_credits": 2}
 {"t": "2026-10-12T13:05:07", "lines": "games/moon-meadow-home/public/audio/core/lines.json", "made": 73, "chars": 998, "credits": 1034.76, "credits_before": 33999, "stt_calls": 64, "stt_credits": 21.76}
 {"t": "2026-10-12T13:08:42", "lines": "games/moon-meadow-home/public/audio/numbers/lines.json", "made": 365, "chars": 5621, "credits": 5745.1, "credits_before": 33935, "stt_calls": 365, "stt_credits": 124.1}
+{"t": "2026-10-12T13:14:53", "lines": "games/moon-meadow-home/public/audio/words-phase3-4/lines.json", "made": 408, "chars": 2776, "credits": 2914.72, "credits_before": 32970, "stt_calls": 408, "stt_credits": 138.72}
+{"t": "2026-10-12T13:17:36", "lines": "games/moon-meadow-home/public/audio/words-year1/lines.json", "made": 320, "chars": 2114, "credits": 2222.8, "credits_before": 32589, "stt_calls": 320, "stt_credits": 108.8}

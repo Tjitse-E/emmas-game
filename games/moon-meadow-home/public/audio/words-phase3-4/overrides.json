@@ -1,0 +1,41 @@
+{
+ "word-barns": {
+  "seed": 2011
+ },
+ "word-bee": {
+  "seed": 2011
+ },
+ "word-braids": {
+  "seed": 1011
+ },
+ "word-cheek": {
+  "seed": 1011
+ },
+ "word-forts": {
+  "seed": 1011
+ },
+ "word-jars": {
+  "seed": 2011
+ },
+ "word-mints": {
+  "seed": 1011
+ },
+ "word-pair": {
+  "seed": 2011
+ },
+ "word-pairs": {
+  "seed": 2011
+ },
+ "word-sails": {
+  "seed": 2011
+ },
+ "word-slippers": {
+  "seed": 1011
+ },
+ "word-tails": {
+  "seed": 2011
+ },
+ "word-tents": {
+  "seed": 2011
+ }
+}
