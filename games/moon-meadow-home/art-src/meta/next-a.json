@@ -1,0 +1,60 @@
+{
+ "pictures": {
+  "item-stall-bed": {
+   "src": "items/item-stall-bed.webp",
+   "w": 355,
+   "h": 360,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-manger": {
+   "src": "items/item-manger.webp",
+   "w": 240,
+   "h": 159,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-food-tray": {
+   "src": "items/item-food-tray.webp",
+   "w": 320,
+   "h": 235,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-cup-nest": {
+   "src": "items/item-cup-nest.webp",
+   "w": 360,
+   "h": 152,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-straw-pile": {
+   "src": "items/item-straw-pile.webp",
+   "w": 320,
+   "h": 156,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-sleep-blanket": {
+   "src": "items/item-sleep-blanket.webp",
+   "w": 320,
+   "h": 176,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-hay-bundle": {
+   "src": "items/item-hay-bundle.webp",
+   "w": 200,
+   "h": 119,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  }
+ }
+}

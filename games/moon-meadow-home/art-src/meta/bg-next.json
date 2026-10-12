@@ -1,0 +1,12 @@
+{
+ "backgrounds": {
+  "bg-stable-night": {
+   "src": "bg/bg-stable-night.webp",
+   "w": 1770,
+   "h": 1230,
+   "pack": "stables",
+   "dominant": "#c37935",
+   "source": "codex"
+  }
+ }
+}
