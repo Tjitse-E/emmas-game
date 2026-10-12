@@ -28,6 +28,7 @@
   import { bubbleCandidates, bubblePlace, pickBubbles, type BubbleCandidate } from '../../core/places/bubbles.ts';
   import { isAnnounced, openingDefs, openingDue } from '../../core/places/openings.ts';
   import { CURRENT_RELEASE } from '../../core/places/content.ts';
+  import { readyPlots } from '../../core/places/building.ts';
   import type { PlacesState } from '../../core/places/state.ts';
   import { canServeSlot, visitPlan } from '../../places/plan.ts';
   import { registerMeadow } from '../../places/hook.ts';
@@ -83,9 +84,14 @@
   }
 
   // ---- bubbles
-  /** Ready Building Days (Task A13 replaces this with the real selector). */
+  /** Ready Building Days (Task A13): earned herd plots, the next stable row and fully lit jewel plots. */
   function readyPlotsNow(): string[] {
-    return [];
+    try {
+      return readyPlots({ s: game.world.places as unknown as PlacesState, release: CURRENT_RELEASE, rowsBuilt: game.world.rowsBuilt });
+    } catch (e) {
+      console.warn('[meadow] no ready plots', e);
+      return [];
+    }
   }
   /** Open free-play places a play bubble may point at. */
   function freePlayNow(): string[] {

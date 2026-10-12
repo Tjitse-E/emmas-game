@@ -22,7 +22,7 @@
     "simulate": "node tools/simulate.ts",
     "names:pull": "node tools/pull-unknown-names.ts",
     "report": "node tools/report.ts",
-    "serve": "PORT=8765 HOST=0.0.0.0 node server/serve.ts",
+    "serve": "bash tools/go-live.sh",
     "serve:test": "PORT=${MMH_PORT:-8766} HOST=127.0.0.1 MOON_DIST=${MOON_DIST:-dist-test} MOON_DATA=${MOON_DATA:-$TMPDIR/mmh-test-data} node server/serve.ts",
     "server:pair": "node server/admin.ts pair",
     "flows": "bash flows/run.sh",
