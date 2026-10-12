@@ -137,6 +137,179 @@
    "kind": "pin",
    "pack": "core",
    "source": "codex"
+  },
+  "item-brush": {
+   "src": "items/item-brush.webp",
+   "w": 247,
+   "h": 256,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-treat": {
+   "src": "items/item-treat.webp",
+   "w": 256,
+   "h": 248,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-heart": {
+   "src": "items/item-heart.webp",
+   "w": 256,
+   "h": 227,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "ui-icon-envelope": {
+   "src": "ui/ui-icon-envelope.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-icon-hammer": {
+   "src": "ui/ui-icon-hammer.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-icon-jewel": {
+   "src": "ui/ui-icon-jewel.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-icon-jar": {
+   "src": "ui/ui-icon-jar.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-icon-moon": {
+   "src": "ui/ui-icon-moon.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-star": {
+   "src": "ui/ui-star.webp",
+   "w": 128,
+   "h": 128,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-sparkle": {
+   "src": "ui/ui-sparkle.webp",
+   "w": 128,
+   "h": 128,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "decor-moonflower": {
+   "src": "items/decor-moonflower.webp",
+   "w": 162,
+   "h": 192,
+   "kind": "decor",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "decor-moonflower-patch-3": {
+   "src": "items/decor-moonflower-patch-3.webp",
+   "w": 320,
+   "h": 301,
+   "kind": "decor",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-stall-door": {
+   "src": "items/item-stall-door.webp",
+   "w": 355,
+   "h": 400,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex",
+   "tint": {
+    "default": "#b98ad8"
+   }
+  },
+  "item-stall-door-open": {
+   "src": "items/item-stall-door-open.webp",
+   "w": 374,
+   "h": 400,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex",
+   "tint": {
+    "default": "#b98ad8"
+   }
+  },
+  "item-trim-tile": {
+   "src": "items/item-trim-tile.webp",
+   "w": 160,
+   "h": 159,
+   "kind": "item",
+   "pack": "building",
+   "source": "codex",
+   "tint": {
+    "default": "#f2a6c7"
+   }
+  },
+  "item-plot-stone": {
+   "src": "items/item-plot-stone.webp",
+   "w": 256,
+   "h": 204,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex",
+   "tint": {
+    "default": "#ffd86b"
+   }
+  },
+  "ui-stone": {
+   "src": "ui/ui-stone.webp",
+   "w": 256,
+   "h": 256,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex",
+   "tint": {
+    "default": "#cfd6e6"
+   }
+  },
+  "ui-gem": {
+   "src": "ui/ui-gem.webp",
+   "w": 256,
+   "h": 256,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex",
+   "tint": {
+    "default": "#ff8fc4"
+   }
+  },
+  "ui-gem-crescent": {
+   "src": "ui/ui-gem-crescent.webp",
+   "w": 256,
+   "h": 256,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex",
+   "tint": {
+    "default": "#ffd36b"
+   }
   }
  }
 }

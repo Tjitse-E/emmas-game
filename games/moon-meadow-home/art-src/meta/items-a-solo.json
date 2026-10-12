@@ -1,0 +1,28 @@
+{
+ "pictures": {
+  "building-bath-pond": {
+   "src": "items/building-bath-pond.webp",
+   "w": 1024,
+   "h": 819,
+   "kind": "building",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-moonbeam-bridge": {
+   "src": "items/item-moonbeam-bridge.webp",
+   "w": 1024,
+   "h": 807,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "building-stall-row": {
+   "src": "items/building-stall-row.webp",
+   "w": 1400,
+   "h": 798,
+   "kind": "building",
+   "pack": "stables",
+   "source": "codex"
+  }
+ }
+}

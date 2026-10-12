@@ -1,0 +1,74 @@
+{
+ "batch": "words-a-r1",
+ "source": "words",
+ "sheets": [
+  {
+   "id": "words-a-r1-01",
+   "cols": 2,
+   "rows": 2,
+   "ids": [
+    "sash",
+    "pea",
+    "cube",
+    "toad"
+   ],
+   "descs": [
+    "a wide shiny pink satin sash like a winner wears, a long band hanging in a big V shape with a small rosette where the ends meet",
+    "one single big round shiny green pea with a tiny green stalk and a curly tendril on top, alone, not in a pod",
+    "a plain glossy pastel blue cube with soft rounded corners, three faces showing, like a big sugar cube",
+    "a brown bumpy plush toy toad with warty spots, sitting"
+   ],
+   "grey": false
+  }
+ ],
+ "entries": {
+  "sash": {
+   "id": "sash",
+   "kind": "word",
+   "wave": "A",
+   "pack": "words",
+   "size": 320,
+   "desc": "a wide shiny pink satin sash like a winner wears, a long band hanging in a big V shape with a small rosette where the ends meet",
+   "tint": null,
+   "slot": null,
+   "step": "R19",
+   "priority": 1
+  },
+  "pea": {
+   "id": "pea",
+   "kind": "word",
+   "wave": "A",
+   "pack": "words",
+   "size": 320,
+   "desc": "one single big round shiny green pea with a tiny green stalk and a curly tendril on top, alone, not in a pod",
+   "tint": null,
+   "slot": null,
+   "step": "R20",
+   "priority": 1
+  },
+  "cube": {
+   "id": "cube",
+   "kind": "word",
+   "wave": "A",
+   "pack": "words",
+   "size": 320,
+   "desc": "a plain glossy pastel blue cube with soft rounded corners, three faces showing, like a big sugar cube",
+   "tint": null,
+   "slot": null,
+   "step": "R38",
+   "priority": 1
+  },
+  "toad": {
+   "id": "toad",
+   "kind": "word",
+   "wave": "A",
+   "pack": "words",
+   "size": 320,
+   "desc": "a brown bumpy plush toy toad with warty spots, sitting",
+   "tint": null,
+   "slot": null,
+   "step": "R14",
+   "priority": 2
+  }
+ }
+}

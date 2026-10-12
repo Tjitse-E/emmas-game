@@ -31,6 +31,30 @@
    "kind": "item",
    "pack": "meadow",
    "source": "codex"
+  },
+  "item-sign-board": {
+   "src": "items/item-sign-board.webp",
+   "w": 640,
+   "h": 602,
+   "kind": "item",
+   "pack": "building",
+   "source": "codex"
+  },
+  "item-plot": {
+   "src": "items/item-plot.webp",
+   "w": 640,
+   "h": 640,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "building-stable-gate": {
+   "src": "items/building-stable-gate.webp",
+   "w": 640,
+   "h": 531,
+   "kind": "building",
+   "pack": "meadow",
+   "source": "codex"
   }
  }
 }

@@ -1,6 +1,6 @@
 {
  "v": 1,
- "built": "2026-10-12T12:30:26",
+ "built": "2026-10-12T12:44:36",
  "rigMode": "sprite",
  "pictures": {
   "apple": {
@@ -44,6 +44,38 @@
     "default": "#e8505b"
    }
   },
+  "basket": {
+   "src": "words/basket.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bat": {
+   "src": "words/bat.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bath": {
+   "src": "words/bath.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "beach": {
+   "src": "words/beach.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "bead": {
    "src": "words/bead.webp",
    "w": 320,
@@ -55,8 +87,24 @@
     "default": "#ff9f43"
    }
   },
+  "bean": {
+   "src": "words/bean.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "bed": {
    "src": "words/bed.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bee": {
+   "src": "words/bee.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -71,8 +119,24 @@
    "pack": "words",
    "source": "codex"
   },
+  "belt": {
+   "src": "words/belt.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "bench": {
    "src": "words/bench.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bib": {
+   "src": "words/bib.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -87,8 +151,56 @@
    "pack": "words",
    "source": "codex"
   },
+  "bin": {
+   "src": "words/bin.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bird": {
+   "src": "words/bird.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "blanket": {
+   "src": "words/blanket.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "blanket-fluffy": {
+   "src": "words/blanket-fluffy.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "block": {
+   "src": "words/block.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "boat": {
    "src": "words/boat.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "book": {
+   "src": "words/book.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -114,6 +226,14 @@
     "default": "#ff6fa8"
    }
   },
+  "bowl": {
+   "src": "words/bowl.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "box": {
    "src": "words/box.webp",
    "w": 320,
@@ -138,6 +258,14 @@
    "pack": "words",
    "source": "codex"
   },
+  "broom": {
+   "src": "words/broom.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "brush": {
    "src": "words/brush.webp",
    "w": 320,
@@ -154,8 +282,64 @@
    "pack": "words",
    "source": "codex"
   },
+  "building-bath-pond": {
+   "src": "items/building-bath-pond.webp",
+   "w": 1024,
+   "h": 819,
+   "kind": "building",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "building-stable-gate": {
+   "src": "items/building-stable-gate.webp",
+   "w": 640,
+   "h": 531,
+   "kind": "building",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "building-stall-row": {
+   "src": "items/building-stall-row.webp",
+   "w": 1400,
+   "h": 798,
+   "kind": "building",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "bulb": {
+   "src": "words/bulb.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bun": {
+   "src": "words/bun.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "bush": {
    "src": "words/bush.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "butter": {
+   "src": "words/butter.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "button": {
+   "src": "words/button.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -172,6 +356,14 @@
   },
   "can": {
    "src": "words/can.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cane": {
+   "src": "words/cane.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -197,8 +389,24 @@
     "default": "#b07ce0"
    }
   },
+  "card": {
+   "src": "words/card.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "carrot": {
    "src": "words/carrot.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cart": {
+   "src": "words/cart.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -213,8 +421,56 @@
    "pack": "words",
    "source": "codex"
   },
+  "cat": {
+   "src": "words/cat.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "chain": {
+   "src": "words/chain.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "chair": {
    "src": "words/chair.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "chick": {
+   "src": "words/chick.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "chip": {
+   "src": "words/chip.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "clip": {
+   "src": "words/clip.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "clock": {
+   "src": "words/clock.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -231,6 +487,102 @@
    "tint": {
     "default": "#a77bd6"
    }
+  },
+  "coat-fluffy": {
+   "src": "words/coat-fluffy.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "coin": {
+   "src": "words/coin.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cone": {
+   "src": "words/cone.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cork": {
+   "src": "words/cork.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "corn": {
+   "src": "words/corn.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cot": {
+   "src": "words/cot.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cow": {
+   "src": "words/cow.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "crab": {
+   "src": "words/crab.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "crayon": {
+   "src": "words/crayon.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cream": {
+   "src": "words/cream.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "crow": {
+   "src": "words/crow.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "crown": {
+   "src": "words/crown.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
   },
   "cub": {
    "src": "words/cub.webp",
@@ -251,6 +603,62 @@
     "default": "#5aa9e6"
    }
   },
+  "decor-moonflower": {
+   "src": "items/decor-moonflower.webp",
+   "w": 162,
+   "h": 192,
+   "kind": "decor",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "decor-moonflower-patch-3": {
+   "src": "items/decor-moonflower-patch-3.webp",
+   "w": 320,
+   "h": 301,
+   "kind": "decor",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "decor-moonflower-patch-7": {
+   "src": "items/decor-moonflower-patch-7.webp",
+   "w": 480,
+   "h": 441,
+   "kind": "decor",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "desk": {
+   "src": "words/desk.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "dinner": {
+   "src": "words/dinner.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "dish": {
+   "src": "words/dish.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "dog": {
+   "src": "words/dog.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "dress": {
    "src": "words/dress.webp",
    "w": 320,
@@ -261,6 +669,14 @@
    "tint": {
     "default": "#f48fb1"
    }
+  },
+  "drum": {
+   "src": "words/drum.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
   },
   "duck": {
    "src": "words/duck.webp",
@@ -374,6 +790,70 @@
    "pack": "core",
    "source": "codex"
   },
+  "fan": {
+   "src": "words/fan.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "fern": {
+   "src": "words/fern.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "fig": {
+   "src": "words/fig.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "fish": {
+   "src": "words/fish.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "flag": {
+   "src": "words/flag.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "flower": {
+   "src": "words/flower.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "foil": {
+   "src": "words/foil.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "fork": {
+   "src": "words/fork.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "fox": {
    "src": "words/fox.webp",
    "w": 320,
@@ -382,8 +862,96 @@
    "pack": "words",
    "source": "codex"
   },
+  "frog": {
+   "src": "words/frog.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "garden": {
+   "src": "words/garden.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "gate": {
+   "src": "words/gate.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "gift": {
+   "src": "words/gift.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "glass": {
    "src": "words/glass.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "globe": {
+   "src": "words/globe.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "glue": {
+   "src": "words/glue.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "goat": {
+   "src": "words/goat.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "gown": {
+   "src": "words/gown.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "grass": {
+   "src": "words/grass.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "hammer": {
+   "src": "words/hammer.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "harp": {
+   "src": "words/harp.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -401,6 +969,70 @@
     "default": "#6c8fe0"
    }
   },
+  "hat-fluffy": {
+   "src": "words/hat-fluffy.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "hen": {
+   "src": "words/hen.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "hill": {
+   "src": "words/hill.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "hive": {
+   "src": "words/hive.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "home": {
+   "src": "words/home.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "hook": {
+   "src": "words/hook.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "hoop": {
+   "src": "words/hoop.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "horn": {
+   "src": "words/horn.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "horse": {
    "src": "words/horse.webp",
    "w": 320,
@@ -409,8 +1041,24 @@
    "pack": "words",
    "source": "codex"
   },
+  "hose": {
+   "src": "words/hose.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "hut": {
    "src": "words/hut.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "ink": {
+   "src": "words/ink.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -441,6 +1089,30 @@
    "pack": "core",
    "source": "codex"
   },
+  "item-brush": {
+   "src": "items/item-brush.webp",
+   "w": 247,
+   "h": 256,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-camp-tent": {
+   "src": "items/item-camp-tent.webp",
+   "w": 449,
+   "h": 480,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-camp-tent-open": {
+   "src": "items/item-camp-tent-open.webp",
+   "w": 457,
+   "h": 480,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
   "item-crown-emma": {
    "src": "items/item-crown-emma.webp",
    "w": 256,
@@ -463,6 +1135,14 @@
    "h": 400,
    "kind": "item",
    "pack": "core",
+   "source": "codex"
+  },
+  "item-heart": {
+   "src": "items/item-heart.webp",
+   "w": 256,
+   "h": 227,
+   "kind": "item",
+   "pack": "meadow",
    "source": "codex"
   },
   "item-jar": {
@@ -521,6 +1201,14 @@
    "pack": "core",
    "source": "codex"
   },
+  "item-moonbeam-bridge": {
+   "src": "items/item-moonbeam-bridge.webp",
+   "w": 1024,
+   "h": 807,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
   "item-name-bell": {
    "src": "items/item-name-bell.webp",
    "w": 247,
@@ -561,6 +1249,25 @@
    "pack": "stables",
    "source": "codex"
   },
+  "item-plot": {
+   "src": "items/item-plot.webp",
+   "w": 640,
+   "h": 640,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-plot-stone": {
+   "src": "items/item-plot-stone.webp",
+   "w": 256,
+   "h": 204,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex",
+   "tint": {
+    "default": "#ffd86b"
+   }
+  },
   "item-scissors": {
    "src": "items/item-scissors.webp",
    "w": 320,
@@ -568,6 +1275,36 @@
    "kind": "item",
    "pack": "building",
    "source": "codex"
+  },
+  "item-sign-board": {
+   "src": "items/item-sign-board.webp",
+   "w": 640,
+   "h": 602,
+   "kind": "item",
+   "pack": "building",
+   "source": "codex"
+  },
+  "item-stall-door": {
+   "src": "items/item-stall-door.webp",
+   "w": 355,
+   "h": 400,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex",
+   "tint": {
+    "default": "#b98ad8"
+   }
+  },
+  "item-stall-door-open": {
+   "src": "items/item-stall-door-open.webp",
+   "w": 374,
+   "h": 400,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex",
+   "tint": {
+    "default": "#b98ad8"
+   }
   },
   "item-toy-shelf": {
    "src": "items/item-toy-shelf.webp",
@@ -577,12 +1314,63 @@
    "pack": "meadow",
    "source": "codex"
   },
+  "item-treat": {
+   "src": "items/item-treat.webp",
+   "w": 256,
+   "h": 248,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-trim-tile": {
+   "src": "items/item-trim-tile.webp",
+   "w": 160,
+   "h": 159,
+   "kind": "item",
+   "pack": "building",
+   "source": "codex",
+   "tint": {
+    "default": "#f2a6c7"
+   }
+  },
+  "item-wheelbarrow": {
+   "src": "items/item-wheelbarrow.webp",
+   "w": 480,
+   "h": 363,
+   "kind": "item",
+   "pack": "building",
+   "source": "codex"
+  },
   "item-wish-basket": {
    "src": "items/item-wish-basket.webp",
    "w": 635,
    "h": 640,
    "kind": "item",
    "pack": "meadow",
+   "source": "codex"
+  },
+  "jacket": {
+   "src": "words/jacket.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "jam": {
+   "src": "words/jam.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "jar": {
+   "src": "words/jar.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
    "source": "codex"
   },
   "jeans": {
@@ -595,6 +1383,22 @@
    "tint": {
     "default": "#5a7fc0"
    }
+  },
+  "jewel": {
+   "src": "words/jewel.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "jug": {
+   "src": "words/jug.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
   },
   "key": {
    "src": "words/key.webp",
@@ -615,8 +1419,192 @@
     "default": "#e8505b"
    }
   },
+  "kitten": {
+   "src": "words/kitten.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "ladder": {
+   "src": "words/ladder.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "lamp": {
+   "src": "words/lamp.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "leaf": {
+   "src": "words/leaf.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "lemon": {
+   "src": "words/lemon.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "letter": {
+   "src": "words/letter.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "lid": {
+   "src": "words/lid.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "light": {
+   "src": "words/light.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "lime": {
+   "src": "words/lime.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "lock": {
+   "src": "words/lock.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "log": {
+   "src": "words/log.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "magnet": {
+   "src": "words/magnet.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "map": {
+   "src": "words/map.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "mask": {
+   "src": "words/mask.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "mat": {
+   "src": "words/mat.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "melon": {
+   "src": "words/melon.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "milk": {
+   "src": "words/milk.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "mint": {
+   "src": "words/mint.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "moon": {
+   "src": "words/moon.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "mop": {
+   "src": "words/mop.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "moss": {
+   "src": "words/moss.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "mouse": {
    "src": "words/mouse.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "muff": {
+   "src": "words/muff.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "muffin": {
+   "src": "words/muffin.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -634,8 +1622,40 @@
     "default": "#5aa9e6"
    }
   },
+  "nail": {
+   "src": "words/nail.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "napkin": {
+   "src": "words/napkin.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "nest": {
+   "src": "words/nest.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "net": {
    "src": "words/net.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "night": {
+   "src": "words/night.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -676,6 +1696,38 @@
     260
    ]
   },
+  "owl": {
+   "src": "words/owl.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pad": {
+   "src": "words/pad.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pail": {
+   "src": "words/pail.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "paint": {
+   "src": "words/paint.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "pan": {
    "src": "words/pan.webp",
    "w": 320,
@@ -686,6 +1738,14 @@
   },
   "pancake": {
    "src": "words/pancake.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "path": {
+   "src": "words/path.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -716,6 +1776,22 @@
    "pack": "words",
    "source": "codex"
   },
+  "pepper": {
+   "src": "words/pepper.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "picnic": {
+   "src": "words/picnic.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "pie": {
    "src": "words/pie.webp",
    "w": 320,
@@ -726,6 +1802,22 @@
   },
   "pig": {
    "src": "words/pig.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pillow": {
+   "src": "words/pillow.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pillow-fluffy": {
+   "src": "words/pillow-fluffy.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -764,6 +1856,150 @@
    "pack": "words",
    "source": "codex"
   },
+  "plant": {
+   "src": "words/plant.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "plate": {
+   "src": "words/plate.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "plum": {
+   "src": "words/plum.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pod": {
+   "src": "words/pod.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pond": {
+   "src": "words/pond.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pool": {
+   "src": "words/pool.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "popcorn": {
+   "src": "words/popcorn.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pot": {
+   "src": "words/pot.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pram": {
+   "src": "words/pram.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "puff": {
+   "src": "words/puff.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pumpkin": {
+   "src": "words/pumpkin.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pup": {
+   "src": "words/pup.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "purse": {
+   "src": "words/purse.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "quilt": {
+   "src": "words/quilt.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "rabbit": {
+   "src": "words/rabbit.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "raft": {
+   "src": "words/raft.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "rain": {
+   "src": "words/rain.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "rainbow": {
+   "src": "words/rainbow.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "ribbon": {
    "src": "words/ribbon.webp",
    "w": 320,
@@ -783,6 +2019,86 @@
    "pack": "words",
    "source": "codex"
   },
+  "road": {
+   "src": "words/road.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "rock": {
+   "src": "words/rock.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "roof": {
+   "src": "words/roof.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "rope": {
+   "src": "words/rope.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "rose": {
+   "src": "words/rose.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "rug": {
+   "src": "words/rug.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sack": {
+   "src": "words/sack.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sail": {
+   "src": "words/sail.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sand": {
+   "src": "words/sand.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sandpit": {
+   "src": "words/sandpit.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "scarf": {
    "src": "words/scarf.webp",
    "w": 320,
@@ -794,8 +2110,48 @@
     "default": "#6cc070"
    }
   },
+  "scarf-fluffy": {
+   "src": "words/scarf-fluffy.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "screw": {
+   "src": "words/screw.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "seal": {
+   "src": "words/seal.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "seed": {
+   "src": "words/seed.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "sheep": {
    "src": "words/sheep.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sheet": {
+   "src": "words/sheet.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -829,6 +2185,22 @@
     "default": "#f9d65c"
    }
   },
+  "sink": {
+   "src": "words/sink.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "skate": {
+   "src": "words/skate.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "skirt": {
    "src": "words/skirt.webp",
    "w": 320,
@@ -839,6 +2211,62 @@
    "tint": {
     "default": "#a77bd6"
    }
+  },
+  "sled": {
+   "src": "words/sled.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "slide": {
+   "src": "words/slide.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "slipper": {
+   "src": "words/slipper.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "slipper-fluffy": {
+   "src": "words/slipper-fluffy.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "snow": {
+   "src": "words/snow.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "snowman": {
+   "src": "words/snowman.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "soap": {
+   "src": "words/soap.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
   },
   "sock": {
    "src": "words/sock.webp",
@@ -851,12 +2279,164 @@
     "default": "#6cc070"
    }
   },
+  "soil": {
+   "src": "words/soil.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "spade": {
+   "src": "words/spade.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "spoon": {
+   "src": "words/spoon.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "stairs": {
+   "src": "words/stairs.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "stamp": {
+   "src": "words/stamp.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "star": {
+   "src": "words/star.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "starfish": {
+   "src": "words/starfish.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "station-brush-stand": {
+   "src": "items/station-brush-stand.webp",
+   "w": 480,
+   "h": 413,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "station-hat-box": {
+   "src": "items/station-hat-box.webp",
+   "w": 480,
+   "h": 474,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  },
   "station-hay-rack": {
    "src": "items/station-hay-rack.webp",
    "w": 480,
    "h": 446,
    "kind": "station",
    "pack": "meadow",
+   "source": "codex"
+  },
+  "station-nap-cushion": {
+   "src": "items/station-nap-cushion.webp",
+   "w": 480,
+   "h": 390,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "station-swing": {
+   "src": "items/station-swing.webp",
+   "w": 480,
+   "h": 468,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "statue": {
+   "src": "words/statue.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "stew": {
+   "src": "words/stew.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "stool": {
+   "src": "words/stool.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sun": {
+   "src": "words/sun.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sunset": {
+   "src": "words/sunset.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "swan": {
+   "src": "words/swan.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sweet": {
+   "src": "words/sweet.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tag": {
+   "src": "words/tag.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
    "source": "codex"
   },
   "tap": {
@@ -875,6 +2455,180 @@
    "pack": "words",
    "source": "codex"
   },
+  "teacup": {
+   "src": "words/teacup.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "teapot": {
+   "src": "words/teapot.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tent": {
+   "src": "words/tent.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tie": {
+   "src": "words/tie.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tights": {
+   "src": "words/tights.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tile": {
+   "src": "words/tile.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tin": {
+   "src": "words/tin.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "toast": {
+   "src": "words/toast.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "toolbox": {
+   "src": "words/toolbox.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "top": {
+   "src": "words/top.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "towel": {
+   "src": "words/towel.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tower": {
+   "src": "words/tower.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "train": {
+   "src": "words/train.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tray": {
+   "src": "words/tray.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tree": {
+   "src": "words/tree.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "trunk": {
+   "src": "words/trunk.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tub": {
+   "src": "words/tub.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "turnip": {
+   "src": "words/turnip.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "twig": {
+   "src": "words/twig.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "ui-gem": {
+   "src": "ui/ui-gem.webp",
+   "w": 256,
+   "h": 256,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex",
+   "tint": {
+    "default": "#ff8fc4"
+   }
+  },
+  "ui-gem-crescent": {
+   "src": "ui/ui-gem-crescent.webp",
+   "w": 256,
+   "h": 256,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex",
+   "tint": {
+    "default": "#ffd36b"
+   }
+  },
   "ui-ghost-hand": {
    "src": "ui/ui-ghost-hand.webp",
    "w": 192,
@@ -882,6 +2636,46 @@
    "kind": "ui",
    "pack": "core",
    "source": "svg"
+  },
+  "ui-icon-envelope": {
+   "src": "ui/ui-icon-envelope.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-icon-hammer": {
+   "src": "ui/ui-icon-hammer.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-icon-jar": {
+   "src": "ui/ui-icon-jar.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-icon-jewel": {
+   "src": "ui/ui-icon-jewel.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-icon-moon": {
+   "src": "ui/ui-icon-moon.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
   },
   "ui-play": {
    "src": "ui/ui-play.webp",
@@ -899,6 +2693,33 @@
    "pack": "core",
    "source": "svg"
   },
+  "ui-sparkle": {
+   "src": "ui/ui-sparkle.webp",
+   "w": 128,
+   "h": 128,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-star": {
+   "src": "ui/ui-star.webp",
+   "w": 128,
+   "h": 128,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex"
+  },
+  "ui-stone": {
+   "src": "ui/ui-stone.webp",
+   "w": 256,
+   "h": 256,
+   "kind": "ui",
+   "pack": "core",
+   "source": "codex",
+   "tint": {
+    "default": "#cfd6e6"
+   }
+  },
   "ui-turn-ipad": {
    "src": "ui/ui-turn-ipad.webp",
    "w": 640,
@@ -906,6 +2727,118 @@
    "kind": "ui",
    "pack": "core",
    "source": "svg"
+  },
+  "vase": {
+   "src": "words/vase.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "vest": {
+   "src": "words/vest.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "web": {
+   "src": "words/web.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "weed": {
+   "src": "words/weed.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "well": {
+   "src": "words/well.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "whale": {
+   "src": "words/whale.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "wheel": {
+   "src": "words/wheel.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "wig": {
+   "src": "words/wig.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "windmill": {
+   "src": "words/windmill.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "window": {
+   "src": "words/window.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "wood": {
+   "src": "words/wood.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "wool": {
+   "src": "words/wool.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "yam": {
+   "src": "words/yam.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "zip": {
+   "src": "words/zip.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
   }
  },
  "backgrounds": {

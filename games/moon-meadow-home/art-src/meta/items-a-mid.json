@@ -143,6 +143,70 @@
    "kind": "station",
    "pack": "meadow",
    "source": "codex"
+  },
+  "station-brush-stand": {
+   "src": "items/station-brush-stand.webp",
+   "w": 480,
+   "h": 413,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "station-hat-box": {
+   "src": "items/station-hat-box.webp",
+   "w": 480,
+   "h": 474,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "station-nap-cushion": {
+   "src": "items/station-nap-cushion.webp",
+   "w": 480,
+   "h": 390,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "station-swing": {
+   "src": "items/station-swing.webp",
+   "w": 480,
+   "h": 468,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-camp-tent": {
+   "src": "items/item-camp-tent.webp",
+   "w": 449,
+   "h": 480,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-camp-tent-open": {
+   "src": "items/item-camp-tent-open.webp",
+   "w": 457,
+   "h": 480,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-wheelbarrow": {
+   "src": "items/item-wheelbarrow.webp",
+   "w": 480,
+   "h": 363,
+   "kind": "item",
+   "pack": "building",
+   "source": "codex"
+  },
+  "decor-moonflower-patch-7": {
+   "src": "items/decor-moonflower-patch-7.webp",
+   "w": 480,
+   "h": 441,
+   "kind": "decor",
+   "pack": "meadow",
+   "source": "codex"
   }
  }
 }
