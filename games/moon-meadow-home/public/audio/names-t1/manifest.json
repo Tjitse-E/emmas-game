@@ -2959,34 +2959,34 @@
    }
   },
   "name-jem": {
-   "hash": "f0ceb784794890c68cf4dfd33b653d97b3afd3ad7e7fbe27c4f5d7cd96cd721d",
+   "hash": "6349177adc27b7b7ee036bc41811ba479c893bbb900b3bad885a58fe24a8b920",
    "speaker": "narrator",
    "text": "Jem!",
    "file": "name-jem.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 676,
-   "generated": "2026-10-12T13:21:28",
+   "seed": 2011,
+   "duration_ms": 690,
+   "generated": "2026-10-12T13:47:05",
    "ok": false,
    "stt": {
-    "hash": "f0ceb784794890c68cf4dfd33b653d97b3afd3ad7e7fbe27c4f5d7cd96cd721d",
+    "hash": "6349177adc27b7b7ee036bc41811ba479c893bbb900b3bad885a58fe24a8b920",
     "text": "Gem",
     "match": false,
     "how": "miss"
    }
   },
   "name-jem-q": {
-   "hash": "ff0957b35f49f0097da1bcf64c4c41139dbc06ca2de2b21dd5c0ac4182e676bb",
+   "hash": "d49566e204bee0e1dd931042df87ee50ca8c534c242825f4941279a7f9401ce4",
    "speaker": "narrator",
    "text": "Jem?",
    "file": "name-jem-q.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 640,
-   "generated": "2026-10-12T13:21:29",
+   "seed": 2011,
+   "duration_ms": 800,
+   "generated": "2026-10-12T13:47:05",
    "ok": false,
    "stt": {
-    "hash": "ff0957b35f49f0097da1bcf64c4c41139dbc06ca2de2b21dd5c0ac4182e676bb",
+    "hash": "d49566e204bee0e1dd931042df87ee50ca8c534c242825f4941279a7f9401ce4",
     "text": "Gem?",
     "match": false,
     "how": "miss"
@@ -3095,34 +3095,34 @@
    }
   },
   "name-jon": {
-   "hash": "fb64c6c0ce47c1417898c4ce15b39db517d86f655a734727e4d531df309fbf6f",
+   "hash": "431e2c7c95158cb708e49c5b8a25b90eddd47857bc135b3d1306587984c01c19",
    "speaker": "narrator",
    "text": "Jon!",
    "file": "name-jon.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 707,
-   "generated": "2026-10-12T13:21:30",
+   "seed": 2011,
+   "duration_ms": 703,
+   "generated": "2026-10-12T13:47:12",
    "ok": false,
    "stt": {
-    "hash": "fb64c6c0ce47c1417898c4ce15b39db517d86f655a734727e4d531df309fbf6f",
+    "hash": "431e2c7c95158cb708e49c5b8a25b90eddd47857bc135b3d1306587984c01c19",
     "text": "John",
     "match": false,
     "how": "miss"
    }
   },
   "name-jon-q": {
-   "hash": "d07477e004c7bf9b6d01c5145055ee48c3d6b4fae6246900ec078fdf97000ff1",
+   "hash": "613e1cb940b66458836f624b4e182f4ba6b9bbbab4e958ee8aa0ed06b01479f0",
    "speaker": "narrator",
    "text": "Jon?",
    "file": "name-jon-q.mp3",
    "model": "eleven_v4",
-   "seed": 11,
+   "seed": 2011,
    "duration_ms": 640,
-   "generated": "2026-10-12T13:21:30",
+   "generated": "2026-10-12T13:47:05",
    "ok": false,
    "stt": {
-    "hash": "d07477e004c7bf9b6d01c5145055ee48c3d6b4fae6246900ec078fdf97000ff1",
+    "hash": "613e1cb940b66458836f624b4e182f4ba6b9bbbab4e958ee8aa0ed06b01479f0",
     "text": "John?",
     "match": false,
     "how": "miss"
@@ -3707,34 +3707,34 @@
    }
   },
   "name-sol": {
-   "hash": "2a9894c480f28c772cd821fa00c2c17b09b5a7b45478bba2190a3eda72c2aaeb",
+   "hash": "d773fb8a06a86c8e3ca4def2f0e650bf858752a61547a913ce8c08cbb49d8005",
    "speaker": "narrator",
    "text": "Sol!",
    "file": "name-sol.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 880,
-   "generated": "2026-10-12T13:21:40",
+   "seed": 2011,
+   "duration_ms": 685,
+   "generated": "2026-10-12T13:47:06",
    "ok": false,
    "stt": {
-    "hash": "2a9894c480f28c772cd821fa00c2c17b09b5a7b45478bba2190a3eda72c2aaeb",
-    "text": "Soul",
+    "hash": "d773fb8a06a86c8e3ca4def2f0e650bf858752a61547a913ce8c08cbb49d8005",
+    "text": "Seoul",
     "match": false,
     "how": "miss"
    }
   },
   "name-sol-q": {
-   "hash": "db97fb1240265829fb384aa777fafae9a44adc7b0c2c0901145e9d7c6cb3c2c4",
+   "hash": "2441b6a11311381732e7653fe6d4a85b7b2b17156d025fe00ea611a1f27ce900",
    "speaker": "narrator",
    "text": "Sol?",
    "file": "name-sol-q.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 509,
-   "generated": "2026-10-12T13:21:55",
+   "seed": 2011,
+   "duration_ms": 494,
+   "generated": "2026-10-12T13:47:06",
    "ok": false,
    "stt": {
-    "hash": "db97fb1240265829fb384aa777fafae9a44adc7b0c2c0901145e9d7c6cb3c2c4",
+    "hash": "2441b6a11311381732e7653fe6d4a85b7b2b17156d025fe00ea611a1f27ce900",
     "text": "Seoul?",
     "match": false,
     "how": "miss"
@@ -3877,34 +3877,34 @@
    }
   },
   "name-zac": {
-   "hash": "14b78fbea48d874b5d13d91b7a4de612f297194f521666c1199ebb870f628bd8",
+   "hash": "3ca451d6b0db0b70f50322e1528c7208c62b9ec6ab71f92b7ca215c7d7d6bcf6",
    "speaker": "narrator",
    "text": "Zac!",
    "file": "name-zac.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 736,
-   "generated": "2026-10-12T13:21:43",
+   "seed": 2011,
+   "duration_ms": 742,
+   "generated": "2026-10-12T13:47:06",
    "ok": false,
    "stt": {
-    "hash": "14b78fbea48d874b5d13d91b7a4de612f297194f521666c1199ebb870f628bd8",
+    "hash": "3ca451d6b0db0b70f50322e1528c7208c62b9ec6ab71f92b7ca215c7d7d6bcf6",
     "text": "Zach",
     "match": false,
     "how": "miss"
    }
   },
   "name-zac-q": {
-   "hash": "a643774b843ca2a8af0e2a26f8b3ca84aafa4ec8c9a11c676fd74ee7bbd9ba13",
+   "hash": "c4c7aeaa142df6311a21ee69064ac7d37db4000801280b62df24ecdd9ee43030",
    "speaker": "narrator",
    "text": "Zac?",
    "file": "name-zac-q.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 630,
-   "generated": "2026-10-12T13:21:43",
+   "seed": 2011,
+   "duration_ms": 615,
+   "generated": "2026-10-12T13:47:07",
    "ok": false,
    "stt": {
-    "hash": "a643774b843ca2a8af0e2a26f8b3ca84aafa4ec8c9a11c676fd74ee7bbd9ba13",
+    "hash": "c4c7aeaa142df6311a21ee69064ac7d37db4000801280b62df24ecdd9ee43030",
     "text": "Zach?",
     "match": false,
     "how": "miss"
@@ -4693,34 +4693,34 @@
    }
   },
   "name-dee": {
-   "hash": "42a1af5eb899cff64514bdfd2ef14b05b4e3bb86b2e39b24a024cba121d90677",
+   "hash": "dcdb89fc5e459e4382d5103e3297331872242be5c7c02a4a9263d9e03075915b",
    "speaker": "narrator",
    "text": "Dee!",
    "file": "name-dee.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 634,
-   "generated": "2026-10-12T13:21:57",
+   "seed": 2011,
+   "duration_ms": 662,
+   "generated": "2026-10-12T13:47:07",
    "ok": false,
    "stt": {
-    "hash": "42a1af5eb899cff64514bdfd2ef14b05b4e3bb86b2e39b24a024cba121d90677",
+    "hash": "dcdb89fc5e459e4382d5103e3297331872242be5c7c02a4a9263d9e03075915b",
     "text": "D",
     "match": false,
     "how": "miss"
    }
   },
   "name-dee-q": {
-   "hash": "3b51863efa0602658e820d49348dfc24a51e222f0f9ed2580928f1110337241d",
+   "hash": "614babff3fe56c80eb192b4f4a9d8f6ff09ab10a456a59f7f5ebb864ff677d91",
    "speaker": "narrator",
    "text": "Dee?",
    "file": "name-dee-q.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 542,
-   "generated": "2026-10-12T13:21:57",
+   "seed": 2011,
+   "duration_ms": 524,
+   "generated": "2026-10-12T13:47:07",
    "ok": false,
    "stt": {
-    "hash": "3b51863efa0602658e820d49348dfc24a51e222f0f9ed2580928f1110337241d",
+    "hash": "614babff3fe56c80eb192b4f4a9d8f6ff09ab10a456a59f7f5ebb864ff677d91",
     "text": "D?",
     "match": false,
     "how": "miss"
@@ -5033,34 +5033,34 @@
    }
   },
   "name-burt": {
-   "hash": "92fa6233c7e32ffcf2d35a0d320f4e59803b6e3e52f6d5328d3063ec049bb1f2",
+   "hash": "19c3676463218579e7c75413ab16e35e7666dfe2785a7d8257f5e0eb8fa60bb4",
    "speaker": "narrator",
    "text": "Burt!",
    "file": "name-burt.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 717,
-   "generated": "2026-10-12T13:22:02",
+   "seed": 2011,
+   "duration_ms": 793,
+   "generated": "2026-10-12T13:47:08",
    "ok": false,
    "stt": {
-    "hash": "92fa6233c7e32ffcf2d35a0d320f4e59803b6e3e52f6d5328d3063ec049bb1f2",
-    "text": "Bert",
+    "hash": "19c3676463218579e7c75413ab16e35e7666dfe2785a7d8257f5e0eb8fa60bb4",
+    "text": "But",
     "match": false,
     "how": "miss"
    }
   },
   "name-burt-q": {
-   "hash": "344d958c60386a87357e794ff9ed857022df8a8d4ba0ad03d882d7bf049685e0",
+   "hash": "257b13daea24df786e5cf6f385244abf2b8e078abf18b3af083b312d4029c9a1",
    "speaker": "narrator",
    "text": "Burt?",
    "file": "name-burt-q.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 619,
-   "generated": "2026-10-12T13:22:02",
+   "seed": 2011,
+   "duration_ms": 880,
+   "generated": "2026-10-12T13:47:08",
    "ok": false,
    "stt": {
-    "hash": "344d958c60386a87357e794ff9ed857022df8a8d4ba0ad03d882d7bf049685e0",
+    "hash": "257b13daea24df786e5cf6f385244abf2b8e078abf18b3af083b312d4029c9a1",
     "text": "Bert?",
     "match": false,
     "how": "miss"
@@ -5203,68 +5203,68 @@
    }
   },
   "name-zak": {
-   "hash": "cf110669bf0587635f30aeadf90009abc4d032ff416eec663a6d59ebde73009c",
+   "hash": "8af79f9c496405fe28aa9e17557650f307e709e108081fee9b8d4839bb824893",
    "speaker": "narrator",
    "text": "Zak!",
    "file": "name-zak.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 712,
-   "generated": "2026-10-12T13:22:05",
+   "seed": 2011,
+   "duration_ms": 717,
+   "generated": "2026-10-12T13:47:08",
    "ok": false,
    "stt": {
-    "hash": "cf110669bf0587635f30aeadf90009abc4d032ff416eec663a6d59ebde73009c",
+    "hash": "8af79f9c496405fe28aa9e17557650f307e709e108081fee9b8d4839bb824893",
     "text": "Zach",
     "match": false,
     "how": "miss"
    }
   },
   "name-zak-q": {
-   "hash": "ab50da0e47a92474dbdabeeb4d8eb308427b6bf9cc735fc6ad325085a00c2380",
+   "hash": "b5b34b9f07fc64e29041f51009cbd12fcc784ba0a365ee96d92732dc0c6eab5b",
    "speaker": "narrator",
    "text": "Zak?",
    "file": "name-zak-q.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 639,
-   "generated": "2026-10-12T13:22:05",
+   "seed": 2011,
+   "duration_ms": 632,
+   "generated": "2026-10-12T13:47:09",
    "ok": false,
    "stt": {
-    "hash": "ab50da0e47a92474dbdabeeb4d8eb308427b6bf9cc735fc6ad325085a00c2380",
+    "hash": "b5b34b9f07fc64e29041f51009cbd12fcc784ba0a365ee96d92732dc0c6eab5b",
     "text": "Zach?",
     "match": false,
     "how": "miss"
    }
   },
   "name-fitz": {
-   "hash": "c487d0a28ffc5a5284c52b61c0394c67543f59536a0bdfb0fa979507150da1ad",
+   "hash": "e2aca217afb981e6b5b83b0d62f2a1644cc8b143ec9d4a2ed5cb00c473391ce2",
    "speaker": "narrator",
    "text": "Fitz!",
    "file": "name-fitz.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 776,
-   "generated": "2026-10-12T13:22:07",
+   "seed": 2011,
+   "duration_ms": 1040,
+   "generated": "2026-10-12T13:47:09",
    "ok": false,
    "stt": {
-    "hash": "c487d0a28ffc5a5284c52b61c0394c67543f59536a0bdfb0fa979507150da1ad",
+    "hash": "e2aca217afb981e6b5b83b0d62f2a1644cc8b143ec9d4a2ed5cb00c473391ce2",
     "text": "Fits",
     "match": false,
     "how": "miss"
    }
   },
   "name-fitz-q": {
-   "hash": "2a76709440d09fdc0284466ec1c54db466aa64ded355d2ffc4228897900d3b73",
+   "hash": "ca77284cc1b4347ebd9d32cc86a7f98e2eb381f087f602135213ccc8f24dc25f",
    "speaker": "narrator",
    "text": "Fitz?",
    "file": "name-fitz-q.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 671,
-   "generated": "2026-10-12T13:22:06",
+   "seed": 2011,
+   "duration_ms": 700,
+   "generated": "2026-10-12T13:47:09",
    "ok": false,
    "stt": {
-    "hash": "2a76709440d09fdc0284466ec1c54db466aa64ded355d2ffc4228897900d3b73",
+    "hash": "ca77284cc1b4347ebd9d32cc86a7f98e2eb381f087f602135213ccc8f24dc25f",
     "text": "Fits",
     "match": false,
     "how": "miss"
@@ -10235,20 +10235,20 @@
    }
   },
   "name-luca": {
-   "hash": "758a7e7356c9ea6ba3a019cc37160332da672877ed45dbc253b182715a5ceb77",
+   "hash": "c9635722f6a6c3f8906896b225b1814024d0e8e74a3f8c4bbd09db88a07f4851",
    "speaker": "narrator",
    "text": "Luca!",
    "file": "name-luca.mp3",
    "model": "eleven_v4",
-   "seed": 11,
-   "duration_ms": 690,
-   "generated": "2026-10-12T13:23:26",
-   "ok": false,
+   "seed": 1011,
+   "duration_ms": 702,
+   "generated": "2026-10-12T13:46:59",
+   "ok": true,
    "stt": {
-    "hash": "758a7e7356c9ea6ba3a019cc37160332da672877ed45dbc253b182715a5ceb77",
-    "text": "Lucca",
-    "match": false,
-    "how": "miss"
+    "hash": "c9635722f6a6c3f8906896b225b1814024d0e8e74a3f8c4bbd09db88a07f4851",
+    "text": "Luca",
+    "match": true,
+    "how": "exact"
    }
   },
   "name-luca-q": {
@@ -11017,5 +11017,5 @@
    }
   }
  },
- "updated": "2026-10-12T13:27:00"
+ "updated": "2026-10-12T13:47:16"
 }

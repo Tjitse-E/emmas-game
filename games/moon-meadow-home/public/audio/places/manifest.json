@@ -1,3 +1,843 @@
 {
- "clips": {}
+ "clips": {
+  "mw-bubbles-explain": {
+   "hash": "1858346b172621958c80130de6deb85c9b73d5d82379c658653c0f80932f51c3",
+   "speaker": "narrator",
+   "text": "When you see a bubble, someone is waiting for you.",
+   "file": "mw-bubbles-explain.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2950,
+   "generated": "2026-10-12T13:45:14",
+   "ok": true,
+   "stt": {
+    "hash": "1858346b172621958c80130de6deb85c9b73d5d82379c658653c0f80932f51c3",
+    "text": "When you see a bubble, someone is waiting for you",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "mw-meadow-this-way": {
+   "hash": "d34e5dca1eba3b21785516338f7d72d13a6db4c097da2416d17f10373e6a216a",
+   "speaker": "narrator",
+   "text": "The meadow is this way.",
+   "file": "mw-meadow-this-way.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1438,
+   "generated": "2026-10-12T13:45:13",
+   "ok": true,
+   "stt": {
+    "hash": "d34e5dca1eba3b21785516338f7d72d13a6db4c097da2416d17f10373e6a216a",
+    "text": "The meadow is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "mw-pond-ready": {
+   "hash": "7a15e3900d0bbda5f28a6cc5df18f562fd2bf677df112b2f185935f11d10b52a",
+   "speaker": "narrator",
+   "text": "The pond is ready to build!",
+   "file": "mw-pond-ready.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1999,
+   "generated": "2026-10-12T13:45:14",
+   "ok": true,
+   "stt": {
+    "hash": "7a15e3900d0bbda5f28a6cc5df18f562fd2bf677df112b2f185935f11d10b52a",
+    "text": "The pond is ready to build",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lb-found": {
+   "hash": "13e9e51691a0efcf24a893a21fb2eeb04b55235d6a54ce7009cd39cdd7a53098",
+   "speaker": "narrator",
+   "text": "Look! Someone found something for the toy shelf.",
+   "file": "lb-found.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2911,
+   "generated": "2026-10-12T13:45:14",
+   "ok": true,
+   "stt": {
+    "hash": "13e9e51691a0efcf24a893a21fb2eeb04b55235d6a54ce7009cd39cdd7a53098",
+    "text": "Look, someone found something for the toy shelf",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lb-lets-write": {
+   "hash": "2e3db3b94b537e50f2e319b15bfb83f2ea944b23cb8edb3f9901cb00aff7c6cb",
+   "speaker": "narrator",
+   "text": "Let's write!",
+   "file": "lb-lets-write.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 923,
+   "generated": "2026-10-12T13:45:16",
+   "ok": true,
+   "stt": {
+    "hash": "2e3db3b94b537e50f2e319b15bfb83f2ea944b23cb8edb3f9901cb00aff7c6cb",
+    "text": "Let's write",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lb-listen": {
+   "hash": "c0e4f9dea25cd67b5a1a2de8c7b1aeda2d488e84d9d0aad31d91d0a8a41dfe6d",
+   "speaker": "narrator",
+   "text": "Listen!",
+   "file": "lb-listen.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 692,
+   "generated": "2026-10-12T13:45:15",
+   "ok": true,
+   "stt": {
+    "hash": "c0e4f9dea25cd67b5a1a2de8c7b1aeda2d488e84d9d0aad31d91d0a8a41dfe6d",
+    "text": "Listen",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lb-on-the-jar": {
+   "hash": "9761107a8dde9bee1ffab413aeb394c226b06fa79394d27da72ad53c28731558",
+   "speaker": "narrator",
+   "text": "On the jar it goes!",
+   "file": "lb-on-the-jar.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1449,
+   "generated": "2026-10-12T13:45:15",
+   "ok": true,
+   "stt": {
+    "hash": "9761107a8dde9bee1ffab413aeb394c226b06fa79394d27da72ad53c28731558",
+    "text": "On the jar it goes",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lb-label-says-one": {
+   "hash": "5f7977e37d29af0a1e178d2fbf339767a090f75565e7c1384aa81d4fbf726310",
+   "speaker": "narrator",
+   "text": "The label only says one.",
+   "file": "lb-label-says-one.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1717,
+   "generated": "2026-10-12T13:45:16",
+   "ok": true,
+   "stt": {
+    "hash": "5f7977e37d29af0a1e178d2fbf339767a090f75565e7c1384aa81d4fbf726310",
+    "text": "The label only says one",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lb-shelf": {
+   "hash": "1050e40db46665f09765b17d557ec3eec1936b8c53d94d5f70389b1169061339",
+   "speaker": "narrator",
+   "text": "Tap a jar to play. Tap a label to hear it.",
+   "file": "lb-shelf.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3675,
+   "generated": "2026-10-12T13:45:17",
+   "ok": true,
+   "stt": {
+    "hash": "1050e40db46665f09765b17d557ec3eec1936b8c53d94d5f70389b1169061339",
+    "text": "Tap a jar to play. Tap a label to hear it",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "pl-look-in-jar": {
+   "hash": "c3d0a009a873f04b42620e88070777d58b82478065fb03e2e7a7ca66059e0a2d",
+   "speaker": "narrator",
+   "text": "Look in the jar!",
+   "file": "pl-look-in-jar.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1080,
+   "generated": "2026-10-12T13:45:16",
+   "ok": true,
+   "stt": {
+    "hash": "c3d0a009a873f04b42620e88070777d58b82478065fb03e2e7a7ca66059e0a2d",
+    "text": "Look in the jar",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "pl-mice": {
+   "hash": "268863c7a830b8f44735db8ad3c6a17da7524cbcfe59c547eb39dc17ceeef642",
+   "speaker": "narrator",
+   "text": "Mice. One mouse, lots of mice.",
+   "file": "pl-mice.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3376,
+   "generated": "2026-10-12T13:45:19",
+   "ok": true,
+   "stt": {
+    "hash": "268863c7a830b8f44735db8ad3c6a17da7524cbcfe59c547eb39dc17ceeef642",
+    "text": "Mice. One mouse, lots of mice",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "pd-welcome": {
+   "hash": "c89001334a728021a2c1d2784551c6209799ba36c0e01d3fa6907ab200ad78fc",
+   "speaker": "narrator",
+   "text": "Splash time at the Bath Pond!",
+   "file": "pd-welcome.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2118,
+   "generated": "2026-10-12T13:45:17",
+   "ok": true,
+   "stt": {
+    "hash": "c89001334a728021a2c1d2784551c6209799ba36c0e01d3fa6907ab200ad78fc",
+    "text": "Splash time at the bath pond",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "pd-wish-goal": {
+   "hash": "5f9956b21e8aeb1c10ca85024d08465c2bf5da8277c5531f289ab2fb4222fa6c",
+   "speaker": "narrator",
+   "text": "A bath wish! Bring it to the baby.",
+   "file": "pd-wish-goal.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2552,
+   "generated": "2026-10-12T13:45:18",
+   "ok": true,
+   "stt": {
+    "hash": "5f9956b21e8aeb1c10ca85024d08465c2bf5da8277c5531f289ab2fb4222fa6c",
+    "text": "A bath wish. Bring it to the baby",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "pd-play": {
+   "hash": "6eaf69ab0950b61b163d753426bd34d814232d80d99a3a72ffd75a806e9b18ba",
+   "speaker": "narrator",
+   "text": "Drag a baby into the water.",
+   "file": "pd-play.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2074,
+   "generated": "2026-10-12T13:45:18",
+   "ok": true,
+   "stt": {
+    "hash": "6eaf69ab0950b61b163d753426bd34d814232d80d99a3a72ffd75a806e9b18ba",
+    "text": "Drag a baby into the water",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "foal-splash": {
+   "hash": "03251d31eb94f3d0e7e8df35b7bc6960e695d0c24a464003f70e73c34cb8ff31",
+   "speaker": "foal",
+   "text": "[giggles] Splash!",
+   "file": "foal-splash.mp3",
+   "model": "eleven_v3",
+   "seed": 21,
+   "duration_ms": 2994,
+   "generated": "2026-10-12T13:45:19",
+   "ok": true
+  },
+  "foal-pretty": {
+   "hash": "d146e069b7bb9647c4f4f980c3b01f7d5d83bcd3f2598ddad06fce472c8d4901",
+   "speaker": "foal",
+   "text": "[happy] Pretty!",
+   "file": "foal-pretty.mp3",
+   "model": "eleven_v3",
+   "seed": 24,
+   "duration_ms": 726,
+   "generated": "2026-10-12T13:45:19",
+   "ok": true
+  },
+  "lumi-builders": {
+   "hash": "490b0ccd5a341647d824849b1f69605c9d3d5bb46f6db17a3d576e839d63e25f",
+   "speaker": "queen",
+   "text": "The builders are here!",
+   "file": "lumi-builders.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1114,
+   "generated": "2026-10-12T13:45:19",
+   "ok": true,
+   "stt": {
+    "hash": "490b0ccd5a341647d824849b1f69605c9d3d5bb46f6db17a3d576e839d63e25f",
+    "text": "The builders are here",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-pond-open": {
+   "hash": "85274fa036628bf467fbecc8c23addafa0d6cbb46ba615d7efec89981302ca55",
+   "speaker": "queen",
+   "text": "The Bath Pond is open!",
+   "file": "lumi-pond-open.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1353,
+   "generated": "2026-10-12T13:45:20",
+   "ok": true,
+   "stt": {
+    "hash": "85274fa036628bf467fbecc8c23addafa0d6cbb46ba615d7efec89981302ca55",
+    "text": "The bath pond is open",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-row-open": {
+   "hash": "ae1d0662dce1800e5037019b82385619227526b73a1f640e6e7684ce7e587494",
+   "speaker": "queen",
+   "text": "A new row for my unicorns!",
+   "file": "lumi-row-open.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 1011,
+   "duration_ms": 1692,
+   "generated": "2026-10-12T13:45:42",
+   "ok": true,
+   "stt": {
+    "hash": "ae1d0662dce1800e5037019b82385619227526b73a1f640e6e7684ce7e587494",
+    "text": "A new row for my unicorns",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-walls": {
+   "hash": "129a16eba78f2f1a00fbe82ac82d2223fb52c1951c5d4c33fb0c976fdcc1b950",
+   "speaker": "narrator",
+   "text": "First the wall.",
+   "file": "bd-walls.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1219,
+   "generated": "2026-10-12T13:45:20",
+   "ok": true,
+   "stt": {
+    "hash": "129a16eba78f2f1a00fbe82ac82d2223fb52c1951c5d4c33fb0c976fdcc1b950",
+    "text": "First, the wall",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-short": {
+   "hash": "23df64c1c999de2a8b2a69387bd40bc64031be142501bf03ebd19e5e3db8ddf1",
+   "speaker": "narrator",
+   "text": "Fill the row with planks.",
+   "file": "bd-short.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1697,
+   "generated": "2026-10-12T13:45:21",
+   "ok": true,
+   "stt": {
+    "hash": "23df64c1c999de2a8b2a69387bd40bc64031be142501bf03ebd19e5e3db8ddf1",
+    "text": "Fill the row with planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-2": {
+   "hash": "388d70733cc5f8d994216574f173fd28d93cdf209eec8491d2cd1ec60a7aa7f1",
+   "speaker": "narrator",
+   "text": "The wall needs two planks.",
+   "file": "bd-needs-2.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1917,
+   "generated": "2026-10-12T13:45:21",
+   "ok": true,
+   "stt": {
+    "hash": "388d70733cc5f8d994216574f173fd28d93cdf209eec8491d2cd1ec60a7aa7f1",
+    "text": "The wall needs two planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-3": {
+   "hash": "f72e12d21ff2b87892744dd981469b25112fd0a3fe2b904708463b5df25b0f11",
+   "speaker": "narrator",
+   "text": "The wall needs three planks.",
+   "file": "bd-needs-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1918,
+   "generated": "2026-10-12T13:45:21",
+   "ok": true,
+   "stt": {
+    "hash": "f72e12d21ff2b87892744dd981469b25112fd0a3fe2b904708463b5df25b0f11",
+    "text": "The wall needs three planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-4": {
+   "hash": "11c1342f745eab20a38ac42917b46959cbab67c197d801005663737d62fbf684",
+   "speaker": "narrator",
+   "text": "The wall needs four planks.",
+   "file": "bd-needs-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2039,
+   "generated": "2026-10-12T13:45:22",
+   "ok": true,
+   "stt": {
+    "hash": "11c1342f745eab20a38ac42917b46959cbab67c197d801005663737d62fbf684",
+    "text": "The wall needs four planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-5": {
+   "hash": "7a981e087c939e635df660c140067653a4add5d282695b337a1b39924161a212",
+   "speaker": "narrator",
+   "text": "The wall needs five planks.",
+   "file": "bd-needs-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2078,
+   "generated": "2026-10-12T13:45:28",
+   "ok": true,
+   "stt": {
+    "hash": "7a981e087c939e635df660c140067653a4add5d282695b337a1b39924161a212",
+    "text": "The wall needs five planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-6": {
+   "hash": "a09acb96e40f18a80fd6463d9b4e3c394132e158c40e34b3b80f46e3e41da219",
+   "speaker": "narrator",
+   "text": "The wall needs six planks.",
+   "file": "bd-needs-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2094,
+   "generated": "2026-10-12T13:45:23",
+   "ok": true,
+   "stt": {
+    "hash": "a09acb96e40f18a80fd6463d9b4e3c394132e158c40e34b3b80f46e3e41da219",
+    "text": "The wall needs six planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-7": {
+   "hash": "1baf63c640461049367019f31f66ea2c0a71e6dc018dbaee21c3c817599567a4",
+   "speaker": "narrator",
+   "text": "The wall needs seven planks.",
+   "file": "bd-needs-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2154,
+   "generated": "2026-10-12T13:45:23",
+   "ok": true,
+   "stt": {
+    "hash": "1baf63c640461049367019f31f66ea2c0a71e6dc018dbaee21c3c817599567a4",
+    "text": "The wall needs seven planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-8": {
+   "hash": "2ae7f5028d28f795b9e65512a744390637d0d6e71668360bc7c105348dedd6b8",
+   "speaker": "narrator",
+   "text": "The wall needs eight planks.",
+   "file": "bd-needs-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1929,
+   "generated": "2026-10-12T13:45:23",
+   "ok": true,
+   "stt": {
+    "hash": "2ae7f5028d28f795b9e65512a744390637d0d6e71668360bc7c105348dedd6b8",
+    "text": "The wall needs eight planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-9": {
+   "hash": "280dcfb2e4172c6be2bf2873e436b134308a8f8962b9e6766c6efc34b56a427e",
+   "speaker": "narrator",
+   "text": "The wall needs nine planks.",
+   "file": "bd-needs-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2072,
+   "generated": "2026-10-12T13:45:24",
+   "ok": true,
+   "stt": {
+    "hash": "280dcfb2e4172c6be2bf2873e436b134308a8f8962b9e6766c6efc34b56a427e",
+    "text": "The wall needs nine planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-needs-10": {
+   "hash": "083f9cd5cb8003400fe924b105680b4b4927bfef5d8ff0c5cf763da2716607a1",
+   "speaker": "narrator",
+   "text": "The wall needs ten planks.",
+   "file": "bd-needs-10.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1997,
+   "generated": "2026-10-12T13:45:24",
+   "ok": true,
+   "stt": {
+    "hash": "083f9cd5cb8003400fe924b105680b4b4927bfef5d8ff0c5cf763da2716607a1",
+    "text": "The wall needs 10 planks",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-wall-up": {
+   "hash": "6e7b6c2997b0bda398015caae35d30f14783b2616e3bb9d8d1870763389834ec",
+   "speaker": "narrator",
+   "text": "The wall is up!",
+   "file": "bd-wall-up.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1405,
+   "generated": "2026-10-12T13:45:24",
+   "ok": true,
+   "stt": {
+    "hash": "6e7b6c2997b0bda398015caae35d30f14783b2616e3bb9d8d1870763389834ec",
+    "text": "The wall is up",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-trim": {
+   "hash": "c874afc64406714a941489dc8bfdfba941713d74fab4be9e0b7305e9c03271ed",
+   "speaker": "narrator",
+   "text": "Finish the pattern on the trim.",
+   "file": "bd-trim.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2080,
+   "generated": "2026-10-12T13:45:25",
+   "ok": true,
+   "stt": {
+    "hash": "c874afc64406714a941489dc8bfdfba941713d74fab4be9e0b7305e9c03271ed",
+    "text": "Finish the pattern on the trim",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-trim-free": {
+   "hash": "846071e344db53e00c0af1d7b5a24a9106aa886b6a736a90a49951ad3c29cad6",
+   "speaker": "narrator",
+   "text": "Pick colours for the trim.",
+   "file": "bd-trim-free.mp3",
+   "model": "eleven_v4",
+   "seed": 2011,
+   "duration_ms": 1900,
+   "generated": "2026-10-12T13:45:44",
+   "ok": true,
+   "stt": {
+    "hash": "846071e344db53e00c0af1d7b5a24a9106aa886b6a736a90a49951ad3c29cad6",
+    "text": "Pick colors for the trim",
+    "match": false,
+    "how": "miss"
+   }
+  },
+  "bd-sign": {
+   "hash": "d4e50f746b62e571dffed0552960fc0464563dc717c67d5c68407ee82c644d40",
+   "speaker": "narrator",
+   "text": "Now the sign.",
+   "file": "bd-sign.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1190,
+   "generated": "2026-10-12T13:45:25",
+   "ok": true,
+   "stt": {
+    "hash": "d4e50f746b62e571dffed0552960fc0464563dc717c67d5c68407ee82c644d40",
+    "text": "Now the sign",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-ribbon": {
+   "hash": "4f4bbfe5ebb3bf20e3f827fde99ea4353d06da3fa4c4c872c80c69abeb8d882b",
+   "speaker": "narrator",
+   "text": "Cut the ribbon!",
+   "file": "bd-ribbon.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1103,
+   "generated": "2026-10-12T13:45:26",
+   "ok": true,
+   "stt": {
+    "hash": "4f4bbfe5ebb3bf20e3f827fde99ea4353d06da3fa4c4c872c80c69abeb8d882b",
+    "text": "Cut the ribbon",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-circle": {
+   "hash": "e715dc68f4782988ca7665e7d2f79020e0232ccc8b217e674fdd3a6570d6df25",
+   "speaker": "narrator",
+   "text": "Everyone is here. Look at the egg!",
+   "file": "bd-circle.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2630,
+   "generated": "2026-10-12T13:45:26",
+   "ok": true,
+   "stt": {
+    "hash": "e715dc68f4782988ca7665e7d2f79020e0232ccc8b217e674fdd3a6570d6df25",
+    "text": "Everyone is here. Look at the egg",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "bd-row-name": {
+   "hash": "8cd61507dabff91c58e447f6c993829355cf273b8a83fb379e6aafe851bd391c",
+   "speaker": "narrator",
+   "text": "Pick a name for the new row.",
+   "file": "bd-row-name.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1762,
+   "generated": "2026-10-12T13:45:26",
+   "ok": true,
+   "stt": {
+    "hash": "8cd61507dabff91c58e447f6c993829355cf273b8a83fb379e6aafe851bd391c",
+    "text": "Pick a name for the new row",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-stalls": {
+   "hash": "1f56be125870cad0dad803660e6c765ac5472bd556d5ed92e46c946ac22590b7",
+   "speaker": "narrator",
+   "text": "Stalls.",
+   "file": "word-stalls.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 852,
+   "generated": "2026-10-12T13:45:27",
+   "ok": true,
+   "stt": {
+    "hash": "1f56be125870cad0dad803660e6c765ac5472bd556d5ed92e46c946ac22590b7",
+    "text": "Stalls",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-dressing-open": {
+   "hash": "aee5a06cb879876039596cd7a3f8e6e15bf01bc8bf9ff772ee5cc1d9f5c52ccc",
+   "speaker": "queen",
+   "text": "Come and try my Dressing Corner!",
+   "file": "lumi-dressing-open.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1877,
+   "generated": "2026-10-12T13:45:28",
+   "ok": true,
+   "stt": {
+    "hash": "aee5a06cb879876039596cd7a3f8e6e15bf01bc8bf9ff772ee5cc1d9f5c52ccc",
+    "text": "Come and try my dressing corner",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "mw-post-ready": {
+   "hash": "c0c383f76d893634a58ef1717e6a1a2862ff3289f3d9f7585684f74029a4c392",
+   "speaker": "narrator",
+   "text": "The post box is ready to build!",
+   "file": "mw-post-ready.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2168,
+   "generated": "2026-10-12T13:45:28",
+   "ok": true,
+   "stt": {
+    "hash": "c0c383f76d893634a58ef1717e6a1a2862ff3289f3d9f7585684f74029a4c392",
+    "text": "The post box is ready to build",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "mw-notes-open": {
+   "hash": "de3d175aa96d5f72ab78d463bcd9492604b8dd59b92a4a1f8c6e105198f4798f",
+   "speaker": "narrator",
+   "text": "Now you can write notes to Lumi!",
+   "file": "mw-notes-open.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1963,
+   "generated": "2026-10-12T13:45:28",
+   "ok": true,
+   "stt": {
+    "hash": "de3d175aa96d5f72ab78d463bcd9492604b8dd59b92a4a1f8c6e105198f4798f",
+    "text": "Now you can write notes to Lumi",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "mw-letter-lane-open": {
+   "hash": "0ed02cda788bf9691e7da20124f74199993e40feaa6846b543826b65afc1359b",
+   "speaker": "narrator",
+   "text": "Letter Lane is open!",
+   "file": "mw-letter-lane-open.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1660,
+   "generated": "2026-10-12T13:45:29",
+   "ok": true,
+   "stt": {
+    "hash": "0ed02cda788bf9691e7da20124f74199993e40feaa6846b543826b65afc1359b",
+    "text": "Letter lane is open",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "jw-new-jewel": {
+   "hash": "6bd26ad1b6d90dced87d3ad967da953ab698821f61d06b7e71875f5252fa331e",
+   "speaker": "narrator",
+   "text": "You have a new jewel. Bring it here!",
+   "file": "jw-new-jewel.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2388,
+   "generated": "2026-10-12T13:45:29",
+   "ok": true,
+   "stt": {
+    "hash": "6bd26ad1b6d90dced87d3ad967da953ab698821f61d06b7e71875f5252fa331e",
+    "text": "You have a new jewel. Bring it here",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "vm-this-is-valley": {
+   "hash": "c06f153706fa535bd68b1b308d53383adc2709a3c4faf6ad7a598fea22a7ba50",
+   "speaker": "narrator",
+   "text": "This is your valley.",
+   "file": "vm-this-is-valley.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1723,
+   "generated": "2026-10-12T13:45:29",
+   "ok": true,
+   "stt": {
+    "hash": "c06f153706fa535bd68b1b308d53383adc2709a3c4faf6ad7a598fea22a7ba50",
+    "text": "This is your valley",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "y1-open": {
+   "hash": "5b70c6291facaf3ae797977e14a356f1fdb52c0201e402e3fbd2580c39929fe8",
+   "speaker": "narrator",
+   "text": "Some babies are asking for things!",
+   "file": "y1-open.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2358,
+   "generated": "2026-10-12T13:45:30",
+   "ok": true,
+   "stt": {
+    "hash": "5b70c6291facaf3ae797977e14a356f1fdb52c0201e402e3fbd2580c39929fe8",
+    "text": "Some babies are asking for things",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "ca-ribbon": {
+   "hash": "c7c095fa8c54fb49aebbe4e06ae099333001e63cfda9f72c044faaf20c13598c",
+   "speaker": "narrator",
+   "text": "Tie a ribbon, and that baby comes along!",
+   "file": "ca-ribbon.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2777,
+   "generated": "2026-10-12T13:45:30",
+   "ok": true,
+   "stt": {
+    "hash": "c7c095fa8c54fb49aebbe4e06ae099333001e63cfda9f72c044faaf20c13598c",
+    "text": "Tie a ribbon and that baby comes along",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-post-open": {
+   "hash": "aa83cb12bb932330eed9952158ce44dd3cf07048df0175abd883e23764d1ce8c",
+   "speaker": "queen",
+   "text": "The Post Box is open!",
+   "file": "lumi-post-open.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1666,
+   "generated": "2026-10-12T13:45:30",
+   "ok": true,
+   "stt": {
+    "hash": "aa83cb12bb932330eed9952158ce44dd3cf07048df0175abd883e23764d1ce8c",
+    "text": "The post box is open",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-salon-open": {
+   "hash": "91fb28648f5a6564cf255d84e03ac5392c36ef2965a65f6c82f9e45f2e811798",
+   "speaker": "queen",
+   "text": "The Sparkle Salon is open!",
+   "file": "lumi-salon-open.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1651,
+   "generated": "2026-10-12T13:45:30",
+   "ok": true,
+   "stt": {
+    "hash": "91fb28648f5a6564cf255d84e03ac5392c36ef2965a65f6c82f9e45f2e811798",
+    "text": "The Sparkle Salon is open",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-post": {
+   "hash": "19d47e3015958f8dd858d006d7748cb99824c0f8d7c80694086b0789306a7a85",
+   "speaker": "narrator",
+   "text": "Post.",
+   "file": "word-post.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 642,
+   "generated": "2026-10-12T13:45:31",
+   "ok": true,
+   "stt": {
+    "hash": "19d47e3015958f8dd858d006d7748cb99824c0f8d7c80694086b0789306a7a85",
+    "text": "Post",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-salon": {
+   "hash": "bfd50eed22166f5cec9eefca119260093fa00d34520e1e25c885003e84f6d589",
+   "speaker": "narrator",
+   "text": "Salon.",
+   "file": "word-salon.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 662,
+   "generated": "2026-10-12T13:45:31",
+   "ok": true,
+   "stt": {
+    "hash": "bfd50eed22166f5cec9eefca119260093fa00d34520e1e25c885003e84f6d589",
+    "text": "Salon",
+    "match": true,
+    "how": "exact"
+   }
+  }
+ },
+ "updated": "2026-10-12T13:45:45"
 }

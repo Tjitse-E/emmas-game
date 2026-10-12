@@ -1,4 +1,10 @@
 {
+ "name-burt": {
+  "seed": 2011
+ },
+ "name-burt-q": {
+  "seed": 2011
+ },
  "name-carl-q": {
   "seed": 2011
  },
@@ -6,6 +12,12 @@
   "seed": 1011
  },
  "name-dat-q": {
+  "seed": 2011
+ },
+ "name-dee": {
+  "seed": 2011
+ },
+ "name-dee-q": {
   "seed": 2011
  },
  "name-dit-q": {
@@ -29,6 +41,12 @@
  "name-finley": {
   "seed": 1011
  },
+ "name-fitz": {
+  "seed": 2011
+ },
+ "name-fitz-q": {
+  "seed": 2011
+ },
  "name-hal": {
   "seed": 2011
  },
@@ -41,6 +59,18 @@
  "name-jan": {
   "seed": 2011
  },
+ "name-jem": {
+  "seed": 2011
+ },
+ "name-jem-q": {
+  "seed": 2011
+ },
+ "name-jon": {
+  "seed": 2011
+ },
+ "name-jon-q": {
+  "seed": 2011
+ },
  "name-kin-q": {
   "seed": 2011
  },
@@ -48,6 +78,9 @@
   "seed": 1011
  },
  "name-liss": {
+  "seed": 1011
+ },
+ "name-luca": {
   "seed": 1011
  },
  "name-man-q": {
@@ -98,6 +131,12 @@
  "name-san-q": {
   "seed": 2011
  },
+ "name-sol": {
+  "seed": 2011
+ },
+ "name-sol-q": {
+  "seed": 2011
+ },
  "name-tam-q": {
   "seed": 1011
  },
@@ -115,5 +154,17 @@
  },
  "name-vin-q": {
   "seed": 1011
+ },
+ "name-zac": {
+  "seed": 2011
+ },
+ "name-zac-q": {
+  "seed": 2011
+ },
+ "name-zak": {
+  "seed": 2011
+ },
+ "name-zak-q": {
+  "seed": 2011
  }
 }
