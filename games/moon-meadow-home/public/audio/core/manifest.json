@@ -303,6 +303,17 @@
    "generated": "2026-10-12T13:04:31",
    "ok": true
   },
+  "foal-hungry": {
+   "hash": "426982c326553b58142157db2cc79aaf276b73b404f7e7623d13f5f495678953",
+   "speaker": "foal",
+   "text": "[giggles] I'm hungry!",
+   "file": "foal-hungry.mp3",
+   "model": "eleven_v3",
+   "seed": 4107,
+   "duration_ms": 1807,
+   "generated": "2026-10-12T21:32:20",
+   "ok": true
+  },
   "g-egg": {
    "hash": "8e81cc2242bd1ec1d11c5ad4212099c1b1637528c4d4e65a90742bd2ceff8de1",
    "speaker": "narrator",
@@ -537,6 +548,23 @@
    "stt": {
     "hash": "7910a5e6782bd718fe06600cb8ba2928c611e5920c08b00dcdcb9a01b073b09f",
     "text": "Let's count the stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-two-nests": {
+   "hash": "179f387f2a59ad526f86b02d60eded423141ef9c887461bc2357a53abd47f25a",
+   "speaker": "narrator",
+   "text": "A big egg! It has two nests of cups.",
+   "file": "g-two-nests.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3841,
+   "generated": "2026-10-12T21:32:20",
+   "ok": true,
+   "stt": {
+    "hash": "179f387f2a59ad526f86b02d60eded423141ef9c887461bc2357a53abd47f25a",
+    "text": "A big egg! It has two nests of cups",
     "match": true,
     "how": "exact"
    }
@@ -932,6 +960,108 @@
     "how": "exact"
    }
   },
+  "g-hungry": {
+   "hash": "4ac23b4cc5fedfb102b30ce7c1b2cc930362b3107507e45e52f9472c8e0b094f",
+   "speaker": "narrator",
+   "text": "Read the wish, and feed your baby.",
+   "file": "g-hungry.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2233,
+   "generated": "2026-10-12T21:32:20",
+   "ok": true,
+   "stt": {
+    "hash": "4ac23b4cc5fedfb102b30ce7c1b2cc930362b3107507e45e52f9472c8e0b094f",
+    "text": "Read the wish and feed your baby",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-tray": {
+   "hash": "5ea9fda328ade7d1c54fd274ed622ccc77489b9f128a3d63c27a2592aa447f03",
+   "speaker": "narrator",
+   "text": "Tap a food to hear its name. Then give it to a baby.",
+   "file": "g-tray.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3788,
+   "generated": "2026-10-12T21:32:20",
+   "ok": true,
+   "stt": {
+    "hash": "5ea9fda328ade7d1c54fd274ed622ccc77489b9f128a3d63c27a2592aa447f03",
+    "text": "Tap a food to hear its name, then give it to a baby",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-feed-free": {
+   "hash": "41fec28fece4570776de4a8a912eb69db8497fc7efb5b9e8b9260adc11ec2cd3",
+   "speaker": "narrator",
+   "text": "Give the babies a bedtime snack.",
+   "file": "g-feed-free.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2177,
+   "generated": "2026-10-12T21:32:27",
+   "ok": true,
+   "stt": {
+    "hash": "41fec28fece4570776de4a8a912eb69db8497fc7efb5b9e8b9260adc11ec2cd3",
+    "text": "Give the babies a bedtime snack",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-hay-rack": {
+   "hash": "ec24e9bdff6547653923d402b17ba22fb55803e23ddd75b825d0ac036f1e2b6a",
+   "speaker": "narrator",
+   "text": "Drag the hay that fills it up.",
+   "file": "g-hay-rack.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1972,
+   "generated": "2026-10-12T21:32:21",
+   "ok": true,
+   "stt": {
+    "hash": "ec24e9bdff6547653923d402b17ba22fb55803e23ddd75b825d0ac036f1e2b6a",
+    "text": "Drag the hay that fills it up",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-rack-full": {
+   "hash": "578e91e203451e0a0927762bbb9b28bf6db32078b53d0e8b1f7076ad3cca5a77",
+   "speaker": "narrator",
+   "text": "The hay rack is full!",
+   "file": "fb-rack-full.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1582,
+   "generated": "2026-10-12T21:32:21",
+   "ok": true,
+   "stt": {
+    "hash": "578e91e203451e0a0927762bbb9b28bf6db32078b53d0e8b1f7076ad3cca5a77",
+    "text": "The hay rack is full",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h-count-gaps": {
+   "hash": "84538057160f1e69923ad496a95cd78097dd7c8e8ba719e4fdacebd1c7e78d61",
+   "speaker": "narrator",
+   "text": "Let's count the empty spaces.",
+   "file": "h-count-gaps.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1797,
+   "generated": "2026-10-12T21:32:21",
+   "ok": true,
+   "stt": {
+    "hash": "84538057160f1e69923ad496a95cd78097dd7c8e8ba719e4fdacebd1c7e78d61",
+    "text": "Let's count the empty spaces",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "g-tent": {
    "hash": "85006a580c8a70502810c47fba931acc42a6c360f253945c4a8f166c2c5a4afc",
    "speaker": "narrator",
@@ -1015,6 +1145,125 @@
     "text": "Good night, Emma",
     "match": true,
     "how": "alike"
+   }
+  },
+  "g-dusk": {
+   "hash": "35c2c6fbe4328f06d6c9d36cd35a58a554219cf4bd4e4453cc38a700f5c4599b",
+   "speaker": "narrator",
+   "text": "The sun is going down. Time for bed!",
+   "file": "g-dusk.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2454,
+   "generated": "2026-10-12T21:32:22",
+   "ok": true,
+   "stt": {
+    "hash": "35c2c6fbe4328f06d6c9d36cd35a58a554219cf4bd4e4453cc38a700f5c4599b",
+    "text": "The sun is going down. Time for bed",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-lantern-walk": {
+   "hash": "5eb7266b3a5c79ce6b30d5d18e1a66877364bd158c314a02ad7e038fe46d6c8d",
+   "speaker": "narrator",
+   "text": "Read the name on the lantern. Then lead that baby to the stable.",
+   "file": "g-lantern-walk.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 4060,
+   "generated": "2026-10-12T21:32:23",
+   "ok": true,
+   "stt": {
+    "hash": "5eb7266b3a5c79ce6b30d5d18e1a66877364bd158c314a02ad7e038fe46d6c8d",
+    "text": "Read the name on the lantern, then lead that baby to the stable",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-lead-free": {
+   "hash": "0d0176ff3f49f3630e4b74d2d28184d11d9aa3351f8fe3b0eaeba1e0bc1207d4",
+   "speaker": "narrator",
+   "text": "Lead your babies to the stable.",
+   "file": "g-lead-free.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1789,
+   "generated": "2026-10-12T21:32:23",
+   "ok": true,
+   "stt": {
+    "hash": "0d0176ff3f49f3630e4b74d2d28184d11d9aa3351f8fe3b0eaeba1e0bc1207d4",
+    "text": "Lead your babies to the stable",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h-path": {
+   "hash": "d3239b39ad187a9116d0afad567da7ae30ea329e6965a915499116470b23c06a",
+   "speaker": "narrator",
+   "text": "Drag the baby along the glowing path, all the way to the stable.",
+   "file": "h-path.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 4010,
+   "generated": "2026-10-12T21:32:24",
+   "ok": true,
+   "stt": {
+    "hash": "d3239b39ad187a9116d0afad567da7ae30ea329e6965a915499116470b23c06a",
+    "text": "Drag the baby along the glowing path all the way to the stable",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-herd-in": {
+   "hash": "a78cba35e6fc07aae59bcacb5285c51ab6238bb752110ea1417368131e5be8da",
+   "speaker": "narrator",
+   "text": "Here comes everyone else!",
+   "file": "g-herd-in.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1488,
+   "generated": "2026-10-12T21:32:23",
+   "ok": true,
+   "stt": {
+    "hash": "a78cba35e6fc07aae59bcacb5285c51ab6238bb752110ea1417368131e5be8da",
+    "text": "Here comes everyone else",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-tuck": {
+   "hash": "2b2505355650acc9c1dfce473ef7f09fea3e92ca46eb54b787abe6df0c47cb87",
+   "speaker": "narrator",
+   "text": "Tap a sleepy baby to tuck it in.",
+   "file": "g-tuck.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2391,
+   "generated": "2026-10-12T21:32:24",
+   "ok": true,
+   "stt": {
+    "hash": "2b2505355650acc9c1dfce473ef7f09fea3e92ca46eb54b787abe6df0c47cb87",
+    "text": "Tap a sleepy baby to tuck it in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-window": {
+   "hash": "b0ae591183015ad3e9c3c93aca375acaee5bc4b7d81ee86485cbe2912d498363",
+   "speaker": "narrator",
+   "text": "Tap the window to see the stars.",
+   "file": "g-window.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2254,
+   "generated": "2026-10-12T21:32:25",
+   "ok": true,
+   "stt": {
+    "hash": "b0ae591183015ad3e9c3c93aca375acaee5bc4b7d81ee86485cbe2912d498363",
+    "text": "Tap the window to see the stars",
+    "match": true,
+    "how": "exact"
    }
   },
   "lumi-moving": {
@@ -1154,5 +1403,5 @@
    }
   }
  },
- "updated": "2026-10-12T13:05:07"
+ "updated": "2026-10-12T21:32:32"
 }

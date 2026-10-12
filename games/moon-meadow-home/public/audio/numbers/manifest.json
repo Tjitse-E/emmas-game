@@ -5915,7 +5915,1010 @@
     "match": true,
     "how": "numeral"
    }
+  },
+  "num-egg-6": {
+   "hash": "a80a39584bb347d4175118662f2319dfd94db7a63ab0c8a5290b0d3cee49c451",
+   "speaker": "narrator",
+   "text": "This egg needs six warm cups.",
+   "file": "num-egg-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2424,
+   "generated": "2026-10-12T21:32:40",
+   "ok": true,
+   "stt": {
+    "hash": "a80a39584bb347d4175118662f2319dfd94db7a63ab0c8a5290b0d3cee49c451",
+    "text": "This egg needs six warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-7": {
+   "hash": "60aa2cb40609728c6cdca669cb93b1c15d6a9fe1a47a37a9805c35fade14fa06",
+   "speaker": "narrator",
+   "text": "This egg needs seven warm cups.",
+   "file": "num-egg-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2518,
+   "generated": "2026-10-12T21:32:40",
+   "ok": true,
+   "stt": {
+    "hash": "60aa2cb40609728c6cdca669cb93b1c15d6a9fe1a47a37a9805c35fade14fa06",
+    "text": "This egg needs seven warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-8": {
+   "hash": "8fbe92ac945a1b0ddf7adb8d64f2c3182daf926e3521df840a7a035febbc2886",
+   "speaker": "narrator",
+   "text": "This egg needs eight warm cups.",
+   "file": "num-egg-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2424,
+   "generated": "2026-10-12T21:32:42",
+   "ok": true,
+   "stt": {
+    "hash": "8fbe92ac945a1b0ddf7adb8d64f2c3182daf926e3521df840a7a035febbc2886",
+    "text": "This egg needs eight warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-9": {
+   "hash": "27ba25fb5735c6f1fb368b5fce31276a84c989ffc08b5370eb876da7beda2476",
+   "speaker": "narrator",
+   "text": "This egg needs nine warm cups.",
+   "file": "num-egg-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2554,
+   "generated": "2026-10-12T21:32:40",
+   "ok": true,
+   "stt": {
+    "hash": "27ba25fb5735c6f1fb368b5fce31276a84c989ffc08b5370eb876da7beda2476",
+    "text": "This egg needs nine warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-10": {
+   "hash": "ef597de339509875bfe21a1f8d8a7db0b3d485569ec318f4b68ed7305071d544",
+   "speaker": "narrator",
+   "text": "This egg needs ten warm cups.",
+   "file": "num-egg-10.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2471,
+   "generated": "2026-10-12T21:32:41",
+   "ok": true,
+   "stt": {
+    "hash": "ef597de339509875bfe21a1f8d8a7db0b3d485569ec318f4b68ed7305071d544",
+    "text": "This egg needs 10 warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-11": {
+   "hash": "f8276e9185c3da4550c3d4731e8d3b34d531e7ed03fc29e9fb25fc52d077d94f",
+   "speaker": "narrator",
+   "text": "This egg needs eleven warm cups.",
+   "file": "num-egg-11.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2704,
+   "generated": "2026-10-12T21:32:41",
+   "ok": true,
+   "stt": {
+    "hash": "f8276e9185c3da4550c3d4731e8d3b34d531e7ed03fc29e9fb25fc52d077d94f",
+    "text": "This egg needs 11 warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-12": {
+   "hash": "c31f7b657b2dad1f5fd7ffc81a03bb54381a04d92aefa67a16204cc1f5cad341",
+   "speaker": "narrator",
+   "text": "This egg needs twelve warm cups.",
+   "file": "num-egg-12.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2656,
+   "generated": "2026-10-12T21:32:41",
+   "ok": true,
+   "stt": {
+    "hash": "c31f7b657b2dad1f5fd7ffc81a03bb54381a04d92aefa67a16204cc1f5cad341",
+    "text": "This egg needs 12 warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-13": {
+   "hash": "7b900c87b428d2fced2980f62ecc206924705ea1771f2ec6a510295c3a4f559c",
+   "speaker": "narrator",
+   "text": "This egg needs thirteen warm cups.",
+   "file": "num-egg-13.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2763,
+   "generated": "2026-10-12T21:32:42",
+   "ok": true,
+   "stt": {
+    "hash": "7b900c87b428d2fced2980f62ecc206924705ea1771f2ec6a510295c3a4f559c",
+    "text": "This egg needs 13 warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-14": {
+   "hash": "7ca4fc41d1b7f7adeb36ff523e4296e4d0d8de7120a0c64fd3c19deee473d65d",
+   "speaker": "narrator",
+   "text": "This egg needs fourteen warm cups.",
+   "file": "num-egg-14.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2757,
+   "generated": "2026-10-12T21:32:43",
+   "ok": true,
+   "stt": {
+    "hash": "7ca4fc41d1b7f7adeb36ff523e4296e4d0d8de7120a0c64fd3c19deee473d65d",
+    "text": "This egg needs 14 warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-15": {
+   "hash": "141e82a1eefa6f8006ad13888e2d7b04c6591851bcacc38b0fa88e1ca6e473e2",
+   "speaker": "narrator",
+   "text": "This egg needs fifteen warm cups.",
+   "file": "num-egg-15.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2776,
+   "generated": "2026-10-12T21:32:45",
+   "ok": true,
+   "stt": {
+    "hash": "141e82a1eefa6f8006ad13888e2d7b04c6591851bcacc38b0fa88e1ca6e473e2",
+    "text": "This egg needs 15 warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-rack-6": {
+   "hash": "4ae0751b66a0337028a86473127e447ec2cb3a46e0ae95a31774dcfc12a9f216",
+   "speaker": "narrator",
+   "text": "The hay rack needs six bundles.",
+   "file": "num-rack-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2198,
+   "generated": "2026-10-12T21:32:43",
+   "ok": true,
+   "stt": {
+    "hash": "4ae0751b66a0337028a86473127e447ec2cb3a46e0ae95a31774dcfc12a9f216",
+    "text": "The hay rack needs six bundles",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-rack-7": {
+   "hash": "a1d5324a88a609908279d0965c9f7a16e14646e0b9c437906f3d6eb340690b34",
+   "speaker": "narrator",
+   "text": "The hay rack needs seven bundles.",
+   "file": "num-rack-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2285,
+   "generated": "2026-10-12T21:32:44",
+   "ok": true,
+   "stt": {
+    "hash": "a1d5324a88a609908279d0965c9f7a16e14646e0b9c437906f3d6eb340690b34",
+    "text": "The hay rack needs seven bundles",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-rack-8": {
+   "hash": "9c165f2fae1379521b1528e260e050ad4ce0a002439a32db6954888dfa239567",
+   "speaker": "narrator",
+   "text": "The hay rack needs eight bundles.",
+   "file": "num-rack-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2277,
+   "generated": "2026-10-12T21:32:44",
+   "ok": true,
+   "stt": {
+    "hash": "9c165f2fae1379521b1528e260e050ad4ce0a002439a32db6954888dfa239567",
+    "text": "The hay rack needs eight bundles",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-rack-9": {
+   "hash": "40d152db6abd1063618974ba54434a9faf49980b59c20c7ee87c8633230c6834",
+   "speaker": "narrator",
+   "text": "The hay rack needs nine bundles.",
+   "file": "num-rack-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2287,
+   "generated": "2026-10-12T21:32:45",
+   "ok": true,
+   "stt": {
+    "hash": "40d152db6abd1063618974ba54434a9faf49980b59c20c7ee87c8633230c6834",
+    "text": "The hay rack needs nine bundles",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-rack-10": {
+   "hash": "d4aeda2f9071e43a2deeffa9fd3404458bb762b2e8e3d4c0ea4e53fcdfc9074a",
+   "speaker": "narrator",
+   "text": "The hay rack needs ten bundles.",
+   "file": "num-rack-10.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2238,
+   "generated": "2026-10-12T21:32:45",
+   "ok": true,
+   "stt": {
+    "hash": "d4aeda2f9071e43a2deeffa9fd3404458bb762b2e8e3d4c0ea4e53fcdfc9074a",
+    "text": "The hay rack needs 10 bundles",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-rack-11": {
+   "hash": "5f2e3d38581cc890f65f19903af83a09894e02e8a839537757ce5b05f9968cc7",
+   "speaker": "narrator",
+   "text": "The hay rack needs eleven bundles.",
+   "file": "num-rack-11.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2416,
+   "generated": "2026-10-12T21:33:16",
+   "ok": true,
+   "stt": {
+    "hash": "5f2e3d38581cc890f65f19903af83a09894e02e8a839537757ce5b05f9968cc7",
+    "text": "The hayrack needs 11 bundles",
+    "match": true,
+    "how": "alike"
+   }
+  },
+  "num-rack-12": {
+   "hash": "a5b70b8e85cac91549dc019c2e0c27feb4a7daf82af3739479b2d995ea8b5a14",
+   "speaker": "narrator",
+   "text": "The hay rack needs twelve bundles.",
+   "file": "num-rack-12.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2341,
+   "generated": "2026-10-12T21:32:46",
+   "ok": true,
+   "stt": {
+    "hash": "a5b70b8e85cac91549dc019c2e0c27feb4a7daf82af3739479b2d995ea8b5a14",
+    "text": "The hayrack needs 12 bundles",
+    "match": true,
+    "how": "alike"
+   }
+  },
+  "num-rack-13": {
+   "hash": "845d916002f5f1d458754a8132255cc0d6c802bddfa30741d9a2cbbdb8b9084a",
+   "speaker": "narrator",
+   "text": "The hay rack needs thirteen bundles.",
+   "file": "num-rack-13.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2518,
+   "generated": "2026-10-12T21:32:46",
+   "ok": true,
+   "stt": {
+    "hash": "845d916002f5f1d458754a8132255cc0d6c802bddfa30741d9a2cbbdb8b9084a",
+    "text": "The hay rack needs 13 bundles",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-rack-14": {
+   "hash": "826b64fa78db825cca086cd360ac3a40f493418ee5b5716395bc7d62bd71d5d2",
+   "speaker": "narrator",
+   "text": "The hay rack needs fourteen bundles.",
+   "file": "num-rack-14.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2515,
+   "generated": "2026-10-12T21:32:46",
+   "ok": true,
+   "stt": {
+    "hash": "826b64fa78db825cca086cd360ac3a40f493418ee5b5716395bc7d62bd71d5d2",
+    "text": "The hay rack needs 14 bundles",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-rack-15": {
+   "hash": "e05ed677661671ddeb22c915ccf1ad51e9f09d11585d4d9df5d585e94b676693",
+   "speaker": "narrator",
+   "text": "The hay rack needs fifteen bundles.",
+   "file": "num-rack-15.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2485,
+   "generated": "2026-10-12T21:32:47",
+   "ok": true,
+   "stt": {
+    "hash": "e05ed677661671ddeb22c915ccf1ad51e9f09d11585d4d9df5d585e94b676693",
+    "text": "The hay rack needs 15 bundles",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-1": {
+   "hash": "624ac5b999e3711fb3ed43267b9d2846a524feb7f1ee7241a3444c9e7c04e473",
+   "speaker": "narrator",
+   "text": "One bundle is in.",
+   "file": "num-in-1.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1443,
+   "generated": "2026-10-12T21:32:47",
+   "ok": true,
+   "stt": {
+    "hash": "624ac5b999e3711fb3ed43267b9d2846a524feb7f1ee7241a3444c9e7c04e473",
+    "text": "One bundle is in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-2": {
+   "hash": "036ba2af1b80944c23a24f921a37c141d7b94e6b855c52a9c4f1078e2a978cc9",
+   "speaker": "narrator",
+   "text": "Two bundles are in.",
+   "file": "num-in-2.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1278,
+   "generated": "2026-10-12T21:32:47",
+   "ok": true,
+   "stt": {
+    "hash": "036ba2af1b80944c23a24f921a37c141d7b94e6b855c52a9c4f1078e2a978cc9",
+    "text": "Two bundles are in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-3": {
+   "hash": "23b48f07e791d15f25fd6edd684c0c97808b87d5fa66b84150d92795afcf601a",
+   "speaker": "narrator",
+   "text": "Three bundles are in.",
+   "file": "num-in-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1680,
+   "generated": "2026-10-12T21:32:48",
+   "ok": true,
+   "stt": {
+    "hash": "23b48f07e791d15f25fd6edd684c0c97808b87d5fa66b84150d92795afcf601a",
+    "text": "Three bundles are in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-4": {
+   "hash": "b50f316f8a77ddb3fa6c2c858902c4e8d0e74d133df472115f626a9776446e95",
+   "speaker": "narrator",
+   "text": "Four bundles are in.",
+   "file": "num-in-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1497,
+   "generated": "2026-10-12T21:32:48",
+   "ok": true,
+   "stt": {
+    "hash": "b50f316f8a77ddb3fa6c2c858902c4e8d0e74d133df472115f626a9776446e95",
+    "text": "Four bundles are in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-5": {
+   "hash": "6ca4c85f72194121868a53acafd497feb3e9d2975e51f41e142a01eff98b189d",
+   "speaker": "narrator",
+   "text": "Five bundles are in.",
+   "file": "num-in-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1603,
+   "generated": "2026-10-12T21:32:48",
+   "ok": true,
+   "stt": {
+    "hash": "6ca4c85f72194121868a53acafd497feb3e9d2975e51f41e142a01eff98b189d",
+    "text": "Five bundles are in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-6": {
+   "hash": "b341a00706214a6b2ecfb126b67234d58089beded1851ccd34900188436858e7",
+   "speaker": "narrator",
+   "text": "Six bundles are in.",
+   "file": "num-in-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1487,
+   "generated": "2026-10-12T21:32:49",
+   "ok": true,
+   "stt": {
+    "hash": "b341a00706214a6b2ecfb126b67234d58089beded1851ccd34900188436858e7",
+    "text": "Six bundles are in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-7": {
+   "hash": "b9188282633188133f59b20b1a7762d850100c76a7d0328c405c9b92141033e7",
+   "speaker": "narrator",
+   "text": "Seven bundles are in.",
+   "file": "num-in-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1655,
+   "generated": "2026-10-12T21:32:49",
+   "ok": true,
+   "stt": {
+    "hash": "b9188282633188133f59b20b1a7762d850100c76a7d0328c405c9b92141033e7",
+    "text": "Seven bundles are in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-8": {
+   "hash": "640352e2611627305ab3877a5d39ca5b37092bd845805e8597a3f7b24a30e41c",
+   "speaker": "narrator",
+   "text": "Eight bundles are in.",
+   "file": "num-in-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1600,
+   "generated": "2026-10-12T21:32:49",
+   "ok": true,
+   "stt": {
+    "hash": "640352e2611627305ab3877a5d39ca5b37092bd845805e8597a3f7b24a30e41c",
+    "text": "Eight bundles are in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-in-9": {
+   "hash": "ba87ad6431a8d6b3785e5702f15b618069964f7e9f5494caef0054a65a78f9d9",
+   "speaker": "narrator",
+   "text": "Nine bundles are in.",
+   "file": "num-in-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1572,
+   "generated": "2026-10-12T21:32:50",
+   "ok": true,
+   "stt": {
+    "hash": "ba87ad6431a8d6b3785e5702f15b618069964f7e9f5494caef0054a65a78f9d9",
+    "text": "Nine bundles are in",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-2-9": {
+   "hash": "8a43fb9efc569df39733b9ad3f7201c3ba45acbb0b412e9cffa7ca67efec463e",
+   "speaker": "narrator",
+   "text": "Two and nine make eleven!",
+   "file": "num-bond-2-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2181,
+   "generated": "2026-10-12T21:32:50",
+   "ok": true,
+   "stt": {
+    "hash": "8a43fb9efc569df39733b9ad3f7201c3ba45acbb0b412e9cffa7ca67efec463e",
+    "text": "Two and nine make 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-3-8": {
+   "hash": "d839f27850aee870da440989edf7c0830ad3e2f3cf50d7a20e0e57a6e0bea01e",
+   "speaker": "narrator",
+   "text": "Three and eight make eleven!",
+   "file": "num-bond-3-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2265,
+   "generated": "2026-10-12T21:32:50",
+   "ok": true,
+   "stt": {
+    "hash": "d839f27850aee870da440989edf7c0830ad3e2f3cf50d7a20e0e57a6e0bea01e",
+    "text": "Three and eight make 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-4-7": {
+   "hash": "22b4467237224ba9857c697e34ba046cbbd84723d45777d435d1a4a5f9ea21e6",
+   "speaker": "narrator",
+   "text": "Four and seven make eleven!",
+   "file": "num-bond-4-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2275,
+   "generated": "2026-10-12T21:32:51",
+   "ok": true,
+   "stt": {
+    "hash": "22b4467237224ba9857c697e34ba046cbbd84723d45777d435d1a4a5f9ea21e6",
+    "text": "Four and seven make 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-5-6": {
+   "hash": "4000263670bcb50d4adc11a76af707bfa10d829bfa542bb23d8b8b0afc9aa206",
+   "speaker": "narrator",
+   "text": "Five and six make eleven!",
+   "file": "num-bond-5-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2117,
+   "generated": "2026-10-12T21:32:51",
+   "ok": true,
+   "stt": {
+    "hash": "4000263670bcb50d4adc11a76af707bfa10d829bfa542bb23d8b8b0afc9aa206",
+    "text": "Five and six make 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-6-5": {
+   "hash": "fa0f9543d298bf13f6c2e24587f9c6e49f9d1c7348870cbf978c070143379e7b",
+   "speaker": "narrator",
+   "text": "Six and five make eleven!",
+   "file": "num-bond-6-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2268,
+   "generated": "2026-10-12T21:32:51",
+   "ok": true,
+   "stt": {
+    "hash": "fa0f9543d298bf13f6c2e24587f9c6e49f9d1c7348870cbf978c070143379e7b",
+    "text": "Six and five make 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-7-4": {
+   "hash": "5c083fdbf818b0c9a6f1fd3616e3885aad97c60b4d4a86355e4d5523c70eaabb",
+   "speaker": "narrator",
+   "text": "Seven and four make eleven!",
+   "file": "num-bond-7-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2258,
+   "generated": "2026-10-12T21:32:52",
+   "ok": true,
+   "stt": {
+    "hash": "5c083fdbf818b0c9a6f1fd3616e3885aad97c60b4d4a86355e4d5523c70eaabb",
+    "text": "Seven and four make 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-8-3": {
+   "hash": "82c0fd71877aede3042084c6df1aa9bcae89f11d5eac63d59efefb9ee200ed22",
+   "speaker": "narrator",
+   "text": "Eight and three make eleven!",
+   "file": "num-bond-8-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2320,
+   "generated": "2026-10-12T21:32:52",
+   "ok": true,
+   "stt": {
+    "hash": "82c0fd71877aede3042084c6df1aa9bcae89f11d5eac63d59efefb9ee200ed22",
+    "text": "Eight and three make 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-9-2": {
+   "hash": "71c133f5672e9e789fdf6e29a01263332e857d05f89fd18fd43bb0e6a4807d25",
+   "speaker": "narrator",
+   "text": "Nine and two make eleven!",
+   "file": "num-bond-9-2.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2184,
+   "generated": "2026-10-12T21:32:52",
+   "ok": true,
+   "stt": {
+    "hash": "71c133f5672e9e789fdf6e29a01263332e857d05f89fd18fd43bb0e6a4807d25",
+    "text": "Nine and two make 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-3-9": {
+   "hash": "7bc2825fe3fe1fdcf886d1b316a85835c191649cf15c126561374da9d8073143",
+   "speaker": "narrator",
+   "text": "Three and nine make twelve!",
+   "file": "num-bond-3-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2140,
+   "generated": "2026-10-12T21:32:53",
+   "ok": true,
+   "stt": {
+    "hash": "7bc2825fe3fe1fdcf886d1b316a85835c191649cf15c126561374da9d8073143",
+    "text": "Three and nine make 12",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-4-8": {
+   "hash": "9fa8aab3c9607d0db1b39c905c5327a6242cdbffb0f01385b05bab9d7ae12720",
+   "speaker": "narrator",
+   "text": "Four and eight make twelve!",
+   "file": "num-bond-4-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2143,
+   "generated": "2026-10-12T21:32:54",
+   "ok": true,
+   "stt": {
+    "hash": "9fa8aab3c9607d0db1b39c905c5327a6242cdbffb0f01385b05bab9d7ae12720",
+    "text": "Four and eight make 12",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-5-7": {
+   "hash": "03e53aa15e0548c2d8ab7a79afa8a03cc0a96c1cd91de74ba87312872c5f7924",
+   "speaker": "narrator",
+   "text": "Five and seven make twelve!",
+   "file": "num-bond-5-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2232,
+   "generated": "2026-10-12T21:32:54",
+   "ok": true,
+   "stt": {
+    "hash": "03e53aa15e0548c2d8ab7a79afa8a03cc0a96c1cd91de74ba87312872c5f7924",
+    "text": "Five and seven make 12",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-6-6": {
+   "hash": "268f819ed8eff59585289231f6bf8f6e9b75785774e7880e425090285d688416",
+   "speaker": "narrator",
+   "text": "Six and six make twelve!",
+   "file": "num-bond-6-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2234,
+   "generated": "2026-10-12T21:32:54",
+   "ok": true,
+   "stt": {
+    "hash": "268f819ed8eff59585289231f6bf8f6e9b75785774e7880e425090285d688416",
+    "text": "Six and six make 12",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-7-5": {
+   "hash": "ac26b767083b8010250354446a7c48e852e40017f97cd1ea62a2c1754e5138da",
+   "speaker": "narrator",
+   "text": "Seven and five make twelve!",
+   "file": "num-bond-7-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2068,
+   "generated": "2026-10-12T21:32:55",
+   "ok": true,
+   "stt": {
+    "hash": "ac26b767083b8010250354446a7c48e852e40017f97cd1ea62a2c1754e5138da",
+    "text": "Seven and five make 12",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-8-4": {
+   "hash": "8684f4f85e3e120fe029920d5511a9f79d1a11fe516c6ff399af302c7527f8fc",
+   "speaker": "narrator",
+   "text": "Eight and four make twelve!",
+   "file": "num-bond-8-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2158,
+   "generated": "2026-10-12T21:32:55",
+   "ok": true,
+   "stt": {
+    "hash": "8684f4f85e3e120fe029920d5511a9f79d1a11fe516c6ff399af302c7527f8fc",
+    "text": "Eight and four make twelve",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-9-3": {
+   "hash": "c9635acd1757cff298fe89cbee136c2fd0937a0f73cecce9c0dd8fbcd6e42ab2",
+   "speaker": "narrator",
+   "text": "Nine and three make twelve!",
+   "file": "num-bond-9-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2176,
+   "generated": "2026-10-12T21:32:55",
+   "ok": true,
+   "stt": {
+    "hash": "c9635acd1757cff298fe89cbee136c2fd0937a0f73cecce9c0dd8fbcd6e42ab2",
+    "text": "Nine and three make 12",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-4-9": {
+   "hash": "8ff6705721bc067de71f497d5a4802db4f137decebfcc1d19d4924ce43bcf797",
+   "speaker": "narrator",
+   "text": "Four and nine make thirteen!",
+   "file": "num-bond-4-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2226,
+   "generated": "2026-10-12T21:32:56",
+   "ok": true,
+   "stt": {
+    "hash": "8ff6705721bc067de71f497d5a4802db4f137decebfcc1d19d4924ce43bcf797",
+    "text": "Four and nine make 13",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-5-8": {
+   "hash": "ed4c5176fb50fec134349d0b8d2b979d63ad6e5668f06ab0934a88b74fd963f3",
+   "speaker": "narrator",
+   "text": "Five and eight make thirteen!",
+   "file": "num-bond-5-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2261,
+   "generated": "2026-10-12T21:32:56",
+   "ok": true,
+   "stt": {
+    "hash": "ed4c5176fb50fec134349d0b8d2b979d63ad6e5668f06ab0934a88b74fd963f3",
+    "text": "Five and eight make 13",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-6-7": {
+   "hash": "2c6aca0ed503409b9c8f6435e6854b60f9705d54eadf1965982c150b18be6106",
+   "speaker": "narrator",
+   "text": "Six and seven make thirteen!",
+   "file": "num-bond-6-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2359,
+   "generated": "2026-10-12T21:32:57",
+   "ok": true,
+   "stt": {
+    "hash": "2c6aca0ed503409b9c8f6435e6854b60f9705d54eadf1965982c150b18be6106",
+    "text": "Six and seven make 13",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-7-6": {
+   "hash": "7da23c25fc75c4cfd135b7f02bebf69527f4e351394ddc4eeea0e27db843c877",
+   "speaker": "narrator",
+   "text": "Seven and six make thirteen!",
+   "file": "num-bond-7-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2277,
+   "generated": "2026-10-12T21:32:57",
+   "ok": true,
+   "stt": {
+    "hash": "7da23c25fc75c4cfd135b7f02bebf69527f4e351394ddc4eeea0e27db843c877",
+    "text": "Seven and six make 13",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-8-5": {
+   "hash": "7507279eec0d43df85b8cb21032c4804b4e0763b488de370bd923935074c06fb",
+   "speaker": "narrator",
+   "text": "Eight and five make thirteen!",
+   "file": "num-bond-8-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2216,
+   "generated": "2026-10-12T21:32:57",
+   "ok": true,
+   "stt": {
+    "hash": "7507279eec0d43df85b8cb21032c4804b4e0763b488de370bd923935074c06fb",
+    "text": "Eight and five make 13",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-9-4": {
+   "hash": "ffcf2370519a0a814362add78d28fc3fd10934bfb3d4fd133c6b1b22969d010e",
+   "speaker": "narrator",
+   "text": "Nine and four make thirteen!",
+   "file": "num-bond-9-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2260,
+   "generated": "2026-10-12T21:32:58",
+   "ok": true,
+   "stt": {
+    "hash": "ffcf2370519a0a814362add78d28fc3fd10934bfb3d4fd133c6b1b22969d010e",
+    "text": "Nine and four make 13",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-5-9": {
+   "hash": "c6054e5ae34e83c5366f090d52a65a77db84015d977e44b8d10b4006474d0bc0",
+   "speaker": "narrator",
+   "text": "Five and nine make fourteen!",
+   "file": "num-bond-5-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2440,
+   "generated": "2026-10-12T21:32:58",
+   "ok": true,
+   "stt": {
+    "hash": "c6054e5ae34e83c5366f090d52a65a77db84015d977e44b8d10b4006474d0bc0",
+    "text": "Five and nine make 14",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-6-8": {
+   "hash": "0d2938930eed35762af728431092244a44350d63b1e8f46898b5ee2d0b9e08a6",
+   "speaker": "narrator",
+   "text": "Six and eight make fourteen!",
+   "file": "num-bond-6-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2279,
+   "generated": "2026-10-12T21:32:58",
+   "ok": true,
+   "stt": {
+    "hash": "0d2938930eed35762af728431092244a44350d63b1e8f46898b5ee2d0b9e08a6",
+    "text": "Six and eight make 14",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-7-7": {
+   "hash": "1e751594c830099f6a1631c5c6c3c5fe40270aca198712f5133cc72303ac9f3b",
+   "speaker": "narrator",
+   "text": "Seven and seven make fourteen!",
+   "file": "num-bond-7-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2438,
+   "generated": "2026-10-12T21:32:59",
+   "ok": true,
+   "stt": {
+    "hash": "1e751594c830099f6a1631c5c6c3c5fe40270aca198712f5133cc72303ac9f3b",
+    "text": "Seven and seven make 14",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-8-6": {
+   "hash": "8c0189ef9ca3d813bf4b086930c6db78b4619d20385319b4362cd603e9d56527",
+   "speaker": "narrator",
+   "text": "Eight and six make fourteen!",
+   "file": "num-bond-8-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2238,
+   "generated": "2026-10-12T21:33:00",
+   "ok": true,
+   "stt": {
+    "hash": "8c0189ef9ca3d813bf4b086930c6db78b4619d20385319b4362cd603e9d56527",
+    "text": "Eight and six make 14",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-9-5": {
+   "hash": "4124fd9b0a10e30b0a350c598ff9f2cc27165766130d54030bd1520b53259812",
+   "speaker": "narrator",
+   "text": "Nine and five make fourteen!",
+   "file": "num-bond-9-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2367,
+   "generated": "2026-10-12T21:33:00",
+   "ok": true,
+   "stt": {
+    "hash": "4124fd9b0a10e30b0a350c598ff9f2cc27165766130d54030bd1520b53259812",
+    "text": "Nine and five make 14",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-6-9": {
+   "hash": "6fab66525bc2d478a3d8554e94ca2ef0b555eb8f4b1e4403e352fcac071964fa",
+   "speaker": "narrator",
+   "text": "Six and nine make fifteen!",
+   "file": "num-bond-6-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2319,
+   "generated": "2026-10-12T21:33:00",
+   "ok": true,
+   "stt": {
+    "hash": "6fab66525bc2d478a3d8554e94ca2ef0b555eb8f4b1e4403e352fcac071964fa",
+    "text": "Six and nine make 15",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-7-8": {
+   "hash": "bb47d7b624e8c7b35bc3e23c1e2594894d9222019688445f385f8b8bb67389e2",
+   "speaker": "narrator",
+   "text": "Seven and eight make fifteen!",
+   "file": "num-bond-7-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2280,
+   "generated": "2026-10-12T21:33:01",
+   "ok": true,
+   "stt": {
+    "hash": "bb47d7b624e8c7b35bc3e23c1e2594894d9222019688445f385f8b8bb67389e2",
+    "text": "Seven and eight make 15",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-8-7": {
+   "hash": "25b64d986ce0773476f5ad8caaa7d28336443c0ca27f0c655fbe9a0e58e8700a",
+   "speaker": "narrator",
+   "text": "Eight and seven make fifteen!",
+   "file": "num-bond-8-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2235,
+   "generated": "2026-10-12T21:33:01",
+   "ok": true,
+   "stt": {
+    "hash": "25b64d986ce0773476f5ad8caaa7d28336443c0ca27f0c655fbe9a0e58e8700a",
+    "text": "Eight and seven make 15",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-bond-9-6": {
+   "hash": "ae20431df4d391589b67abb07f470c1e5509d1ced112dadf2a2d411c6926b1c1",
+   "speaker": "narrator",
+   "text": "Nine and six make fifteen!",
+   "file": "num-bond-9-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2319,
+   "generated": "2026-10-12T21:33:01",
+   "ok": true,
+   "stt": {
+    "hash": "ae20431df4d391589b67abb07f470c1e5509d1ced112dadf2a2d411c6926b1c1",
+    "text": "Nine and six make 15",
+    "match": true,
+    "how": "exact"
+   }
   }
  },
- "updated": "2026-10-12T13:08:42"
+ "updated": "2026-10-12T21:33:36"
 }

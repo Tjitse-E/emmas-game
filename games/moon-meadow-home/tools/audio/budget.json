@@ -35,5 +35,15 @@
    "retries names-t1": 152
   },
   "note": "Run 1b made all 50 place lines (49 by the API, 1 from the cache); bd-trim-free is kept although speech-to-text wrote 'colors' for 'colours'. The retries regenerated the 17 name clips that had never been retried; name-luca now passes, the other 16 still fail because the transcript is a homophone (Jon/John, Zac/Zach, Dee/D) and stay ok:false. The 37 other excluded clips had already used both retries. 5,179 credits are left under the cap for runs 9, 10, 8, 12, 6, 11 and 13 (planned about 7,630), so the cut order applies: run 13, then run 12 from the top, then run 6."
+ },
+ "batchNext": {
+  "measured": "2026-10-12T21:35",
+  "ledgerAfter": 21058,
+  "counterAfter": 31044,
+  "runs": {
+   "core 1.0.1 lines": 565,
+   "numbers 1.0.1 lines": 1672
+  },
+  "note": "Release 1.0.1 (docs/v3/next/plan.md I-0.11): 15 core clips (14 narrator lines and foal-hungry) and 59 number clips (egg and hay-rack goals 6 to 15, bundles in 1 to 9, bonds 11 to 15), all passing speech-to-text on the first try. The retry pass also re-checked g-tent and eight ordinals (ord-11 to ord-20 except 12 and 15), whose run 2 verdict 'numeral' the current matcher does not know; their audio did not change, so their manifest entries were restored to the run 2 verdicts. 2,942 credits are left under the cap for Wave B. Run 12 (numbers 61 to 100) and the Salon phrases are deferred, as Tjitse decided (N30)."
  }
 }
