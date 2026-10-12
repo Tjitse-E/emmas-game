@@ -1,0 +1,364 @@
+{
+ "pack": "core",
+ "lines": [
+  {
+   "id": "g-meadow-way",
+   "speaker": "narrator",
+   "text": "The meadow is this way."
+  },
+  {
+   "id": "g-look",
+   "speaker": "narrator",
+   "text": "Look, like this."
+  },
+  {
+   "id": "g-listen",
+   "speaker": "narrator",
+   "text": "Listen."
+  },
+  {
+   "id": "g-now-listen",
+   "speaker": "narrator",
+   "text": "Now listen."
+  },
+  {
+   "id": "fb-says",
+   "speaker": "narrator",
+   "text": "This is what it says."
+  },
+  {
+   "id": "fb-lovely",
+   "speaker": "narrator",
+   "text": "Lovely!",
+   "note": "Also the kind line after a name that has no clip (Moving Day, R55)."
+  },
+  {
+   "id": "fb-well-done",
+   "speaker": "narrator",
+   "text": "Well done!"
+  },
+  {
+   "id": "fb-yes",
+   "speaker": "narrator",
+   "text": "Yes!"
+  },
+  {
+   "id": "fb-letters",
+   "speaker": "narrator",
+   "text": "Look at the letters again."
+  },
+  {
+   "id": "fb-listen",
+   "speaker": "narrator",
+   "text": "Hmm. Listen again."
+  },
+  {
+   "id": "h-sounds",
+   "speaker": "narrator",
+   "text": "Listen to the sounds."
+  },
+  {
+   "id": "platform-turn",
+   "speaker": "narrator",
+   "text": "Please turn the iPad on its side.",
+   "note": "The shell, when the iPad is held upright (platform A9)."
+  },
+  {
+   "id": "foal-hello",
+   "speaker": "foal",
+   "text": "[giggles] Hello!"
+  },
+  {
+   "id": "foal-yay",
+   "speaker": "foal",
+   "text": "[excited] Yay! Thank you!"
+  },
+  {
+   "id": "foal-silly",
+   "speaker": "foal",
+   "text": "[giggles] Silly!"
+  },
+  {
+   "id": "foal-notme",
+   "speaker": "foal",
+   "text": "[giggles] Not me!"
+  },
+  {
+   "id": "foal-wee",
+   "speaker": "foal",
+   "text": "Wheee!"
+  },
+  {
+   "id": "foal-yum",
+   "speaker": "foal",
+   "text": "Mmm! Yummy!"
+  },
+  {
+   "id": "foal-cuddle",
+   "speaker": "foal",
+   "text": "[happy sigh] Aww."
+  },
+  {
+   "id": "foal-yawn",
+   "speaker": "foal",
+   "text": "[yawns] Sleepy."
+  },
+  {
+   "id": "foal-look",
+   "speaker": "foal",
+   "text": "[giggles] Look!"
+  },
+  {
+   "id": "g-egg",
+   "speaker": "narrator",
+   "text": "Make every cup warm, and the egg will hatch."
+  },
+  {
+   "id": "g-stone",
+   "speaker": "narrator",
+   "text": "Drag one stone to the nest."
+  },
+  {
+   "id": "g-two-stones",
+   "speaker": "narrator",
+   "text": "This egg needs two stones. Together they make every cup warm."
+  },
+  {
+   "id": "g-one-more",
+   "speaker": "narrator",
+   "text": "Now one more stone."
+  },
+  {
+   "id": "g-blanket",
+   "speaker": "narrator",
+   "text": "The blanket hides the cups."
+  },
+  {
+   "id": "g-stars",
+   "speaker": "narrator",
+   "text": "Look at the stars on the egg. Then drag the stone that matches."
+  },
+  {
+   "id": "g-count-stars",
+   "speaker": "narrator",
+   "text": "Count the stars on the egg. Then drag the stone that matches."
+  },
+  {
+   "id": "fb-warm",
+   "speaker": "narrator",
+   "text": "Every cup is warm!"
+  },
+  {
+   "id": "fb-hot",
+   "speaker": "narrator",
+   "text": "Too hot!"
+  },
+  {
+   "id": "fb-brr",
+   "speaker": "narrator",
+   "text": "Brr!"
+  },
+  {
+   "id": "fb-too-many",
+   "speaker": "narrator",
+   "text": "Too many!"
+  },
+  {
+   "id": "h-count",
+   "speaker": "narrator",
+   "text": "Let's count the cold cups."
+  },
+  {
+   "id": "h-peek",
+   "speaker": "narrator",
+   "text": "Let's peek under the blanket."
+  },
+  {
+   "id": "h-stars",
+   "speaker": "narrator",
+   "text": "Let's count the stars."
+  },
+  {
+   "id": "lumi-hatching",
+   "speaker": "queen",
+   "text": "It's hatching!"
+  },
+  {
+   "id": "lumi-baby",
+   "speaker": "queen",
+   "text": "A baby unicorn! Hello, little one."
+  },
+  {
+   "id": "lumi-sparkly",
+   "speaker": "queen",
+   "text": "Ooh, a sparkly one!"
+  },
+  {
+   "id": "g-bells",
+   "speaker": "narrator",
+   "text": "Your baby needs a name! Tap a bell to hear a name."
+  },
+  {
+   "id": "g-bell-drag",
+   "speaker": "narrator",
+   "text": "Drag the name you like to your baby."
+  },
+  {
+   "id": "g-spell",
+   "speaker": "narrator",
+   "text": "Let's write the name on the tag. Listen."
+  },
+  {
+   "id": "g-gems",
+   "speaker": "narrator",
+   "text": "Put the gems in the slots."
+  },
+  {
+   "id": "g-slide",
+   "speaker": "narrator",
+   "text": "Now slide the star, and listen."
+  },
+  {
+   "id": "fb-spelled",
+   "speaker": "narrator",
+   "text": "You wrote your baby's name!"
+  },
+  {
+   "id": "g-gold",
+   "speaker": "narrator",
+   "text": "Make any name you like!"
+  },
+  {
+   "id": "fb-gold-yes",
+   "speaker": "narrator",
+   "text": "What a lovely name!"
+  },
+  {
+   "id": "fb-tricky",
+   "speaker": "narrator",
+   "text": "What a great name! It's a tricky one for me to say."
+  },
+  {
+   "id": "fb-no-vowel",
+   "speaker": "narrator",
+   "text": "Every name needs a pink gem!"
+  },
+  {
+   "id": "fb-silly",
+   "speaker": "narrator",
+   "text": "That's a silly name! Try other gems."
+  },
+  {
+   "id": "fb-that-says",
+   "speaker": "narrator",
+   "text": "That says."
+  },
+  {
+   "id": "g-garden",
+   "speaker": "narrator",
+   "text": "Tap a picture, and hear the names."
+  },
+  {
+   "id": "g-first-sound",
+   "speaker": "narrator",
+   "text": "Tap a gem, and hear names that start with its sound."
+  },
+  {
+   "id": "g-plus",
+   "speaker": "narrator",
+   "text": "Tap the plus to add a gem slot."
+  },
+  {
+   "id": "g-sky-name",
+   "speaker": "narrator",
+   "text": "Ten stars make a sky unicorn! Give it a name."
+  },
+  {
+   "id": "lumi-moon-name",
+   "speaker": "queen",
+   "text": "The moon told me a new name!"
+  },
+  {
+   "id": "g-wish",
+   "speaker": "narrator",
+   "text": "Your baby has a wish!"
+  },
+  {
+   "id": "fb-more-than-one",
+   "speaker": "narrator",
+   "text": "More than one."
+  },
+  {
+   "id": "fb-just-one",
+   "speaker": "narrator",
+   "text": "Just one."
+  },
+  {
+   "id": "g-tent",
+   "speaker": "narrator",
+   "text": "A cosy tent for now! Your new stable row is coming."
+  },
+  {
+   "id": "g-rollcall",
+   "speaker": "narrator",
+   "text": "Bedtime! Look at the lantern, and tap that baby's door."
+  },
+  {
+   "id": "g-moon",
+   "speaker": "narrator",
+   "text": "Tap the moon when it's bedtime."
+  },
+  {
+   "id": "lumi-night",
+   "speaker": "queen",
+   "text": "Night night, little one."
+  },
+  {
+   "id": "lumi-goodnight-emma",
+   "speaker": "queen",
+   "text": "Goodnight, Emma."
+  },
+  {
+   "id": "lumi-moving",
+   "speaker": "queen",
+   "text": "Emma! Your unicorns are moving to a bigger home."
+  },
+  {
+   "id": "g-here-they-come",
+   "speaker": "narrator",
+   "text": "Here they come!"
+  },
+  {
+   "id": "g-pins-came",
+   "speaker": "narrator",
+   "text": "All your pins came too!"
+  },
+  {
+   "id": "lumi-hello",
+   "speaker": "queen",
+   "text": "Hello, Emma! I'm Queen Lumi."
+  },
+  {
+   "id": "lumi-hello-back",
+   "speaker": "queen",
+   "text": "Hello, Emma!",
+   "note": "Returning arrival at the meadow (places A7, R54)."
+  },
+  {
+   "id": "lumi-meadow-yours",
+   "speaker": "queen",
+   "text": "This meadow is yours. Will you make it a home for my unicorns?"
+  },
+  {
+   "id": "lumi-crown",
+   "speaker": "queen",
+   "text": "Here is your crown. You are my Nest Keeper now!"
+  },
+  {
+   "id": "g-egg-waiting",
+   "speaker": "narrator",
+   "text": "An egg is waiting.",
+   "note": "Returning arrival goal at the meadow (places A7, R54)."
+  }
+ ]
+}

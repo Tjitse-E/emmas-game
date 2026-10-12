@@ -10,6 +10,7 @@
   {"id": "fb-letters", "speaker": "narrator", "text": "Look at the letters again."},
   {"id": "fb-listen", "speaker": "narrator", "text": "Hmm. Listen again."},
   {"id": "h-sounds", "speaker": "narrator", "text": "Listen to the sounds."},
+  {"id": "platform-turn", "speaker": "narrator", "text": "Please turn the iPad on its side.", "note": "The shell, when the iPad is held upright (platform A9)."},
   {"id": "foal-hello", "speaker": "foal", "text": "[giggles] Hello!"},
   {"id": "foal-yay", "speaker": "foal", "text": "[excited] Yay! Thank you!"},
   {"id": "foal-silly", "speaker": "foal", "text": "[giggles] Silly!"},
