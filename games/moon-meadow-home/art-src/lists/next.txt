@@ -1,0 +1,9 @@
+# Pictures for Moon Meadow Home 1.0.1 (docs/v3/next/plan.md section 12). Planned as batch next-a with --source next.
+# The background bg-stable-night is in backgrounds.txt (batch bg-next).
+item-stall-bed | item | a single open wooden stall seen from the front, taller than wide: two low wooden side walls, a plain wooden back wall and a soft bed of golden straw on the floor, nothing inside, no door, no sign
+item-straw-pile | item | a low wide heap of soft golden straw seen from the front, much wider than tall
+item-sleep-blanket | item | a soft pastel lilac blanket with little cream stars, draped in a gentle rounded hump as if over something small and sleeping, seen from the side, nothing peeking out
+item-manger | item | a small wooden manger trough on short legs, empty, seen from the front
+item-hay-bundle | item | a small tied bundle of golden hay with a red string around the middle
+item-food-tray | item | a round wooden tray with a soft pastel checked cloth on it, empty, seen from slightly above
+item-cup-nest | item | a long shallow woven twig nest tray, about three times wider than tall, empty, seen from the front
