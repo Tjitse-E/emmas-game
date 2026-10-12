@@ -953,6 +953,146 @@
       "vowel": true,
       "sound": "ai",
       "fluency": false
+    },
+    {
+      "id": "i.ee",
+      "text": "i",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "u.oo",
+      "text": "u",
+      "phonemes": [
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "oo",
+      "fluency": false
+    },
+    {
+      "id": "au",
+      "text": "au",
+      "phonemes": [
+        "or"
+      ],
+      "vowel": true,
+      "sound": "au",
+      "fluency": false
+    },
+    {
+      "id": "ah.@",
+      "text": "ah",
+      "phonemes": [
+        "@"
+      ],
+      "vowel": true,
+      "sound": null,
+      "fluency": false
+    },
+    {
+      "id": "a.ar",
+      "text": "a",
+      "phonemes": [
+        "ar"
+      ],
+      "vowel": true,
+      "sound": "ar",
+      "fluency": false
+    },
+    {
+      "id": "a.air",
+      "text": "a",
+      "phonemes": [
+        "air"
+      ],
+      "vowel": true,
+      "sound": "air",
+      "fluency": false
+    },
+    {
+      "id": "ou.oo",
+      "text": "ou",
+      "phonemes": [
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "oo",
+      "fluency": false
+    },
+    {
+      "id": "oe.ee",
+      "text": "oe",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "is.igh",
+      "text": "is",
+      "phonemes": [
+        "igh"
+      ],
+      "vowel": true,
+      "sound": "igh",
+      "fluency": false
+    },
+    {
+      "id": "o.u",
+      "text": "o",
+      "phonemes": [
+        "u"
+      ],
+      "vowel": true,
+      "sound": "u",
+      "fluency": false
+    },
+    {
+      "id": "ce.s",
+      "text": "ce",
+      "phonemes": [
+        "s"
+      ],
+      "vowel": false,
+      "sound": "s",
+      "fluency": false
+    },
+    {
+      "id": "ge.j",
+      "text": "ge",
+      "phonemes": [
+        "j"
+      ],
+      "vowel": false,
+      "sound": "j",
+      "fluency": false
+    },
+    {
+      "id": "th.t",
+      "text": "th",
+      "phonemes": [
+        "t"
+      ],
+      "vowel": false,
+      "sound": "t",
+      "fluency": false
+    },
+    {
+      "id": "te.t",
+      "text": "te",
+      "phonemes": [
+        "t"
+      ],
+      "vowel": false,
+      "sound": "t",
+      "fluency": false
     }
   ]
 }

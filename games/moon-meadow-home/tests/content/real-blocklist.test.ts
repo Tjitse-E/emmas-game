@@ -26,6 +26,6 @@ describe('shared blocklist', () => {
   });
 
   it('lets ordinary names through', () => {
-    for (const w of ['cassidy', 'scarlett', 'pom', 'pip', 'sam', 'tess', 'dot', 'fen', 'bella', 'nan', 'bex']) expect(check(w), w).toBeNull();
+    for (const w of ['cassidy', 'scarlett', 'pom', 'pip', 'sam', 'tess', 'dot', 'fen', 'bella', 'nan', 'bex', 'juniper']) expect(check(w), w).toBeNull();
   });
 });
