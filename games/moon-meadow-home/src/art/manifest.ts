@@ -20,6 +20,8 @@ export interface UnicornEntry {
   breed: BreedId; stage: Stage; mode: 'sprite' | 'layers'; w: number; h: number;
   anchors: Record<AnchorName, Point>; headBox: Rect;
   renditions: { sm: UnicornRendition; lg: UnicornRendition }; sil: string; source: 'codex' | 'placeholder' | 'svg';
+  /** Lite mode (R63): the whole unicorn in the default colours, one picture at the sm size. */
+  flat?: string;
 }
 export interface LumiEntry { face: string; mouth: string; w: number; h: number; mouthBox: Rect }
 export interface ArtManifest {

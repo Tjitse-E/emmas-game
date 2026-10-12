@@ -1,0 +1,31 @@
+.uni { position: relative; pointer-events: none; contain: layout; }
+.uni .flip, .uni .bob, .uni .breath { position: absolute; inset: 0; transform-origin: 50% 100%; }
+.uni.left .flip { transform: scaleX(-1); }
+.uni .breath { will-change: transform; }
+.uni .part { position: absolute; }
+.uni .part.anim-tail, .uni .part.anim-blink { will-change: transform, opacity; }
+.uni .layer { position: absolute; }
+.uni .part.hidden { opacity: 0; }
+.uni .outfit { position: absolute; }
+.uni .flat { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.uni .fallback { position: absolute; left: 0; top: 0; overflow: visible; }
+.uni .sparkle { position: absolute; width: 18%; opacity: 0; animation: uni-twinkle 1.6s ease-in-out infinite; }
+
+.uni.pose-idle .breath, .uni.pose-walk .breath, .uni.pose-happy .breath, .uni.pose-drag .breath { animation: uni-breath 3.2s ease-in-out infinite; }
+.uni.pose-sleep .breath { animation: uni-breath 4.8s ease-in-out infinite; }
+.uni:is(.pose-idle, .pose-walk, .pose-hop, .pose-drag) .anim-tail { animation: uni-tail 2.4s ease-in-out infinite; }
+.uni.pose-happy .anim-tail { animation: uni-tail 0.8s ease-in-out infinite; }
+.uni:is(.pose-idle, .pose-walk, .pose-happy, .pose-drag) .anim-blink { animation: uni-blink 5.2s linear infinite; }
+.uni.pose-sleep .anim-blink { opacity: 1; }
+.uni.pose-walk .bob { animation: uni-bob 0.7s ease-in-out infinite; }
+.uni.pose-hop .bob { animation: uni-hop 0.9s ease-out 1; }
+.uni.pose-happy .bob { animation: uni-hop 0.7s ease-out 2; }
+.uni.pose-drag .bob { animation: uni-wiggle 0.5s ease-in-out infinite; }
+
+@keyframes uni-breath { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 1.025); } }
+@keyframes uni-tail { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(6deg); } }
+@keyframes uni-blink { 0%, 94% { opacity: 0; } 95%, 98% { opacity: 1; } 99%, 100% { opacity: 0; } }
+@keyframes uni-bob { 0%, 50%, 100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-4%) rotate(-2deg); } 75% { transform: translateY(-4%) rotate(2deg); } }
+@keyframes uni-hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 15% { transform: translateY(0) scale(1.06, 0.92); } 45% { transform: translateY(-22%) scale(0.96, 1.05); } 80% { transform: translateY(0) scale(1.04, 0.95); } }
+@keyframes uni-wiggle { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes uni-twinkle { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1); } }
