@@ -73,7 +73,8 @@ export function maxStone(task: EggTask): number {
     case 'stars-flash': return 6;
     case 'stars': case 'berry-more-less': case 'berry-bowls': return 10;
     case 'snow': return Math.min(9, task.warm);
-    default: return Math.min(9, task.cups);
+    // At least three stones are always possible (every checked choice has three options), at most nine.
+    default: return Math.min(9, Math.max(3, task.cups));
   }
 }
 
