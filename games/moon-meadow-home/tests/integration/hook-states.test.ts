@@ -1,6 +1,6 @@
 // The store's test-hook states mathsStep and quarantined (docs/v3/next/plan.md 3.8, task G1).
 import { describe, expect, it } from 'vitest';
-import { hookStates } from '../../src/platform/hooks.ts';
+import { callHook, hookStates } from '../../src/platform/hooks.ts';
 import { registerGameHooks } from '../../src/game/hook-handlers.ts';
 import { createGameFolder } from '../../src/core/world/index.ts';
 import { createLearnerSlice } from '../../src/core/learning/index.ts';
@@ -24,7 +24,8 @@ const fake = {
   learner: learnerAtM10(),
   content,
   quarantined: 0,
-  get data() { return { status: () => ({ quarantined: this.quarantined }) }; },
+  log: [{ type: 'visit.start' }, { type: 'learn.override', op: 'set-current' }, { type: 'care.done' }],
+  get data() { return { status: () => ({ quarantined: this.quarantined }), allEvents: () => this.log }; },
   scene: 'meadow',
 };
 registerGameHooks(fake as never, { seed: () => {}, ready: async () => {}, wake: async () => {}, setScaffold: () => {} });
@@ -45,5 +46,10 @@ describe('hook states for the 1.0.1 flows', () => {
     expect(hookStates().quarantined).toBe(3);
     fake.quarantined = 0;
     expect(hookStates().quarantined).toBe(0);
+  });
+
+  it('events lists the log, or the events of one type', async () => {
+    expect(await callHook('events', [])).toHaveLength(3);
+    expect(await callHook('events', ['learn.override'])).toEqual([{ type: 'learn.override', op: 'set-current' }]);
   });
 });

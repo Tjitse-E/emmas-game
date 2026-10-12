@@ -43,6 +43,10 @@ export function registerGameHooks(game: G, o: HookOpts): void {
   /** Events refused into quarantine. The store keeps this count in step with quarantine() on every ingest and retry. */
   registerState('quarantined', () => game.data?.status().quarantined ?? 0);
 
+  /** Events in the log, oldest first, optionally of one type (flows count learn.override, care.done and so on). */
+  registerHook('events', after((type?: string) => ((game.data?.allEvents() ?? []) as readonly { type: string }[])
+    .filter((e) => type === undefined || type === null || e.type === type)));
+
   registerHook('seed', (n: number) => o.seed(n));
   registerHook('setStep', after((strand: StrandId, step: string) =>
     game.dispatch({ type: 'game/override', payload: setCurrentOverride(learner(), content(), strand, step) })));
