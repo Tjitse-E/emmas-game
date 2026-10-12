@@ -1,6 +1,6 @@
 // The test hook's answer, wrong, idle and target: the current scene's hook first, else the moment on screen (R14, I-3b).
 import { afterEach, describe, expect, it } from 'vitest';
-import { callHook, registerSceneHook } from '../../src/platform/hooks.ts';
+import { callHook, registerHook, registerSceneHook } from '../../src/platform/hooks.ts';
 import { registerGameHooks } from '../../src/game/hook-handlers.ts';
 import { activeMoment, createMoment, type MomentDeps } from '../../src/ui/moment.ts';
 
@@ -54,5 +54,22 @@ describe('hook routing falls back to the active moment', () => {
     scene = 'empty';
     await expect(callHook('answer', [])).rejects.toThrow(/no moment/);
     expect(await callHook('target', [])).toBeNull();
+  });
+
+  it('goodnight hands answer and target to its embedded sky naming while that naming is open', async () => {
+    const calls: string[] = [];
+    let stage = 'rollcall';
+    scene = 'goodnight';
+    const offs = [
+      registerHook('goodnight.stage', () => stage),
+      registerSceneHook('goodnight', { answer: () => calls.push('door'), wrong: () => {}, target: () => 'door 1' }),
+      registerSceneHook('naming', { answer: () => calls.push('name'), wrong: () => {}, target: () => 'bell Sam' }),
+    ];
+    await callHook('answer', []);
+    stage = 'sky-name';
+    await callHook('answer', []);
+    expect(calls).toEqual(['door', 'name']);
+    expect(await callHook('target', [])).toBe('bell Sam');
+    for (const off of offs) off();
   });
 });

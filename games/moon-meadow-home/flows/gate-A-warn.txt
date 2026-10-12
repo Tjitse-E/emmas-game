@@ -1,0 +1,5 @@
+places/label
+places/pond
+places/building
+places/parent
+integration/placement

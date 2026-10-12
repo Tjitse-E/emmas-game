@@ -1,6 +1,6 @@
 // window.__game handlers owned by the store (contracts C10). Test and dev builds only.
 // said() and audioMissing() are platform's synchronous methods (P-A10); they are not registered here.
-import { registerHook, registerState, sceneHook } from '../platform/hooks.ts';
+import { callHook, hasHook, registerHook, registerState, sceneHook } from '../platform/hooks.ts';
 import { clock } from '../platform/clock.ts';
 import { isPlacing, setCurrentOverride } from '../core/learning/index.ts';
 import type { Learner } from '../core/learning/index.ts';
@@ -50,9 +50,19 @@ export function registerGameHooks(game: G, o: HookOpts): void {
   // The current scene's hook first, else the moment on screen (R14). A scene that registers no hook (a place
   // built from moments) still answers, so flows and autoplay never meet a dead end in a scene with a moment.
   const momentNow = async () => (await import('../ui/moment.ts')).activeMoment();
+  /**
+   * Goodnight names a new sky unicorn with an embedded naming, and its own hook only knows the roll-call doors.
+   * While that naming is open, the naming's hook answers (the heartbeat flow calls naming.gold for the same step).
+   */
+  const currentHook = async () => {
+    if (game.scene === 'goodnight' && hasHook('goodnight.stage') && sceneHook('naming')) {
+      try { if ((await callHook('goodnight.stage', [])) === 'sky-name') return sceneHook('naming'); } catch { /* scene closing */ }
+    }
+    return sceneHook(game.scene);
+  };
   const route = (name: 'answer' | 'wrong' | 'idle') => async (...args: unknown[]) => {
     await o.ready();
-    const h = sceneHook(game.scene);
+    const h = await currentHook();
     if (h && typeof h[name] === 'function') return h[name](...args);
     const m = await momentNow();
     if (!m) throw new Error(`no moment to ${name} in scene ${game.scene}`);
@@ -66,7 +76,7 @@ export function registerGameHooks(game: G, o: HookOpts): void {
   /** aria-label of the right answer, for real taps in flows; null when neither the scene nor a moment names one. */
   registerHook('target', async () => {
     await o.ready();
-    const h = sceneHook(game.scene);
+    const h = await currentHook();
     const fromScene = h && typeof h.target === 'function' ? ((await h.target()) ?? null) : null;
     if (fromScene !== null) return fromScene;
     return (await momentNow())?.target() ?? null;
@@ -76,7 +86,6 @@ export function registerGameHooks(game: G, o: HookOpts): void {
   registerHook('autoplay', after(async (opts: { heartbeats: number; goodnight: boolean; maxMs?: number }) => {
     const { autoplay, judgeLog } = await import('./autoplay.ts');
     const { heartbeat } = await import('../scenes/heartbeat/flow.svelte.ts');
-    const { callHook } = await import('../platform/hooks.ts');
     const { router } = await import('../platform/router.svelte.ts');
     const { audio } = await import('../audio/index.ts');
     const { emitTouch } = await import('../platform/touch.ts');

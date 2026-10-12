@@ -1,0 +1,12 @@
+platform-smoke
+platform-input
+heartbeat/heartbeat
+heartbeat/naming
+places/meadow
+integration/new-player
+integration/moving-day
+integration/visit-5min
+integration/reload-naming
+integration/returning
+integration/rest
+integration/no-art-manifest
