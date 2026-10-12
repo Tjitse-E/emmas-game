@@ -68,6 +68,10 @@ All paths below are relative to `games/moon-meadow-home/` unless they start with
 | `src/core/naming/check.ts` | Gold bell checks, slot judging, error tags, naming results, ordinals, slot limits, display names |
 | `src/core/actions/heartbeat.ts` | `applyHeartbeat(action)`: heartbeat actions to event drafts |
 | `src/core/actions/naming.ts` | `applyNaming(action)`: naming actions to event drafts |
+| `src/core/heartbeat/meadow.ts` | Which babies stand in the meadow (at most 12), care tools and baby lines |
+| `src/core/eggs/breed.ts`, `src/core/eggs/index.ts` | The breed of the current egg step, for PLACES' herd circle |
+| `src/core/phonics/tray.ts` | `ownSlots` and `planTray` from plain graphemes, for PLACES' labels and signs |
+| `src/core/naming/review.ts` | `canReviewName`, for PLACES' envelopes |
 
 ### Scenes, controllers and UI parts
 
@@ -81,8 +85,12 @@ All paths below are relative to `games/moon-meadow-home/` unless they start with
 | `src/ui/SoundSlider.svelte` | The star slider that plays each gem's sound as it passes |
 | `src/ui/Stone.svelte` | A number stone (dice dots, scatter, numeral) |
 | `src/ui/PrintWithDots.svelte` | A printed word with sound dots, slide to hear, silent units |
-| `src/ui/Heap.svelte` | Three to five copies of one picture in a loose pile, drawn by code |
 | `src/scenes/heartbeat/deps.ts` | `SceneDeps` and the live wiring to audio, hints, game and rng |
+| `src/scenes/heartbeat/learn-bridge.ts` | The only file that calls LEARN: picks to served items, word and name views, result payloads, step states |
+| `src/scenes/heartbeat/hint-runner.ts` | The heartbeat's hint interface on top of PLACES' `createMoment` |
+| `src/scenes/heartbeat/guides.svelte.ts`, `src/scenes/heartbeat/HbGuides.svelte` | Ghost hand, moonbeam and replay for heartbeat scenes, on top of PLACES' parts |
+| `src/scenes/heartbeat/MeadowLife.svelte` | The nest, up to 12 babies and care free play, mounted by PLACES' meadow |
+| `src/scenes/heartbeat/HatchAndName.svelte` | A building egg hatches and is named (PLACES' herd circle) |
 | `src/scenes/heartbeat/ArtImg.svelte` | Shows an art id from the manifest, or its SVG fallback |
 | `src/scenes/heartbeat/Fallback.svelte` | SVG fallbacks for eggs, nest, blanket, bells, door, tent, lantern, basket, stations, moonflower, sky unicorn |
 | `src/scenes/heartbeat/nest.ctrl.ts` | Egg moment: goal, stones, misses, hints, hatch action |
@@ -125,6 +133,22 @@ All paths below are relative to `games/moon-meadow-home/` unless they start with
 ---
 
 ## Contracts I need
+
+**Read this first.** `docs/v3/plan/learning.md` (LEARN) and `docs/v3/plan/places.md` (PLACES) were written next to this plan. Where they define an interface, theirs is binding and Task 17B adapts to it in four files owned here (`learn-bridge.ts`, `hint-runner.ts`, `guides.svelte.ts`, `HbGuides.svelte`). C10 and C13 below are kept only as the shapes the heartbeat controllers use internally. The reconciled points:
+
+| Topic | LEARN or PLACES has | This plan does |
+|---|---|---|
+| Planner | `nextItem(ctx, req: ItemRequest, rng): Pick` with a `Carrier` union | `serve(slot, rng, accept, extra)` in `learn-bridge.ts` turns a `Pick` into `Served`; `accept` is emulated with `req.avoid` and up to six tries |
+| Item ids | `r:g:ai`, `m:...`, `name:<babyId>` | Wish and maths moments log the pick's items; naming slots and door numbers map through `itemIdFor`; roll call logs `name:<babyId>` |
+| `learn.result` payload | `items: { id, r }[]`, `step: null` for names, `moment`, `slot`, `error: null` | Drafts carry `moment` and `slot` from the pick; CORE's router applies `toLearnPayload` to every heartbeat draft |
+| Words and names | `Content.words` (plural inside the word), `Content.names` (GPC ids) | `wordEntries(c)` and `nameEntries(c)` build the `WordEntry` and `NameEntry` views in `src/core/heartbeat/types.ts` |
+| Miss or helped | places.md D1: a miss then a right answer stays `miss` | Adopted: `HintRunner.level` reports 2 only for an idle-triggered focused hint |
+| Hint ladder, ghost hand, moonbeam, replay | `createMoment`, `ghostMove`, `<Moonbeam>`, `<GhostHand>`, `<ReplayButton>` (PLACES) | `hint-runner.ts` and `guides.svelte.ts` wrap them; `<HbGuides />` mounts them in each heartbeat scene |
+| Heap | `src/ui/Heap.svelte` (PLACES) with `{ picture, count, seed, size }` | Not written here; the wish basket uses it |
+| Egg offer | `nextEgg` may return no pick (a free egg), `goldenEgg` in release B | Free eggs hatch through `hb.egg.free` with no result; Wave B `eggOffer` uses `goldenEgg` |
+| Name review picks | `nextNameReviews` | Goodnight asks it for eligible babies, then `pickRollCall` lays them out by page |
+| Blocklist | `src/core/content/blocklist.ts` (LEARN) | Duplicate in `src/core/naming/blocklist.ts`; keep whichever passes Task 10's cases, the other re-exports it |
+| Shared parts PLACES expects from here | `GemSlots` with `{ slots, tray, onslide, popWrong, hum }`, `PrintWithDots` with `{ text, dots, silent, hearts }`, `StoneTray`, `ownSlots`, `planTray`, `canReviewName`, `HatchAndName.svelte`, `MeadowLife.svelte`, `currentEggBreed` | Task 17 keeps its own props, because naming needs gift tails, removable slots and per-unit silence. PLACES adapts its call sites: `slots` to `SlotView[]`, `tray` to `GemTray gems`, `onslide` to `SoundSlider ondone`, `text` to `printUnits(gr)`. Task 23B provides `MeadowLife`, `HatchAndName`, `currentEggBreed`, `ownSlots`, `planTray` and `canReviewName` with the signatures listed there |
 
 These are assumptions about other workstreams. The integrator reconciles them. Where a name differs, the other workstream's file wins and this plan's call sites are renamed. Owners are guesses: CORE (skeleton, events, store, save, audio facade, test hook), LEARN (learning engine and planner), CONTENT (ladders, words, names, blocklist, audio packs), ART, MEADOW (hub, bubbles, hints, ghost hand, moonbeam, label bubbles, plurals jars), BUILD (Building Days), MOVE (Moving Day and v2 import), PARENT, SYNC.
 
@@ -184,7 +208,7 @@ type CareKind = 'brush' | 'cuddle' | 'treat' | 'trick' | 'splash' | 'station' | 
 
 ### C4. Actions router (CORE, `src/core/actions.ts`)
 
-`apply(action, world, learner)` sends actions whose `type` starts with `hb.` to `applyHeartbeat(action)` and those starting with `name.` to `applyNaming(action)`, both from this workstream, and wraps every returned draft with `makeEvent`. Both functions are pure and need no world or learner: every value they need travels in the action.
+`apply(action, world, learner)` sends actions whose `type` starts with `hb.` to `applyHeartbeat(action)` and those starting with `name.` to `applyNaming(action)`, both from this workstream, passes every `learn.result` draft through `toLearnPayload(draft, content)` (Task 17B), and wraps every draft with `makeEvent`. Both functions are pure and need no world or learner: every value they need travels in the action.
 
 ### C5. World (CORE, `src/core/world/types.ts`)
 
@@ -226,7 +250,9 @@ export const game: {
   dispatch(action: { type: string }): void;
   go(scene: SceneId, params?: Record<string, unknown>): void;
   endVisit(): void;            // writes visit.end and shows the start screen
-  readonly content: { words: Map<string, WordEntry>; names: NameEntry[]; ladders: { r: LadderStep[]; s: LadderStep[]; m: LadderStep[] }; blocklist: BlocklistFile };
+  readonly content: Content;           // LEARN's Content; the heartbeat reads it only through learn-bridge.ts
+  readonly planContext: PlanContext;   // LEARN's C-STORE item 2
+  readonly rng: Rng;                   // seeded in the test build
 };
 type SceneId = 'meadow' | 'nest' | 'hatch' | 'naming' | 'wish' | 'stalls' | 'goodnight' | 'egg-choice' | string;
 ```
@@ -347,17 +373,17 @@ export function artUrl(id: string): string | null;  // from public/art/manifest.
 // src/art/UnicornHead.svelte props: { baby: Baby; size?: number; nightcap?: boolean }
 ```
 
-Art ids this workstream asks for: `egg-moon`, `egg-nest`, `egg-two-stone`, `egg-blanket`, `egg-berry`, `egg-snow`, `egg-golden`, `egg-speckled`, `nest`, `blanket`, `bell`, `bell-gold`, `name-tree`, `garden-flowers`, `garden-gems`, `garden-sky`, `garden-sweets`, `basket`, `station-hay`, `station-brush`, `station-hat`, `station-nap`, `station-swing`, `station-bath`, `door`, `tent`, `lantern`, `moonflower`, `sky-unicorn`, `bg-nest`, `bg-wish`, `bg-stables`, `bg-sky`, and the `picture` of every basket word. When `artUrl` returns null the scene draws its own SVG from `Fallback.svelte`. Word pictures always exist, because the planner never serves a word without a picture (C10).
+Art ids this workstream asks for: `egg-moon`, `egg-nest`, `egg-two-stone`, `egg-blanket`, `egg-berry`, `egg-snow`, `egg-golden`, `egg-speckled`, `nest`, `blanket`, `bell`, `bell-gold`, `name-tree`, `garden-flowers`, `garden-gems`, `garden-sky`, `garden-sweets`, `basket`, `station-hay`, `station-brush`, `station-hat`, `station-nap`, `station-swing`, `station-bath`, `door`, `tent`, `lantern`, `moonflower`, `sky-unicorn`, `bg-nest`, `bg-wish`, `bg-stables`, `bg-sky`, `tool-brush`, `tool-treat`, `tool-heart`, and the `picture` of every basket word. When `artUrl` returns null the scene draws its own SVG from `Fallback.svelte`. Word pictures always exist, because the planner never serves a word without a picture (C10).
 
 ### C13. Meadow parts (MEADOW)
 
 ```ts
 // src/ui/hints.svelte.ts
 export interface HintRunner {
-  begin(goal: { idleMs: number; repeat: () => Promise<void>; focused: () => Promise<void>; answer: () => Promise<void> }): void;
+  begin(goal: { idleMs: number; step?: string; repeat: () => Promise<void>; focused: () => Promise<void>; answer: () => Promise<void> }): void;
   touch(): void;                 // ends a running hint; the touch still works
-  miss(): Promise<void>;         // one miss runs level 2, two misses run level 3 (ghost hand answer)
-  readonly level: 0 | 1 | 2 | 3; // highest level reached in this moment
+  miss(): Promise<void>;         // one miss runs the focused hint, two misses run the ghost hand answer
+  readonly level: 0 | 1 | 2 | 3; // help reached in this moment: 2 only after an idle-triggered focused hint, 3 after the ghost hand (places.md D1)
   end(): void;
 }
 export function createHintRunner(): HintRunner;
@@ -393,7 +419,9 @@ Wave C: after a refold that came from a sync or import, `game` exposes `game.ref
 
 ## Wave A: first playable (release items 6, 7 and 8)
 
-Wave A must be complete, with every test and flow green, before any Wave B task starts.
+Wave A must be complete, with every test and flow green, before any Wave B task starts. Wave A is Tasks 1 to 23B.
+
+Tasks 18 to 22 import `src/scenes/heartbeat/flow.svelte.ts` and `moon-name.ts`, which Task 23 creates. Until Task 23 lands, `npm run check` reports only those two missing modules; the unit tests never import them.
 
 ### Task 1: Shared types, numbers, lines, places and moment results
 
@@ -403,7 +431,7 @@ Wave A must be complete, with every test and flow green, before any Wave B task 
 - Test: `tests/heartbeat/lines.test.ts`, `tests/heartbeat/places.test.ts`
 
 **Interfaces:**
-- Consumes: `Served` from `src/core/planner/types.ts` (C10).
+- Consumes: nothing.
 - Produces:
 
 ```ts
@@ -424,8 +452,16 @@ export type NameTarget = { kind: 'baby'; baby: string } | { kind: 'row'; row: nu
 export type NameRoute = 'bell' | 'garden-pic' | 'garden-sound' | 'gold';
 export type LearnResultDraft = { type: 'learn.result'; strand: Strand; step: string; carrier: string;
   items: { id: string; result: Result }[]; result: Result; ms: number; scaffold: Scaffold; error?: ErrorTag;
-  place: PlaceId; probe: boolean; source: Source; baby?: string };
-export type { Served } from '../planner/types.ts';
+  place: PlaceId; probe: boolean; source: Source; baby?: string; moment?: string; slot?: string };
+// Built from LEARN's Pick by src/scenes/heartbeat/learn-bridge.ts (Task 17B); moment and slot pass through to the event.
+export type Served = { strand: Strand; step: string; id: string; carrier: string; items: string[]; scaffold: Scaffold;
+  probe: boolean; source: Source; twin?: string; moment?: string; slot?: string };
+// The heartbeat's own views of words and names (C11 shapes). learn-bridge.ts builds them from LEARN's Content.
+export type WordEntry = { word: string; gr: string[]; step: string; picture: string; clip: string; one?: string; plural?: string;
+  ending?: '-s' | '-es'; pair?: string; pairTag?: 'aeu' | 'final' | 'vw' | 'jy' | 'th' | 'ch' | 'r20' | 'split-e' | 'vowel';
+  station?: StationId; confuse?: string[]; basket: boolean };
+export type NameEntry = { name: string; key: string; split: { g: string; ph: string[] }[]; ph: string[]; first: string;
+  pic: 'flowers' | 'gems' | 'sky' | 'sweets' | null; tier: 1 | 2 };
 // numbers.ts
 export function numberWord(n: number): string;      // 0..999, British ("one hundred and twenty")
 export function ordinalWord(n: number): string;     // 1..20
@@ -525,7 +561,7 @@ describe('momentResult', () => {
     expect(momentResult(0, 0)).toBe('first');
     expect(momentResult(0, 1)).toBe('first');
     expect(momentResult(0, 2)).toBe('helped');
-    expect(momentResult(1, 2)).toBe('helped');
+    expect(momentResult(1, 2)).toBe('helped'); // a miss, then an idle focused hint
     expect(momentResult(1, 1)).toBe('miss');
     expect(momentResult(2, 3)).toBe('helped');
   });
@@ -605,7 +641,8 @@ export function capitalise(s: string): string {
 ```ts
 import type { Result } from './types.ts';
 
-// Spec 3.3: an answer after a level 2 hint (one miss, or a second idle) or the ghost hand is helped.
+// Spec 3.3 as read in places.md D1: level 2 here means an idle-triggered focused hint; level 3 is the ghost hand.
+// An answer after either is helped. A miss followed by a right answer stays a miss.
 export function momentResult(misses: number, hintLevel: number): Result {
   if (hintLevel >= 2) return 'helped';
   return misses > 0 ? 'miss' : 'first';
@@ -1340,7 +1377,7 @@ git commit -m "Add hatch rolls with breeds, colours and the shiny chance"
 - Test: `tests/heartbeat/basket.test.ts`
 
 **Interfaces:**
-- Consumes: `WordEntry` (C11, imported as a type from `src/core/content/types.ts`); `Rng`, `shuffle` (C2); `ErrorTag`, `Scaffold` (Task 1).
+- Consumes: `WordEntry` (Task 1, the C11 shape); `Rng`, `shuffle` (C2); `ErrorTag`, `Scaffold` (Task 1).
 - Produces:
 
 ```ts
@@ -1357,7 +1394,7 @@ export function judgeGive(target: WordEntry, item: BasketItem, get: (w: string) 
 `tests/heartbeat/words.ts`:
 
 ```ts
-import type { WordEntry } from '../../src/core/content/types.ts';
+import type { WordEntry } from '../../src/core/heartbeat/types.ts';
 
 const w = (word: string, gr: string[], step: string, extra: Partial<WordEntry> = {}): WordEntry =>
   ({ word, gr, step, picture: `pic-${extra.one ?? word}`, clip: `word-${word}`, basket: !extra.one, ...extra });
@@ -1478,7 +1515,7 @@ Expected: FAIL, cannot resolve `src/core/phonics/basket.ts`.
 
 ```ts
 import { type Rng, shuffle } from '../rng.ts';
-import type { WordEntry } from '../content/types.ts';
+import type { WordEntry } from '../heartbeat/types.ts';
 import type { ErrorTag, Scaffold } from '../heartbeat/types.ts';
 
 export type BasketItem = { key: string; word: string; picture: string; heap: boolean };
@@ -1698,7 +1735,7 @@ Expected: FAIL, cannot resolve `src/core/heartbeat/wish.ts`.
 
 ```ts
 import type { Rng } from '../rng.ts';
-import type { WordEntry } from '../content/types.ts';
+import type { WordEntry } from './types.ts';
 import { type BasketItem, planBasket, planPluralBasket } from '../phonics/basket.ts';
 import type { Served, StationId, StepState } from './types.ts';
 
@@ -2366,7 +2403,7 @@ export function checkBlocked(gems: string[], bl: Blocklist): BlockKind | null;
 `tests/naming/fixtures.ts`:
 
 ```ts
-import type { NameEntry } from '../../src/core/content/types.ts';
+import type { NameEntry } from '../../src/core/heartbeat/types.ts';
 import type { BlocklistFile } from '../../src/core/naming/blocklist.ts';
 import { makeSpellCtx, type SpellCtx } from '../../src/core/naming/gifts.ts';
 
@@ -2979,7 +3016,7 @@ Expected: FAIL, cannot resolve `src/core/naming/bells.ts`.
 
 ```ts
 import { type Rng, shuffle } from '../rng.ts';
-import type { NameEntry } from '../content/types.ts';
+import type { NameEntry } from '../heartbeat/types.ts';
 import { type SpellCtx, giftSlots, ownCount } from './gifts.ts';
 import { GEM_ORDER, type Phoneme, firstSoundGem } from './sounds.ts';
 
@@ -3423,7 +3460,7 @@ Expected: FAIL, cannot resolve `src/core/naming/check.ts`.
 `src/core/naming/check.ts`:
 
 ```ts
-import type { NameEntry } from '../content/types.ts';
+import type { NameEntry } from '../heartbeat/types.ts';
 import type { ErrorTag, LearnResultDraft, Result, Served } from '../heartbeat/types.ts';
 import { momentResult } from '../heartbeat/result.ts';
 import { lineId } from '../heartbeat/lines.ts';
@@ -3618,7 +3655,7 @@ describe('applyHeartbeat', () => {
   it('logs roll call names only when logged, and always gives the heart', () => {
     const pick = { kind: 'name' as const, baby: 'b3', name: 'Tam' };
     const yes = applyHeartbeat({ type: 'hb.rollcall.done', baby: 'b3', pick, result: 'first', ms: 800, error: null, logged: true, served: null });
-    expect(yes[0]).toMatchObject({ strand: 'name', step: 'name', carrier: 'Tam', items: [{ id: 'tam', result: 'first' }], place: 'rollcall' });
+    expect(yes[0]).toMatchObject({ strand: 'name', step: 'name', carrier: 'Tam', items: [{ id: 'name:b3', result: 'first' }], place: 'rollcall' });
     expect(yes[1]).toEqual({ type: 'care.done', baby: 'b3', kind: 'rollcall' });
     const no = applyHeartbeat({ type: 'hb.rollcall.done', baby: 'b3', pick, result: 'first', ms: 800, error: null, logged: false, served: null });
     expect(no).toEqual([{ type: 'care.done', baby: 'b3', kind: 'rollcall' }]);
@@ -3683,10 +3720,11 @@ export type HbAction =
   | { type: 'hb.care'; baby: string; kind: CareKind }
   | { type: 'hb.sky.named'; index: number; name: string; gems: string[]; clipKey: string | null };
 
-type LrIn = Omit<LearnResultDraft, 'type' | 'error'> & { error: ErrorTag | null };
+type LrIn = Omit<LearnResultDraft, 'type' | 'error' | 'moment' | 'slot'> & { error: ErrorTag | null; via?: Served | null };
 function lr(x: LrIn): LearnResultDraft {
-  const { error, ...rest } = x;
-  return error ? { type: 'learn.result', ...rest, error } : { type: 'learn.result', ...rest };
+  const { error, via, ...rest } = x;
+  const pass = { ...(via?.moment ? { moment: via.moment } : {}), ...(via?.slot ? { slot: via.slot } : {}) };
+  return error ? { type: 'learn.result', ...rest, ...pass, error } : { type: 'learn.result', ...rest, ...pass };
 }
 const all = (ids: string[], result: Result) => ids.map((id) => ({ id, result }));
 
@@ -3694,17 +3732,17 @@ export function applyHeartbeat(a: HbAction): HbDraft[] {
   switch (a.type) {
     case 'hb.egg.solved':
       return [
-        lr({ strand: 'm', step: a.served.step, carrier: `egg:${a.egg.kind}`, items: all([a.served.id], a.result), result: a.result,
-          ms: a.ms, scaffold: a.served.scaffold, error: a.error, place: 'nest', probe: a.served.probe, source: a.served.source, baby: a.baby }),
+        lr({ strand: 'm', step: a.served.step, carrier: `egg:${a.egg.kind}`, items: all(a.served.items, a.result), result: a.result,
+          ms: a.ms, scaffold: a.served.scaffold, error: a.error, place: 'nest', probe: a.served.probe, source: a.served.source, baby: a.baby, via: a.served }),
         { type: 'egg.hatched', baby: a.baby, kind: a.egg.kind, breed: a.roll.breed, colours: a.roll.colours, traits: a.roll.traits, source: 'nest' },
       ];
     case 'hb.wish.done':
       return [lr({ strand: 'r', step: a.served.step, carrier: a.word, items: all(a.served.items, a.result), result: a.result, ms: a.ms,
-        scaffold: a.served.scaffold, error: a.error, place: a.place, probe: a.served.probe, source: a.served.source, baby: a.baby })];
+        scaffold: a.served.scaffold, error: a.error, place: a.place, probe: a.served.probe, source: a.served.source, baby: a.baby, via: a.served })];
     case 'hb.station.done':
       return [
         lr({ strand: 'r', step: a.served.step, carrier: a.word, items: all(a.served.items, a.result), result: a.result, ms: a.ms,
-          scaffold: a.served.scaffold, error: a.error, place: 'station', probe: a.served.probe, source: a.served.source, baby: a.baby }),
+          scaffold: a.served.scaffold, error: a.error, place: 'station', probe: a.served.probe, source: a.served.source, baby: a.baby, via: a.served }),
         { type: 'care.done', baby: a.baby, kind: 'station' },
       ];
     case 'hb.door.done': {
@@ -3715,14 +3753,14 @@ export function applyHeartbeat(a: HbAction): HbDraft[] {
     case 'hb.rollcall.done': {
       const out: HbDraft[] = [];
       if (a.logged && a.pick.kind === 'name') {
-        out.push(lr({ strand: 'name', step: 'name', carrier: a.pick.name, items: all([a.pick.name.toLowerCase()], a.result),
+        out.push(lr({ strand: 'name', step: 'name', carrier: a.pick.name, items: all([`name:${a.baby}`], a.result),
           result: a.result, ms: a.ms, scaffold: 3, error: a.error, place: 'rollcall', probe: false, source: 'review', baby: a.baby }));
       }
       if (a.logged && a.pick.kind === 'door') {
         const d = doorItem(a.pick.number);
         out.push(lr({ strand: 'm', step: d.step, carrier: `door:${a.pick.number}`, items: all([d.id], a.result), result: a.result,
           ms: a.ms, scaffold: a.served?.scaffold ?? 3, error: a.error, place: 'rollcall', probe: a.served?.probe ?? false,
-          source: a.served?.source ?? 'current', baby: a.baby }));
+          source: a.served?.source ?? 'current', baby: a.baby, via: a.served }));
       }
       out.push({ type: 'care.done', baby: a.baby, kind: 'rollcall' });
       return out;
@@ -3940,7 +3978,7 @@ git commit -m "Add the heartbeat state machine with resume at naming"
 ### Task 17: Shared touch parts (drag, gems, slots, tray, slider, stones, print, heaps)
 
 **Files:**
-- Create: `src/ui/geometry.ts`, `src/ui/drag.ts`, `src/ui/Gem.svelte`, `src/ui/GemSlots.svelte`, `src/ui/GemTray.svelte`, `src/ui/SoundSlider.svelte`, `src/ui/Stone.svelte`, `src/ui/PrintWithDots.svelte`, `src/ui/Heap.svelte`
+- Create: `src/ui/geometry.ts`, `src/ui/drag.ts`, `src/ui/Gem.svelte`, `src/ui/GemSlots.svelte`, `src/ui/GemTray.svelte`, `src/ui/SoundSlider.svelte`, `src/ui/Stone.svelte`, `src/ui/PrintWithDots.svelte` (`src/ui/Heap.svelte` belongs to places.md Task A8)
 - Test: `tests/heartbeat/geometry.test.ts`
 
 **Interfaces:**
@@ -3974,7 +4012,6 @@ Component props (Svelte 5, `$props()`):
 | `SoundSlider.svelte` | `{ count: number; onpass: (i: number) => void; ondone: () => void; width?: number }` |
 | `Stone.svelte` | `{ spec: StoneSpec; size?: number }` |
 | `PrintWithDots.svelte` | `{ units: PrintUnit[]; dotsMs: 500 \| 300 \| null; glow?: boolean; onsound: (g: string) => void }` |
-| `Heap.svelte` | `{ picture: string; word: string; size?: number }` |
 
 - [ ] **Step 1: Write the failing test for the geometry helpers**
 
@@ -4382,34 +4419,6 @@ Gems stay in the tray when used (a gold name may use a letter twice, as in the v
 
 The wish scene passes `glow` when the deciding part must glow after a miss; for one-or-many wishes the deciding part is the end of the word, which is the last unit.
 
-`src/ui/Heap.svelte`:
-
-```svelte
-<script lang="ts">
-  import { artUrl } from '../art/index.ts';
-  import { heapCount, heapLayout } from './geometry.ts';
-  let { picture, word, size = 150 }: { picture: string; word: string; size?: number } = $props();
-  const n = $derived(heapCount(word));
-  const spots = $derived(heapLayout(n, n * 7 + word.length));
-  const url = $derived(artUrl(picture));
-</script>
-
-<span class="heap" style:--size="{size}px">
-  {#each spots as s}
-    <span class="copy" style:left="{s.x}%" style:top="{s.y}%" style:transform="translate(-50%, -50%) rotate({s.r}deg)">
-      {#if url}<img src={url} alt="" draggable="false" />{:else}<span class="card"></span>{/if}
-    </span>
-  {/each}
-</span>
-
-<style>
-  .heap { position: relative; display: block; width: var(--size); height: var(--size); }
-  .copy { position: absolute; width: 52%; height: 52%; }
-  img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
-  .card { display: block; width: 100%; height: 100%; border-radius: 20%; background: #fff3c4; border: 3px solid #d6a93f; }
-</style>
-```
-
 - [ ] **Step 6: Type check**
 
 Run: `npm run check`
@@ -4418,11 +4427,470 @@ Expected: no errors in `src/ui/` (errors from other workstreams' missing files a
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ui/geometry.ts src/ui/drag.ts src/ui/Gem.svelte src/ui/GemSlots.svelte src/ui/GemTray.svelte src/ui/SoundSlider.svelte src/ui/Stone.svelte src/ui/PrintWithDots.svelte src/ui/Heap.svelte tests/heartbeat/geometry.test.ts
+git add src/ui/geometry.ts src/ui/drag.ts src/ui/Gem.svelte src/ui/GemSlots.svelte src/ui/GemTray.svelte src/ui/SoundSlider.svelte src/ui/Stone.svelte src/ui/PrintWithDots.svelte tests/heartbeat/geometry.test.ts
 git commit -m "Add touch parts: drag, gems, slots, tray, slider, stones, printed words and heaps"
 ```
 
-**Acceptance:** geometry tests pass; `svelte-check` reports no errors in these files. MEADOW reuses `GemSlots`, `GemTray`, `SoundSlider`, `PrintWithDots`, `Heap` and `draggable` for label bubbles and jars.
+**Acceptance:** geometry tests pass; `svelte-check` reports no errors in these files. Places (MEADOW) reuses `GemSlots`, `GemTray`, `SoundSlider`, `PrintWithDots` and `draggable` for label bubbles and jars; this workstream uses places' `Heap`.
+
+---
+
+---
+
+### Task 17B: Bridges to the learning and places plans
+
+`docs/v3/plan/learning.md` (LEARN) and `docs/v3/plan/places.md` (PLACES) were written next to this plan. Their real interfaces differ from C10 and C13. This task puts every call into those two workstreams behind four small files owned here, so the scenes in Tasks 18 to 23 never import LEARN or PLACES modules directly. If either plan changes a name, only these files change.
+
+**Files:**
+- Create: `src/scenes/heartbeat/learn-bridge.ts`, `src/scenes/heartbeat/hint-runner.ts`, `src/scenes/heartbeat/guides.svelte.ts`, `src/scenes/heartbeat/HbGuides.svelte`
+- Modify: `src/core/actions/heartbeat.ts` (add `hb.egg.free`), `src/core/heartbeat/types.ts` (building breeds)
+- Test: `tests/heartbeat/learn-bridge.test.ts`
+
+**Interfaces:**
+- Consumes (LEARN, `src/core/planner/index.ts` and `src/core/learning/index.ts`): `nextItem(ctx: PlanContext, req: ItemRequest, rng): Pick | null`, `carrierKey(c: Carrier): string`, `nextEgg(ctx, rng): { kind: EggKind; pick: Pick | null }`, `nextNameReviews(ctx, herd: NameCandidate[], n, 'roll-call', rng): Pick[]`, `visitStats(l): VisitStats`, `spellingShareLow(l, c): boolean`, `currentStep(l, c, strand): StepId | null`, `stepStatus(l, c, step): StepStatus`, `isSecure(l, c, step): boolean`, and the `Content`, `Pick`, `Carrier`, `MathsTask`, `ItemRequest`, `MomentKind` types. CORE exposes `game.planContext: PlanContext` (LEARN's C-STORE item 2).
+- Consumes (PLACES): `createMoment(o: MomentOpts, d: MomentDeps): Moment` from `src/ui/moment.ts`, `defaultDeps()` from `src/ui/moment-deps.ts`, `ghostMove`, `ghostTap`, `ghostStop` from `src/ui/ghost.ts`, `<Moonbeam target area />`, `<GhostHand />`, `<ReplayButton onreplay />`.
+- Produces:
+
+```ts
+// learn-bridge.ts
+export type HbSlot = 'egg' | 'wish' | 'naming' | 'door' | 'rollcall-door';
+export function mathsId(t: MathsTask): string;                       // to the C11 grammar Task 2 parses
+export function sourceOf(slot: string): Source;
+export function toToken(p: string, ipa?: boolean): string;           // IPA to the C11 phoneme token
+export function wordEntries(c: Content): Map<string, WordEntry>;     // one entry per word, plus one per plural
+export function nameEntries(c: Content): NameEntry[];                // C11 NameEntry with a per-grapheme split
+export function servedFromPick(p: Pick, words: Map<string, WordEntry>): Served | null;
+export function itemIdFor(c: Content, strand: Strand, id: string): string | null;
+export function toLearnPayload(d: LearnResultDraft, c: Content): Record<string, unknown>;
+export function serve(slot: HbSlot, rng: Rng, accept?: (s: Served) => boolean, extra?: Partial<ItemRequest>): Served | null;
+export function serveEgg(rng: Rng): { served: Served | null; kind: EggKind };
+export function stepStatusOf(strand: 'r' | 's' | 'm', step: string): StepState;
+export function currentStepOf(strand: 'r' | 's' | 'm'): string;
+export function secure(strand: 'r' | 's' | 'm', step: string): boolean;
+export function spellingBehind(): boolean;
+export function checkedCount(): number;
+export function nameReviewIds(herd: { id: string; name: string | null; nameGems: string[] }[], n: number, rng: Rng): string[];
+export function spellLadder(c: Content): { id: string; items: string[] }[];
+export function readLadder(c: Content): { id: string; items: string[] }[];
+export function usesIpa(c: Content): boolean;
+// hint-runner.ts
+export function createHintRunner(meta: { place: string; strand: Strand }): HintRunner;   // HintRunner as C13
+// guides.svelte.ts
+export const ghost: { drag(from: Element, to: Element): Promise<void>; tap(el: Element): Promise<void>; hide(): void };
+export const moonbeam: { show(els: Element | Element[]): void; clear(): void; readonly rect: Rect | null };
+export const goal: { set(repeat: () => Promise<void>): void; clear(): void; replay(): Promise<void> };
+// HbGuides.svelte: no props; renders PLACES' Moonbeam, GhostHand and ReplayButton wired to the stores above
+```
+
+Decisions recorded here:
+- Result semantics follow places.md D1 (a miss followed by a right answer is `miss`; `helped` needs an idle-triggered focused hint or the ghost hand). Task 1's `momentResult` and the fakes in Task 18 already use this.
+- Name review items are `name:<babyId>` (LEARN). Roll call logs that id (Task 15).
+- Maths and wish moments log `served.items`, which are LEARN item ids from the pick. Naming logs one item per own slot, mapped to LEARN ids by `itemIdFor`; slots whose grapheme has no item are left out.
+- LEARN's `nextEgg` can return no pick: then the nest offers a free egg of that kind, which hatches without a `learn.result` (LEARN Decision 10). `hb.egg.free` produces only `egg.hatched`.
+- Building breeds join `BreedId`: `'bubble' | 'post' | 'sparkle'`.
+- `src/core/naming/blocklist.ts` duplicates LEARN's `src/core/content/blocklist.ts`. The integrator keeps LEARN's file as the single source if it passes the blocklist cases in Task 10, and turns this one into a re-export; otherwise this one stays and LEARN's validator imports it.
+
+- [ ] **Step 1: Write the failing test**
+
+`tests/heartbeat/learn-bridge.test.ts`:
+
+```ts
+import { describe, it, expect } from 'vitest';
+import { itemIdFor, mathsId, nameEntries, servedFromPick, sourceOf, toLearnPayload, toToken, wordEntries } from '../../src/scenes/heartbeat/learn-bridge.ts';
+
+const c: any = {
+  gpcs: {
+    h: { id: 'h', text: 'h', phonemes: ['h'] }, a: { id: 'a', text: 'a', phonemes: ['æ'] }, t: { id: 't', text: 't', phonemes: ['t'] },
+    l: { id: 'l', text: 'l', phonemes: ['l'] }, i: { id: 'i', text: 'i', phonemes: ['ɪ'] }, 'y-ee': { id: 'y-ee', text: 'y', phonemes: ['i'] },
+    k: { id: 'k', text: 'k', phonemes: ['k'] },
+  },
+  words: {
+    hat: { w: 'hat', gpcs: ['h', 'a', 't'], pic: 'w-hat', kind: 'thing', clip: 'word-hat', pluralClip: 'word-hats', plural: { w: 'hats', ending: 's' }, rStep: 'R05', rItems: ['r:g:h'], sItems: [] },
+    nap: { w: 'nap', gpcs: [], pic: 'w-nap', kind: 'station', clip: 'word-nap', pluralClip: null, rStep: 'R02', rItems: [], sItems: [] },
+  },
+  names: [{ name: 'Lily', slug: 'lily', gpcs: ['l', 'i', 'l', 'y-ee'], phonemes: ['l', 'ɪ', 'l', 'i'], first: 'l', priority: 1, source: 'uk', pic: 'flowers' }],
+  items: { 's:g:k': { id: 's:g:k', kind: 'grapheme', gpc: 'k', strand: 's', step: 'S03' }, 'm:num:14': { id: 'm:num:14', kind: 'numeral', task: { op: 'numeral', n: 14 }, strand: 'm', step: 'M07' },
+    's:capital': { id: 's:capital', kind: 'capital', strand: 's', step: 'S11' } },
+};
+
+describe('learn bridge', () => {
+  it('turns maths tasks into the item grammar the eggs read', () => {
+    expect(mathsId({ op: 'subitise', n: 4 })).toBe('sub:4');
+    expect(mathsId({ op: 'numeral', n: 7 })).toBe('num:7');
+    expect(mathsId({ op: 'more', n: 6 })).toBe('6+1');
+    expect(mathsId({ op: 'less', n: 6 })).toBe('6-1');
+    expect(mathsId({ op: 'missing', whole: 10, part: 3 })).toBe('3+7');
+    expect(mathsId({ op: 'pair', a: 3, b: 7 })).toBe('3+7');
+    expect(mathsId({ op: 'add', a: 5, b: 3 })).toBe('5+3');
+    expect(mathsId({ op: 'take', a: 8, b: 3 })).toBe('8-3');
+  });
+  it('maps slots to sources and IPA to tokens', () => {
+    expect(sourceOf('warmup')).toBe('review');
+    expect(sourceOf('golden')).toBe('golden');
+    expect(toToken('æ')).toBe('a');
+    expect(toToken('eɪ')).toBe('ai');
+    expect(toToken('k')).toBe('k');
+  });
+  it('builds word entries with plural forms and stations', () => {
+    const w = wordEntries(c);
+    expect(w.get('hat')).toMatchObject({ gr: ['h', 'a', 't'], picture: 'w-hat', plural: 'hats', basket: true, step: 'R05' });
+    expect(w.get('hats')).toMatchObject({ gr: ['h', 'a', 't', '-s'], one: 'hat', ending: '-s', picture: 'w-hat', clip: 'word-hats', basket: false });
+    expect(w.get('nap')).toMatchObject({ station: 'nap', basket: false });
+  });
+  it('builds name entries with a split per grapheme', () => {
+    expect(nameEntries(c)[0]).toMatchObject({ key: 'lily', split: [{ g: 'L', ph: ['l'] }, { g: 'i', ph: ['i'] }, { g: 'l', ph: ['l'] }, { g: 'y', ph: ['ee'] }], ph: ['l', 'i', 'l', 'ee'] });
+  });
+  it('turns picks into served items', () => {
+    const w = wordEntries(c);
+    const base = { strand: 'r', step: 'R19', slot: 'school', moment: 'one-or-many', items: ['r:end:s'], scaffold: 1, probe: false };
+    expect(servedFromPick({ ...base, carrier: { kind: 'plural', word: 'hat', form: 'many', count: 3 } } as any, w))
+      .toMatchObject({ step: 'R19', carrier: 'hats', items: ['r:end:s'], source: 'school', moment: 'one-or-many', slot: 'school' });
+    expect(servedFromPick({ ...base, step: 'R04D', carrier: { kind: 'twin', pair: 'a-e', words: ['pan', 'pen'] } } as any, w))
+      .toMatchObject({ carrier: 'pan', twin: 'pen' });
+    expect(servedFromPick({ ...base, strand: 'm', step: 'M10', carrier: { kind: 'maths', task: { op: 'pair', a: 4, b: 6 } } } as any, w))
+      .toMatchObject({ id: '4+6', carrier: '' });
+    expect(servedFromPick({ ...base, strand: 's', step: 'S03', carrier: { kind: 'spell', focus: ['k'] } } as any, w)).toMatchObject({ id: 'k' });
+  });
+  it('maps logged ids to LEARN item ids', () => {
+    expect(itemIdFor(c, 's', 'k')).toBe('s:g:k');
+    expect(itemIdFor(c, 'm', 'num:14')).toBe('m:num:14');
+    expect(itemIdFor(c, 's', 'capital')).toBe('s:capital');
+    expect(itemIdFor(c, 'r', 'r:g:h')).toBe('r:g:h');
+    expect(itemIdFor(c, 's', 'zz')).toBeNull();
+    expect(itemIdFor(c, 'name', 'name:b3')).toBe('name:b3');
+  });
+  it('builds the learn.result payload LEARN expects', () => {
+    const p = toLearnPayload({ type: 'learn.result', strand: 's', step: 'S03', carrier: 'Ken', items: [{ id: 'k', result: 'first' }, { id: 'zz', result: 'miss' }],
+      result: 'miss', ms: 900, scaffold: 1, error: 'vowel', place: 'naming', probe: false, source: 'current', moment: 'naming-bells', slot: 'current' }, c);
+    expect(p).toEqual({ type: 'learn.result', strand: 's', step: 'S03', carrier: 'Ken', items: [{ id: 's:g:k', r: 'first' }], result: 'miss', ms: 900,
+      scaffold: 1, error: 'vowel', place: 'naming', moment: 'naming-bells', slot: 'current', probe: false });
+    const n = toLearnPayload({ type: 'learn.result', strand: 'name', step: 'name', carrier: 'Tam', items: [{ id: 'name:b3', result: 'first' }],
+      result: 'first', ms: 500, scaffold: 3, place: 'rollcall', probe: false, source: 'review' }, c);
+    expect(n).toMatchObject({ step: null, moment: 'roll-call', slot: 'name', error: null, items: [{ id: 'name:b3', r: 'first' }] });
+  });
+});
+```
+
+- [ ] **Step 2: Run the test to see it fail**
+
+Run: `npx vitest run tests/heartbeat/learn-bridge.test.ts`
+Expected: FAIL, cannot resolve `learn-bridge.ts`.
+
+- [ ] **Step 3: Write `learn-bridge.ts`**
+
+```ts
+import { game } from '../../game.svelte.ts';
+import { carrierKey, nextEgg, nextItem, nextNameReviews, spellingShareLow, visitStats } from '../../core/planner/index.ts';
+import { currentStep, isSecure, stepStatus } from '../../core/learning/index.ts';
+import type { Content } from '../../core/content/types.ts';
+import type { ItemRequest, Pick } from '../../core/planner/types.ts';
+import type { LearnResultDraft, NameEntry, Served, Source, StationId, StepState, Strand, WordEntry } from '../../core/heartbeat/types.ts';
+import type { EggKind } from '../../core/maths/eggs.ts';
+import type { Rng } from '../../core/rng.ts';
+import { usualSound } from '../../core/naming/sounds.ts';
+
+export type HbSlot = 'egg' | 'wish' | 'naming' | 'door' | 'rollcall-door';
+type MathsTask = { op: string; [k: string]: unknown };
+
+export function mathsId(t: MathsTask): string {
+  const n = (k: string) => Number(t[k]);
+  switch (t.op) {
+    case 'subitise': return `sub:${n('n')}`;
+    case 'numeral': return `num:${n('n')}`;
+    case 'more': return `${n('n')}+1`;
+    case 'less': return `${n('n')}-1`;
+    case 'missing': return `${n('part')}+${n('whole') - n('part')}`;
+    case 'pair': case 'add': return `${n('a')}+${n('b')}`;
+    case 'take': return `${n('a')}-${n('b')}`;
+    default: return String(t.op);
+  }
+}
+
+const SOURCE: Record<string, Source> = { current: 'current', school: 'school', side: 'side', review: 'review', mixed: 'mixed', probe: 'probe', warmup: 'review', golden: 'golden', name: 'review' };
+export function sourceOf(slot: string): Source { return SOURCE[slot] ?? 'review'; }
+
+const IPA: Record<string, string> = {
+  'æ': 'a', 'ɛ': 'e', 'ɪ': 'i', 'ɒ': 'o', 'ʌ': 'u', 'eɪ': 'ai', 'iː': 'ee', 'i': 'ee', 'aɪ': 'igh', 'əʊ': 'oa', 'uː': 'oo', 'ʊ': 'uu',
+  'ɑː': 'ar', 'ɔː': 'or', 'ɜː': 'ur', 'aʊ': 'ow', 'ɔɪ': 'oi', 'ɪə': 'ear', 'eə': 'air', 'ə': 'uh', 'juː': 'yoo',
+  'ʃ': 'sh', 'ʒ': 'zh', 'tʃ': 'ch', 'dʒ': 'j', 'θ': 'th', 'ð': 'dh', 'ŋ': 'ng', 'j': 'y', 'ɡ': 'g',
+};
+// LEARN may store phonemes as IPA or as the C11 tokens. The map applies only to IPA content.
+export function usesIpa(c: Content): boolean {
+  return Object.values(c.gpcs).some((g: any) => (g.phonemes as string[]).some((p) => /[æɪɒʌəʃʒŋθðɑɔɜʊː]/.test(p)));
+}
+export function toToken(p: string, ipa = true): string { return ipa ? IPA[p] ?? p : p; }
+
+export function wordEntries(c: Content): Map<string, WordEntry> {
+  const out = new Map<string, WordEntry>();
+  for (const w of Object.values(c.words) as any[]) {
+    const gr = (w.gpcs as string[]).map((id) => c.gpcs[id]?.text ?? id);
+    const station = w.kind === 'station' ? (w.w as StationId) : undefined;
+    out.set(w.w, { word: w.w, gr, step: w.rStep ?? '', picture: w.pic ?? '', clip: w.clip, basket: w.kind === 'thing' && !!w.pic,
+      ...(w.plural ? { plural: w.plural.w } : {}), ...(station ? { station } : {}) });
+    if (w.plural && w.pluralClip) {
+      out.set(w.plural.w, { word: w.plural.w, gr: [...gr, `-${w.plural.ending}`], step: 'R19', picture: w.pic ?? '', clip: w.pluralClip,
+        one: w.w, ending: `-${w.plural.ending}` as '-s' | '-es', basket: false });
+    }
+  }
+  return out;
+}
+
+export function nameEntries(c: Content): NameEntry[] {
+  const ipa = usesIpa(c);
+  return (c.names as any[]).map((n) => {
+    const split = (n.gpcs as string[]).map((id, i) => {
+      const g = c.gpcs[id];
+      const text = g?.text ?? id;
+      return { g: i === 0 ? text.charAt(0).toUpperCase() + text.slice(1) : text, ph: (g?.phonemes ?? []).map((p: string) => toToken(p, ipa)) };
+    });
+    return { name: n.name, key: n.slug, split, ph: split.flatMap((s) => s.ph), first: toToken(n.first, ipa), pic: n.pic ?? null, tier: 1 as const };
+  });
+}
+
+export function servedFromPick(p: Pick, words: Map<string, WordEntry>): Served | null {
+  const c = p.carrier as any;
+  const base = { strand: p.strand as Strand, step: p.step ?? 'name', items: p.items, scaffold: p.scaffold, probe: p.probe,
+    source: sourceOf(p.slot), moment: p.moment, slot: p.slot };
+  switch (c.kind) {
+    case 'word': return { ...base, id: c.word, carrier: c.word };
+    case 'plural': { const w = c.form === 'many' ? words.get(c.word)?.plural ?? c.word : c.word; return { ...base, id: w, carrier: w }; }
+    case 'twin': return { ...base, id: c.words[0], carrier: c.words[0], twin: c.words[1] };
+    case 'maths': return { ...base, id: mathsId(c.task), carrier: '' };
+    case 'door': return { ...base, id: `num:${c.n}`, carrier: '' };
+    case 'spell': return { ...base, id: c.focus[0] ?? '', carrier: '' };
+    case 'first-sound': return { ...base, id: c.gpc, carrier: '' };
+    case 'phrase': return { ...base, id: c.phrase, carrier: c.phrase };
+    default: return null;
+  }
+}
+
+export function itemIdFor(c: Content, strand: Strand, id: string): string | null {
+  if ((c.items as any)[id] || id.startsWith('name:')) return id;
+  const items = Object.values(c.items) as any[];
+  const num = /^num:(\d+)$/.exec(id);
+  if (num) return items.find((it) => it.task?.op === 'numeral' && it.task.n === Number(num[1]))?.id ?? null;
+  if (/^(r|s|m):/.test(id)) return id; // already a LEARN id from a pick
+  if (id === 'capital') return items.find((it) => it.kind === 'capital' && it.strand === strand)?.id ?? null;
+  const usual = usualSound(id)?.join('+');
+  const cands = items.filter((it) => it.kind === 'grapheme' && it.strand === strand && c.gpcs[it.gpc]?.text === id);
+  const ipa = usesIpa(c);
+  return (cands.find((it) => (c.gpcs[it.gpc].phonemes as string[]).map((p) => toToken(p, ipa)).join('+') === usual) ?? cands[0])?.id ?? null;
+}
+
+const MOMENT_OF_PLACE: Record<string, string> = { nest: 'egg-moon', wish: 'wish', 'twin-wish': 'twin-wish', station: 'wish', naming: 'naming-bells', door: 'door-visit', rollcall: 'roll-call' };
+
+export function toLearnPayload(d: LearnResultDraft, c: Content): Record<string, unknown> {
+  const items = d.items.map((i) => ({ id: itemIdFor(c, d.strand, i.id), r: i.result })).filter((i): i is { id: string; r: typeof d.result } => i.id !== null);
+  return {
+    type: 'learn.result', strand: d.strand, step: d.strand === 'name' ? null : d.step, carrier: d.carrier, items, result: d.result,
+    ms: d.ms, scaffold: d.scaffold, error: d.error ?? null, place: d.place,
+    moment: d.moment ?? (d.strand === 'name' ? 'roll-call' : d.place === 'rollcall' ? 'roll-call-door' : MOMENT_OF_PLACE[d.place]),
+    slot: d.slot ?? (d.strand === 'name' ? 'name' : d.source === 'side' ? 'side' : d.source), probe: d.probe,
+  };
+}
+
+const EGG_MOMENTS = ['egg-moon', 'egg-small-nest', 'egg-two-stone', 'egg-blanket', 'egg-berry', 'egg-snow'];
+const REQUESTS: Record<HbSlot, ItemRequest> = {
+  egg: { strand: 'm', moments: EGG_MOMENTS, place: 'nest' } as ItemRequest,
+  wish: { strand: 'r', moments: ['wish', 'one-or-many', 'twin-wish', 'tricky-act', 'basket-and', 'basket-adj', 'asking-bubble', 'two-state-wish'], place: 'meadow' } as ItemRequest,
+  naming: { strand: 's', moments: ['naming-bells', 'naming-garden', 'first-sound'], place: 'naming' } as ItemRequest,
+  door: { strand: 'm', moments: ['door-visit'], place: 'stalls' } as ItemRequest,
+  'rollcall-door': { strand: 'm', moments: ['roll-call-door'], place: 'goodnight' } as ItemRequest,
+};
+
+export function serve(slot: HbSlot, rng: Rng, accept: (s: Served) => boolean = () => true, extra: Partial<ItemRequest> = {}): Served | null {
+  const words = wordEntries(game.content as Content);
+  const avoid: string[] = [];
+  for (let i = 0; i < 6; i++) {
+    const p = nextItem(game.planContext, { ...REQUESTS[slot], ...extra, avoid } as ItemRequest, rng);
+    if (!p) return null;
+    const s = servedFromPick(p, words);
+    if (s && accept(s)) return s;
+    avoid.push(carrierKey(p.carrier));
+  }
+  return null;
+}
+
+export function serveEgg(rng: Rng): { served: Served | null; kind: EggKind } {
+  const offer = nextEgg(game.planContext, rng) as { kind: EggKind; pick: Pick | null };
+  return { kind: offer.kind, served: offer.pick ? servedFromPick(offer.pick, new Map()) : null };
+}
+
+const STATE: Record<string, StepState> = { passed: 'passed', placed: 'placed', side: 'side', school: 'school', current: 'current', waiting: 'waiting', display: 'locked', ahead: 'locked' };
+export function stepStatusOf(_strand: 'r' | 's' | 'm', step: string): StepState {
+  const c = game.content as Content;
+  return c.steps[step] ? STATE[stepStatus(game.learner, c, step)] ?? 'locked' : 'locked';
+}
+export function currentStepOf(strand: 'r' | 's' | 'm'): string {
+  return currentStep(game.learner, game.content as Content, strand) ?? (strand === 'r' ? 'R01' : strand === 's' ? 'S01' : 'M01');
+}
+export function secure(_strand: 'r' | 's' | 'm', step: string): boolean {
+  return isSecure(game.learner, game.content as Content, step);
+}
+export function spellingBehind(): boolean {
+  return spellingShareLow(game.learner, game.content as Content);
+}
+export function checkedCount(): number {
+  return visitStats(game.learner).total;
+}
+// LEARN's nextNameReviews applies spec 3.7 (decodable or read before, due first, one of each name per round).
+export function nameReviewIds(herd: { id: string; name: string | null; nameGems: string[] }[], n: number, rng: Rng): string[] {
+  const c = game.content as Content;
+  const gpcOf = (g: string) => Object.values(c.gpcs).find((x: any) => x.text === g.toLowerCase()) as { id: string } | undefined;
+  const cands = herd.filter((b) => b.name).map((b) => ({ babyId: b.id, name: b.name!, gpcs: b.nameGems.map((g) => gpcOf(g)?.id).filter((x): x is string => !!x) }));
+  return nextNameReviews(game.planContext, cands, n, 'roll-call', rng).map((p: Pick) => (p.carrier as { babyId: string }).babyId);
+}
+```
+
+The ladders the naming context needs (`makeSpellCtx`) come from `Object.values(c.steps).filter((s) => s.strand === 's')` with `items` mapped to their `gpc` texts; `Naming.svelte` builds them with `spellLadder(c)`:
+
+```ts
+export function spellLadder(c: Content): { id: string; items: string[] }[] {
+  return (c.order.s as string[]).map((id) => ({ id, items: ((c.steps[id].items as any[]) ?? []).map((it) => (it.gpc ? c.gpcs[it.gpc]?.text ?? it.gpc : it.kind === 'capital' ? 'capital' : '')).filter(Boolean) }));
+}
+export function readLadder(c: Content): { id: string; items: string[] }[] {
+  return (c.order.r as string[]).map((id) => ({ id, items: ((c.steps[id].items as any[]) ?? []).map((it) => (it.gpc ? c.gpcs[it.gpc]?.text ?? it.gpc : it.ending ? `-${it.ending}` : '')).filter(Boolean) }));
+}
+```
+
+Add both to `learn-bridge.ts`. CORE's action router (C4) applies `toLearnPayload(draft, game.content)` to every `learn.result` draft from `applyHeartbeat` and `applyNaming` before `makeEvent`.
+
+- [ ] **Step 4: Write `hint-runner.ts`, `guides.svelte.ts` and `HbGuides.svelte`**
+
+`src/scenes/heartbeat/hint-runner.ts`:
+
+```ts
+import { createMoment, type Moment } from '../../ui/moment.ts';
+import { defaultDeps } from '../../ui/moment-deps.ts';
+import type { Strand } from '../../core/heartbeat/types.ts';
+
+export interface HintRunner {
+  begin(goal: { idleMs: number; step?: string; repeat: () => Promise<void>; focused: () => Promise<void>; answer: () => Promise<void> }): void;
+  touch(): void;
+  miss(): Promise<void>;
+  readonly level: 0 | 1 | 2 | 3;
+  end(): void;
+}
+
+// PLACES' moment runs the hint ladder and the idle flag; this keeps the heartbeat controllers' simpler interface.
+export function createHintRunner(meta: { place: string; strand: Strand }): HintRunner {
+  let m: Moment | null = null;
+  let ghosted = false;
+  return {
+    begin(g) {
+      m?.dispose();
+      ghosted = false;
+      let calls = 0;
+      const deps = defaultDeps();
+      m = createMoment({
+        strand: meta.strand as any, step: (g.step ?? '') as any, place: meta.place as any, goal: [],
+        focused: () => g.focused(),
+        ghost: async () => { ghosted = true; await g.answer(); },
+        hookAnswer: () => {}, hookWrong: () => {},
+      }, { ...deps, say: async () => { if (calls++ > 0) await g.repeat(); } }); // the controller says the goal itself
+      void m.start();
+    },
+    touch() { m?.touch(); },
+    async miss() { m?.miss(); },
+    get level() {
+      const s = m?.state;
+      if (!s) return 0;
+      if (ghosted || s.level === 3) return 3;
+      if (s.idleHint) return 2;
+      return Math.min(s.level, 1) as 0 | 1;
+    },
+    end() { m?.dispose(); },
+  };
+}
+```
+
+`src/scenes/heartbeat/guides.svelte.ts`:
+
+```ts
+import { ghostMove, ghostStop, ghostTap } from '../../ui/ghost.ts';
+import { rectInStage } from '../../ui/stage.ts';
+
+type Rect = { x: number; y: number; w: number; h: number };
+const centre = (el: Element) => { const r = rectInStage(el); return { x: r.x + r.w / 2, y: r.y + r.h / 2 }; };
+
+export const ghost = {
+  drag: (from: Element, to: Element) => ghostMove(centre(from), centre(to), { ms: 1400 }),
+  tap: (el: Element) => ghostTap(centre(el), 2),
+  hide: () => ghostStop(),
+};
+
+let beam = $state<Rect | null>(null);
+export const moonbeam = {
+  get rect(): Rect | null { return beam; },
+  show(els: Element | Element[]) {
+    const list = (Array.isArray(els) ? els : [els]).filter(Boolean).map(rectInStage);
+    if (!list.length) { beam = null; return; }
+    const x = Math.min(...list.map((r) => r.x)), y = Math.min(...list.map((r) => r.y));
+    beam = { x, y, w: Math.max(...list.map((r) => r.x + r.w)) - x, h: Math.max(...list.map((r) => r.y + r.h)) - y };
+  },
+  clear() { beam = null; },
+};
+
+let repeatFn: (() => Promise<void>) | null = null;
+export const goal = {
+  set(fn: () => Promise<void>) { repeatFn = fn; },
+  clear() { repeatFn = null; },
+  async replay() { if (repeatFn) await repeatFn(); },
+};
+```
+
+`src/scenes/heartbeat/HbGuides.svelte`:
+
+```svelte
+<script lang="ts">
+  import Moonbeam from '../../ui/Moonbeam.svelte';
+  import GhostHand from '../../ui/GhostHand.svelte';
+  import ReplayButton from '../../ui/ReplayButton.svelte';
+  import { goal, moonbeam } from './guides.svelte.ts';
+</script>
+
+<Moonbeam target={moonbeam.rect} area={true} />
+<GhostHand />
+<ReplayButton onreplay={() => goal.replay()} />
+```
+
+Every heartbeat scene (Nest, Naming, Wish, Stalls, Goodnight) renders `<HbGuides />` as the first child of its `<section>` and imports `ghost`, `moonbeam` and `goal` from `./heartbeat/guides.svelte.ts`.
+
+- [ ] **Step 5: Add the free egg and the building breeds**
+
+In `src/core/heartbeat/types.ts`: `export type BreedId = 'moon' | 'nestling' | 'pebble' | 'cosy' | 'berry' | 'snow' | 'bubble' | 'post' | 'sparkle';`.
+
+In `src/core/actions/heartbeat.ts`: change `EggHatchedDraft.kind` to `EggKind | null`, add `| { type: 'hb.egg.free'; baby: string; kind: EggKind; roll: HatchRoll }` to `HbAction`, and add the case:
+
+```ts
+    case 'hb.egg.free':
+      return [{ type: 'egg.hatched', baby: a.baby, kind: a.kind, breed: a.roll.breed, colours: a.roll.colours, traits: a.roll.traits, source: 'nest' }];
+```
+
+with this test added to `tests/heartbeat/actions.test.ts`:
+
+```ts
+  it('hatches a free egg without a learning result', () => {
+    const d = applyHeartbeat({ type: 'hb.egg.free', baby: 'b2', kind: 'moon', roll: { ...roll, breed: 'moon' } });
+    expect(d).toEqual([{ type: 'egg.hatched', baby: 'b2', kind: 'moon', breed: 'moon', colours: roll.colours, traits: roll.traits, source: 'nest' }]);
+  });
+```
+
+Task 18's `NestCtrl` takes `free?: boolean` and dispatches `hb.egg.free` for a free egg; `Nest.svelte` gets its egg from `serveEgg`.
+
+- [ ] **Step 6: Run the tests**
+
+Run: `npx vitest run tests/heartbeat`
+Expected: PASS.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/scenes/heartbeat/learn-bridge.ts src/scenes/heartbeat/hint-runner.ts src/scenes/heartbeat/guides.svelte.ts src/scenes/heartbeat/HbGuides.svelte src/core/actions/heartbeat.ts src/core/heartbeat/types.ts tests/heartbeat/learn-bridge.test.ts tests/heartbeat/actions.test.ts
+git commit -m "Bridge the heartbeat to the learning planner and the places hint ladder"
+```
+
+**Acceptance:** bridge tests pass; no heartbeat scene imports `src/core/planner/`, `src/core/learning/`, `src/ui/moment.ts` or `src/ui/ghost.ts` directly (check: `grep -rn "core/planner\|core/learning\|ui/moment\|ui/ghost.ts" src/scenes/*.svelte` prints nothing).
 
 ---
 
@@ -4433,20 +4901,20 @@ git commit -m "Add touch parts: drag, gems, slots, tray, slider, stones, printed
 - Test: `tests/heartbeat/nest.test.ts`
 
 **Interfaces:**
-- Consumes: Tasks 1 to 4, 15, 17; `audio` (C9); `createHintRunner`, `ghost`, `moonbeam`, `goal` (C13); `game` (C6); `nextItem` (C10); `artUrl`, `Unicorn` (C12); `testSeed`, `isFast` (C7, see the note in this task).
+- Consumes: Tasks 1 to 4, 15, 17, 17B; `audio` (C9); `createHintRunner`, `ghost`, `moonbeam`, `goal`, `serveEgg` (Task 17B); `game` (C6); `artUrl`, `Unicorn` (C12); `testSeed`, `isFast` (C7, see the note in this task).
 - Produces:
 
 ```ts
 // deps.ts
 export type SceneDeps = { audio: AudioApi; hints: HintRunner; dispatch: (a: { type: string }) => void;
   now: () => number; rng: Rng; uuid: () => string; pause: (ms: number) => Promise<void> };
-export function liveDeps(): SceneDeps;
+export function liveDeps(meta: { place: string; strand: 'r' | 's' | 'm' | 'name' }): SceneDeps;
 export const FALLBACK_EGG: Served;    // used only if the planner returns null for the nest
 // nest.ctrl.ts
 export type NestView = { placed: string[]; warmNow: number; mood: 'hot' | 'cold' | null; diff: number; solved: boolean };
 export class NestCtrl {
   readonly task: EggTask; readonly stones: StoneSpec[]; babyId: string | null; onchange: () => void;
-  constructor(served: Served, d: SceneDeps, opts: { golden: boolean; speckled: boolean; firstEver: boolean });
+  constructor(served: Served, d: SceneDeps, opts: { golden: boolean; speckled: boolean; firstEver: boolean; free?: boolean });
   begin(): Promise<void>; repeatGoal(): Promise<void>; touch(): void;
   place(stoneId: string): Promise<'solved' | 'miss' | 'need-more' | 'ignored'>;
   answerIds(): string[]; wrongId(): string | null; view(): NestView;
@@ -4486,7 +4954,7 @@ export function fakeDeps(opts: { names?: string[]; seed?: number } = {}) {
     hints: {
       begin() { level = 0; misses = 0; },
       touch() {},
-      async miss() { misses++; level = misses >= 2 ? 3 : 2; },
+      async miss() { misses++; if (misses >= 2) level = 3; }, // a miss runs the focused hint but is not help (places.md D1)
       get level() { return level; },
       end() {},
     },
@@ -4524,7 +4992,7 @@ describe('NestCtrl', () => {
     expect(f.said.slice(-2)).toEqual(['fb-warm', 'num-bond-3-7']);
     expect(await c.place(c.answerIds()[0] ?? 'stone-0')).toBe('ignored');
   });
-  it('reacts to a wrong stone, then counts the answer as helped', async () => {
+  it('reacts to a wrong stone, then counts the answer as a miss', async () => {
     const f = fakeDeps();
     const c = new NestCtrl(served('M09', '3+7'), f.deps, opts);
     await c.begin();
@@ -4534,7 +5002,7 @@ describe('NestCtrl', () => {
     expect(f.said).toContain('num-over-1');
     expect(c.view().mood).toBe('hot');
     await c.place(c.answerIds()[0]);
-    expect(f.actions[0]).toMatchObject({ result: 'helped', error: 'off-by-one' });
+    expect(f.actions[0]).toMatchObject({ result: 'miss', error: 'off-by-one' });
   });
   it('waits for the second stone of a two-stone egg and rolls a wrong one back', async () => {
     const f = fakeDeps();
@@ -4569,7 +5037,7 @@ Expected: FAIL, cannot resolve `src/scenes/heartbeat/nest.ctrl.ts`.
 
 ```ts
 import { audio, type AudioApi } from '../../audio/index.ts';
-import { createHintRunner, type HintRunner } from '../../ui/hints.svelte.ts';
+import { createHintRunner, type HintRunner } from './hint-runner.ts';
 import { game } from '../../game.svelte.ts';
 import { makeRng, type Rng } from '../../core/rng.ts';
 import type { Served } from '../../core/heartbeat/types.ts';
@@ -4580,10 +5048,10 @@ export type SceneDeps = {
   now: () => number; rng: Rng; uuid: () => string; pause: (ms: number) => Promise<void>;
 };
 
-export function liveDeps(): SceneDeps {
+export function liveDeps(meta: { place: string; strand: 'r' | 's' | 'm' | 'name' }): SceneDeps {
   return {
     audio,
-    hints: createHintRunner(),
+    hints: createHintRunner(meta),
     dispatch: (a) => game.dispatch(a),
     now: () => Date.now(),
     rng: makeRng(testSeed() ?? Date.now() % 2147483647),
@@ -4622,7 +5090,7 @@ export class NestCtrl {
   private startedAt = 0;
   private firstTouch: number | null = null;
 
-  constructor(readonly served: Served, private d: SceneDeps, readonly opts: { golden: boolean; speckled: boolean; firstEver: boolean }) {
+  constructor(readonly served: Served, private d: SceneDeps, readonly opts: { golden: boolean; speckled: boolean; firstEver: boolean; free?: boolean }) {
     this.task = buildEggTask(served);
     this.stones = planStones(this.task, d.rng);
   }
@@ -4700,7 +5168,8 @@ export class NestCtrl {
     const result = momentResult(this.misses, this.d.hints.level);
     const roll = rollHatch({ kind: this.task.kind, result, golden: this.opts.golden, speckled: this.opts.speckled, rng: this.d.rng });
     this.babyId = this.d.uuid();
-    this.d.dispatch({
+    if (this.opts.free) this.d.dispatch({ type: 'hb.egg.free', baby: this.babyId, kind: this.task.kind, roll }); // LEARN Decision 10: no result
+    else this.d.dispatch({
       type: 'hb.egg.solved', baby: this.babyId, egg: this.task, served: this.served, result, roll,
       ms: Math.max(0, (this.firstTouch ?? this.d.now()) - this.startedAt), error: result === 'first' ? null : this.lastError,
     });
@@ -4782,22 +5251,24 @@ Expected: PASS.
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { game } from '../game.svelte.ts';
-  import { nextItem } from '../core/planner/index.ts';
+  import { serveEgg } from './heartbeat/learn-bridge.ts';
   import type { Served } from '../core/heartbeat/types.ts';
   import { NestCtrl } from './heartbeat/nest.ctrl.ts';
+  import HbGuides from './heartbeat/HbGuides.svelte';
   import { FALLBACK_EGG, liveDeps } from './heartbeat/deps.ts';
   import { exposeCtrl } from './heartbeat/test-hooks.ts';
   import { draggable } from '../ui/drag.ts';
-  import { ghost } from '../ui/ghost.svelte.ts';
-  import { moonbeam } from '../ui/moonbeam.svelte.ts';
-  import { goal } from '../ui/goal.svelte.ts';
+  import { ghost } from './heartbeat/guides.svelte.ts';
+  import { moonbeam } from './heartbeat/guides.svelte.ts';
+  import { goal } from './heartbeat/guides.svelte.ts';
   import Stone from '../ui/Stone.svelte';
   import ArtImg from './heartbeat/ArtImg.svelte';
 
-  const deps = liveDeps();
+  const deps = liveDeps({ place: 'nest', strand: 'm' });
   const p = game.params as { served?: Served; golden?: boolean; speckled?: boolean };
-  const served = p.served ?? nextItem(game.plan, 'm', 'egg', deps.rng) ?? FALLBACK_EGG;
-  const ctrl = new NestCtrl(served, deps, { golden: !!p.golden, speckled: !!p.speckled, firstEver: game.world.flowers === 0 });
+  const offer = p.served ? null : serveEgg(deps.rng);
+  const served = p.served ?? offer?.served ?? FALLBACK_EGG;
+  const ctrl = new NestCtrl(served, deps, { golden: !!p.golden, speckled: !!p.speckled, firstEver: game.world.flowers === 0, free: !p.served && !offer?.served });
   let tick = $state(0);
   ctrl.onchange = () => tick++;
   const view = $derived.by(() => { tick; return ctrl.view(); });
@@ -4826,6 +5297,7 @@ Expected: PASS.
 </script>
 
 <section class="nest-scene" aria-label="nest scene">
+  <HbGuides />
   <div class="bg"><ArtImg id="bg-nest" size={1180} /></div>
   <button class="egg" class:hot={view.mood === 'hot'} class:cold={view.mood === 'cold'} class:wobble={view.solved}
     data-touch aria-label="egg" bind:this={nestEl} onpointerup={() => { ctrl.touch(); showStars(); }}>
@@ -4884,7 +5356,7 @@ Expected: PASS.
   import { liveDeps } from './heartbeat/deps.ts';
   import { heartbeat } from './heartbeat/flow.svelte.ts';
 
-  const deps = liveDeps();
+  const deps = liveDeps({ place: 'hatch', strand: 'm' });
   const { baby: babyId, egg = 'egg-moon' } = game.params as { baby: string; egg?: string };
   const baby = $derived(game.world.herd.find((b) => b.id === babyId));
   let phase = $state<'wobble' | 'crack' | 'burst' | 'hello'>('wobble');
@@ -4949,7 +5421,7 @@ git commit -m "Add the nest scene with number stones and the hatch scene"
 - Test: `tests/naming/naming-ctrl.test.ts`
 
 **Interfaces:**
-- Consumes: Tasks 10 to 15, 17, 18; `game` (C6); `nextItem` (C10).
+- Consumes: Tasks 10 to 15, 17, 17B, 18; `game` (C6); `serve`, `currentStepOf`, `stepStatusOf`, `spellingBehind`, `nameEntries`, `spellLadder` (Task 17B); `shared/blocklist.json`.
 - Produces:
 
 ```ts
@@ -5019,7 +5491,7 @@ describe('NamingCtrl', () => {
     expect(f.said).toEqual(expect.arrayContaining(['g-spell', 'name:ken!', 'fb-spelled', 'foal-yay']));
     expect(c.mode).toBe('done');
   });
-  it('reads back a wrong gem, pops it out and counts the name as helped', async () => {
+  it('reads back a wrong gem, pops it out and counts the name as a miss', async () => {
     const f = fakeDeps({ names: ALL });
     const c = new NamingCtrl(input(), f.deps);
     await c.begin();
@@ -5031,7 +5503,7 @@ describe('NamingCtrl', () => {
     c.dropGem(1, 'e');
     expect(await c.slide()).toBe('right');
     const r = f.actions.find((a) => a.type === 'name.spelled').results[0];
-    expect(r.result).toBe('helped');
+    expect(r.result).toBe('miss');
     expect(r.items).toEqual([{ id: 'k', result: 'first' }, { id: 'e', result: 'miss' }, { id: 'n', result: 'first' }]);
   });
   it('asks for the capital from S11 and logs it as its own item', async () => {
@@ -5119,7 +5591,7 @@ Expected: FAIL, cannot resolve `src/scenes/heartbeat/naming.ctrl.ts`.
 `src/scenes/heartbeat/naming.ctrl.ts`:
 
 ```ts
-import type { NameEntry } from '../../core/content/types.ts';
+import type { NameEntry } from '../../core/heartbeat/types.ts';
 import type { ErrorTag, NameRoute, NameTarget, Served } from '../../core/heartbeat/types.ts';
 import { type GardenGroup, bellsFor, gardenNames, namesByFirstSound } from '../../core/naming/bells.ts';
 import { type Blocklist, checkBlocked } from '../../core/naming/blocklist.ts';
@@ -5429,21 +5901,22 @@ Expected: PASS.
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { game } from '../game.svelte.ts';
-  import { nextItem, spellingBehind } from '../core/planner/index.ts';
-  import { currentStep, stepStatus } from '../core/learning/index.ts';
+  import { currentStepOf, nameEntries, serve, spellLadder, spellingBehind, stepStatusOf } from './heartbeat/learn-bridge.ts';
+  import blockFile from '../../../../shared/blocklist.json';
   import { makeSpellCtx } from '../core/naming/gifts.ts';
   import { indexBank } from '../core/naming/check.ts';
-  import { compileBlocklist } from '../core/naming/blocklist.ts';
+  import { compileBlocklist, type BlocklistFile } from '../core/naming/blocklist.ts';
   import { GARDEN_GROUPS, firstSounds } from '../core/naming/bells.ts';
   import { firstSoundGem, gemSoundKey } from '../core/naming/sounds.ts';
   import type { NameTarget, Served } from '../core/heartbeat/types.ts';
   import { NamingCtrl, type Named } from './heartbeat/naming.ctrl.ts';
+  import HbGuides from './heartbeat/HbGuides.svelte';
   import { liveDeps } from './heartbeat/deps.ts';
   import { exposeCtrl } from './heartbeat/test-hooks.ts';
   import { heartbeat } from './heartbeat/flow.svelte.ts';
   import { draggable } from '../ui/drag.ts';
-  import { ghost } from '../ui/ghost.svelte.ts';
-  import { goal } from '../ui/goal.svelte.ts';
+  import { ghost } from './heartbeat/guides.svelte.ts';
+  import { goal } from './heartbeat/guides.svelte.ts';
   import GemSlots, { type SlotView } from '../ui/GemSlots.svelte';
   import GemTray from '../ui/GemTray.svelte';
   import SoundSlider from '../ui/SoundSlider.svelte';
@@ -5454,16 +5927,17 @@ Expected: PASS.
   let { target, onnamed }: { target?: NameTarget; onnamed?: (n: Named) => void } = $props();
   const params = game.params as { target?: NameTarget; then?: 'heartbeat' | (() => void) };
   const tgt: NameTarget = target ?? params.target!;
-  const deps = liveDeps();
-  const step = currentStep(game.learner, 's');
-  const served: Served = nextItem(game.plan, 's', 'naming', deps.rng) ??
+  const deps = liveDeps({ place: 'naming', strand: 's' });
+  const step = currentStepOf('s');
+  const served: Served = serve('naming', deps.rng) ??
     { strand: 's', step, id: '', carrier: '', items: [], scaffold: 1, probe: false, source: 'current' };
-  const ctx = makeSpellCtx(game.content.ladders.s, (s) => stepStatus(game.learner, 's', s), served.step);
+  const ctx = makeSpellCtx(spellLadder(game.content), (s) => stepStatusOf('s', s), served.step);
+  const bank = nameEntries(game.content);
   const ctrl = new NamingCtrl({
-    target: tgt, served, ctx, bank: game.content.names, index: indexBank(game.content.names),
-    blocklist: compileBlocklist(game.content.blocklist),
+    target: tgt, served, ctx, bank, index: indexBank(bank),
+    blocklist: compileBlocklist(blockFile as BlocklistFile),
     herd: game.world.herd.map((b) => ({ id: b.id, name: b.name, nameGems: b.nameGems })),
-    spellingBehind: spellingBehind(game.plan),
+    spellingBehind: spellingBehind(),
   }, deps);
   let tick = $state(0);
   ctrl.onchange = () => tick++;
@@ -5473,7 +5947,7 @@ Expected: PASS.
   let slotEls: HTMLElement[] = $state([]);
   let showMore = $state(false);
   let showSounds = $state(false);
-  const sounds = firstSounds(game.content.names, (k) => deps.audio.hasName(k));
+  const sounds = firstSounds(bank, (k) => deps.audio.hasName(k));
   const firstGold = !game.world.herd.some((b) => b.name !== null);
 
   const spellViews = $derived(v.slots.map((s): SlotView => ({ gem: s.gem, gift: !s.slot.own, kind: s.slot.ph.some((p) => /^(a|e|i|o|u|ai|ee|igh|oa|oo|ar|or|ur|ow|oi|ear|air|er|uh|yoo)$/.test(p)) ? 'vowel' : 'consonant',
@@ -5499,6 +5973,7 @@ Expected: PASS.
 </script>
 
 <section class="naming" aria-label="naming scene">
+  <HbGuides />
   <div class="bg"><ArtImg id="bg-nest" size={1180} /></div>
   <div class="baby" bind:this={babyEl}>
     {#if baby}<Unicorn {baby} pose="sit" size={260} label="baby" />{:else}<ArtImg id="sky-unicorn" size={240} />{/if}
@@ -5588,7 +6063,7 @@ git commit -m "Add the naming scene with bells, the name garden and the gold bel
 - Test: `tests/heartbeat/wish-ctrl.test.ts`
 
 **Interfaces:**
-- Consumes: Tasks 5, 6, 15, 17, 18; `game`, `nextItem`, `stepStatus` (C6, C10).
+- Consumes: Tasks 5, 6, 15, 17, 17B, 18; `game` (C6); `serve`, `stepStatusOf`, `wordEntries`, `readLadder` (Task 17B); places' `Heap`.
 - Produces:
 
 ```ts
@@ -5673,7 +6148,7 @@ describe('WishCtrl', () => {
     expect(await c.toStation('nap')).toBe('miss');
     expect(c.lastFunny).toBe('wrong-station');
     expect(await c.toStation('swing')).toBe('ok');
-    expect(f.actions[0]).toMatchObject({ type: 'hb.station.done', word: 'swing', result: 'helped' });
+    expect(f.actions[0]).toMatchObject({ type: 'hb.station.done', word: 'swing', result: 'miss' });
     expect(f.said).toContain('foal-wee');
   });
 });
@@ -5689,7 +6164,7 @@ Expected: FAIL, cannot resolve `src/scenes/heartbeat/wish.ctrl.ts`.
 `src/scenes/heartbeat/wish.ctrl.ts`:
 
 ```ts
-import type { WordEntry } from '../../core/content/types.ts';
+import type { WordEntry } from '../../core/heartbeat/types.ts';
 import type { ErrorTag, StationId } from '../../core/heartbeat/types.ts';
 import type { PrintUnit, WishPart, WishTask } from '../../core/heartbeat/wish.ts';
 import { type Funny, judgeGive } from '../../core/phonics/basket.ts';
@@ -5833,34 +6308,35 @@ Layout: the wishing baby on the left with its speech bubble (`PrintWithDots`); t
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { game } from '../game.svelte.ts';
-  import { nextItem } from '../core/planner/index.ts';
-  import { stepStatus } from '../core/learning/index.ts';
+  import { readLadder, serve, stepStatusOf, wordEntries } from './heartbeat/learn-bridge.ts';
   import { STATIONS, buildWish, soundedGraphemes } from '../core/heartbeat/wish.ts';
   import type { Served } from '../core/heartbeat/types.ts';
   import type { Rng } from '../core/rng.ts';
   import { WishCtrl, unitSoundKey } from './heartbeat/wish.ctrl.ts';
+  import HbGuides from './heartbeat/HbGuides.svelte';
   import { liveDeps } from './heartbeat/deps.ts';
   import { exposeCtrl } from './heartbeat/test-hooks.ts';
   import { heartbeat } from './heartbeat/flow.svelte.ts';
   import { draggable } from '../ui/drag.ts';
-  import { ghost } from '../ui/ghost.svelte.ts';
-  import { moonbeam } from '../ui/moonbeam.svelte.ts';
-  import { goal } from '../ui/goal.svelte.ts';
+  import { ghost } from './heartbeat/guides.svelte.ts';
+  import { moonbeam } from './heartbeat/guides.svelte.ts';
+  import { goal } from './heartbeat/guides.svelte.ts';
   import PrintWithDots from '../ui/PrintWithDots.svelte';
-  import Heap from '../ui/Heap.svelte';
+  import Heap from '../ui/Heap.svelte'; // places.md Task A8: { picture, count, seed, size }
+  import { heapCount } from '../ui/geometry.ts';
   import Unicorn from '../art/Unicorn.svelte';
   import ArtImg from './heartbeat/ArtImg.svelte';
 
   const params = game.params as { baby: string; then?: 'heartbeat' | 'meadow' };
-  const deps = liveDeps();
-  const words = game.content.words;
+  const deps = liveDeps({ place: 'wish', strand: 'r' });
+  const words = wordEntries(game.content);
   const herd = game.world.herd;
   const baby = herd.find((b) => b.id === params.baby)!;
   const other = herd.filter((b) => b.id !== baby.id && b.name !== null);
   const twinBaby = other.length ? other[Math.floor(deps.rng() * other.length)].id : null;
-  const sounded = soundedGraphemes(game.content.ladders.r, (s) => stepStatus(game.learner, 'r', s));
+  const sounded = soundedGraphemes(readLadder(game.content), (s) => stepStatusOf('r', s));
   const make = (s: Served, rng: Rng) => buildWish({ served: s, baby: baby.id, babyName: baby.name, twinBaby, words, bathPond: game.world.bathPond, sounded, rng });
-  const served = nextItem(game.plan, 'r', 'wish', deps.rng, (s) => make(s, deps.rng) !== null);
+  const served = serve('wish', deps.rng, (s) => make(s, deps.rng) !== null, { firstWish: params.then === 'heartbeat' });
   const task = served ? make(served, deps.rng) : null;
   const ctrl = task ? new WishCtrl(task, deps, (w) => words.get(w)) : null;
   let tick = $state(0);
@@ -5892,6 +6368,7 @@ Layout: the wishing baby on the left with its speech bubble (`PrintWithDots`); t
 
 {#if ctrl && v}
   <section class="wish" aria-label="wish scene">
+    <HbGuides />
     <div class="bg"><ArtImg id="bg-wish" size={1180} /></div>
     <div class="baby {funnyClass}" bind:this={babyEl} data-touch aria-label="wishing baby"
       use:draggable={{ disabled: ctrl.task.kind !== 'station', targets: () => stations.map((s) => ({ id: s, el: stationEls[s] })), ondrop: (t) => { if (t) ctrl.toStation(t as any); } }}>
@@ -5907,7 +6384,7 @@ Layout: the wishing baby on the left with its speech bubble (`PrintWithDots`); t
         {#each ctrl.task.basket as it (it.key)}
           <span class="item" data-touch aria-label="item {it.heap ? words.get(it.word)?.plural ?? it.word : it.word}"
             use:draggable={{ targets: () => [{ id: 'baby', el: babyEl }], ondrop: (t) => { if (t === 'baby') ctrl.give(it.key); }, ontap: () => deps.audio.sfx('pop') }}>
-            {#if it.heap}<Heap picture={it.picture} word={it.word} size={150} />{:else}<ArtImg id={it.picture} size={140} />{/if}
+            {#if it.heap}<Heap picture={it.picture} count={heapCount(it.word)} seed={it.word.length} size={150} />{:else}<ArtImg id={it.picture} size={140} />{/if}
           </span>
         {/each}
       </div>
@@ -5964,7 +6441,7 @@ git commit -m "Add the wish scene with basket, care stations, one-or-many and tw
 - Test: `tests/heartbeat/stalls-ctrl.test.ts`
 
 **Interfaces:**
-- Consumes: Tasks 1, 7, 15, 18; `game`, `stepStatus`, `stepSecure` (C6, C10); `UnicornHead` (C12).
+- Consumes: Tasks 1, 7, 15, 17B, 18; `game` (C6); `stepStatusOf`, `secure` (Task 17B); `UnicornHead` (C12).
 - Produces:
 
 ```ts
@@ -6025,7 +6502,7 @@ describe('StallsCtrl', () => {
     expect(f.said).toContain(`num-that-is-${wrong}`);
     expect(c.tapped?.who).toBe(wrong <= 5 ? 'sleepy' : 'empty');
     expect(await c.tapDoor(c.target!)).toBe('ok');
-    expect(f.actions[0]).toMatchObject({ type: 'hb.door.done', baby: 'b5', number: c.target, result: 'helped' });
+    expect(f.actions[0]).toMatchObject({ type: 'hb.door.done', baby: 'b5', number: c.target, result: 'miss' });
   });
   it('asks no visit outside the range or between every third baby once secure', () => {
     expect(new StallsCtrl(input(5, 1, 5, 0), fakeDeps().deps).target).toBeNull();
@@ -6143,31 +6620,32 @@ A page shows two rows. Each row is two lines of five doors (a real ten-frame), w
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { game } from '../game.svelte.ts';
-  import { stepSecure, stepStatus } from '../core/learning/index.ts';
+  import { secure, stepStatusOf } from './heartbeat/learn-bridge.ts';
   import { pageCount, pageDoors, pageOf, rangeStep, stableLayout, visitRange } from '../core/heartbeat/stables.ts';
   import { StallsCtrl } from './heartbeat/stalls.ctrl.ts';
+  import HbGuides from './heartbeat/HbGuides.svelte';
   import { liveDeps } from './heartbeat/deps.ts';
   import { exposeCtrl } from './heartbeat/test-hooks.ts';
   import { heartbeat } from './heartbeat/flow.svelte.ts';
   import { moonName } from './heartbeat/moon-name.ts';
-  import { moonbeam } from '../ui/moonbeam.svelte.ts';
-  import { goal } from '../ui/goal.svelte.ts';
+  import { moonbeam } from './heartbeat/guides.svelte.ts';
+  import { goal } from './heartbeat/guides.svelte.ts';
   import UnicornHead from '../art/UnicornHead.svelte';
   import ArtImg from './heartbeat/ArtImg.svelte';
   import NameTag from './naming/NameTag.svelte';
 
   const params = game.params as { baby?: string; mode: 'move-in' | 'view' | 'moon-name' };
-  const deps = liveDeps();
+  const deps = liveDeps({ place: 'stalls', strand: 'm' });
   const world = game.world;
   const layout = stableLayout(world.herd, world.rowsBuilt);
   const byId = new Map(world.herd.map((b) => [b.id, b]));
   const baby = params.baby ? byId.get(params.baby) : undefined;
-  const status = (s: string) => stepStatus(game.learner, 'm', s);
+  const status = (s: string) => stepStatusOf('m', s);
   const range = visitRange(status);
   const rs = rangeStep(range);
   const ctrl = baby && params.mode === 'move-in'
     ? new StallsCtrl({ baby: { id: baby.id, order: baby.order, clipKey: baby.clipKey }, layout, rowsBuilt: world.rowsBuilt, range,
-        secure: rs ? stepSecure(game.learner, 'm', rs) : false, source: rs && status(rs) === 'current' ? 'current' : 'review' }, deps)
+        secure: rs ? secure('m', rs) : false, source: rs && status(rs) === 'current' ? 'current' : 'review' }, deps)
     : null;
   let page = $state(baby ? pageOf(baby.order) : 1);
   let visiting = $state(false);
@@ -6195,6 +6673,7 @@ A page shows two rows. Each row is two lines of five doors (a real ten-frame), w
 </script>
 
 <section class="stalls" aria-label="stables scene">
+  <HbGuides />
   <div class="bg"><ArtImg id="bg-stables" size={1180} /></div>
   <div class="rows">
     {#each [0, 1] as k}
@@ -6269,7 +6748,7 @@ git commit -m "Add move-in, door visits, plaques and the Moonbeam Camp"
 - Test: `tests/heartbeat/goodnight-ctrl.test.ts`
 
 **Interfaces:**
-- Consumes: Tasks 1, 7, 8, 15, 18, 19; `game`, `nextItem`, `checkedThisVisit`, `nameStat`, `stepStatus`, `currentStep` (C6, C10).
+- Consumes: Tasks 1, 7, 8, 15, 17B, 18, 19; `game` (C6); `serve`, `nameReviewIds`, `checkedCount` (Task 17B).
 - Produces:
 
 ```ts
@@ -6317,7 +6796,7 @@ describe('GoodnightCtrl', () => {
     expect(await c.tapDoor(3)).toBe('miss');
     expect(f.said).toContain('foal-notme');
     expect(await c.tapDoor(2)).toBe('ok');
-    expect(f.actions[1]).toMatchObject({ baby: 'b2', logged: false, result: 'helped' });
+    expect(f.actions[1]).toMatchObject({ baby: 'b2', logged: false, result: 'miss' });
     expect(c.stage).toBe('sky');
   });
   it('ignores empty doors and babies already in bed', async () => {
@@ -6484,34 +6963,32 @@ The sky fills the top 360 px: one star per baby, and each full ten drawn as a sk
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { game } from '../game.svelte.ts';
-  import { checkedThisVisit, nextItem } from '../core/planner/index.ts';
-  import { nameStat, stepStatus } from '../core/learning/index.ts';
+  import { checkedCount, nameReviewIds, serve } from './heartbeat/learn-bridge.ts';
   import { stableLayout, pageDoors } from '../core/heartbeat/stables.ts';
-  import { nameEligible, pickRollCall, rollCallCount } from '../core/heartbeat/rollcall.ts';
+  import { pickRollCall, rollCallCount } from '../core/heartbeat/rollcall.ts';
   import { parseMathsItem } from '../core/maths/eggs.ts';
   import { skyState } from '../core/heartbeat/sky.ts';
-  import { GoodnightCtrl, readableGraphemes } from './heartbeat/goodnight.ctrl.ts';
+  import { GoodnightCtrl } from './heartbeat/goodnight.ctrl.ts';
+  import HbGuides from './heartbeat/HbGuides.svelte';
   import { liveDeps } from './heartbeat/deps.ts';
   import { exposeCtrl } from './heartbeat/test-hooks.ts';
-  import { goal } from '../ui/goal.svelte.ts';
+  import { goal } from './heartbeat/guides.svelte.ts';
   import UnicornHead from '../art/UnicornHead.svelte';
   import ArtImg from './heartbeat/ArtImg.svelte';
   import NameTag from './naming/NameTag.svelte';
   import Naming from './Naming.svelte';
 
-  const deps = liveDeps();
+  const deps = liveDeps({ place: 'goodnight', strand: 'name' });
   const w = game.world;
   const byId = new Map(w.herd.map((b) => [b.id, b]));
   const layout = stableLayout(w.herd, w.rowsBuilt);
-  const readable = readableGraphemes(game.content.ladders.r, (s) => stepStatus(game.learner, 'r', s));
-  const key = (id: string) => (byId.get(id)?.name ?? '').toLowerCase();
-  const isDue = (id: string) => nameStat(game.learner, key(id))?.due ?? false;
-  const doorServed = nextItem(game.plan, 'm', 'rollcall-door', deps.rng, (s) => s.step === 'M07');
+  const review = new Set(nameReviewIds(w.herd, 6, deps.rng)); // LEARN applies the spec 3.7 eligibility and due order
+  const doorServed = serve('rollcall-door', deps.rng, (s) => s.step === 'M07', { doors: { built: w.rowsBuilt * 10, own: null } } as any);
   const doorNo = doorServed ? (parseMathsItem(doorServed.id) as { n: number }).n : null;
-  const count = rollCallCount({ visitIndex: w.visitIndex, checkedThisVisit: checkedThisVisit(game.plan), due: w.herd.filter((b) => b.name && isDue(b.id)).length });
+  const count = rollCallCount({ visitIndex: w.visitIndex, checkedThisVisit: checkedCount(), due: review.size });
   const { page, picks } = pickRollCall({
-    layout, names: new Map(w.herd.map((b) => [b.id, b.name])), count, door: doorNo, rng: deps.rng, isDue,
-    eligible: (id) => { const b = byId.get(id)!; return nameEligible(b.nameGems, readable, nameStat(game.learner, key(id))?.firsts ?? 0); },
+    layout, names: new Map(w.herd.map((b) => [b.id, b.name])), count, door: doorNo, rng: deps.rng,
+    isDue: (id) => review.has(id), eligible: (id) => review.has(id),
   });
   const ctrl = new GoodnightCtrl({ layout, page, picks, doorServed: picks[0]?.kind === 'door' ? doorServed : null, herdCount: w.herd.length, skyNames: w.skyNames }, deps);
   let tick = $state(0);
@@ -6536,6 +7013,7 @@ The sky fills the top 360 px: one star per baby, and each full ten drawn as a sk
 </script>
 
 <section class="night" aria-label="goodnight scene">
+  <HbGuides />
   <div class="bg"><ArtImg id="bg-sky" size={1180} /></div>
   <div class="sky">
     {#each Array(sky.unicorns) as _, i}
@@ -7017,7 +7495,7 @@ to_naming
 ev "() => window.__game.wrong()" >/dev/null
 expect "() => 'mode ' + window.__game.scene.mode()" "mode spell"
 ev "() => window.__game.answer()" >/dev/null
-expect "() => 'log ' + window.__game.state().lastLog?.strand + ' ' + window.__game.state().lastLog?.result" "log s helped"
+expect "() => 'log ' + window.__game.state().lastLog?.strand + ' ' + window.__game.state().lastLog?.result" "log s miss"
 finish_beat
 
 expect "() => 'missing ' + window.EmmaAudio.missing.length" "missing 0"
@@ -7065,7 +7543,340 @@ git add src/scenes/heartbeat/flow.svelte.ts src/scenes/heartbeat/moon-name.ts sr
 git commit -m "Wire the heartbeat flow, the moon's new names, test hooks and browser flows"
 ```
 
-**Acceptance (Wave A done):** all Vitest suites in `tests/heartbeat` and `tests/naming` pass; `npm run check` has no errors in this workstream's files; `run-heartbeat-all.sh` passes at 1180 x 820, 1080 x 810 and 1024 x 768 with no missing clips and no console errors; portrait shows the turn picture; every egg kind of wave A was played; gold-bell no vowel, blocked, unknown (7 gems), list (Lili), duplicate, adding and removing slots all behave as spec 2.8.
+**Acceptance:** all Vitest suites in `tests/heartbeat` and `tests/naming` pass; `npm run check` has no errors in this workstream's files; `run-heartbeat-all.sh` passes at 1180 x 820, 1080 x 810 and 1024 x 768 with no missing clips and no console errors; portrait shows the turn picture; every egg kind of wave A was played; gold-bell no vowel, blocked, unknown (7 gems), list (Lili), duplicate, adding and removing slots all behave as spec 2.8.
+
+---
+
+### Task 23B: Meadow life, care free play and the parts PLACES uses
+
+The meadow hub is PLACES' scene, but it mounts the heartbeat's living layer: the nest, up to 12 babies and care free play (spec 2.5 "Care stations ... Brush, cuddle, treats, tricks, splash", spec 2.7 "at most 12 on screen"). PLACES also calls a few heartbeat helpers. This task provides them with the signatures below; the reconciliation table in Contracts lists where they differ from places.md's guesses.
+
+**Files:**
+- Create: `src/core/heartbeat/meadow.ts`, `src/core/eggs/breed.ts`, `src/core/eggs/index.ts`, `src/core/phonics/tray.ts`, `src/core/naming/review.ts`, `src/scenes/heartbeat/MeadowLife.svelte`, `src/scenes/heartbeat/HatchAndName.svelte`
+- Modify: `src/core/heartbeat/hatch.ts` (`rollBuildingHatch`), `src/core/actions/heartbeat.ts` (`hb.building.hatched`)
+- Test: `tests/heartbeat/meadow.test.ts`
+
+**Interfaces:**
+- Consumes: Tasks 4, 7, 8, 11, 13, 15, 17, 19, 23; LEARN's `content` from `src/core/content/static.ts` and `currentStep(l, c, strand)`; art ids `tool-brush`, `tool-treat`, `tool-heart` (C12 addition; the fallback draws a round badge).
+- Produces:
+
+```ts
+// meadow.ts
+export const MEADOW_MAX = 12;
+export type CareTool = 'brush' | 'treat' | 'heart';
+export const CARE_OF_TOOL: Record<CareTool, CareKind>;
+export const FOAL_LINE: Record<CareKind, string>;
+export function meadowBabies<T extends { id: string; order: number; favourite?: boolean }>(herd: T[], max?: number): T[];
+// eggs/breed.ts and eggs/index.ts
+export function breedForStep(step: string | null): BreedId;
+export function currentEggBreed(world: unknown, learner: unknown): BreedId;
+// phonics/tray.ts
+export function ownSlots(graphemes: string[], ctx: SpellCtx): boolean[];
+export function planTray(graphemes: string[], ctx: SpellCtx, scaffold: Scaffold, rng: Rng, blocked?: (gems: string[]) => boolean): string[];
+// naming/review.ts
+export function canReviewName(baby: { nameGems: string[] }, readable: Set<string>, firsts: number): boolean;
+// hatch.ts
+export function rollBuildingHatch(breed: BreedId, rng: Rng): HatchRoll;
+// actions: { type: 'hb.building.hatched'; baby: string; roll: HatchRoll; plot: string } -> egg.hatched with kind null and source 'building'
+// MeadowLife.svelte props: { onbabytouch?: (id: string) => void; ribbonMode?: boolean; ribbons?: Record<string, boolean>; ontieribbon?: (id: string) => void }
+// HatchAndName.svelte props: { breed: BreedId; source?: 'building'; plot: string; ondone: (babyId: string) => void }
+```
+
+PLACES' row naming uses `<Naming target={{ kind: 'row', row }} onnamed={(n) => ...} />` from `src/scenes/Naming.svelte` (Task 19) and reads `n.name`; places.md's `{ purpose, onnamed(name) }` guess maps to that.
+
+- [ ] **Step 1: Write the failing test**
+
+`tests/heartbeat/meadow.test.ts`:
+
+```ts
+import { describe, it, expect } from 'vitest';
+import { CARE_OF_TOOL, FOAL_LINE, MEADOW_MAX, meadowBabies } from '../../src/core/heartbeat/meadow.ts';
+import { breedForStep } from '../../src/core/eggs/breed.ts';
+import { ownSlots, planTray } from '../../src/core/phonics/tray.ts';
+import { canReviewName } from '../../src/core/naming/review.ts';
+import { rollBuildingHatch } from '../../src/core/heartbeat/hatch.ts';
+import { applyHeartbeat } from '../../src/core/actions/heartbeat.ts';
+import { heartbeatLines } from '../../src/core/heartbeat/lines.ts';
+import { makeRng } from '../../src/core/rng.ts';
+import { ctxAt } from '../naming/fixtures.ts';
+
+describe('meadow life', () => {
+  it('shows favourites first, then the newest, at most twelve', () => {
+    const herd = Array.from({ length: 20 }, (_, i) => ({ id: `b${i + 1}`, order: i + 1, favourite: i === 2 }));
+    const m = meadowBabies(herd);
+    expect(m).toHaveLength(MEADOW_MAX);
+    expect(m[0].id).toBe('b3');
+    expect(m[1].id).toBe('b20');
+  });
+  it('maps care tools to care kinds and every kind to a baby line', () => {
+    expect(CARE_OF_TOOL).toEqual({ brush: 'brush', treat: 'treat', heart: 'cuddle' });
+    const ids = new Set(heartbeatLines().map((l) => l.id));
+    for (const id of Object.values(FOAL_LINE)) expect(ids.has(id)).toBe(true);
+  });
+});
+
+describe('parts for places', () => {
+  it('gives the breed of the current egg step', () => {
+    expect(breedForStep('M10')).toBe('pebble');
+    expect(breedForStep('M03')).toBe('moon');
+    expect(breedForStep(null)).toBe('moon');
+  });
+  it('marks own slots and plans a tray from plain graphemes', () => {
+    const ctx = ctxAt('S12', ['S02', 'S03', 'S04']);
+    expect(ownSlots(['f', 'o', 'x'], ctx)).toEqual([true, true, true]);
+    expect(ownSlots(['b', 'ee'], ctxAt('S03', ['S02']))).toEqual([false, false]);
+    const tray = planTray(['h', 'a', 't'], ctx, 1, makeRng(1));
+    expect(tray).toEqual(expect.arrayContaining(['h', 'a', 't']));
+    expect(tray).toHaveLength(5);
+  });
+  it('allows name review for decodable names or names read before', () => {
+    expect(canReviewName({ nameGems: ['T', 'a', 'm'] }, new Set(['t', 'a', 'm']), 0)).toBe(true);
+    expect(canReviewName({ nameGems: ['L', 'i', 'l', 'y'] }, new Set(['l', 'i']), 0)).toBe(false);
+  });
+  it('hatches a building baby of the building breed without a learning result', () => {
+    const roll = rollBuildingHatch('bubble', makeRng(2));
+    expect(roll.breed).toBe('bubble');
+    expect(roll.traits.shiny).toBeUndefined();
+    expect(applyHeartbeat({ type: 'hb.building.hatched', baby: 'b9', roll, plot: 'bath-pond' }))
+      .toEqual([{ type: 'egg.hatched', baby: 'b9', kind: null, breed: 'bubble', colours: roll.colours, traits: roll.traits, source: 'building' }]);
+  });
+});
+```
+
+- [ ] **Step 2: Run the test to see it fail**
+
+Run: `npx vitest run tests/heartbeat/meadow.test.ts`
+Expected: FAIL, cannot resolve `meadow.ts`.
+
+- [ ] **Step 3: Write the logic**
+
+`src/core/heartbeat/meadow.ts`:
+
+```ts
+import type { CareKind } from './types.ts';
+
+export const MEADOW_MAX = 12; // spec 2.7 and 5.2: the meadow animates at most 12 babies
+export type CareTool = 'brush' | 'treat' | 'heart';
+export const CARE_OF_TOOL: Record<CareTool, CareKind> = { brush: 'brush', treat: 'treat', heart: 'cuddle' };
+export const FOAL_LINE: Record<CareKind, string> = {
+  brush: 'foal-cuddle', treat: 'foal-yum', cuddle: 'foal-cuddle', trick: 'foal-wee', splash: 'foal-wee', station: 'foal-wee', rollcall: 'foal-yawn',
+};
+
+export function meadowBabies<T extends { id: string; order: number; favourite?: boolean }>(herd: T[], max = MEADOW_MAX): T[] {
+  const newest = (a: T, b: T) => b.order - a.order;
+  return [...herd.filter((b) => b.favourite).sort(newest), ...herd.filter((b) => !b.favourite).sort(newest)].slice(0, max);
+}
+```
+
+`src/core/eggs/breed.ts`:
+
+```ts
+import { eggKindFor } from '../maths/eggs.ts';
+import { BREED_OF } from '../heartbeat/hatch.ts';
+import type { BreedId } from '../heartbeat/types.ts';
+
+export function breedForStep(step: string | null): BreedId {
+  const k = step ? eggKindFor(step) : null;
+  return k ? BREED_OF[k] : 'moon';
+}
+```
+
+`src/core/eggs/index.ts`:
+
+```ts
+import { content } from '../content/static.ts';
+import { currentStep } from '../learning/index.ts';
+import type { BreedId } from '../heartbeat/types.ts';
+import { breedForStep } from './breed.ts';
+
+export { breedForStep };
+// The herd circle of a row Building Day hatches a baby of her current egg kind (spec 2.4).
+export function currentEggBreed(_world: unknown, learner: unknown): BreedId {
+  return breedForStep(currentStep(learner as never, content, 'm'));
+}
+```
+
+`src/core/phonics/tray.ts`:
+
+```ts
+import type { Rng } from '../rng.ts';
+import type { Scaffold } from '../heartbeat/types.ts';
+import { giftSlots, type SpellCtx } from '../naming/gifts.ts';
+import { usualSound } from '../naming/sounds.ts';
+import { planNameTray } from '../naming/tray.ts';
+
+const split = (graphemes: string[]) => graphemes.map((g) => ({ g, ph: usualSound(g) ?? [] }));
+
+export function ownSlots(graphemes: string[], ctx: SpellCtx): boolean[] {
+  return giftSlots(split(graphemes), ctx).map((s) => s.own);
+}
+
+export function planTray(graphemes: string[], ctx: SpellCtx, scaffold: Scaffold, rng: Rng, blocked: (gems: string[]) => boolean = () => false): string[] {
+  return planNameTray({ slots: giftSlots(split(graphemes), ctx), scaffold, ctx, blocked, rng });
+}
+```
+
+`src/core/naming/review.ts`:
+
+```ts
+import { nameEligible } from '../heartbeat/rollcall.ts';
+
+export function canReviewName(baby: { nameGems: string[] }, readable: Set<string>, firsts: number): boolean {
+  return nameEligible(baby.nameGems, readable, firsts);
+}
+```
+
+Add to `hatch.ts`:
+
+```ts
+// Building eggs bring one breed each (spec 2.6). A building baby is not a checked hatch, so it is never shiny.
+export function rollBuildingHatch(breed: BreedId, rng: Rng): HatchRoll {
+  const r = rollHatch({ kind: 'moon', result: 'miss', golden: false, speckled: false, rng });
+  return { ...r, breed };
+}
+```
+
+Add to `HbAction` in `src/core/actions/heartbeat.ts` `| { type: 'hb.building.hatched'; baby: string; roll: HatchRoll; plot: string }` and the case:
+
+```ts
+    case 'hb.building.hatched':
+      return [{ type: 'egg.hatched', baby: a.baby, kind: null, breed: a.roll.breed, colours: a.roll.colours, traits: a.roll.traits, source: 'building' }];
+```
+
+- [ ] **Step 4: Run the test**
+
+Run: `npx vitest run tests/heartbeat/meadow.test.ts`
+Expected: PASS.
+
+- [ ] **Step 5: Write `MeadowLife.svelte` and `HatchAndName.svelte`**
+
+`src/scenes/heartbeat/MeadowLife.svelte`:
+
+```svelte
+<script lang="ts">
+  import { game } from '../../game.svelte.ts';
+  import { audio } from '../../audio/index.ts';
+  import { CARE_OF_TOOL, FOAL_LINE, meadowBabies, type CareTool } from '../../core/heartbeat/meadow.ts';
+  import { heartbeat } from './flow.svelte.ts';
+  import { draggable } from '../../ui/drag.ts';
+  import Unicorn from '../../art/Unicorn.svelte';
+  import ArtImg from './ArtImg.svelte';
+  import Moonflowers from './Moonflowers.svelte';
+
+  let { onbabytouch, ribbonMode = false, ribbons = {}, ontieribbon }:
+    { onbabytouch?: (id: string) => void; ribbonMode?: boolean; ribbons?: Record<string, boolean>; ontieribbon?: (id: string) => void } = $props();
+  const SPOTS: [number, number][] = [[300, 420], [700, 410], [880, 400], [420, 600], [640, 600], [1010, 470], [180, 400], [290, 240], [480, 240], [690, 240], [880, 230], [1010, 240]];
+  const TOOLS: CareTool[] = ['brush', 'treat', 'heart'];
+  const babies = $derived(meadowBabies(game.world.herd));
+  const babyEls: Record<string, HTMLElement> = {};
+  let trick = $state<string | null>(null);
+  const targets = () => babies.map((b) => ({ id: b.id, el: babyEls[b.id] })).filter((t) => t.el);
+
+  function tapBaby(id: string) {
+    if (ribbonMode) { ontieribbon?.(id); return; }
+    if (heartbeat.tapBaby(id)) return; // the moon's new name takes over
+    trick = id;
+    setTimeout(() => (trick = null), 900);
+    game.dispatch({ type: 'hb.care', baby: id, kind: 'trick' });
+    void audio.say(FOAL_LINE.trick);
+    onbabytouch?.(id);
+  }
+  function care(tool: CareTool, id: string | null) {
+    if (!id) return;
+    const kind = CARE_OF_TOOL[tool];
+    game.dispatch({ type: 'hb.care', baby: id, kind }); // the world fold caps care hearts at one per baby per visit
+    void audio.say(FOAL_LINE[kind]);
+  }
+</script>
+
+<div class="life">
+  <Moonflowers count={game.world.flowers} />
+  <button class="nest" data-touch aria-label="nest" onpointerup={() => { heartbeat.noteOtherActivity(); heartbeat.start(); }}>
+    <ArtImg id="nest" size={180} /><span class="egg"><ArtImg id="egg-moon" size={110} /></span>
+  </button>
+  {#each babies as b, i (b.id)}
+    <button class="baby" class:trick={trick === b.id} data-touch aria-label="baby {b.name ?? 'new'}" bind:this={babyEls[b.id]}
+      style:left="{SPOTS[i][0]}px" style:top="{SPOTS[i][1]}px" onpointerup={() => tapBaby(b.id)}>
+      <Unicorn baby={b} pose="stand" size={130} />
+      {#if ribbons[b.id]}<span class="ribbon" aria-hidden="true"></span>{/if}
+    </button>
+  {/each}
+  <div class="tools">
+    {#each TOOLS as t}
+      <span class="tool" data-touch aria-label="tool {t}" use:draggable={{ targets, ondrop: (id) => care(t, id) }}><ArtImg id="tool-{t}" size={88} /></span>
+    {/each}
+  </div>
+</div>
+
+<style>
+  .life { position: absolute; inset: 0; touch-action: none; }
+  .nest { position: absolute; left: 470px; top: 520px; width: 200px; height: 170px; background: none; border: 0; }
+  .nest .egg { position: absolute; left: 45px; top: -30px; animation: glow 2s ease-in-out infinite; }
+  .baby { position: absolute; width: 140px; height: 150px; background: none; border: 0; transform: translate(-50%, -50%); }
+  .baby.trick { animation: hop 0.45s 2; }
+  .ribbon { position: absolute; right: 10px; top: 20px; width: 28px; height: 28px; border-radius: 50%; background: #ff7fbf; border: 3px solid #e0559c; }
+  .tools { position: absolute; left: 24px; bottom: 24px; display: flex; gap: 16px; }
+  .tool { width: 96px; height: 96px; display: grid; place-items: center; background: #fff; border: 4px solid #c9b8ff; border-radius: 28px; touch-action: none; }
+  @keyframes hop { 50% { transform: translate(-50%, -62%) rotate(-8deg); } }
+  @keyframes glow { 50% { transform: scale(1.06); } }
+</style>
+```
+
+`src/scenes/heartbeat/HatchAndName.svelte`:
+
+```svelte
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { game } from '../../game.svelte.ts';
+  import { audio } from '../../audio/index.ts';
+  import { rollBuildingHatch } from '../../core/heartbeat/hatch.ts';
+  import type { BreedId } from '../../core/heartbeat/types.ts';
+  import { liveDeps } from './deps.ts';
+  import Naming from '../Naming.svelte';
+  import ArtImg from './ArtImg.svelte';
+
+  let { breed, source = 'building', plot, ondone }: { breed: BreedId; source?: 'building'; plot: string; ondone: (babyId: string) => void } = $props();
+  const deps = liveDeps({ place: 'building', strand: 's' });
+  const babyId = deps.uuid();
+  let phase = $state<'hatch' | 'name'>('hatch');
+  onMount(async () => {
+    game.dispatch({ type: 'hb.building.hatched', baby: babyId, roll: rollBuildingHatch(breed, deps.rng), plot });
+    await audio.say('lumi-hatching');
+    await audio.sfx('hatch');
+    await audio.sfx('fanfare');
+    await audio.say('lumi-baby');
+    phase = 'name';
+  });
+</script>
+
+{#if phase === 'hatch'}
+  <div class="circle" aria-label="herd circle"><span class="egg"><ArtImg id="egg-moon" size={220} /></span></div>
+{:else}
+  <Naming target={{ kind: 'baby', baby: babyId }} onnamed={() => ondone(babyId)} />
+{/if}
+
+<style>
+  .circle { position: absolute; inset: 0; display: grid; place-items: center; }
+  .egg { animation: wob 0.45s infinite; }
+  @keyframes wob { 50% { transform: rotate(5deg); } }
+</style>
+```
+
+`source` is accepted for PLACES' call site and is always `'building'`.
+
+- [ ] **Step 6: Type check and test**
+
+Run: `npx vitest run tests/heartbeat && npm run check`
+Expected: PASS; no type errors in this task's files.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/core/heartbeat/meadow.ts src/core/eggs/breed.ts src/core/eggs/index.ts src/core/phonics/tray.ts src/core/naming/review.ts src/core/heartbeat/hatch.ts src/core/actions/heartbeat.ts src/scenes/heartbeat/MeadowLife.svelte src/scenes/heartbeat/HatchAndName.svelte tests/heartbeat/meadow.test.ts
+git commit -m "Add meadow life with care free play, and the hatch, tray and review helpers places uses"
+```
+
+**Acceptance:** tests pass; in the meadow (PLACES' scene with `MeadowLife` mounted) a tap on the nest starts the heartbeat, a tap on a baby plays a trick, dragging the brush, a treat or the heart onto a baby gives a care act, and never more than 12 babies are drawn.
 
 ---
 
@@ -7246,11 +8057,11 @@ git commit -m "Add berry and snow eggs"
 
 **Files:**
 - Create: `src/scenes/heartbeat/egg-choice.ctrl.ts`, `src/scenes/EggChoice.svelte`
-- Modify: `src/scenes/heartbeat/flow.svelte.ts` (offer the choice, carry the pick to the nest), `src/scenes/Hatch.svelte` (golden and speckled lines), `src/core/heartbeat/lines.ts`, `content/lines/heartbeat.json`, `src/scenes/heartbeat/test-hooks.ts` (an `egg-choice` hook)
+- Modify: `src/scenes/heartbeat/learn-bridge.ts` (`eggOffer`), `src/scenes/heartbeat/flow.svelte.ts` (offer the choice, carry the pick to the nest), `src/scenes/Hatch.svelte` (golden and speckled lines), `src/core/heartbeat/lines.ts`, `content/lines/heartbeat.json`, `src/scenes/heartbeat/test-hooks.ts` (an `egg-choice` hook)
 - Test: `tests/heartbeat/egg-choice.test.ts`
 
 **Interfaces:**
-- Consumes: `nextEgg(plan)` (C10); `world.announced` (C5); Task 16 (`egg-choice` stage).
+- Consumes: LEARN's `goldenEgg(ctx, rng): Pick | null` (release B) and `serveEgg` through `learn-bridge.ts`; `world.announced` (C5; PLACES exposes it as `isAnnounced(world.places, id)`, which the integrator wires into `game.world.announced`); Task 16 (`egg-choice` stage).
 - Produces:
 
 ```ts
@@ -7334,12 +8145,26 @@ export class EggChoiceCtrl {
 }
 ```
 
-In `flow.svelte.ts`: add `import { nextEgg } from '../../core/planner/index.ts';` and `import { type EggOffer, type EggPick, offerChoice, plainEgg } from './egg-choice.ctrl.ts';`, a module variable `let offer: EggOffer | null = null; let pick: EggPick | null = null;`, and change:
+Add to `learn-bridge.ts`:
+
+```ts
+import { goldenEgg } from '../../core/planner/index.ts';
+import type { EggOffer } from './egg-choice.ctrl.ts';
+
+export function eggOffer(rng: Rng): EggOffer | null {
+  const speckled = serveEgg(rng).served;
+  if (!speckled) return null;
+  const g = goldenEgg(game.planContext, rng) as Pick | null;
+  return { speckled, golden: g ? servedFromPick(g, new Map()) : null };
+}
+```
+
+In `flow.svelte.ts`: add `import { eggOffer } from './learn-bridge.ts';` and `import { type EggOffer, type EggPick, offerChoice, plainEgg } from './egg-choice.ctrl.ts';`, a module variable `let offer: EggOffer | null = null; let pick: EggPick | null = null;`, and change:
 
 ```ts
   start(): void {
     const unnamed = game.world.herd.find((b) => b.name === null);
-    offer = unnamed ? null : nextEgg(game.plan);
+    offer = unnamed ? null : eggOffer(game.rng);
     pick = plainEgg(game.world.announced, offer);
     send({ s: 'start', unnamedBaby: unnamed?.id ?? null, offerChoice: offerChoice(game.world.announced, offer) });
   },
@@ -7359,7 +8184,7 @@ and in `route()`: `case 'egg': game.go('nest', pick ? { served: pick.served, gol
   import { liveDeps } from './heartbeat/deps.ts';
   import { exposeCtrl } from './heartbeat/test-hooks.ts';
   import ArtImg from './heartbeat/ArtImg.svelte';
-  const ctrl = new EggChoiceCtrl(heartbeat.offer!, liveDeps());
+  const ctrl = new EggChoiceCtrl(heartbeat.offer!, liveDeps({ place: 'nest', strand: 'm' }));
   onMount(async () => { exposeCtrl('egg-choice', ctrl); await ctrl.begin(); });
 </script>
 
@@ -7413,7 +8238,7 @@ Expected: flows pass.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/scenes/heartbeat/egg-choice.ctrl.ts src/scenes/EggChoice.svelte src/scenes/heartbeat/flow.svelte.ts src/scenes/Hatch.svelte src/scenes/heartbeat/test-hooks.ts src/core/heartbeat/lines.ts content/lines/heartbeat.json flows/heartbeat.sh tests/heartbeat/egg-choice.test.ts
+git add src/scenes/heartbeat/egg-choice.ctrl.ts src/scenes/EggChoice.svelte src/scenes/heartbeat/learn-bridge.ts src/scenes/heartbeat/flow.svelte.ts src/scenes/Hatch.svelte src/scenes/heartbeat/test-hooks.ts src/core/heartbeat/lines.ts content/lines/heartbeat.json flows/heartbeat.sh tests/heartbeat/egg-choice.test.ts
 git commit -m "Add the golden egg and the two-egg choice"
 ```
 
@@ -7516,7 +8341,7 @@ Expected: FAIL, cannot resolve `phrases.ts`.
 
 ```ts
 import { type Rng, shuffle } from '../rng.ts';
-import type { WordEntry } from '../content/types.ts';
+import type { WordEntry } from './types.ts';
 import type { Served, StationId } from './types.ts';
 
 export type Colour = 'red' | 'pink' | 'blue' | 'green' | 'yellow' | 'purple';
@@ -7670,7 +8495,7 @@ describe('PhraseCtrl', () => {
     expect(await c.act({ kind: 'give', item: wrong })).toBe('miss');
     const right = w.basket.find((i) => i.word === 'hat' && i.colour === 'pink' && i.size === 'tiny')!;
     expect(await c.act({ kind: 'give', item: right })).toBe('ok');
-    expect(f.actions[0]).toMatchObject({ result: 'helped', error: 'other' });
+    expect(f.actions[0]).toMatchObject({ result: 'miss', error: 'other' });
   });
 });
 ```
@@ -7875,7 +8700,7 @@ import { Year1Ctrl } from '../../src/scenes/heartbeat/year1.ctrl.ts';
 import { fakeDeps } from './fakes.ts';
 
 describe('Year1Ctrl', () => {
-  it('logs a helped result after giving the bow to the teller first', async () => {
+  it('logs a miss after giving the bow to the teller first', async () => {
     const f = fakeDeps();
     const w = buildAsking({ served: s('R33', 'bow'), asks: new Map([['bow', bow]]), babies: ['a', 'b', 'c'], rng: makeRng(2) })!;
     const c = new Year1Ctrl(w, f.deps);
@@ -7883,7 +8708,7 @@ describe('Year1Ctrl', () => {
     expect(await c.give(w.speakers.find((x) => x.mode === 'tell')!.baby)).toBe('miss');
     expect(c.lastFunny).toBe('tell');
     expect(await c.give(w.speakers.find((x) => x.mode === 'ask')!.baby)).toBe('ok');
-    expect(f.actions[0]).toMatchObject({ type: 'hb.wish.done', word: 'bow', result: 'helped' });
+    expect(f.actions[0]).toMatchObject({ type: 'hb.wish.done', word: 'bow', result: 'miss' });
     expect(f.said).toContain('word-can-i-have-a-bow');
   });
 });
@@ -8083,6 +8908,8 @@ git commit -m "Read the parent switch for skipping the first wish after three eg
 | 2.2 naming routes, first wish with basket and care stations, one-or-many wishes, extra eggs keep the wish | 5, 6, 19, 20 |
 | 2.2 move-in line, door glow, door visits by range, every third baby once secure | 7, 21 |
 | 2.2 measured risk switch | 16, 29 |
+| 2.5 care free play (brush, treats, cuddles, tricks), 2.7 at most 12 babies in the meadow | 23B |
+| 2.4 herd circle baby of the building breed, named | 23B |
 | 2.5 nest, naming, care station, stalls and roll-call mistakes | 2, 14, 19, 20, 21, 22 |
 | 2.6 egg kinds and breeds (moon, nest, two-stone, blanket; berry, snow; golden, speckled) | 2, 4, 24, 25 |
 | 2.7 stalls in rows of ten, plaques, named rows shown, one star per baby, sky unicorns | 7, 8, 21, 22 |
