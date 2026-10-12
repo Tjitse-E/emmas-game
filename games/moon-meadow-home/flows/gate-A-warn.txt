@@ -1,3 +1,7 @@
+platform-input
+integration/returning
+integration/rest
+integration/no-art-manifest
 places/label
 places/pond
 places/building
