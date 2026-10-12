@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from art import paths, pipeline
 
@@ -195,6 +195,50 @@ class PipelineTest(unittest.TestCase):
         with Image.open(paths.PUBLIC_ART / 'bg/bg-meadow.webp') as im:
             self.assertEqual(im.size, (1770, 1230))
         self.assertEqual(self.verdicts('bg-a'), {'bg-meadow': 'pending'})
+
+    def test_sprite_derive_and_manifest(self):
+        from art.tests.test_regions import toy_unicorn
+        raw = paths.RAW / 'moon-baby.png'
+        raw.parent.mkdir(parents=True)
+        flat = Image.new('RGB', toy_unicorn().size, (255, 255, 255))
+        flat.paste(toy_unicorn(), mask=toy_unicorn().getchannel('A'))
+        flat.save(raw)
+        (paths.LISTS / 'breeds.txt').write_text('moon | A | gold | none\n')
+        code, out = self.run_cmd('sprite', '--breed', 'moon', '--stage', 'baby', '--source', str(raw))
+        self.assertEqual(code, 0, out)
+        meta = json.loads((paths.META / 'unicorn-moon-baby.json').read_text())['unicorns']['moon.baby']
+        self.assertEqual(meta['flat'], 'unicorns/moon-baby-flat.webp')
+        self.assertTrue((paths.SOURCES / 'moon-baby.webp').exists())
+        self.assertTrue((paths.WORK / 'contact/unicorn-moon-baby-anchors.png').exists())
+        self.assertEqual(self.verdicts('unicorn-moon-baby'), {'moon.baby': 'pending'})
+
+        code, out = self.run_cmd('derive')
+        self.assertEqual(code, 0, out)
+        self.assertTrue((paths.PUBLIC_ART / 'ui/sky-unicorn.webp').exists())
+
+        self.set_verdicts('unicorn-moon-baby', **{'moon.baby': 'ok'})
+        code, out = self.run_cmd('manifest')
+        self.assertEqual(code, 0, out)
+        m = json.loads((paths.PUBLIC_ART / 'manifest.json').read_text())
+        self.assertIn('moon.baby', m['unicorns'])
+        self.assertEqual(m['patterns'], {'speckle': 'ui/speckle.webp'})
+        self.assertEqual(m['pictures']['ui-sky-unicorn']['source'], 'derived')
+
+    def test_sprite_refuses_drifted_colours(self):
+        raw = paths.RAW / 'pebble-baby.png'
+        raw.parent.mkdir(parents=True)
+        im = Image.new('RGB', (300, 300), (255, 255, 255))
+        ImageDraw.Draw(im).ellipse([40, 40, 260, 260], fill=(240, 200, 90), outline=(150, 100, 30), width=4)
+        im.save(raw)
+        code, out = self.run_cmd('sprite', '--breed', 'pebble', '--stage', 'baby')
+        self.assertEqual(code, 1)
+        self.assertIn('colours drifted, regenerate', out)
+
+    def test_placeholder(self):
+        code, out = self.run_cmd('placeholder')
+        self.assertEqual(code, 0, out)
+        m = json.loads((paths.PUBLIC_ART / 'placeholder/manifest.json').read_text())
+        self.assertEqual(sorted(m['unicorns']), ['moon.baby', 'moon.foal', 'pebble.baby'])
 
 
 if __name__ == '__main__':

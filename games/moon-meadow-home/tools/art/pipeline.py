@@ -14,9 +14,10 @@ from dataclasses import asdict
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
-from . import checks, codex_gen, contact, imageops, lists, manifest, paths, prompts, review, sheets, vision
+from . import (checks, codex_gen, contact, derive, imageops, lists, manifest, paths, placeholder, prompts, regions, review,
+               rig, sheets, vision)
 from .lists import Entry
 
 SQUARE_KINDS = ('word', 'pin', 'ui')
@@ -539,6 +540,134 @@ def cmd_status(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- unicorns (Task A8)
+
+CHECK_PALETTES = [  # the four recolours of Task A7: canonical, then three v2 palettes
+    regions.CANON,
+    {'body': (255, 255, 255), 'mane': (79, 195, 255), 'mane2': (255, 191, 63)},
+    {'body': (214, 241, 255), 'mane': (157, 123, 255), 'mane2': (255, 143, 107)},
+    {'body': (255, 243, 196), 'mane': (63, 214, 154), 'mane2': (255, 95, 143)},
+]
+
+
+def sprite_source(breed: str, stage: str, given: str | None) -> Path:
+    if given:
+        return Path(given)
+    if (breed, stage) == ('moon', 'baby'):
+        return paths.STYLE_REF
+    return paths.RAW / f'{breed}-{stage}.png'
+
+
+def horn_of(breed: str) -> str:
+    try:
+        return next((b['horn'] for b in lists.load_breeds() if b['id'] == breed), 'gold')
+    except FileNotFoundError:
+        return 'gold'
+
+
+def unicorn_contact(rgba: Image.Image, entry: dict, horn: str, key: str) -> list[Path]:
+    """A recolour sheet with the four check palettes and an anchor sheet on the lg frame."""
+    frame = rig._frame(rgba)
+    cls = regions.classify(frame)
+    layers = regions.extract_layers(frame, cls)
+    layers['fixed'] = regions.horn_variant(layers['fixed'], cls, horn)
+    tiles = [regions.recolour(layers, p) for p in CHECK_PALETTES]
+    w, h = tiles[0].size
+    sheet = Image.new('RGBA', (w * 2, h * 2), (255, 255, 255, 255))
+    for i, t in enumerate(tiles):
+        sheet.alpha_composite(t, ((i % 2) * w, (i // 2) * h))
+    k = min(1.0, 1400 / sheet.width)
+    out = contact_dir()
+    out.mkdir(parents=True, exist_ok=True)
+    rec = out / f'unicorn-{key.replace(".", "-")}-recolour.png'
+    sheet.resize((round(sheet.width * k), round(sheet.height * k)), Image.LANCZOS).save(rec)
+    lg = tiles[0].resize((entry['w'], entry['h']), Image.LANCZOS)
+    board = Image.new('RGBA', lg.size, (255, 255, 255, 255))
+    board.alpha_composite(lg)
+    d = ImageDraw.Draw(board)
+    x, y, s, _ = entry['headBox']
+    d.rectangle([x, y, x + s, y + s], outline=(40, 120, 220, 255), width=2)
+    for part in entry['renditions']['lg']['parts']:
+        px, py, pw, ph = part['box']
+        d.rectangle([px, py, px + pw, py + ph], outline=(160, 160, 160, 255), width=1)
+    for name, (ax, ay) in entry['anchors'].items():
+        d.ellipse([ax - 6, ay - 6, ax + 6, ay + 6], fill=(220, 30, 60, 255), outline=(255, 255, 255, 255), width=2)
+        d.text((ax + 8, ay - 6), name, fill=(20, 20, 20, 255))
+    anc = out / f'unicorn-{key.replace(".", "-")}-anchors.png'
+    board.save(anc)
+    return [rec, anc]
+
+
+def cmd_sprite(args) -> int:
+    breed, stage = args.breed, args.stage
+    key = f'{breed}.{stage}'
+    src = sprite_source(breed, stage, args.source)
+    if not src.exists():
+        print(f'{key}: no source picture at {src}')
+        return 1
+    original = Image.open(src)
+    rgba = imageops.unmatte_white(original)
+    horn = horn_of(breed)
+    overrides = _read_json(paths.LISTS / 'anchor-overrides.json', {})
+    try:
+        entry = rig.build_sprite(rgba, breed, stage, horn, paths.PUBLIC_ART / 'unicorns', overrides)
+    except rig.DriftError as e:
+        print(f'{key}: colours drifted, regenerate ({e})')
+        return 1
+    _write_json(paths.META / f'unicorn-{breed}-{stage}.json', {'unicorns': {key: entry}})
+    imageops.save_webp(original.convert('RGBA'), paths.SOURCES / f'{breed}-{stage}.webp', lossless=True)
+    sheets_made = unicorn_contact(rgba, entry, horn, key)
+    review.init(f'unicorn-{breed}-{stage}', [key], paths.REVIEW)
+    shares = regions.class_shares(regions.classify(rig._frame(rgba)))
+    print(f'{key}: {entry["w"]} x {entry["h"]}, horn {horn}, shares '
+          + ', '.join(f'{k} {v:.2f}' for k, v in shares.items()))
+    for p in sheets_made:
+        print(f'look at {p.relative_to(paths.GAME) if p.is_relative_to(paths.GAME) else p}')
+    return 0
+
+
+def cmd_derive(args) -> int:
+    ui = paths.PUBLIC_ART / 'ui'
+    derive.speckle_pattern(ui / 'speckle.webp')
+    meta: dict = {'pictures': {}, 'patterns': {'speckle': 'ui/speckle.webp'}}
+    sil = paths.PUBLIC_ART / 'unicorns' / 'moon.baby.sil.webp'
+    if sil.exists():
+        out = derive.sky_unicorn(Image.open(sil).convert('RGBA'), ui / 'sky-unicorn.webp')
+        w, h = Image.open(out).size
+        meta['pictures']['ui-sky-unicorn'] = {'src': 'ui/sky-unicorn.webp', 'w': w, 'h': h, 'kind': 'ui', 'pack': 'core',
+                                              'source': 'derived'}
+    else:
+        print('no moon.baby silhouette yet: run sprite --breed moon --stage baby first for the sky unicorn')
+    pins = 0
+    for mf in sorted(paths.META.glob('*.json')) if paths.META.exists() else []:
+        if mf.stem == 'derived':
+            continue
+        data = json.loads(mf.read_text())
+        changed = False
+        for e in data.get('pictures', {}).values():
+            f = paths.PUBLIC_ART / e['src']
+            if e.get('kind') != 'pin' or not f.exists():
+                continue
+            sil_src = e['src'].rsplit('.', 1)[0] + '-sil.webp'
+            imageops.save_webp(derive.silhouette(Image.open(f)), paths.PUBLIC_ART / sil_src, quality=85)
+            if e.get('sil') != sil_src:
+                e['sil'] = sil_src
+                changed = True
+            pins += 1
+        if changed:
+            _write_json(mf, data)
+    _write_json(paths.META / 'derived.json', meta)
+    print(f'speckle, {len(meta["pictures"])} derived pictures, {pins} pin silhouettes')
+    return 0
+
+
+def cmd_placeholder(args) -> int:
+    out = paths.PUBLIC_ART / 'placeholder'
+    m = placeholder.build(out)
+    print(f'{(out / "manifest.json").relative_to(paths.GAME)}: {len(m["unicorns"])} placeholder unicorns')
+    return 0
+
+
 def cmd_later(task: str):
     def run(args) -> int:
         print(f'{args.command} is added in {task}')
@@ -576,11 +705,12 @@ def parser() -> argparse.ArgumentParser:
     s = add('backgrounds', cmd_backgrounds, batch, wave, ids, par, cbin)
     s.add_argument('--use-early', action='store_true',
                    help='start from the early style pictures in art-src/ instead of a new Codex run')
-    s = add('sprite', cmd_later('Task A8'))
-    s.add_argument('--breed')
-    s.add_argument('--stage')
-    s.add_argument('--source')
-    add('derive', cmd_later('Task A8'))
+    s = add('sprite', cmd_sprite)
+    s.add_argument('--breed', required=True)
+    s.add_argument('--stage', required=True, choices=('baby', 'foal'))
+    s.add_argument('--source', help='picture to rig (default: the style reference for moon baby, else art-src/raw/<breed>-<stage>.png)')
+    add('derive', cmd_derive)
+    add('placeholder', cmd_placeholder)
     s = add('manifest', cmd_manifest)
     s.add_argument('--strict', action='store_true')
     add('check-all', cmd_check_all)
