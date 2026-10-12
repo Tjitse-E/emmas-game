@@ -45,13 +45,22 @@ def build(meta_dir: Path, review_dir: Path, public_art: Path, rig_mode: str, str
                 if prev is not None and prev != entry:
                     raise ManifestError(f'{key} differs between batches')
                 data[section][key] = entry
-        for single in ('lumi', 'patterns'):
-            if meta.get(single):
-                data[single] = meta[single]
+        if meta.get('lumi'):
+            # Queen Lumi is a Codex picture too: she waits for an ok in review/lumi.json like any other.
+            if verdicts.get('lumi') == 'ok':
+                for f in (meta['lumi']['face'], meta['lumi']['mouth']):
+                    if not (public_art / f).exists():
+                        raise ManifestError(f'{batch}: lumi: file {f} does not exist')
+                data['lumi'] = meta['lumi']
+            else:
+                missing.append('lumi')
+        if meta.get('patterns'):
+            data['patterns'] = meta['patterns']
     for section in SECTIONS:
         data[section] = dict(sorted(data[section].items()))
     # An id redone in a later batch (B-r1) is in; only ids that no batch has ready count as left out.
-    left_out = sorted(set(missing) - {k for section in SECTIONS for k in data[section]})
+    ready = {k for section in SECTIONS for k in data[section]} | ({'lumi'} if data['lumi'] else set())
+    left_out = sorted(set(missing) - ready)
     if strict and left_out:
         raise ManifestError('left out: ' + ', '.join(left_out))
     return data, left_out
