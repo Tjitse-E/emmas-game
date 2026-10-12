@@ -1,0 +1,60 @@
+{
+ "pictures": {
+  "item-stall-bed": {
+   "src": "items/item-stall-bed.webp",
+   "w": 311,
+   "h": 360,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-straw-pile": {
+   "src": "items/item-straw-pile.webp",
+   "w": 320,
+   "h": 163,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-sleep-blanket": {
+   "src": "items/item-sleep-blanket.webp",
+   "w": 320,
+   "h": 199,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-manger": {
+   "src": "items/item-manger.webp",
+   "w": 240,
+   "h": 162,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-hay-bundle": {
+   "src": "items/item-hay-bundle.webp",
+   "w": 183,
+   "h": 200,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-food-tray": {
+   "src": "items/item-food-tray.webp",
+   "w": 320,
+   "h": 208,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-cup-nest": {
+   "src": "items/item-cup-nest.webp",
+   "w": 360,
+   "h": 129,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  }
+ }
+}

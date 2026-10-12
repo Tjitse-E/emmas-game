@@ -1,0 +1,116 @@
+{
+ "batch": "next-a",
+ "source": "next",
+ "sheets": [
+  {
+   "id": "next-a-01",
+   "cols": 3,
+   "rows": 3,
+   "ids": [
+    "item-stall-bed",
+    "item-straw-pile",
+    "item-sleep-blanket",
+    "item-manger",
+    "item-hay-bundle",
+    "item-food-tray",
+    "item-cup-nest"
+   ],
+   "descs": [
+    "a single open wooden stall seen from the front, taller than wide: two low wooden side walls, a plain wooden back wall and a soft bed of golden straw on the floor, nothing inside, no door, no sign",
+    "a low wide heap of soft golden straw seen from the front, much wider than tall",
+    "a soft pastel lilac blanket with little cream stars, draped in a gentle rounded hump as if over something small and sleeping, seen from the side, nothing peeking out",
+    "a small wooden manger trough on short legs, empty, seen from the front",
+    "a small tied bundle of golden hay with a red string around the middle",
+    "a round wooden tray with a soft pastel checked cloth on it, empty, seen from slightly above",
+    "a long shallow woven twig nest tray, about three times wider than tall, empty, seen from the front"
+   ],
+   "grey": false
+  }
+ ],
+ "entries": {
+  "item-stall-bed": {
+   "id": "item-stall-bed",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 360,
+   "desc": "a single open wooden stall seen from the front, taller than wide: two low wooden side walls, a plain wooden back wall and a soft bed of golden straw on the floor, nothing inside, no door, no sign",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  },
+  "item-straw-pile": {
+   "id": "item-straw-pile",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 320,
+   "desc": "a low wide heap of soft golden straw seen from the front, much wider than tall",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  },
+  "item-sleep-blanket": {
+   "id": "item-sleep-blanket",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 320,
+   "desc": "a soft pastel lilac blanket with little cream stars, draped in a gentle rounded hump as if over something small and sleeping, seen from the side, nothing peeking out",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  },
+  "item-manger": {
+   "id": "item-manger",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 240,
+   "desc": "a small wooden manger trough on short legs, empty, seen from the front",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  },
+  "item-hay-bundle": {
+   "id": "item-hay-bundle",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 200,
+   "desc": "a small tied bundle of golden hay with a red string around the middle",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  },
+  "item-food-tray": {
+   "id": "item-food-tray",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 320,
+   "desc": "a round wooden tray with a soft pastel checked cloth on it, empty, seen from slightly above",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  },
+  "item-cup-nest": {
+   "id": "item-cup-nest",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 360,
+   "desc": "a long shallow woven twig nest tray, about three times wider than tall, empty, seen from the front",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  }
+ }
+}
