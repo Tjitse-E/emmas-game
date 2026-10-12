@@ -1,6 +1,7 @@
 // Naming fixtures: a spelling ladder in plain graphemes, a small name bank and a blocklist in learning's shape (R23).
 import type { NameEntry } from '../../src/core/heartbeat/types.ts';
 import type { RawBlocklist } from '../../src/core/naming/blocklist.ts';
+import { makeSpellCtx, type SpellCtx } from '../../src/core/naming/gifts.ts';
 
 export const S_LADDER: { id: string; items: string[] }[] = [
   { id: 'S01', items: [] },
@@ -70,3 +71,8 @@ export const BLOCK_FILE: RawBlocklist = {
     { w: 'ass', level: 'rude', lang: 'en' }, { w: 'kut', level: 'rude', lang: 'nl' }, { w: 'lul', level: 'rude', lang: 'nl' },
   ],
 };
+
+/** current: the step served; passed: steps passed or placed. */
+export function ctxAt(current: string, passed: string[] = []): SpellCtx {
+  return makeSpellCtx(S_LADDER, (s) => (s === current ? 'current' : passed.includes(s) ? 'passed' : 'locked'), current);
+}
