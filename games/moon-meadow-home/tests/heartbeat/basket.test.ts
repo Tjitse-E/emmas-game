@@ -70,3 +70,22 @@ describe('judgeGive', () => {
     expect(judgeGive(W('pan'), one('map'), get)).toEqual({ ok: false, error: 'other', funny: 'wrong-thing' });
   });
 });
+
+describe('feeding baskets (docs/v3/next/plan.md F2)', async () => {
+  const { content } = await import('../../src/core/content/static.ts');
+  const { wordEntries } = await import('../../src/scenes/heartbeat/learn-bridge.ts');
+  const { foodPool, isUnicornFood, withoutLookAlikes } = await import('../../src/core/heartbeat/feed.ts');
+  const words = wordEntries(content);
+  it('a food-only pool gives a basket of food only', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const rng = makeRng(seed);
+      const pool = withoutLookAlikes(foodPool(words.values()), 'peach', rng);
+      const b = planBasket({ target: words.get('peach')!, size: 6, pool, rng })!;
+      expect(b).toHaveLength(6);
+      expect(b.every((i) => isUnicornFood(i.word))).toBe(true);
+      const p = planPluralBasket({ target: words.get('peaches')!, scaffold: 3, pool, get: (w) => words.get(w), rng })!;
+      expect(p.every((i) => isUnicornFood(i.word))).toBe(true);
+      expect(p.filter((i) => i.word === 'peach')).toHaveLength(2);
+    }
+  });
+});

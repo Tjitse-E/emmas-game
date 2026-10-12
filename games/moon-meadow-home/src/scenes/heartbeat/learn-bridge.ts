@@ -1,7 +1,7 @@
 // The only file of the heartbeat scenes that talks to the learning engine and the planner (Task 17B).
 // The top half is pure (content views, picks to served items, result logs) and unit tested. createBridge()
 // wraps the live calls; deps.ts builds the one bridge the scenes use from the store.
-import { carrierKey, learnResultPayload, nextEgg, nextItem, nextNameReviews, shouldVisitDoor, spellingShareLow, visitStats } from '../../core/planner/index.ts';
+import { carrierKey, learnResultPayload, nextEgg, nextItem, nextRack, nextNameReviews, shouldVisitDoor, spellingShareLow, visitStats } from '../../core/planner/index.ts';
 import type { ItemRequest, Outcome, Pick, PlanContext } from '../../core/planner/index.ts';
 import { currentStep, isSecure, stepStatus } from '../../core/learning/index.ts';
 import type { Learner } from '../../core/learning/index.ts';
@@ -12,8 +12,9 @@ import type { Rng } from '../../core/rng.ts';
 import type { LearnLog } from '../../core/actions/heartbeat.ts';
 import type { NameEntry, Scaffold, Served, Source, StationId, StepState, Strand, WordEntry } from '../../core/heartbeat/types.ts';
 import { STATIONS } from '../../core/heartbeat/wish.ts';
+import { isUnicornFood } from '../../core/heartbeat/feed.ts';
 
-export type HbSlot = 'wish' | 'naming' | 'door' | 'rollcall-door';
+export type HbSlot = 'wish' | 'naming' | 'door' | 'rollcall-door' | 'feed' | 'manger';
 export type { Outcome };
 
 const SOURCE: Record<string, Source> = {
@@ -44,15 +45,17 @@ export function wordEntries(c: Content): Map<string, WordEntry> {
     const gr = w.gpcs.map((id) => gpcText(c, id));
     const station = w.kind === 'station' && (STATIONS as string[]).includes(w.w) ? (w.w as StationId) : undefined;
     const pair = pairOf.get(w.w);
+    const food = (w.tags ?? []).includes('food') && isUnicornFood(w.w);
     out.set(w.w, {
       word: w.w, gr, step: w.rStep ?? '', picture: w.pic ?? '', clip: w.clip, basket: w.kind === 'thing' && !!w.pic,
       ...(w.plural ? { plural: w.plural.w } : {}), ...(station ? { station } : {}),
       ...(pair ? { pair: pair.word, pairTag: pair.tag } : {}), ...(w.heart?.length ? { heart: w.heart } : {}),
+      ...(food ? { food: true as const } : {}),
     });
     if (w.plural && w.pluralClip && !c.words[w.plural.w]) {
       out.set(w.plural.w, {
         word: w.plural.w, gr: [...gr, `-${w.plural.ending}`], step: 'R19', picture: w.pic ?? '', clip: w.pluralClip,
-        one: w.w, ending: `-${w.plural.ending}` as '-s' | '-es', basket: false,
+        one: w.w, ending: `-${w.plural.ending}` as '-s' | '-es', basket: false, ...(food ? { food: true as const } : {}),
       });
     }
   }
@@ -115,6 +118,9 @@ export const REQUESTS: Record<HbSlot, ItemRequest> = {
   naming: { strand: 's', moments: ['naming-bells', 'naming-garden', 'first-sound'] as MomentKind[], place: 'naming' },
   door: { strand: 'm', moments: ['door-visit'] as MomentKind[], place: 'stalls' },
   'rollcall-door': { strand: 'm', moments: ['roll-call-door'] as MomentKind[], place: 'goodnight' },
+  // 1.0.1 (docs/v3/next/plan.md F2, N12): a hungry wish in the meadow and a manger wish in the stable read food words.
+  feed: { strand: 'r', moments: ['wish', 'one-or-many'] as MomentKind[], place: 'feed', tags: ['food'] },
+  manger: { strand: 'r', moments: ['wish', 'one-or-many'] as MomentKind[], place: 'manger', tags: ['food'] },
 };
 
 export type BridgeSource = { planContext(): PlanContext; readonly learner: unknown; readonly content: unknown };
@@ -155,6 +161,13 @@ export function createBridge(src: BridgeSource) {
     serveEgg(rng: Rng): { kind: EggKind; served: Served | null } {
       const offer = nextEgg(src.planContext(), rng);
       return { kind: offer.kind, served: offer.pick ? servedFromPick(offer.pick, words(), c()) : null };
+    },
+    /** The hay rack's maths pick (docs/v3/next/plan.md 3.1), or null when nothing with a hay-rack moment is servable. */
+    rack(rng: Rng): { pick: Pick; served: Served } | null {
+      const p = nextRack(src.planContext(), rng);
+      if (!p) return null;
+      const s = servedFromPick(p, words(), c());
+      return s ? { pick: p, served: s } : null;
     },
     stepStatusOf(step: string): StepState {
       return c().steps[step]?.loaded ? stepStatus(l(), c(), step) : 'locked';

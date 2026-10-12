@@ -80,3 +80,50 @@ describe('learn bridge', () => {
     expect(readLadder(c)).toEqual([{ id: 'R05', items: ['h'] }, { id: 'R19', items: ['-s'] }]);
   });
 });
+
+describe('food words (docs/v3/next/plan.md F2)', async () => {
+  const { content } = await import('../../src/core/content/static.ts');
+  const { REQUESTS } = await import('../../src/scenes/heartbeat/learn-bridge.ts');
+  const real = wordEntries(content);
+  it('marks unicorn foods and their plurals, and nothing else', () => {
+    expect(real.get('peach')?.food).toBe(true);
+    expect(real.get('peaches')?.food).toBe(true);
+    expect(real.get('tin')?.food).toBeUndefined();
+    expect(real.get('burger')?.food).toBeUndefined();
+    expect(real.get('hat')?.food).toBeUndefined();
+  });
+  it('asks the planner for food words when feeding', () => {
+    expect(REQUESTS.feed).toMatchObject({ strand: 'r', place: 'feed', tags: ['food'], moments: ['wish', 'one-or-many'] });
+    expect(REQUESTS.manger).toMatchObject({ place: 'manger', tags: ['food'] });
+  });
+});
+
+describe('the planner serves food words to feeding (docs/v3/next/plan.md F2)', async () => {
+  const { content } = await import('../../src/core/content/static.ts');
+  const { foldLearner } = await import('../../src/core/learning/fold.ts');
+  const { setCurrentOverride } = await import('../../src/core/learning/status.ts');
+  const { nextItem, mulberry32 } = await import('../../src/core/planner/index.ts');
+  const { REQUESTS } = await import('../../src/scenes/heartbeat/learn-bridge.ts');
+  const { isUnicornFood } = await import('../../src/core/heartbeat/feed.ts');
+  const { T0, DAY, resetSeq, visitStart, override } = await import('../fixtures/events.ts');
+  type LE = import('../../src/core/learning/types.ts').LearnEvent;
+  const ctxAt = (step: string) => {
+    resetSeq();
+    const evs: LE[] = [visitStart(T0)];
+    evs.push(override(T0 + 1, setCurrentOverride(foldLearner(evs, content, 'year1'), content, 'r', step)));
+    evs.push(visitStart(T0 + 3 * DAY));
+    return { c: content, l: foldLearner(evs, content, 'year1'), now: T0 + 3 * DAY + 60_000, assets: { clip: () => true, picture: () => true } };
+  };
+  const word = (p: Pick): string => (p.carrier.kind === 'plural' || p.carrier.kind === 'word' ? p.carrier.word : '');
+  it('serves a unicorn food as a hungry wish at R19', () => {
+    let found = 0;
+    for (let s = 1; s <= 20; s++) {
+      const p = nextItem(ctxAt('R19'), { ...REQUESTS.feed, firstWish: true, accept: (x) => isUnicornFood(word(x)) }, mulberry32(s));
+      if (!p) continue;
+      found++;
+      expect(isUnicornFood(word(p))).toBe(true);
+      expect(['wish', 'one-or-many']).toContain(p.moment);
+    }
+    expect(found).toBeGreaterThan(10);
+  });
+});
