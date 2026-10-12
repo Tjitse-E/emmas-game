@@ -37,6 +37,13 @@ class ChecksTest(unittest.TestCase):
             d.ellipse([x, x, x + 6, x + 6], fill=(200, 40, 40, 255))
         self.assertIn('sparse', checks.check_picture(im, source_long_side=250))
 
+    def test_faint_specks_from_resizing_are_not_sparse(self):
+        im = good()
+        for x in range(10, 310, 15):
+            im.putpixel((x, 1), (200, 200, 200, 3))
+            im.putpixel((x, 20), (200, 200, 200, 6))
+        self.assertEqual(checks.check_picture(im, source_long_side=250), [])
+
     def test_white_halo(self):
         im = good()
         ImageDraw.Draw(im).ellipse([36, 36, 284, 284], outline=(253, 253, 253, 128), width=4)

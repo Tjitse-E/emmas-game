@@ -5,6 +5,8 @@ from PIL import Image
 
 from .imageops import label_components
 
+FAINT = 24   # alpha at or below this is resize ringing, not part of the object
+
 
 def max_bytes_for(kind: str, size: int) -> int:
     if kind == 'bg':
@@ -19,14 +21,18 @@ def check_picture(im: Image.Image, *, source_long_side: int, grey: bool = False)
     if (alpha == 0).sum() < 0.02 * alpha.size:
         return ['no-alpha']
     edge = np.concatenate([alpha[:2].ravel(), alpha[-2:].ravel(), alpha[:, :2].ravel(), alpha[:, -2:].ravel()])
-    if (edge > 0).any():
+    if (edge > FAINT).any():
         issues.append('touches-edge')
     if source_long_side < 200:
         issues.append('low-res')
-    solid = alpha > 0
+    solid = alpha > FAINT
     ys, xs = np.nonzero(solid)
+    if len(xs) == 0:
+        return ['sparse']
     bbox_area = (xs.max() - xs.min() + 1) * (ys.max() - ys.min() + 1)
-    _, n = label_components(solid)
+    labels, _ = label_components(solid)
+    sizes = np.bincount(labels.ravel())[1:]
+    n = int((sizes >= max(4, 0.002 * solid.sum())).sum())   # resizing leaves 1 or 2 px specks; they do not count
     if solid.sum() / bbox_area < 0.12 or n > 12:
         issues.append('sparse')
     semi = (alpha > 0) & (alpha < 255)
