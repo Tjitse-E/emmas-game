@@ -25,19 +25,24 @@ def contact_png(items: list[tuple[str, Path]], out: Path, cols: int = 6, cell: i
     return out
 
 
+# art-src/contact/index.html is opened from a lane server or Emma's server. Both serve the built game, where
+# public/art lives at <game>/art/, and fall back to the game folder for art-src/ (server/serve.ts).
+ART = '../../art/'
+
+
 def contact_html(manifest: dict, out: Path) -> Path:
     rows = []
     for key, e in manifest.get('pictures', {}).items():
         w = e['w'] // 2
-        rows.append(f'<figure><img src="../../public/art/{e["src"]}" width="{w}" alt="">'
+        rows.append(f'<figure><img src="{ART}{e["src"]}" width="{w}" alt="">'
                     f'<figcaption>{html.escape(key)}</figcaption></figure>')
     for key, e in manifest.get('backgrounds', {}).items():
-        rows.append(f'<figure class="bg"><img src="../../public/art/{e["src"]}" width="1180" alt="">'
+        rows.append(f'<figure class="bg"><img src="{ART}{e["src"]}" width="1180" alt="">'
                     f'<figcaption>{html.escape(key)}</figcaption></figure>')
     for key, u in manifest.get('unicorns', {}).items():
         if not isinstance(u, dict) or 'sil' not in u or 'w' not in u:
             continue
-        rows.append(f'<figure><img src="../../public/art/{u["sil"]}" width="{u["w"] // 4}" alt="">'
+        rows.append(f'<figure><img src="{ART}{u["sil"]}" width="{u["w"] // 4}" alt="">'
                     f'<figcaption>{html.escape(key)}</figcaption></figure>')
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width">'

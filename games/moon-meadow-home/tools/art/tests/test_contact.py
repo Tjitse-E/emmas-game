@@ -26,7 +26,9 @@ class ContactTest(unittest.TestCase):
             out = contact.contact_html(m, Path(d) / 'index.html')
             html = out.read_text()
             self.assertIn('hat', html)
-            self.assertIn('../../public/art/words/hat.webp', html)
+            # The page is opened from a lane or Emma's server, which serves public/art at <game>/art/ (R15).
+            self.assertIn('src="../../art/words/hat.webp"', html)
+            self.assertNotIn('public/art', html)
             self.assertIn('width="160"', html)
 
 

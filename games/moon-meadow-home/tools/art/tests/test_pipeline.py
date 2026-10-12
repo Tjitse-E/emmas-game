@@ -336,6 +336,32 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn('colours drifted, regenerate', out)
 
+    def _manifest_with(self, **pictures):
+        (paths.PUBLIC_ART / 'items').mkdir(parents=True, exist_ok=True)
+        entries = {}
+        for pid, fill in pictures.items():
+            im = Image.new('RGBA', (200, 200), (0, 0, 0, 0))
+            ImageDraw.Draw(im).ellipse([30, 30, 170, 170], fill=fill, outline=(90, 90, 90, 255), width=6)
+            im.save(paths.PUBLIC_ART / f'items/{pid}.webp', lossless=True)
+            entries[pid] = {'src': f'items/{pid}.webp', 'w': 200, 'h': 200, 'kind': 'item', 'pack': 'core', 'source': 'codex'}
+        (paths.PUBLIC_ART / 'manifest.json').write_text(json.dumps({'v': 1, 'pictures': entries, 'backgrounds': {}}))
+
+    def test_check_all_passes_reviewed_grey_objects(self):
+        # A spoon, a stone or a tap is grey. It passed review, so check-all names it and still passes.
+        self._manifest_with(**{'item-spoon': (150, 150, 152, 255), 'item-cup': (230, 120, 160, 255)})
+        code, out = self.run_cmd('check-all')
+        self.assertEqual(code, 0, out)
+        self.assertIn('item-spoon: no-colour (note only)', out)
+        self.assertIn('2 pictures checked, 0 with issues', out)
+
+    def test_check_all_fails_on_a_real_issue(self):
+        self._manifest_with(**{'item-cup': (230, 120, 160, 255)})
+        im = Image.new('RGBA', (200, 200), (230, 120, 160, 255))   # no transparent background left
+        im.save(paths.PUBLIC_ART / 'items/item-cup.webp', lossless=True)
+        code, out = self.run_cmd('check-all')
+        self.assertEqual(code, 1, out)
+        self.assertIn('item-cup: no-alpha', out)
+
     def test_placeholder(self):
         code, out = self.run_cmd('placeholder')
         self.assertEqual(code, 0, out)
