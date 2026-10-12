@@ -3254,8 +3254,8 @@ describe('learner fold', () => {
   });
 
   it('name reviews update the name item and the visit total, not the ladders', () => {
-    const l = foldLearner([...fresh(), result(T0 + 1, { strand: 'name', step: null, items: ['name:b1'], r: 'first', slot: 'name', moment: 'roll-call' })], c);
-    expect(l.items['name:b1'].box).toBe(1);
+    const l = foldLearner([...fresh(), result(T0 + 1, { strand: 'name', step: null, items: ['name:ben'], r: 'first', slot: 'name', moment: 'roll-call' })], c);
+    expect(l.items['name:ben'].box).toBe(1);
     expect(l.visit.counts.name).toBe(1);
     expect(l.visit.ladder).toBe(0);
   });
