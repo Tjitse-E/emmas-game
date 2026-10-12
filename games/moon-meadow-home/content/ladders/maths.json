@@ -1199,6 +1199,596 @@
       ]
     },
     {
+      "id": "M12A",
+      "title": "Pairs that make 7, 8 and 9",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-two-stone"
+      ],
+      "face": [
+        "5",
+        "3"
+      ],
+      "items": [
+        {
+          "id": "m:pair:2+5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 2,
+            "b": 5
+          }
+        },
+        {
+          "id": "m:pair:2+6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 2,
+            "b": 6
+          }
+        },
+        {
+          "id": "m:pair:2+7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 2,
+            "b": 7
+          }
+        },
+        {
+          "id": "m:pair:3+4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 3,
+            "b": 4
+          }
+        },
+        {
+          "id": "m:pair:3+5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 3,
+            "b": 5
+          }
+        },
+        {
+          "id": "m:pair:3+6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 3,
+            "b": 6
+          }
+        },
+        {
+          "id": "m:pair:4+4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 4,
+            "b": 4
+          }
+        },
+        {
+          "id": "m:pair:4+5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 4,
+            "b": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "M12B",
+      "title": "Missing part of 7, 8 and 9",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-small-nest",
+        "hay-rack"
+      ],
+      "face": [
+        "8"
+      ],
+      "items": [
+        {
+          "id": "m:gap:7-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:gap:8-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:gap:9-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:gap:7-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:gap:8-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:gap:9-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 4
+          }
+        },
+        {
+          "id": "m:gap:7-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:gap:8-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 6
+          }
+        },
+        {
+          "id": "m:gap:9-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "M12C",
+      "title": "Pairs that make 11 and 12",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-two-stone"
+      ],
+      "face": [
+        "8",
+        "4"
+      ],
+      "items": [
+        {
+          "id": "m:pair:2+9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 2,
+            "b": 9
+          }
+        },
+        {
+          "id": "m:pair:3+9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 3,
+            "b": 9
+          }
+        },
+        {
+          "id": "m:pair:3+8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 3,
+            "b": 8
+          }
+        },
+        {
+          "id": "m:pair:4+8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 4,
+            "b": 8
+          }
+        },
+        {
+          "id": "m:pair:4+7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 4,
+            "b": 7
+          }
+        },
+        {
+          "id": "m:pair:5+7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 5,
+            "b": 7
+          }
+        },
+        {
+          "id": "m:pair:5+6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 5,
+            "b": 6
+          }
+        },
+        {
+          "id": "m:pair:6+6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 6,
+            "b": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "M12D",
+      "title": "Missing part of 11 and 12",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-moon",
+        "hay-rack"
+      ],
+      "face": [
+        "12"
+      ],
+      "items": [
+        {
+          "id": "m:gap:11-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 11,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:gap:12-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 12,
+            "part": 4
+          }
+        },
+        {
+          "id": "m:gap:11-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 11,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:gap:12-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 12,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:gap:11-7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 11,
+            "part": 7
+          }
+        },
+        {
+          "id": "m:gap:12-7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 12,
+            "part": 7
+          }
+        },
+        {
+          "id": "m:gap:11-9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 11,
+            "part": 9
+          }
+        },
+        {
+          "id": "m:gap:12-9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 12,
+            "part": 9
+          }
+        }
+      ]
+    },
+    {
+      "id": "M12E",
+      "title": "Pairs that make 13, 14 and 15",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-two-stone"
+      ],
+      "face": [
+        "8",
+        "5"
+      ],
+      "items": [
+        {
+          "id": "m:pair:4+9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 4,
+            "b": 9
+          }
+        },
+        {
+          "id": "m:pair:5+9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 5,
+            "b": 9
+          }
+        },
+        {
+          "id": "m:pair:6+9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 6,
+            "b": 9
+          }
+        },
+        {
+          "id": "m:pair:5+8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 5,
+            "b": 8
+          }
+        },
+        {
+          "id": "m:pair:6+8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 6,
+            "b": 8
+          }
+        },
+        {
+          "id": "m:pair:7+8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 7,
+            "b": 8
+          }
+        },
+        {
+          "id": "m:pair:6+7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 6,
+            "b": 7
+          }
+        },
+        {
+          "id": "m:pair:7+7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 7,
+            "b": 7
+          }
+        }
+      ]
+    },
+    {
+      "id": "M12F",
+      "title": "Missing part of 13, 14 and 15",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-moon",
+        "hay-rack"
+      ],
+      "face": [
+        "15"
+      ],
+      "items": [
+        {
+          "id": "m:gap:13-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 13,
+            "part": 6
+          }
+        },
+        {
+          "id": "m:gap:14-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 14,
+            "part": 6
+          }
+        },
+        {
+          "id": "m:gap:15-7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 15,
+            "part": 7
+          }
+        },
+        {
+          "id": "m:gap:13-8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 13,
+            "part": 8
+          }
+        },
+        {
+          "id": "m:gap:14-7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 14,
+            "part": 7
+          }
+        },
+        {
+          "id": "m:gap:15-8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 15,
+            "part": 8
+          }
+        },
+        {
+          "id": "m:gap:13-9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 13,
+            "part": 9
+          }
+        },
+        {
+          "id": "m:gap:14-9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 14,
+            "part": 9
+          }
+        },
+        {
+          "id": "m:gap:15-9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 15,
+            "part": 9
+          }
+        }
+      ]
+    },
+    {
       "id": "M13",
       "title": "Add within 10 by counting on",
       "release": "1.1",
