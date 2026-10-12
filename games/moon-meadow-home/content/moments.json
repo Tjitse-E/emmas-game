@@ -1,0 +1,253 @@
+{
+  "moments": [
+    {
+      "id": "wish",
+      "strand": "r",
+      "release": "1.0",
+      "needs": [
+        "pic",
+        "clip"
+      ]
+    },
+    {
+      "id": "bath-wish",
+      "strand": "r",
+      "release": "1.0",
+      "needs": [
+        "pic",
+        "clip"
+      ]
+    },
+    {
+      "id": "twin-wish",
+      "strand": "r",
+      "release": "1.0",
+      "needs": [
+        "pic",
+        "clip"
+      ]
+    },
+    {
+      "id": "one-or-many",
+      "strand": "r",
+      "release": "1.0",
+      "needs": [
+        "pic",
+        "clip"
+      ]
+    },
+    {
+      "id": "station-wish",
+      "strand": "r",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "first-sound",
+      "strand": "s",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "naming-bells",
+      "strand": "s",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "naming-garden",
+      "strand": "s",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "label",
+      "strand": "s",
+      "release": "1.0",
+      "needs": [
+        "pic",
+        "clip"
+      ]
+    },
+    {
+      "id": "label-plural",
+      "strand": "s",
+      "release": "1.0",
+      "needs": [
+        "pic",
+        "clip"
+      ]
+    },
+    {
+      "id": "sign",
+      "strand": "s",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "egg-moon",
+      "strand": "m",
+      "release": "1.0",
+      "needs": [],
+      "egg": "moon"
+    },
+    {
+      "id": "egg-small-nest",
+      "strand": "m",
+      "release": "1.0",
+      "needs": [],
+      "egg": "small-nest"
+    },
+    {
+      "id": "egg-two-stone",
+      "strand": "m",
+      "release": "1.0",
+      "needs": [],
+      "egg": "two-stone"
+    },
+    {
+      "id": "egg-blanket",
+      "strand": "m",
+      "release": "1.0",
+      "needs": [],
+      "egg": "blanket"
+    },
+    {
+      "id": "door-visit",
+      "strand": "m",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "roll-call-door",
+      "strand": "m",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "trim",
+      "strand": "m",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "wall",
+      "strand": "m",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "roll-call",
+      "strand": "name",
+      "release": "1.0",
+      "needs": []
+    },
+    {
+      "id": "note",
+      "strand": "s",
+      "release": "1.1",
+      "needs": [
+        "clip"
+      ]
+    },
+    {
+      "id": "egg-berry",
+      "strand": "m",
+      "release": "1.1",
+      "needs": [],
+      "egg": "berry"
+    },
+    {
+      "id": "egg-snow",
+      "strand": "m",
+      "release": "1.1",
+      "needs": [],
+      "egg": "snow"
+    },
+    {
+      "id": "post-pin",
+      "strand": "m",
+      "release": "1.1",
+      "needs": []
+    },
+    {
+      "id": "post-sash",
+      "strand": "m",
+      "release": "1.1",
+      "needs": []
+    },
+    {
+      "id": "parcel",
+      "strand": "m",
+      "release": "1.1",
+      "needs": []
+    },
+    {
+      "id": "envelope",
+      "strand": "name",
+      "release": "1.1",
+      "needs": []
+    },
+    {
+      "id": "tricky-act",
+      "strand": "r",
+      "release": "1.2",
+      "needs": [
+        "pic"
+      ]
+    },
+    {
+      "id": "basket-and",
+      "strand": "r",
+      "release": "1.2",
+      "needs": [
+        "pic",
+        "clip"
+      ]
+    },
+    {
+      "id": "basket-adj",
+      "strand": "r",
+      "release": "1.2",
+      "needs": [
+        "pic"
+      ]
+    },
+    {
+      "id": "salon-card",
+      "strand": "r",
+      "release": "1.2",
+      "needs": [
+        "pic"
+      ]
+    },
+    {
+      "id": "asking-bubble",
+      "strand": "r",
+      "release": "1.2",
+      "needs": [
+        "clip"
+      ]
+    },
+    {
+      "id": "two-state-wish",
+      "strand": "r",
+      "release": "1.2",
+      "needs": [
+        "pic"
+      ]
+    },
+    {
+      "id": "letter-order",
+      "strand": "s",
+      "release": "1.2",
+      "needs": []
+    },
+    {
+      "id": "beads",
+      "strand": "m",
+      "release": "1.2",
+      "needs": []
+    }
+  ]
+}

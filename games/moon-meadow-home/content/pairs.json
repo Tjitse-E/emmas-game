@@ -1,0 +1,395 @@
+{
+  "pairs": [
+    {
+      "id": "a-e-u",
+      "gpcs": [
+        "a",
+        "e",
+        "u"
+      ],
+      "position": "any",
+      "kind": "vowel",
+      "unlock": {
+        "r": "R04D",
+        "s": "S03D"
+      }
+    },
+    {
+      "id": "final-d-t",
+      "gpcs": [
+        "d",
+        "t"
+      ],
+      "position": "final",
+      "kind": "voicing",
+      "unlock": {
+        "r": "R11",
+        "s": "S06"
+      }
+    },
+    {
+      "id": "final-g-k",
+      "gpcs": [
+        "g",
+        "ck",
+        "k"
+      ],
+      "position": "final",
+      "kind": "voicing",
+      "unlock": {
+        "r": "R11",
+        "s": "S06"
+      }
+    },
+    {
+      "id": "final-b-p",
+      "gpcs": [
+        "b",
+        "p"
+      ],
+      "position": "final",
+      "kind": "voicing",
+      "unlock": {
+        "r": "R11",
+        "s": "S06"
+      }
+    },
+    {
+      "id": "v-w",
+      "gpcs": [
+        "v",
+        "w"
+      ],
+      "position": "initial",
+      "kind": "consonant",
+      "unlock": {
+        "r": "R11",
+        "s": "S06"
+      }
+    },
+    {
+      "id": "j-y",
+      "gpcs": [
+        "j",
+        "y"
+      ],
+      "position": "initial",
+      "kind": "letter-value",
+      "unlock": {
+        "r": "R11",
+        "s": "S06"
+      }
+    },
+    {
+      "id": "th",
+      "gpcs": [
+        "th",
+        "t",
+        "f",
+        "d"
+      ],
+      "position": "any",
+      "kind": "consonant",
+      "unlock": {
+        "r": "R11",
+        "s": "S07"
+      }
+    },
+    {
+      "id": "ch-h",
+      "gpcs": [
+        "ch",
+        "h"
+      ],
+      "position": "initial",
+      "kind": "letter-value",
+      "unlock": {
+        "r": "R20"
+      }
+    },
+    {
+      "id": "ee",
+      "gpcs": [
+        "ee",
+        "ay",
+        "ai"
+      ],
+      "position": "any",
+      "kind": "letter-value",
+      "unlock": {
+        "r": "R20"
+      }
+    },
+    {
+      "id": "oo",
+      "gpcs": [
+        "oo",
+        "oa",
+        "o-e"
+      ],
+      "position": "any",
+      "kind": "letter-value",
+      "unlock": {
+        "r": "R20"
+      }
+    },
+    {
+      "id": "ai",
+      "gpcs": [
+        "ai",
+        "i-e",
+        "igh"
+      ],
+      "position": "any",
+      "kind": "letter-value",
+      "unlock": {
+        "r": "R20"
+      }
+    },
+    {
+      "id": "u",
+      "gpcs": [
+        "u",
+        "o"
+      ],
+      "position": "any",
+      "kind": "letter-value",
+      "unlock": {
+        "r": "R20"
+      }
+    },
+    {
+      "id": "i-ee",
+      "gpcs": [
+        "i",
+        "ee",
+        "ea"
+      ],
+      "position": "any",
+      "kind": "vowel",
+      "unlock": {
+        "r": "R20"
+      }
+    },
+    {
+      "id": "ie",
+      "gpcs": [
+        "ie",
+        "ea"
+      ],
+      "position": "any",
+      "kind": "letter-value",
+      "unlock": {
+        "r": "R34"
+      }
+    },
+    {
+      "id": "magic-e",
+      "gpcs": [
+        "a",
+        "a-e",
+        "i",
+        "i-e",
+        "o",
+        "o-e",
+        "u",
+        "u-e"
+      ],
+      "position": "any",
+      "kind": "magic-e",
+      "unlock": {
+        "r": "R38"
+      }
+    }
+  ],
+  "twins": [
+    {
+      "pair": "a-e-u",
+      "a": "pan",
+      "b": "pen",
+      "model": {
+        "a": "Pan has an a in the middle.",
+        "b": "Pen has an e in the middle."
+      }
+    },
+    {
+      "pair": "a-e-u",
+      "a": "hat",
+      "b": "hut",
+      "model": {
+        "a": "Hat has an a in the middle.",
+        "b": "Hut has a u in the middle."
+      }
+    },
+    {
+      "pair": "a-e-u",
+      "a": "cap",
+      "b": "cup",
+      "model": {
+        "a": "Cap has an a in the middle.",
+        "b": "Cup has a u in the middle."
+      }
+    },
+    {
+      "pair": "a-e-u",
+      "a": "net",
+      "b": "nut",
+      "model": {
+        "a": "Net has an e in the middle.",
+        "b": "Nut has a u in the middle."
+      }
+    },
+    {
+      "pair": "final-d-t",
+      "a": "pod",
+      "b": "pot",
+      "model": {
+        "a": "Pod has a d at the end.",
+        "b": "Pot has a t at the end."
+      }
+    },
+    {
+      "pair": "final-d-t",
+      "a": "card",
+      "b": "cart",
+      "model": {
+        "a": "Card has a d at the end.",
+        "b": "Cart has a t at the end."
+      }
+    },
+    {
+      "pair": "final-g-k",
+      "a": "log",
+      "b": "lock",
+      "model": {
+        "a": "Log has a g at the end.",
+        "b": "Lock has a k sound at the end."
+      }
+    },
+    {
+      "pair": "final-g-k",
+      "a": "rag",
+      "b": "rack",
+      "model": {
+        "a": "Rag has a g at the end.",
+        "b": "Rack has a k sound at the end."
+      }
+    },
+    {
+      "pair": "j-y",
+      "a": "jam",
+      "b": "yam",
+      "model": {
+        "a": "Jam starts with a j.",
+        "b": "Yam starts with a y."
+      }
+    },
+    {
+      "pair": "th",
+      "a": "bath",
+      "b": "bat",
+      "model": {
+        "a": "Bath has th at the end.",
+        "b": "Bat has a t at the end."
+      }
+    },
+    {
+      "pair": "th",
+      "a": "three",
+      "b": "tree",
+      "model": {
+        "a": "Three starts with th.",
+        "b": "Tree starts with t."
+      }
+    },
+    {
+      "pair": "ch-h",
+      "a": "chair",
+      "b": "hair",
+      "model": {
+        "a": "Chair starts with ch.",
+        "b": "Hair starts with h."
+      }
+    },
+    {
+      "pair": "ee",
+      "a": "peel",
+      "b": "pail"
+    },
+    {
+      "pair": "ee",
+      "a": "seal",
+      "b": "sail"
+    },
+    {
+      "pair": "ee",
+      "a": "bee",
+      "b": "bay"
+    },
+    {
+      "pair": "oo",
+      "a": "boot",
+      "b": "boat"
+    },
+    {
+      "pair": "oo",
+      "a": "pool",
+      "b": "pole"
+    },
+    {
+      "pair": "ai",
+      "a": "tail",
+      "b": "tile"
+    },
+    {
+      "pair": "u",
+      "a": "duck",
+      "b": "dock"
+    },
+    {
+      "pair": "i-ee",
+      "a": "ship",
+      "b": "sheep"
+    },
+    {
+      "pair": "i-ee",
+      "a": "hill",
+      "b": "heel"
+    },
+    {
+      "pair": "i-ee",
+      "a": "bin",
+      "b": "bean"
+    },
+    {
+      "pair": "ie",
+      "a": "pie",
+      "b": "pea"
+    },
+    {
+      "pair": "ie",
+      "a": "tie",
+      "b": "tea"
+    },
+    {
+      "pair": "magic-e",
+      "a": "cap",
+      "b": "cape"
+    },
+    {
+      "pair": "magic-e",
+      "a": "tap",
+      "b": "tape"
+    },
+    {
+      "pair": "magic-e",
+      "a": "kit",
+      "b": "kite"
+    },
+    {
+      "pair": "magic-e",
+      "a": "can",
+      "b": "cane"
+    }
+  ]
+}

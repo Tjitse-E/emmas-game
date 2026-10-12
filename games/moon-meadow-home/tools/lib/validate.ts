@@ -78,8 +78,10 @@ function checkGpcs({ raw, input, c }: Ctx): Finding[] {
   for (const g of raw.gpcs) {
     for (const p of g.phonemes) if (!PHONEME_SET.has(p)) out.push(err('GPC_PHONEME', `${g.id}: phoneme ${p} is not in PHONEMES`));
     const dot = g.id.indexOf('.');
+    // The suffix names one phoneme (`ow.oa`), or the row's phonemes joined (`ue.yoo` is y + oo).
+    const suffix = g.id.slice(dot + 1);
     const ok = /^[a-z]+$/.test(g.id) || /^[a-z]+-e$/.test(g.id)
-      || (dot > 0 && /^[a-z]+$/.test(g.id.slice(0, dot)) && PHONEME_SET.has(g.id.slice(dot + 1)));
+      || (dot > 0 && /^[a-z]+$/.test(g.id.slice(0, dot)) && (PHONEME_SET.has(suffix) || suffix === g.phonemes.join('')));
     if (!ok) out.push(err('GPC_ID', `${g.id}: not <letters>, <letters>-e or <letters>.<phoneme>`));
   }
   if (c) {

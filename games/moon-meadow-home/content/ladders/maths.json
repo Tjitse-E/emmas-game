@@ -1,0 +1,1987 @@
+{
+  "strand": "m",
+  "steps": [
+    {
+      "id": "M01",
+      "title": "Subitise 1 to 5",
+      "release": "1.0",
+      "levels": 1,
+      "moments": [
+        "egg-moon"
+      ],
+      "face": [
+        "3"
+      ],
+      "items": [
+        {
+          "id": "m:sub:1",
+          "kind": "subitise",
+          "task": {
+            "op": "subitise",
+            "n": 1
+          }
+        },
+        {
+          "id": "m:sub:2",
+          "kind": "subitise",
+          "task": {
+            "op": "subitise",
+            "n": 2
+          }
+        },
+        {
+          "id": "m:sub:3",
+          "kind": "subitise",
+          "task": {
+            "op": "subitise",
+            "n": 3
+          }
+        },
+        {
+          "id": "m:sub:4",
+          "kind": "subitise",
+          "task": {
+            "op": "subitise",
+            "n": 4
+          }
+        },
+        {
+          "id": "m:sub:5",
+          "kind": "subitise",
+          "task": {
+            "op": "subitise",
+            "n": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "title": "Count to 10, numerals 1 to 10",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-moon",
+        "door-visit",
+        "roll-call-door"
+      ],
+      "face": [
+        "7"
+      ],
+      "items": [
+        {
+          "id": "m:num:1",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 1
+          }
+        },
+        {
+          "id": "m:num:2",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 2
+          }
+        },
+        {
+          "id": "m:num:3",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 3
+          }
+        },
+        {
+          "id": "m:num:4",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 4
+          }
+        },
+        {
+          "id": "m:num:5",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 5
+          }
+        },
+        {
+          "id": "m:num:6",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 6
+          }
+        },
+        {
+          "id": "m:num:7",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 7
+          }
+        },
+        {
+          "id": "m:num:8",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 8
+          }
+        },
+        {
+          "id": "m:num:9",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 9
+          }
+        },
+        {
+          "id": "m:num:10",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "M03",
+      "title": "Compare: fewest",
+      "release": "1.1",
+      "levels": 1,
+      "moments": [
+        "post-pin"
+      ],
+      "face": [
+        "2",
+        "3"
+      ],
+      "items": [
+        {
+          "id": "m:cmp:fewest",
+          "kind": "compare",
+          "task": {
+            "op": "compare",
+            "want": "fewest"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M04",
+      "title": "One more, one less",
+      "release": "1.1",
+      "levels": 3,
+      "moments": [
+        "egg-berry"
+      ],
+      "face": [
+        "6",
+        "7"
+      ],
+      "items": [
+        {
+          "id": "m:more:0",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 0
+          }
+        },
+        {
+          "id": "m:more:1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 1
+          }
+        },
+        {
+          "id": "m:more:2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 2
+          }
+        },
+        {
+          "id": "m:more:3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 3
+          }
+        },
+        {
+          "id": "m:more:4",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 4
+          }
+        },
+        {
+          "id": "m:more:5",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 5
+          }
+        },
+        {
+          "id": "m:more:6",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 6
+          }
+        },
+        {
+          "id": "m:more:7",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 7
+          }
+        },
+        {
+          "id": "m:more:8",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 8
+          }
+        },
+        {
+          "id": "m:more:9",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "more",
+            "n": 9
+          }
+        },
+        {
+          "id": "m:less:1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 1
+          }
+        },
+        {
+          "id": "m:less:2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 2
+          }
+        },
+        {
+          "id": "m:less:3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 3
+          }
+        },
+        {
+          "id": "m:less:4",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 4
+          }
+        },
+        {
+          "id": "m:less:5",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 5
+          }
+        },
+        {
+          "id": "m:less:6",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 6
+          }
+        },
+        {
+          "id": "m:less:7",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 7
+          }
+        },
+        {
+          "id": "m:less:8",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 8
+          }
+        },
+        {
+          "id": "m:less:9",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 9
+          }
+        },
+        {
+          "id": "m:less:10",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "less",
+            "n": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "title": "Bonds to 5",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-small-nest",
+        "parcel",
+        "wall"
+      ],
+      "face": [
+        "2",
+        "3"
+      ],
+      "items": [
+        {
+          "id": "m:miss:2-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 2,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:3-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 3,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:3-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 3,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:miss:4-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 4,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:4-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 4,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:miss:4-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 4,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:miss:5-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 5,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:5-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 5,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:miss:5-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 5,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:miss:5-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 5,
+            "part": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "M06",
+      "title": "Share equally; odd and even",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M07",
+      "title": "Numerals 11 to 20",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "door-visit",
+        "roll-call-door"
+      ],
+      "face": [
+        "14"
+      ],
+      "items": [
+        {
+          "id": "m:num:11",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 11
+          }
+        },
+        {
+          "id": "m:num:12",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 12
+          }
+        },
+        {
+          "id": "m:num:13",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 13
+          }
+        },
+        {
+          "id": "m:num:14",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 14
+          }
+        },
+        {
+          "id": "m:num:15",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 15
+          }
+        },
+        {
+          "id": "m:num:16",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 16
+          }
+        },
+        {
+          "id": "m:num:17",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 17
+          }
+        },
+        {
+          "id": "m:num:18",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 18
+          }
+        },
+        {
+          "id": "m:num:19",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 19
+          }
+        },
+        {
+          "id": "m:num:20",
+          "kind": "numeral",
+          "task": {
+            "op": "numeral",
+            "n": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "M08",
+      "title": "Repeating patterns",
+      "release": "1.0",
+      "levels": 1,
+      "moments": [
+        "trim",
+        "beads"
+      ],
+      "face": [
+        "AB"
+      ],
+      "items": [
+        {
+          "id": "m:pat:AB",
+          "kind": "m-pattern",
+          "task": {
+            "op": "pattern",
+            "unit": "AB"
+          }
+        },
+        {
+          "id": "m:pat:ABB",
+          "kind": "m-pattern",
+          "task": {
+            "op": "pattern",
+            "unit": "ABB"
+          }
+        },
+        {
+          "id": "m:pat:ABC",
+          "kind": "m-pattern",
+          "task": {
+            "op": "pattern",
+            "unit": "ABC"
+          }
+        },
+        {
+          "id": "m:pat:AAB",
+          "kind": "m-pattern",
+          "task": {
+            "op": "pattern",
+            "unit": "AAB"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M09",
+      "title": "Missing part to 10, frame visible",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-moon",
+        "post-sash",
+        "parcel",
+        "wall"
+      ],
+      "face": [
+        "7",
+        "3"
+      ],
+      "items": [
+        {
+          "id": "m:miss:10-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:10-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:miss:10-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:miss:10-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 4
+          }
+        },
+        {
+          "id": "m:miss:10-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:miss:10-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 6
+          }
+        },
+        {
+          "id": "m:miss:10-7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 7
+          }
+        },
+        {
+          "id": "m:miss:10-8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 8
+          }
+        },
+        {
+          "id": "m:miss:10-9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 9
+          }
+        }
+      ]
+    },
+    {
+      "id": "M10",
+      "title": "Two parts make 10",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-two-stone",
+        "post-sash",
+        "wall"
+      ],
+      "face": [
+        "4",
+        "6"
+      ],
+      "items": [
+        {
+          "id": "m:pair:1+9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 1,
+            "b": 9
+          }
+        },
+        {
+          "id": "m:pair:2+8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 2,
+            "b": 8
+          }
+        },
+        {
+          "id": "m:pair:3+7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 3,
+            "b": 7
+          }
+        },
+        {
+          "id": "m:pair:4+6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 4,
+            "b": 6
+          }
+        },
+        {
+          "id": "m:pair:5+5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "pair",
+            "a": 5,
+            "b": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "M11",
+      "title": "Missing part to 10, frame hidden",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-blanket",
+        "post-sash",
+        "parcel",
+        "wall"
+      ],
+      "face": [
+        "8",
+        "2"
+      ],
+      "items": [
+        {
+          "id": "m:hid:10-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:hid:10-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:hid:10-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:hid:10-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 4
+          }
+        },
+        {
+          "id": "m:hid:10-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:hid:10-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 6
+          }
+        },
+        {
+          "id": "m:hid:10-7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 7
+          }
+        },
+        {
+          "id": "m:hid:10-8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 8
+          }
+        },
+        {
+          "id": "m:hid:10-9",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 10,
+            "part": 9
+          }
+        }
+      ]
+    },
+    {
+      "id": "M12",
+      "title": "Bonds to 6, 7, 8 and 9",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "egg-small-nest",
+        "parcel",
+        "wall"
+      ],
+      "face": [
+        "5",
+        "3"
+      ],
+      "items": [
+        {
+          "id": "m:miss:6-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 6,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:6-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 6,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:miss:6-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 6,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:miss:6-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 6,
+            "part": 4
+          }
+        },
+        {
+          "id": "m:miss:6-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 6,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:miss:7-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:7-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:miss:7-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:miss:7-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 4
+          }
+        },
+        {
+          "id": "m:miss:7-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:miss:7-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 7,
+            "part": 6
+          }
+        },
+        {
+          "id": "m:miss:8-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:8-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:miss:8-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:miss:8-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 4
+          }
+        },
+        {
+          "id": "m:miss:8-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:miss:8-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 6
+          }
+        },
+        {
+          "id": "m:miss:8-7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 8,
+            "part": 7
+          }
+        },
+        {
+          "id": "m:miss:9-1",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 1
+          }
+        },
+        {
+          "id": "m:miss:9-2",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 2
+          }
+        },
+        {
+          "id": "m:miss:9-3",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 3
+          }
+        },
+        {
+          "id": "m:miss:9-4",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 4
+          }
+        },
+        {
+          "id": "m:miss:9-5",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 5
+          }
+        },
+        {
+          "id": "m:miss:9-6",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 6
+          }
+        },
+        {
+          "id": "m:miss:9-7",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 7
+          }
+        },
+        {
+          "id": "m:miss:9-8",
+          "kind": "bond",
+          "fluency": "bond",
+          "task": {
+            "op": "missing",
+            "whole": 9,
+            "part": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "M13",
+      "title": "Add within 10 by counting on",
+      "release": "1.1",
+      "levels": 3,
+      "moments": [
+        "egg-berry"
+      ],
+      "face": [
+        "6",
+        "2"
+      ],
+      "items": [
+        {
+          "id": "m:add:1+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 1,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:2+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 2,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:3+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 3,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:4+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 4,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:5+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 5,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:6+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 6,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:7+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 7,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:8+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 8,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:9+1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 9,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:add:2+2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 2,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:add:3+2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 3,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:add:4+2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 4,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:add:5+2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 5,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:add:6+2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 6,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:add:7+2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 7,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:add:8+2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 8,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:add:3+3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 3,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:add:4+3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 4,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:add:5+3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 5,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:add:6+3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 6,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:add:7+3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "add",
+            "a": 7,
+            "b": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "M14",
+      "title": "Take away within 10",
+      "release": "1.1",
+      "levels": 3,
+      "moments": [
+        "egg-snow"
+      ],
+      "face": [
+        "9",
+        "3"
+      ],
+      "items": [
+        {
+          "id": "m:take:2-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 2,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:3-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 3,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:4-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 4,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:5-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 5,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:6-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 6,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:7-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 7,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:8-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 8,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:9-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 9,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:10-1",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 10,
+            "b": 1
+          }
+        },
+        {
+          "id": "m:take:3-2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 3,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:take:4-2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 4,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:take:5-2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 5,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:take:6-2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 6,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:take:7-2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 7,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:take:8-2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 8,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:take:9-2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 9,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:take:10-2",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 10,
+            "b": 2
+          }
+        },
+        {
+          "id": "m:take:4-3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 4,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:take:5-3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 5,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:take:6-3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 6,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:take:7-3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 7,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:take:8-3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 8,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:take:9-3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 9,
+            "b": 3
+          }
+        },
+        {
+          "id": "m:take:10-3",
+          "kind": "fact",
+          "fluency": "fact",
+          "task": {
+            "op": "take",
+            "a": 10,
+            "b": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "M15",
+      "title": "Difference within 10",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M16",
+      "title": "Fact families",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M17",
+      "title": "2D and 3D shapes",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M18",
+      "title": "Teens as ten and some more",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M19",
+      "title": "Count on and back within 20",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M20",
+      "title": "Teen and tens numbers",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M21",
+      "title": "Add by making ten",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M22",
+      "title": "Subtract across ten",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M23",
+      "title": "Doubles and near doubles",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M24",
+      "title": "Halves of even numbers",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M25",
+      "title": "Compare length, height, mass and capacity",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M26",
+      "title": "Count in 10s, 2s and 5s",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M27",
+      "title": "Tens and ones to 50",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M28",
+      "title": "Tens and ones to 100",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M29",
+      "title": "Equal groups and arrays",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M30",
+      "title": "Sharing and grouping",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M31",
+      "title": "Half and quarter",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M32",
+      "title": "Coins and notes",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M33",
+      "title": "Pay with pence",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M34",
+      "title": "O'clock and half past",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M35",
+      "title": "Position and direction",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M36",
+      "title": "Place value to 100",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M37",
+      "title": "Facts to 20",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M38",
+      "title": "Add and subtract ones and tens",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M39",
+      "title": "Add three numbers",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M40",
+      "title": "Two two-digit numbers",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M41",
+      "title": "2 times table",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M42",
+      "title": "10 times table",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M43",
+      "title": "5 times table",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M44",
+      "title": "Pounds and pence",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M45",
+      "title": "Fractions",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M46",
+      "title": "Quarter past and to",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M47",
+      "title": "Shape properties and measures",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "M48",
+      "title": "Tally charts and pictograms",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    }
+  ]
+}

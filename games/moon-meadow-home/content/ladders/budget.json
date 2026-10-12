@@ -1,0 +1,105 @@
+{
+  "share": {
+    "current": 0.5,
+    "review": 0.3,
+    "mixed": 0.2
+  },
+  "oneShare": 0.34,
+  "newPerStrandPerDay": 3,
+  "strandVisitCap": 15,
+  "visitCap": 30,
+  "tiredEggMinBox": 3,
+  "spellShareMin": 0.2,
+  "spellShareAfter": 5,
+  "box0Gap": 2,
+  "box1MinHours": 4,
+  "boxDays": [
+    2,
+    4,
+    8,
+    16
+  ],
+  "retiredDays": 42,
+  "fluencyWindow": 50,
+  "fluencyCeilingMs": 3000,
+  "fluencyRecomputeDays": 7,
+  "fluencyMinSamples": 10,
+  "scaffoldUp": 3,
+  "scaffoldDown": 2,
+  "passWindow": 15,
+  "passFirst": 12,
+  "passDays": 2,
+  "reopenWindow": 10,
+  "reopenMinFirst": 7,
+  "closeWindow": 10,
+  "closeFirst": 8,
+  "reopenWeight": 2,
+  "placement": {
+    "maxItems": 10,
+    "maxVisits": 4,
+    "itemsPerProbe": 2,
+    "visit1MaxJump": 2
+  },
+  "defaultProfile": "year1",
+  "profiles": {
+    "year1": {
+      "r": {
+        "lo": "R13",
+        "probe": "R21",
+        "floor": "R01"
+      },
+      "s": {
+        "lo": "S09",
+        "probe": "S12",
+        "floor": "S01"
+      },
+      "m": {
+        "lo": "M01",
+        "probe": "M10",
+        "floor": "M01"
+      },
+      "school": [
+        "R19",
+        "S10"
+      ]
+    },
+    "fresh": {
+      "r": {
+        "lo": "R01",
+        "probe": null,
+        "floor": "R01"
+      },
+      "s": {
+        "lo": "S01",
+        "probe": null,
+        "floor": "S01"
+      },
+      "m": {
+        "lo": "M01",
+        "probe": null,
+        "floor": "M01"
+      },
+      "school": []
+    }
+  },
+  "doorRanges": [
+    {
+      "step": "M02",
+      "max": 10
+    },
+    {
+      "step": "M07",
+      "max": 20
+    },
+    {
+      "step": "M27",
+      "max": 50
+    },
+    {
+      "step": "M28",
+      "max": 100
+    }
+  ],
+  "visitSecureEvery": 3,
+  "recentCarriers": 6
+}

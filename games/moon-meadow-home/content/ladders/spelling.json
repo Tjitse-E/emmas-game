@@ -1,0 +1,1393 @@
+{
+  "strand": "s",
+  "steps": [
+    {
+      "id": "S01",
+      "title": "First sound",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "first-sound"
+      ],
+      "face": [
+        "s"
+      ],
+      "items": [
+        {
+          "id": "s:fs:s",
+          "kind": "first-sound",
+          "gpc": "s"
+        },
+        {
+          "id": "s:fs:a",
+          "kind": "first-sound",
+          "gpc": "a"
+        },
+        {
+          "id": "s:fs:t",
+          "kind": "first-sound",
+          "gpc": "t"
+        },
+        {
+          "id": "s:fs:p",
+          "kind": "first-sound",
+          "gpc": "p"
+        },
+        {
+          "id": "s:fs:i",
+          "kind": "first-sound",
+          "gpc": "i"
+        },
+        {
+          "id": "s:fs:n",
+          "kind": "first-sound",
+          "gpc": "n"
+        },
+        {
+          "id": "s:fs:m",
+          "kind": "first-sound",
+          "gpc": "m"
+        },
+        {
+          "id": "s:fs:d",
+          "kind": "first-sound",
+          "gpc": "d"
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "title": "CVC with s a t p i n m d",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "s",
+        "a",
+        "t"
+      ],
+      "items": [
+        {
+          "id": "s:g:s",
+          "kind": "grapheme",
+          "gpc": "s",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:a",
+          "kind": "grapheme",
+          "gpc": "a",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:t",
+          "kind": "grapheme",
+          "gpc": "t",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:p",
+          "kind": "grapheme",
+          "gpc": "p",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:i",
+          "kind": "grapheme",
+          "gpc": "i",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:n",
+          "kind": "grapheme",
+          "gpc": "n",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:m",
+          "kind": "grapheme",
+          "gpc": "m",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:d",
+          "kind": "grapheme",
+          "gpc": "d",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "S03",
+      "title": "CVC with g o c k ck e u r",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "g",
+        "o",
+        "ck"
+      ],
+      "items": [
+        {
+          "id": "s:g:g",
+          "kind": "grapheme",
+          "gpc": "g",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:o",
+          "kind": "grapheme",
+          "gpc": "o",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:c",
+          "kind": "grapheme",
+          "gpc": "c",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:k",
+          "kind": "grapheme",
+          "gpc": "k",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:ck",
+          "kind": "grapheme",
+          "gpc": "ck",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:e",
+          "kind": "grapheme",
+          "gpc": "e",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:u",
+          "kind": "grapheme",
+          "gpc": "u",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:r",
+          "kind": "grapheme",
+          "gpc": "r",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "S03D",
+      "title": "By ear: a, e and u",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "label"
+      ],
+      "face": [
+        "a",
+        "e",
+        "u"
+      ],
+      "contrast": true,
+      "items": [
+        {
+          "id": "s:pair:a-e-u",
+          "kind": "pair",
+          "pair": "a-e-u"
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "title": "CVC with h b f l ff ll ss",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ff",
+        "ll",
+        "ss"
+      ],
+      "items": [
+        {
+          "id": "s:g:h",
+          "kind": "grapheme",
+          "gpc": "h",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:b",
+          "kind": "grapheme",
+          "gpc": "b",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:f",
+          "kind": "grapheme",
+          "gpc": "f",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:l",
+          "kind": "grapheme",
+          "gpc": "l",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:ff",
+          "kind": "grapheme",
+          "gpc": "ff",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:ll",
+          "kind": "grapheme",
+          "gpc": "ll",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:ss",
+          "kind": "grapheme",
+          "gpc": "ss",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "title": "CVC with j v w x y z zz qu",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "j",
+        "v",
+        "w"
+      ],
+      "items": [
+        {
+          "id": "s:g:j",
+          "kind": "grapheme",
+          "gpc": "j",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:v",
+          "kind": "grapheme",
+          "gpc": "v",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:w",
+          "kind": "grapheme",
+          "gpc": "w",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:x",
+          "kind": "grapheme",
+          "gpc": "x",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:y",
+          "kind": "grapheme",
+          "gpc": "y",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:z",
+          "kind": "grapheme",
+          "gpc": "z",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:zz",
+          "kind": "grapheme",
+          "gpc": "zz",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:qu",
+          "kind": "grapheme",
+          "gpc": "qu",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "S06",
+      "title": "By ear: final d and t, g and k, b and p, v and w, j and y",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "label"
+      ],
+      "face": [
+        "d",
+        "t"
+      ],
+      "contrast": true,
+      "items": [
+        {
+          "id": "s:pair:final-d-t",
+          "kind": "pair",
+          "pair": "final-d-t"
+        },
+        {
+          "id": "s:pair:final-g-k",
+          "kind": "pair",
+          "pair": "final-g-k"
+        },
+        {
+          "id": "s:pair:final-b-p",
+          "kind": "pair",
+          "pair": "final-b-p"
+        },
+        {
+          "id": "s:pair:v-w",
+          "kind": "pair",
+          "pair": "v-w"
+        },
+        {
+          "id": "s:pair:j-y",
+          "kind": "pair",
+          "pair": "j-y"
+        }
+      ]
+    },
+    {
+      "id": "S07",
+      "title": "ch sh th ng nk in words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ch",
+        "sh",
+        "th"
+      ],
+      "items": [
+        {
+          "id": "s:g:ch",
+          "kind": "grapheme",
+          "gpc": "ch",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:sh",
+          "kind": "grapheme",
+          "gpc": "sh",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:th",
+          "kind": "grapheme",
+          "gpc": "th",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:ng",
+          "kind": "grapheme",
+          "gpc": "ng",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:nk",
+          "kind": "grapheme",
+          "gpc": "nk",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:pair:th",
+          "kind": "pair",
+          "pair": "th"
+        }
+      ]
+    },
+    {
+      "id": "S08",
+      "title": "Tricky words the, I, to, no, go and more",
+      "release": "1.1",
+      "levels": 3,
+      "moments": [
+        "note"
+      ],
+      "face": [
+        "the"
+      ],
+      "items": [
+        {
+          "id": "s:t:the",
+          "kind": "tricky",
+          "word": "the",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:i",
+          "kind": "tricky",
+          "word": "I",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:to",
+          "kind": "tricky",
+          "word": "to",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:no",
+          "kind": "tricky",
+          "word": "no",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:go",
+          "kind": "tricky",
+          "word": "go",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:he",
+          "kind": "tricky",
+          "word": "he",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:she",
+          "kind": "tricky",
+          "word": "she",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:we",
+          "kind": "tricky",
+          "word": "we",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:me",
+          "kind": "tricky",
+          "word": "me",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:be",
+          "kind": "tricky",
+          "word": "be",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:a",
+          "kind": "tricky",
+          "word": "a",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:at",
+          "kind": "tricky",
+          "word": "at",
+          "fluency": "tricky"
+        }
+      ]
+    },
+    {
+      "id": "S09",
+      "title": "Phase 3 vowels, one spelling each",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ai",
+        "ee",
+        "oa"
+      ],
+      "items": [
+        {
+          "id": "s:g:ai",
+          "kind": "grapheme",
+          "gpc": "ai",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:ee",
+          "kind": "grapheme",
+          "gpc": "ee",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:igh",
+          "kind": "grapheme",
+          "gpc": "igh",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:oa",
+          "kind": "grapheme",
+          "gpc": "oa",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:oo",
+          "kind": "grapheme",
+          "gpc": "oo",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:ar",
+          "kind": "grapheme",
+          "gpc": "ar",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:or",
+          "kind": "grapheme",
+          "gpc": "or",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "s:g:ur",
+          "kind": "grapheme",
+          "gpc": "ur",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "S10",
+      "title": "Plural ending: s or es",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "label-plural"
+      ],
+      "face": [
+        "s",
+        "es"
+      ],
+      "school": true,
+      "items": [
+        {
+          "id": "s:end:s",
+          "kind": "ending",
+          "ending": "s"
+        },
+        {
+          "id": "s:end:es",
+          "kind": "ending",
+          "ending": "es"
+        }
+      ]
+    },
+    {
+      "id": "S11",
+      "title": "Capital letters for names",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden"
+      ],
+      "face": [
+        "A"
+      ],
+      "items": [
+        {
+          "id": "s:cap:name",
+          "kind": "capital",
+          "pattern": "name"
+        }
+      ]
+    },
+    {
+      "id": "S12",
+      "title": "CVCC words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "s",
+        "t"
+      ],
+      "items": [
+        {
+          "id": "s:cl:-st",
+          "kind": "cluster",
+          "cluster": "-st"
+        },
+        {
+          "id": "s:cl:-nd",
+          "kind": "cluster",
+          "cluster": "-nd"
+        },
+        {
+          "id": "s:cl:-mp",
+          "kind": "cluster",
+          "cluster": "-mp"
+        },
+        {
+          "id": "s:cl:-nt",
+          "kind": "cluster",
+          "cluster": "-nt"
+        },
+        {
+          "id": "s:cl:-lk",
+          "kind": "cluster",
+          "cluster": "-lk"
+        },
+        {
+          "id": "s:cl:-sk",
+          "kind": "cluster",
+          "cluster": "-sk"
+        },
+        {
+          "id": "s:cl:-ft",
+          "kind": "cluster",
+          "cluster": "-ft"
+        },
+        {
+          "id": "s:cl:-lt",
+          "kind": "cluster",
+          "cluster": "-lt"
+        },
+        {
+          "id": "s:cl:-nch",
+          "kind": "cluster",
+          "cluster": "-nch"
+        }
+      ]
+    },
+    {
+      "id": "S13",
+      "title": "CCVC words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "f",
+        "r"
+      ],
+      "items": [
+        {
+          "id": "s:cl:fr-",
+          "kind": "cluster",
+          "cluster": "fr-"
+        },
+        {
+          "id": "s:cl:cr-",
+          "kind": "cluster",
+          "cluster": "cr-"
+        },
+        {
+          "id": "s:cl:st-",
+          "kind": "cluster",
+          "cluster": "st-"
+        },
+        {
+          "id": "s:cl:tr-",
+          "kind": "cluster",
+          "cluster": "tr-"
+        },
+        {
+          "id": "s:cl:sl-",
+          "kind": "cluster",
+          "cluster": "sl-"
+        },
+        {
+          "id": "s:cl:bl-",
+          "kind": "cluster",
+          "cluster": "bl-"
+        },
+        {
+          "id": "s:cl:gr-",
+          "kind": "cluster",
+          "cluster": "gr-"
+        },
+        {
+          "id": "s:cl:sp-",
+          "kind": "cluster",
+          "cluster": "sp-"
+        },
+        {
+          "id": "s:cl:dr-",
+          "kind": "cluster",
+          "cluster": "dr-"
+        },
+        {
+          "id": "s:cl:pl-",
+          "kind": "cluster",
+          "cluster": "pl-"
+        },
+        {
+          "id": "s:cl:br-",
+          "kind": "cluster",
+          "cluster": "br-"
+        },
+        {
+          "id": "s:cl:gl-",
+          "kind": "cluster",
+          "cluster": "gl-"
+        }
+      ]
+    },
+    {
+      "id": "S14",
+      "title": "CCVCC and CCCVC words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "s",
+        "t",
+        "r"
+      ],
+      "items": [
+        {
+          "id": "s:cl:str-",
+          "kind": "cluster",
+          "cluster": "str-"
+        },
+        {
+          "id": "s:cl:scr-",
+          "kind": "cluster",
+          "cluster": "scr-"
+        },
+        {
+          "id": "s:cl:spr-",
+          "kind": "cluster",
+          "cluster": "spr-"
+        }
+      ]
+    },
+    {
+      "id": "S15",
+      "title": "Compound words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "sign",
+        "label"
+      ],
+      "face": [
+        "sun",
+        "set"
+      ],
+      "items": [
+        {
+          "id": "s:pat:compound",
+          "kind": "pattern",
+          "pattern": "compound"
+        }
+      ]
+    },
+    {
+      "id": "S16",
+      "title": "-ing, -ed, -er and -est",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "sign",
+        "label"
+      ],
+      "face": [
+        "ing"
+      ],
+      "items": [
+        {
+          "id": "s:sfx:ing",
+          "kind": "suffix",
+          "affix": "ing"
+        },
+        {
+          "id": "s:sfx:ed",
+          "kind": "suffix",
+          "affix": "ed"
+        },
+        {
+          "id": "s:sfx:er",
+          "kind": "suffix",
+          "affix": "er"
+        },
+        {
+          "id": "s:sfx:est",
+          "kind": "suffix",
+          "affix": "est"
+        }
+      ]
+    },
+    {
+      "id": "S17",
+      "title": "Tricky words was, you, they, said and more",
+      "release": "1.1",
+      "levels": 3,
+      "moments": [
+        "note"
+      ],
+      "face": [
+        "was"
+      ],
+      "items": [
+        {
+          "id": "s:t:was",
+          "kind": "tricky",
+          "word": "was",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:you",
+          "kind": "tricky",
+          "word": "you",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:they",
+          "kind": "tricky",
+          "word": "they",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:said",
+          "kind": "tricky",
+          "word": "said",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:have",
+          "kind": "tricky",
+          "word": "have",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:like",
+          "kind": "tricky",
+          "word": "like",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:come",
+          "kind": "tricky",
+          "word": "come",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:some",
+          "kind": "tricky",
+          "word": "some",
+          "fluency": "tricky"
+        },
+        {
+          "id": "s:t:one",
+          "kind": "tricky",
+          "word": "one",
+          "fluency": "tricky"
+        }
+      ]
+    },
+    {
+      "id": "S18",
+      "title": "A short sentence from word cards",
+      "release": "1.1",
+      "levels": 3,
+      "moments": [
+        "note"
+      ],
+      "face": [
+        "."
+      ],
+      "items": [
+        {
+          "id": "s:sent:order",
+          "kind": "sentence",
+          "pattern": "order"
+        }
+      ]
+    },
+    {
+      "id": "S19",
+      "title": "Letter names and alphabet order",
+      "release": "1.2",
+      "levels": 3,
+      "moments": [
+        "letter-order"
+      ],
+      "face": [
+        "A",
+        "a"
+      ],
+      "items": [
+        {
+          "id": "s:abc:first",
+          "kind": "letter",
+          "pattern": "first"
+        },
+        {
+          "id": "s:abc:pair",
+          "kind": "letter",
+          "pattern": "pair"
+        }
+      ]
+    },
+    {
+      "id": "S20",
+      "title": "ai ay a-e",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ay",
+        "a-e"
+      ],
+      "items": [
+        {
+          "id": "s:g:ay",
+          "kind": "grapheme",
+          "gpc": "ay"
+        },
+        {
+          "id": "s:g:a-e",
+          "kind": "grapheme",
+          "gpc": "a-e"
+        }
+      ]
+    },
+    {
+      "id": "S21",
+      "title": "Capital at the start, full stop at the end",
+      "release": "1.1",
+      "levels": 3,
+      "moments": [
+        "note"
+      ],
+      "face": [
+        "A",
+        "."
+      ],
+      "items": [
+        {
+          "id": "s:cap:start",
+          "kind": "capital",
+          "pattern": "start"
+        },
+        {
+          "id": "s:mark:stop",
+          "kind": "mark",
+          "pattern": "stop"
+        }
+      ]
+    },
+    {
+      "id": "S22",
+      "title": "ee ea",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ea"
+      ],
+      "items": [
+        {
+          "id": "s:g:ea",
+          "kind": "grapheme",
+          "gpc": "ea"
+        }
+      ]
+    },
+    {
+      "id": "S23",
+      "title": "Full stop, question mark or exclamation mark; and",
+      "release": "1.1",
+      "levels": 3,
+      "moments": [
+        "note"
+      ],
+      "face": [
+        "?",
+        "!"
+      ],
+      "items": [
+        {
+          "id": "s:mark:q",
+          "kind": "mark",
+          "pattern": "q"
+        },
+        {
+          "id": "s:mark:bang",
+          "kind": "mark",
+          "pattern": "bang"
+        },
+        {
+          "id": "s:and",
+          "kind": "and"
+        }
+      ]
+    },
+    {
+      "id": "S24",
+      "title": "igh ie i-e y",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ie",
+        "i-e"
+      ],
+      "items": [
+        {
+          "id": "s:g:ie",
+          "kind": "grapheme",
+          "gpc": "ie"
+        },
+        {
+          "id": "s:g:i-e",
+          "kind": "grapheme",
+          "gpc": "i-e"
+        },
+        {
+          "id": "s:g:y.igh",
+          "kind": "grapheme",
+          "gpc": "y.igh"
+        }
+      ]
+    },
+    {
+      "id": "S25",
+      "title": "Days of the week with the capital",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S26",
+      "title": "ur ir er",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ir",
+        "er"
+      ],
+      "items": [
+        {
+          "id": "s:g:ir",
+          "kind": "grapheme",
+          "gpc": "ir"
+        },
+        {
+          "id": "s:g:er.ur",
+          "kind": "grapheme",
+          "gpc": "er.ur"
+        }
+      ]
+    },
+    {
+      "id": "S27",
+      "title": "Prefix un-",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "sign",
+        "label"
+      ],
+      "face": [
+        "un"
+      ],
+      "items": [
+        {
+          "id": "s:pre:un",
+          "kind": "prefix",
+          "affix": "un"
+        }
+      ]
+    },
+    {
+      "id": "S28",
+      "title": "Split digraphs",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "u-e",
+        "o-e"
+      ],
+      "items": [
+        {
+          "id": "s:g:u-e",
+          "kind": "grapheme",
+          "gpc": "u-e"
+        },
+        {
+          "id": "s:g:o-e",
+          "kind": "grapheme",
+          "gpc": "o-e"
+        }
+      ]
+    },
+    {
+      "id": "S29",
+      "title": "oa ow o-e oe",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ow",
+        "oe"
+      ],
+      "items": [
+        {
+          "id": "s:g:ow.oa",
+          "kind": "grapheme",
+          "gpc": "ow.oa"
+        },
+        {
+          "id": "s:g:oe",
+          "kind": "grapheme",
+          "gpc": "oe"
+        }
+      ]
+    },
+    {
+      "id": "S30",
+      "title": "ew ue",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "naming-bells",
+        "naming-garden",
+        "label",
+        "sign"
+      ],
+      "face": [
+        "ew",
+        "ue"
+      ],
+      "items": [
+        {
+          "id": "s:g:ew",
+          "kind": "grapheme",
+          "gpc": "ew"
+        },
+        {
+          "id": "s:g:ue",
+          "kind": "grapheme",
+          "gpc": "ue"
+        }
+      ]
+    },
+    {
+      "id": "S31",
+      "title": "oi or oy; ou or ow",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S32",
+      "title": "or aw au ore; e-e and y",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S33",
+      "title": "Year 1 common exception words",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S34",
+      "title": "Doubling and e-drop",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S35",
+      "title": "k or ck, ch or tch",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S36",
+      "title": "kn gn wr",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S37",
+      "title": "ge and dge",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S38",
+      "title": "The w special",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S39",
+      "title": "y to i with -es and -ed",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S40",
+      "title": "ey for ee",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S41",
+      "title": "-le -el -al -il",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S42",
+      "title": "c for s, s for zh",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S43",
+      "title": "-ment -ness -ful -less -ly",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S44",
+      "title": "Contractions and the possessive apostrophe",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "S45",
+      "title": "Homophones and -tion",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    }
+  ]
+}
