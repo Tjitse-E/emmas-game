@@ -34,7 +34,7 @@ Each `README.md` covers:
 | opus-5-5: Unicorn Egg Nest v2 | [opus-5-5-unicorn-egg-nest-v2](ideas/opus-5-5-unicorn-egg-nest-v2/) | Spell the baby's name from its spoken sounds, read wish words and name signs | Number bonds to 10 with moon cups and stones | mockup | |
 | opus-5-5: Pippa's Word Wand v2 | [opus-5-5-pippas-word-wand-v2](ideas/opus-5-5-pippas-word-wand-v2/) | Spell the word a visitor says, read notes and a tea-party sentence | Counting on and bonds to 10 with number stones | mockup | |
 | opus-5-5: Fluffle Nursery v2 | [opus-5-5-fluffle-nursery-v2](ideas/opus-5-5-fluffle-nursery-v2/) | Read the baby's written wishes, build its name | Exact plates to fill a ten-frame tummy, bath-jug bonds to 10 | mockup | |
-| opus-5-5: Moon Meadow Home (v3) | [games/moon-meadow-home](games/moon-meadow-home/) | Spell the babies' names, read wishes (with plurals), label jars | Warm eggs with number stones (bonds to 10), door numbers | building | |
+| opus-5-5: Moon Meadow Home (v3) | [games/moon-meadow-home](games/moon-meadow-home/) | Spell the babies' names, read wishes (with plurals), label jars | Warm eggs with number stones (bonds to 10), door numbers | building (Wave A playable, waiting for her feedback) | |
 
 Status values: `idea`, `mockup`, `chosen`, `rejected`, `building`.
 
