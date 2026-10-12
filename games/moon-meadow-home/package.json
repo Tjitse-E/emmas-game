@@ -1,0 +1,46 @@
+{
+  "name": "moon-meadow-home",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.19.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:test": "vite build --mode test",
+    "test": "vitest run",
+    "check": "svelte-check --tsconfig ./tsconfig.json --threshold error && tsc --noEmit -p tsconfig.json",
+    "check:content": "node tools/validate-content.ts",
+    "check:audio": "node tools/audio/check-audio.ts",
+    "build:lines": "node tools/build-lines.ts",
+    "audio:lines": "node tools/audio/build-lines.ts",
+    "audio:ids": "node tools/audio/gen-clip-ids.ts",
+    "lines:heartbeat": "node tools/heartbeat-lines.ts",
+    "list:pictures": "node tools/list-pictures.ts",
+    "simulate": "node tools/simulate.ts",
+    "names:pull": "node tools/pull-unknown-names.ts",
+    "report": "node tools/report.ts",
+    "serve": "PORT=8765 HOST=0.0.0.0 node server/serve.ts",
+    "serve:test": "PORT=${MMH_PORT:-8766} HOST=127.0.0.1 MOON_DIST=${MOON_DIST:-dist-test} MOON_DATA=${MOON_DATA:-$TMPDIR/mmh-test-data} node server/serve.ts",
+    "server:pair": "node server/admin.ts pair",
+    "flows": "bash flows/run.sh",
+    "art": "PYTHONPATH=tools python3 -m art.pipeline",
+    "art:test": "PYTHONPATH=tools python3 -m unittest discover -s tools/art/tests -t tools -v"
+  },
+  "dependencies": {
+    "@fontsource/andika": "5.3.0",
+    "idb": "8.0.3"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/node": "24.19.1",
+    "fake-indexeddb": "6.2.5",
+    "svelte": "5.57.1",
+    "svelte-check": "4.7.6",
+    "typescript": "6.0.3",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  }
+}

@@ -5,3 +5,10 @@ node_modules/
 .playwright-cli/
 .cache/
 __pycache__/
+games/*/dist/
+games/*/dist-test*/
+games/*/dist-emma*/
+games/*/.data/
+.worktrees/
+# Emma's real v2 export, used as a local test fixture only (spec 6.1)
+games/moon-meadow-home/tests/fixtures/local/
