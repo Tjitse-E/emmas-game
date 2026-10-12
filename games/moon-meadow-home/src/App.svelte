@@ -3,6 +3,8 @@
   import Router from './platform/Router.svelte';
   import PlayGate from './platform/PlayGate.svelte';
   import HomeButton from './platform/HomeButton.svelte';
+  import GhostHand from './ui/GhostHand.svelte';
+  import Moonbeam from './ui/Moonbeam.svelte';
   import { route } from './platform/router.svelte.ts';
   import { bootState } from './platform/boot.svelte.ts';
   import { PORTRAIT_OK } from './platform/scene-ids.ts';
@@ -12,6 +14,8 @@
 
 <Stage {allowPortrait}>
   <Router />
+  <Moonbeam />
+  <GhostHand />
   <HomeButton />
   {#if !bootState.started}
     <PlayGate />

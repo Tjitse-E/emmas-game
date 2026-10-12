@@ -71,7 +71,7 @@ wait_for() {
 # The centre of a labelled element, for page.mouse. Fails when there is no such element.
 _box() {
   local q; q="$(jsq "$1")"
-  printf 'const el = page.getByLabel(%s, { exact: true }).first(); const b = await el.boundingBox(); if (!b) throw new Error("no box for " + %s); const x = b.x + b.width / 2, y = b.y + b.height / 2;' "$q" "$q"
+  printf 'const el = page.getByLabel(%s, { exact: true }).first(); const b = await el.boundingBox({ timeout: 5000 }); if (!b) throw new Error("no box for " + %s); const x = b.x + b.width / 2, y = b.y + b.height / 2;' "$q" "$q"
 }
 
 # Press an element by aria-label with mouse move, down and up at its centre (safe on pulsing elements).
@@ -87,7 +87,7 @@ hold() {
 # Drag from one labelled element to another.
 drag_to() {
   local a b; a="$(jsq "$1")"; b="$(jsq "$2")"
-  run_code "async page => { const f = await page.getByLabel($a, { exact: true }).first().boundingBox(); const t = await page.getByLabel($b, { exact: true }).first().boundingBox(); if (!f || !t) throw new Error('no box'); await page.mouse.move(f.x + f.width / 2, f.y + f.height / 2); await page.mouse.down(); await page.mouse.move(t.x + t.width / 2, t.y + t.height / 2, { steps: 12 }); await page.mouse.up(); }" || fail "cannot drag $1 to $2"
+  run_code "async page => { const f = await page.getByLabel($a, { exact: true }).first().boundingBox({ timeout: 5000 }); const t = await page.getByLabel($b, { exact: true }).first().boundingBox({ timeout: 5000 }); if (!f || !t) throw new Error('no box'); await page.mouse.move(f.x + f.width / 2, f.y + f.height / 2); await page.mouse.down(); await page.mouse.move(t.x + t.width / 2, t.y + t.height / 2, { steps: 12 }); await page.mouse.up(); }" || fail "cannot drag $1 to $2"
 }
 
 # Drag a labelled element by dx, dy CSS pixels.
