@@ -1,6 +1,6 @@
 {
  "v": 1,
- "built": "2026-10-12T14:17:07",
+ "built": "2026-10-12T14:54:17",
  "rigMode": "sprite",
  "pictures": {
   "acorn": {
@@ -1929,6 +1929,14 @@
    "pack": "core",
    "source": "codex"
   },
+  "item-hammer": {
+   "src": "items/item-hammer.webp",
+   "w": 277,
+   "h": 320,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
   "item-heart": {
    "src": "items/item-heart.webp",
    "w": 256,
@@ -2031,6 +2039,14 @@
    "h": 562,
    "kind": "item",
    "pack": "meadow",
+   "source": "codex"
+  },
+  "item-plank": {
+   "src": "items/item-plank.webp",
+   "w": 320,
+   "h": 129,
+   "kind": "item",
+   "pack": "core",
    "source": "codex"
   },
   "item-plaque": {
@@ -3023,6 +3039,14 @@
    "h": 320,
    "kind": "word",
    "pack": "words",
+   "source": "codex"
+  },
+  "place-dressing": {
+   "src": "items/place-dressing.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "building",
+   "pack": "meadow",
    "source": "codex"
   },
   "planet": {
@@ -10286,7 +10310,18 @@
    "source": "codex"
   }
  },
- "lumi": null,
+ "lumi": {
+  "face": "lumi/lumi.webp",
+  "mouth": "lumi/lumi-mouth.webp",
+  "w": 600,
+  "h": 598,
+  "mouthBox": [
+   260,
+   308,
+   113,
+   74
+  ]
+ },
  "patterns": {
   "speckle": "ui/speckle.webp"
  }

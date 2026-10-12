@@ -1,0 +1,28 @@
+{
+ "pictures": {
+  "item-plank": {
+   "src": "items/item-plank.webp",
+   "w": 320,
+   "h": 129,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-hammer": {
+   "src": "items/item-hammer.webp",
+   "w": 277,
+   "h": 320,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "place-dressing": {
+   "src": "items/place-dressing.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "building",
+   "pack": "meadow",
+   "source": "codex"
+  }
+ }
+}

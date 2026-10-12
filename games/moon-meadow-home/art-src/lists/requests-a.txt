@@ -1,0 +1,4 @@
+# Scene requests for Wave A and 1.1 places, copied from content/places/art-requests.txt (places Task A16).
+item-plank | item | a single smooth wooden plank of light honey-coloured wood with rounded ends, seen from the side
+item-hammer | item | a small friendly wooden mallet with a soft rounded head and a short handle
+place-dressing | place | a small pretty open gazebo with a tall oval mirror and a little wardrobe, seen from the front

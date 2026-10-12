@@ -1,0 +1,60 @@
+{
+ "batch": "requests-a",
+ "source": "requests-a",
+ "sheets": [
+  {
+   "id": "requests-a-01",
+   "cols": 4,
+   "rows": 4,
+   "ids": [
+    "item-plank",
+    "item-hammer",
+    "place-dressing"
+   ],
+   "descs": [
+    "a single smooth wooden plank of light honey-coloured wood with rounded ends, seen from the side",
+    "a small friendly wooden mallet with a soft rounded head and a short handle",
+    "a small pretty open gazebo with a tall oval mirror and a little wardrobe, seen from the front"
+   ],
+   "grey": false
+  }
+ ],
+ "entries": {
+  "item-plank": {
+   "id": "item-plank",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 320,
+   "desc": "a single smooth wooden plank of light honey-coloured wood with rounded ends, seen from the side",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  },
+  "item-hammer": {
+   "id": "item-hammer",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 320,
+   "desc": "a small friendly wooden mallet with a soft rounded head and a short handle",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 1
+  },
+  "place-dressing": {
+   "id": "place-dressing",
+   "kind": "word",
+   "wave": "A",
+   "pack": "words",
+   "size": 320,
+   "desc": "a small pretty open gazebo with a tall oval mirror and a little wardrobe, seen from the front",
+   "tint": null,
+   "slot": null,
+   "step": "place",
+   "priority": 1
+  }
+ }
+}
