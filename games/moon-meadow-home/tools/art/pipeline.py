@@ -488,6 +488,9 @@ def cmd_manifest(args) -> int:
     return 0
 
 
+CHECK_ALL_NOTES = {'no-colour'}
+
+
 def cmd_check_all(args) -> int:
     m = _read_json(paths.PUBLIC_ART / 'manifest.json', None)
     if m is None:
@@ -502,9 +505,15 @@ def cmd_check_all(args) -> int:
             continue
         issues = checks.check_picture(Image.open(f), source_long_side=10_000, grey='tint' in e)
         issues += checks.check_file(f, checks.max_bytes_for(e['kind'], max(e['w'], e['h'])))
+        # Grey objects (a spoon, a stone, a tap) are really grey, and every picture in the manifest passed review,
+        # so 'no-colour' is a note here. It still flags a grey cut while cutting.
+        notes = [i for i in issues if i in CHECK_ALL_NOTES]
+        issues = [i for i in issues if i not in CHECK_ALL_NOTES]
         if issues:
             print(f'{key}: {",".join(issues)}{"" if e.get("source") == "codex" else " (" + e["source"] + ", note only)"}')
             bad += e.get('source') == 'codex'
+        if notes:
+            print(f'{key}: {",".join(notes)} (note only)')
     for key, e in m['backgrounds'].items():
         f = paths.PUBLIC_ART / e['src']
         issues = checks.check_file(f, checks.max_bytes_for('bg', e['w'])) if f.exists() else ['gone']
