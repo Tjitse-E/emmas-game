@@ -126,3 +126,12 @@ swiftc -O -module-cache-path "$TMPDIR/mc" tools/cutout.swift -o "$TMPDIR/cutout"
 - `bg-stable-yard.png` has softer outlines in the far landscape than the reference.
 - The Cosy foal has no rosy cheeks.
 - Backgrounds have different aspect ratios (see above).
+
+## Queen Lumi (Task A11b)
+
+- `raw/lumi.png` is Lumi with her mouth closed, `raw/lumi-mouth.png` the Codex redraw with it open. The redraw drifts a little everywhere, so `raw/lumi-mouth-only.png` is the closed picture with only the muzzle of the open one pasted in (a feathered ellipse at 570,610 to 830,770).
+- `pipeline lumi --mouth art-src/raw/lumi-mouth-only.png` still returns a mouth box of the whole face, because the cut-out edge pixels of the two pictures differ. After running it, the overlay was cropped to the pixels that change inside the opaque face (box `[260, 308, 113, 74]` in the 600 x 598 face) and `meta/lumi.json` was updated by hand. Re-running `pipeline lumi` undoes that crop until `derive.lumi_mouth` compares opaque pixels only.
+
+## Scene requests
+
+`lists/requests-a.txt` holds the scene requests from `content/places/art-requests.txt` (`item-plank`, `item-hammer`, `place-dressing`), planned with `plan-sheets --source requests-a`, so items keep their kind (`--source requests` reads every line as a word). `place-dressing` has no known prefix, so its entry in `meta/requests-a.json` was set to kind `building`, pack `meadow`, file `items/place-dressing.webp` by hand.

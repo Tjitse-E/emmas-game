@@ -1,0 +1,14 @@
+{
+ "lumi": {
+  "face": "lumi/lumi.webp",
+  "mouth": "lumi/lumi-mouth.webp",
+  "w": 600,
+  "h": 598,
+  "mouthBox": [
+   260,
+   308,
+   113,
+   74
+  ]
+ }
+}
