@@ -1,7 +1,7 @@
 // The only file of the heartbeat scenes that talks to the learning engine and the planner (Task 17B).
 // The top half is pure (content views, picks to served items, result logs) and unit tested. createBridge()
 // wraps the live calls; deps.ts builds the one bridge the scenes use from the store.
-import { carrierKey, learnResultPayload, nextEgg, nextItem, nextNameReviews, spellingShareLow, visitStats } from '../../core/planner/index.ts';
+import { carrierKey, learnResultPayload, nextEgg, nextItem, nextNameReviews, shouldVisitDoor, spellingShareLow, visitStats } from '../../core/planner/index.ts';
 import type { ItemRequest, Outcome, Pick, PlanContext } from '../../core/planner/index.ts';
 import { currentStep, isSecure, stepStatus } from '../../core/learning/index.ts';
 import type { Learner } from '../../core/learning/index.ts';
@@ -186,6 +186,10 @@ export function createBridge(src: BridgeSource) {
     },
     spellingBehind(): boolean {
       return spellingShareLow(l(), c());
+    },
+    /** Learning's door-visit rule: while the door range is being learnt, else every few newborns. */
+    shouldVisitDoor(herdCount: number): boolean {
+      return shouldVisitDoor(l(), c(), herdCount);
     },
     checkedCount(): number {
       return visitStats(l()).total;
