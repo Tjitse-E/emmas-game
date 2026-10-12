@@ -14,6 +14,8 @@
  *   EmmaAudio.hold(grapheme)            -> {stop(), done}, holds a long sound until stop()
  *   EmmaAudio.sfx(name)                 -> Promise, synthesized effect, no files
  *   EmmaAudio.stop(), EmmaAudio.mute(bool), EmmaAudio.speaking, EmmaAudio.missing
+ *   EmmaAudio.addPack(name, base, {fresh}), EmmaAudio.forget(ids), EmmaAudio.onMissing(fn),
+ *   EmmaAudio.reportMissing(id)        (v3 additions, see shared/README.md)
  *
  * Every promise resolves, also when a clip is missing, stopped, or the audio context is still locked.
  */
@@ -31,6 +33,9 @@
   var pendingSpeech = 0;      // say() calls that have not resolved yet
   var muted = false;
   var missing = [];
+  var missingListeners = []; // onMissing() callbacks, called once per new missing id
+  var packs = [];            // addPack(): [{name, base, manifest: Promise}], searched in order
+  var clipUrls = {};         // id -> url it was loaded from, for forget()
 
   var speechGen = 0;                 // bumped by stopSpeech(); queued lines of an older generation are skipped
   var speechChain = Promise.resolve();
@@ -40,7 +45,11 @@
 
   function warnMissing(id) {
     console.warn('[audio] missing ' + id);
-    if (missing.indexOf(id) < 0) missing.push(id);
+    if (missing.indexOf(id) >= 0) return;
+    missing.push(id);
+    missingListeners.slice().forEach(function (fn) {
+      try { fn(id); } catch (e) { /* a listener error must not break playback */ }
+    });
   }
 
   function ensureContext() {
@@ -107,10 +116,32 @@
     return manifestPromise;
   }
 
+  function fetchManifest(url, fresh) {
+    return fetch(url, fresh ? { cache: 'no-cache' } : undefined)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  // With packs: the first pack whose manifest lists the id. Without packs: the v2 behaviour (one folder).
+  function clipSource(id) {
+    if (!packs.length) {
+      return gameManifest().then(function (m) { return m && m.clips && !m.clips[id] ? null : clipUrl(id); });
+    }
+    var list = packs.slice();
+    return Promise.all(list.map(function (p) { return p.manifest; })).then(function (ms) {
+      for (var i = 0; i < list.length; i++) {
+        var c = ms[i] && ms[i].clips && ms[i].clips[id];
+        if (c) return list[i].base + (c.file || id + '.mp3');
+      }
+      return null;
+    });
+  }
+
   function loadClip(id) {
-    return gameManifest().then(function (m) {
-      if (m && m.clips && !m.clips[id]) return null;
-      return load(clipUrl(id));
+    return clipSource(id).then(function (url) {
+      if (!url) return null;
+      clipUrls[id] = url;
+      return load(url);
     });
   }
 
@@ -579,8 +610,31 @@
       });
     },
     has: function (id) {
-      return gameManifest().then(function (m) { return !!(m && m.clips && m.clips[id]); });
+      if (!packs.length) return gameManifest().then(function (m) { return !!(m && m.clips && m.clips[id]); });
+      return clipSource(id).then(function (url) { return !!url; });
     },
+
+    // Additions for v3 (Moon Meadow Home). v2 never calls them, so its behaviour is unchanged.
+    addPack: function (name, base, o) {
+      var entry = { name: name, base: base, manifest: fetchManifest(base + 'manifest.json', !!(o && o.fresh)) };
+      for (var i = 0; i < packs.length; i++) {
+        if (packs[i].name === name) { packs[i] = entry; return entry.manifest; }
+      }
+      packs.push(entry);
+      return entry.manifest;
+    },
+    forget: function (ids) {
+      (ids || []).forEach(function (id) {
+        var url = clipUrls[id] || clipUrl(id);
+        delete buffers[url];
+        delete clipUrls[id];
+      });
+    },
+    onMissing: function (fn) {
+      missingListeners.push(fn);
+      return function () { removeFrom(missingListeners, fn); };
+    },
+    reportMissing: warnMissing,
     phonicsIndex: phonicsIndex,
 
     missing: missing
