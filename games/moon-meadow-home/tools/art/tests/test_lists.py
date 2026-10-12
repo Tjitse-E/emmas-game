@@ -131,10 +131,19 @@ class BreedsAndBackgroundsTest(unittest.TestCase):
 
     def test_backgrounds(self):
         bgs = lists.load_backgrounds()
-        self.assertEqual(len(bgs), 11)
-        self.assertEqual(sum(1 for b in bgs if b.wave == 'A'), 6)
+        self.assertEqual(len(bgs), 12)
+        self.assertEqual(sum(1 for b in bgs if b.wave == 'A'), 7)
+        self.assertIn('bg-stable-night', [b.id for b in bgs if b.wave == 'A'])
         for b in bgs:
             self.assertTrue(b.id.startswith('bg-'))
+
+    def test_next_list(self):
+        # The 1.0.1 pictures (docs/v3/next/plan.md section 12), planned with --source next.
+        from art import pipeline
+        got = pipeline.load_list('next')
+        self.assertEqual([e.id for e in got], ['item-stall-bed', 'item-straw-pile', 'item-sleep-blanket', 'item-manger',
+                                              'item-hay-bundle', 'item-food-tray', 'item-cup-nest'])
+        self.assertEqual({e.kind for e in got}, {'item'})
 
 
 if __name__ == '__main__':
