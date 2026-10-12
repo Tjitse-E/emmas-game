@@ -1,21 +1,33 @@
-// Goodnight (spec 2.7, 3.7): roll call at the doors (a name on the lantern, or a door number), the herd count
-// printed while Elizabeth reads it, ten stars make a sky unicorn to name, then Lumi says goodnight.
-import type { Served } from '../../core/heartbeat/types.ts';
-import { type StableLayout, pageDoors } from '../../core/heartbeat/stables.ts';
-import { type RollCallPick, logRollCall } from '../../core/heartbeat/rollcall.ts';
+// Goodnight (spec 2.7, 3.7; docs/v3/next/plan.md N18): the stage machine
+// walk -> herd-in -> manger -> free -> bed -> sky -> sky-name -> bye.
+// The lantern walk leads named babies in at dusk, the rest of the herd trots in by itself, the babies eat at their
+// mangers (lane feed's MangerFeed), she taps the moon when it is bedtime, the door pick and tucking in happen in
+// bed, the window opens the sky with the herd count and a sky unicorn to name, then Lumi says goodnight.
+// Stages skip when empty: an empty herd skips walk and herd-in, a long visit or no mangers skip manger and free.
 import { goodnightCountLines, skyState } from '../../core/heartbeat/sky.ts';
-import { lineId } from '../../core/heartbeat/lines.ts';
-import { momentResult } from '../../core/heartbeat/result.ts';
-import { learnLog } from './learn-bridge.ts';
 import type { Named } from './naming.ctrl.ts';
 import type { SceneDeps } from './deps.ts';
+import { WalkCtrl, type WalkInput } from './walk.ctrl.ts';
+import { StableCtrl, type StableInput } from './stable.ctrl.ts';
+
+export type GoodnightStage = 'walk' | 'herd-in' | 'manger' | 'free' | 'bed' | 'sky' | 'sky-name' | 'bye';
 
 export type GoodnightInput = {
-  layout: StableLayout; page: number; picks: RollCallPick[]; doorServed: Served | null; herdCount: number; skyNames: (string | null)[];
-  /** The roll-call name pick of a baby (learning's name item), for its result. */
-  nameServed: (baby: string, name: string) => Served | null;
+  herdCount: number; skyNames: (string | null)[];
+  /** The lantern walk, or null when no baby stands on the dusk meadow. */
+  walk: WalkInput | null;
+  stable: StableInput;
+  /** The manger part runs: mangers on screen and not a long visit (N20). */
+  mangers: boolean;
+  /** A long visit: no g-tuck, and the window comes straight after the door pick (N20, N3). */
+  long: boolean;
 };
-export type GoodnightStage = 'rollcall' | 'sky' | 'sky-name' | 'bye';
+
+/** Pauses of the stages that need no input (scaled by the test speed, so fast mode makes them milliseconds). */
+export const HERD_TROT_MS = 1600;
+export const HERD_WALK_MS = 2200;
+export const MOON_SAY_MS = 2600;
+export const WINDOW_IDLE_MS = 8000;
 
 /** The printed herd count: "41 unicorns", "1 unicorn". */
 export function countText(n: number): string {
@@ -24,92 +36,135 @@ export function countText(n: number): string {
 
 export class GoodnightCtrl {
   stage: GoodnightStage;
-  index = 0;
-  poked: number | null = null;
+  /** Every stage entered this goodnight, in order. */
+  readonly stages: GoodnightStage[] = [];
+  /** herd-in: false while the others trot along the path, true once the stable is on screen. */
+  inside = false;
+  /** bed: the stable window is on screen. */
+  windowShown = false;
   showCount = false;
   onchange: () => void = () => {};
-  readonly heads: Set<string>;
+  /** The scene shows the ghost hand on the moon or the window (idle level 3). It never presses it. */
+  onghost: (label: string) => Promise<void> = async () => {};
+  readonly walk: WalkCtrl | null;
+  readonly stable: StableCtrl;
   readonly countText: string;
-  private misses = 0;
-  private startedAt = 0;
-  private firstTouch: number | null = null;
-  private i: GoodnightInput;
-  private d: SceneDeps;
+  private readonly i: GoodnightInput;
+  private readonly d: SceneDeps;
+  private windowSaid = false;
+  private started = false;
 
   constructor(i: GoodnightInput, d: SceneDeps) {
     this.i = i;
     this.d = d;
-    this.heads = new Set(pageDoors(i.layout, i.page).filter((x) => x.baby).map((x) => x.baby!));
-    this.stage = i.picks.length ? 'rollcall' : 'sky';
     this.countText = countText(i.herdCount);
-  }
-
-  get pick(): RollCallPick | null { return this.i.picks[this.index] ?? null; }
-
-  private doorOf(baby: string): number | null {
-    return pageDoors(this.i.layout, this.i.page).find((x) => x.baby === baby)?.number ?? null;
-  }
-  answerDoor(): number | null { const p = this.pick; return p ? this.doorOf(p.baby) : null; }
-  wrongDoor(): number | null {
-    const p = this.pick;
-    const other = [...this.heads].find((b) => b !== p?.baby);
-    return other ? this.doorOf(other) : null;
-  }
-
-  private repeat(): Promise<void> {
-    const p = this.pick;
-    return p?.kind === 'door' ? this.d.audio.say(lineId.doorBed(p.number)) : this.d.audio.say('g-rollcall');
-  }
-
-  async beginPick(): Promise<void> {
-    const p = this.pick;
-    if (!p || this.stage !== 'rollcall') return;
-    this.misses = 0;
-    this.firstTouch = null;
-    this.startedAt = this.d.now();
-    this.d.hints.begin({
-      step: p.kind === 'door' ? this.i.doorServed?.step ?? null : null,
-      repeat: () => this.repeat(), focused: () => this.repeat(),
-      answer: async () => { const n = this.answerDoor(); if (n !== null) await this.tapDoor(n, true); },
-      target: () => { const n = this.answerDoor(); return n === null ? null : `door ${n}`; },
-    });
-    this.onchange();
-    if (p.kind === 'door') await this.d.audio.say(lineId.doorBed(p.number));
-    else if (this.index === 0) await this.d.audio.say('g-rollcall');
-  }
-
-  async tapDoor(n: number, ghost = false): Promise<'ok' | 'miss' | 'ignored'> {
-    const p = this.pick;
-    if (!p || this.stage !== 'rollcall') return 'ignored';
-    const door = pageDoors(this.i.layout, this.i.page).find((x) => x.number === n);
-    if (!door?.baby || !this.heads.has(door.baby)) return 'ignored';
-    if (!ghost) { if (this.firstTouch === null) this.firstTouch = this.d.now(); this.d.hints.touch(); }
-    this.d.audio.act();
-    if (door.baby === p.baby) {
-      // Spec 3.7: a pick among fewer than three heads is played but never logged.
-      const logged = logRollCall(this.heads.size);
-      const result = momentResult(this.misses, this.d.hints.level);
-      const ms = Math.max(0, (this.firstTouch ?? this.d.now()) - this.startedAt);
-      const served = p.kind === 'door' ? this.i.doorServed : this.i.nameServed(p.baby, p.name);
-      const learn = logged ? learnLog(served, { result, ms, place: 'goodnight', error: result === 'first' ? null : 'other' }, p.baby) : null;
-      this.d.dispatch({ type: 'hb.care', baby: p.baby, station: 'rollcall', learn });
-      this.d.hints.end();
-      this.heads.delete(p.baby);
-      this.poked = null;
-      this.index++;
-      if (!this.pick) this.stage = 'sky';
-      this.onchange();
-      await this.d.audio.say('lumi-night');
-      if (this.pick) await this.beginPick();
-      return 'ok';
+    this.walk = i.walk && i.walk.dusk.length ? new WalkCtrl(i.walk, d) : null;
+    this.stable = new StableCtrl(i.stable, d);
+    this.stage = this.walk ? 'walk' : 'bed';
+    if (this.walk) {
+      this.walk.onchange = () => this.onchange();
+      this.walk.ondone = () => { void this.herdIn(); };
     }
-    this.misses++;
-    this.poked = n;
+    this.stable.onchange = () => this.onchange();
+    this.stable.ondoor = () => { void this.afterDoor(); };
+    this.stable.ontuck = () => { void this.firstTuck(); };
+  }
+
+  private enter(s: GoodnightStage): void {
+    this.stage = s;
+    if (this.stages[this.stages.length - 1] !== s) this.stages.push(s);
     this.onchange();
-    await this.d.audio.say('foal-notme');
-    if (p.kind === 'door' && this.d.audio.hasClip(lineId.thatIs(n))) await this.d.audio.say(lineId.thatIs(n));
-    await this.d.hints.miss();
-    return 'miss';
+  }
+
+  /** Starts the first stage. Safe to call twice. */
+  async start(): Promise<void> {
+    if (this.started) return;
+    this.started = true;
+    if (this.walk) { this.enter('walk'); await this.walk.begin(); return; }
+    await this.bed();
+  }
+
+  /** The rest of the herd trots in by itself, then every baby walks from the stable door to its stall. */
+  async herdIn(): Promise<void> {
+    if (this.stage !== 'walk') return;
+    this.inside = false;
+    this.enter('herd-in');
+    if (this.i.herdCount > (this.walk?.led.length ?? 0)) await this.d.audio.say('g-herd-in');
+    await this.d.pause(HERD_TROT_MS);
+    this.inside = true;
+    this.onchange();
+    await this.d.pause(HERD_WALK_MS);
+    if (this.i.mangers) this.enter('manger');
+    else await this.bed();
+  }
+
+  /** Lane feed's checked manger moment is over (or there was none): free feeding until she taps the moon. */
+  async mangerDone(): Promise<void> {
+    if (this.stage !== 'manger') return;
+    this.enter('free');
+    const say = () => this.d.audio.say('g-moon');
+    this.d.hints.begin({
+      step: null, repeat: say, focused: say,
+      // Idle level 3 only shows the moon (N3): she may still be feeding, so the ghost never ends free feeding.
+      answer: async () => { await this.onghost('moon'); },
+      target: () => (this.stage === 'free' ? 'moon' : null),
+    });
+    // After lane feed's g-feed-free. Not awaited, so a moon tap never waits for it.
+    void this.d.pause(MOON_SAY_MS).then(() => (this.stage === 'free' ? say() : undefined));
+  }
+
+  /** Any touch during free feeding or bed keeps the idle hints quiet. */
+  touch(): void { if (this.stage === 'free' || this.stage === 'bed') this.d.hints.touch(); }
+
+  /** A tap on the moon: bedtime. */
+  async moon(): Promise<'ok' | 'ignored'> {
+    if (this.stage !== 'free') return 'ignored';
+    this.d.audio.act();
+    this.d.hints.end();
+    await this.bed();
+    return 'ok';
+  }
+
+  /** The lantern dims and the babies lie down; the door pick when there is one, then tucking and the window. */
+  private async bed(): Promise<void> {
+    this.enter('bed');
+    if (this.stable.doorOpen) await this.stable.beginDoor();
+    else await this.afterDoor();
+  }
+
+  private async afterDoor(): Promise<void> {
+    if (this.stage !== 'bed' || this.windowShown) return;
+    if (!this.i.long) await this.d.audio.say('g-tuck');
+    this.windowShown = true;
+    this.onchange();
+    const say = () => this.d.audio.say('g-window');
+    this.d.hints.begin({
+      step: null, repeat: say, focused: say,
+      answer: async () => { await this.onghost('window'); },
+      target: () => (this.stage === 'bed' && this.windowShown ? 'window' : null),
+    });
+    if (this.i.long) { await this.sayWindow(); return; }
+    // g-window after the first tuck, or after 8 s without one. Not awaited, so a window tap never waits for it.
+    void this.d.pause(WINDOW_IDLE_MS).then(() => this.sayWindow());
+  }
+
+  private async firstTuck(): Promise<void> {
+    if (this.windowShown) await this.sayWindow();
+  }
+
+  private async sayWindow(): Promise<void> {
+    if (this.windowSaid || this.stage !== 'bed') return;
+    this.windowSaid = true;
+    await this.d.audio.say('g-window');
+  }
+
+  /** A tap on the stable window: the sky. */
+  async window(): Promise<'ok' | 'ignored'> {
+    if (this.stage !== 'bed' || !this.windowShown) return 'ignored';
+    this.d.audio.act();
+    this.d.hints.end();
+    this.enter('sky');
+    return 'ok';
   }
 
   /** The count, printed while it is read, and the sky. Returns the index of a sky unicorn to name, or null. */
@@ -121,21 +176,18 @@ export class GoodnightCtrl {
     for (const id of [...lines.required, ...lines.optional]) if (this.d.audio.hasClip(id)) await this.d.audio.say(id);
     this.showCount = false;
     const next = st.unnamed[0] ?? null;
-    this.stage = next === null ? 'bye' : 'sky-name';
-    this.onchange();
+    this.enter(next === null ? 'bye' : 'sky-name');
     if (next !== null) await this.d.audio.say('g-sky-name');
     return next;
   }
 
   skyNamed(index: number, n: Named): void {
     this.d.dispatch({ type: 'hb.sky-named', index, name: n.name });
-    this.stage = 'bye';
-    this.onchange();
+    this.enter('bye');
   }
 
   async bye(): Promise<void> {
-    this.stage = 'bye';
-    this.onchange();
+    this.enter('bye');
     await this.d.audio.say('lumi-goodnight-emma');
   }
 }
