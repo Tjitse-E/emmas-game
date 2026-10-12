@@ -58,6 +58,12 @@
    "text": "Listen to the sounds."
   },
   {
+   "id": "platform-turn",
+   "speaker": "narrator",
+   "text": "Please turn the iPad on its side.",
+   "note": "The shell, when the iPad is held upright (platform A9)."
+  },
+  {
    "id": "foal-hello",
    "speaker": "foal",
    "text": "[giggles] Hello!"
