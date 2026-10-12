@@ -36,7 +36,9 @@ const VOWEL_GEMS = new Set([
 // Learning's vowel phonemes, plus the fixture spellings 'uh', 'er' and 'yoo'.
 const VOWEL_PH = new Set(['a', 'e', 'i', 'o', 'u', 'uu', 'ai', 'ee', 'igh', 'oa', 'oo', 'ar', 'or', 'ur', 'ow', 'oi',
   'ear', 'air', '@', 'uh', 'er', 'yoo']);
-const MULTI = GEM_ORDER.filter((g) => g.length > 1 && !g.includes('-')).sort((a, b) => b.length - a.length);
+// Word-ending units ('se' in house, 'le' in table) are left out of the greedy split, so 'Rose' reads with a magic e.
+const ENDING_UNITS = new Set(['se', 'le', 'tle', 'mb']);
+const MULTI = GEM_ORDER.filter((g) => g.length > 1 && !g.includes('-') && !ENDING_UNITS.has(g)).sort((a, b) => b.length - a.length);
 // A vowel before a consonant and a final e reads long (magic e), as its split digraph.
 const LONG: Record<string, Phoneme[]> = {};
 for (const v of ['a', 'e', 'i', 'o', 'u']) { const u = USUAL[`${v}-e`]; if (u) LONG[v] = u; }
