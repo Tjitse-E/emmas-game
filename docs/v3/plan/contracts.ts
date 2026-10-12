@@ -674,6 +674,7 @@ export type UnicornPose = 'idle' | 'walk' | 'hop' | 'happy' | 'sleep' | 'still' 
 export type UnicornProps = {
   breed: BreedId; stage: Stage; colours: Colours; traits?: Partial<Traits>; height: number; pose?: UnicornPose;
   facing?: 'left' | 'right'; outfit?: Partial<Record<OutfitSlot, string>>; headOnly?: boolean; seed?: number; label?: string;
+  lite?: boolean; // R63: a pre-tinted flat picture, no blend or mask layers. places (A7) decides when.
 };
 export type EggProps = { kind: BreedId; skin?: 'golden' | 'speckled' | null; cracks?: 0 | 1 | 2 | 3; wobble?: boolean; size: number; label?: string };
 export type LumiProps = { size: number; talking?: boolean; label?: string };
