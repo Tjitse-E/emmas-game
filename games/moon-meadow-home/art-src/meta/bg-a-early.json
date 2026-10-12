@@ -1,0 +1,28 @@
+{
+ "backgrounds": {
+  "bg-stable-yard": {
+   "src": "bg/bg-stable-yard.webp",
+   "w": 1770,
+   "h": 1230,
+   "pack": "stables",
+   "dominant": "#e3aa72",
+   "source": "codex"
+  },
+  "bg-building-yard": {
+   "src": "bg/bg-building-yard.webp",
+   "w": 1770,
+   "h": 1230,
+   "pack": "building",
+   "dominant": "#95c03a",
+   "source": "codex"
+  },
+  "bg-bath-pond": {
+   "src": "bg/bg-bath-pond.webp",
+   "w": 1770,
+   "h": 1230,
+   "pack": "bath",
+   "dominant": "#7bb261",
+   "source": "codex"
+  }
+ }
+}

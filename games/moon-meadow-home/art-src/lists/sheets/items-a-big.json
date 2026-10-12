@@ -1,0 +1,126 @@
+{
+ "batch": "items-a-big",
+ "source": "items",
+ "sheets": [
+  {
+   "id": "items-a-big-01",
+   "cols": 2,
+   "rows": 2,
+   "ids": [
+    "item-nest",
+    "item-name-tree",
+    "item-wish-basket",
+    "item-toy-shelf"
+   ],
+   "descs": [
+    "a big round cosy nest of twigs lined with soft moss",
+    "a small round tree with little golden bells hanging from its branches",
+    "a big empty woven picnic basket with a handle",
+    "a wide empty wooden toy shelf with two shelves"
+   ],
+   "grey": false
+  },
+  {
+   "id": "items-a-big-02",
+   "cols": 2,
+   "rows": 2,
+   "ids": [
+    "item-sign-board",
+    "item-plot",
+    "building-stable-gate"
+   ],
+   "descs": [
+    "a blank wooden sign board on two posts",
+    "an empty square plot of soft earth with a small blank picture sign on a post",
+    "a small arched wooden gate with a lantern"
+   ],
+   "grey": false
+  }
+ ],
+ "entries": {
+  "item-nest": {
+   "id": "item-nest",
+   "kind": "item",
+   "wave": "A",
+   "pack": "meadow",
+   "size": 640,
+   "desc": "a big round cosy nest of twigs lined with soft moss",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  },
+  "item-name-tree": {
+   "id": "item-name-tree",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 640,
+   "desc": "a small round tree with little golden bells hanging from its branches",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  },
+  "item-wish-basket": {
+   "id": "item-wish-basket",
+   "kind": "item",
+   "wave": "A",
+   "pack": "meadow",
+   "size": 640,
+   "desc": "a big empty woven picnic basket with a handle",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  },
+  "item-toy-shelf": {
+   "id": "item-toy-shelf",
+   "kind": "item",
+   "wave": "A",
+   "pack": "meadow",
+   "size": 800,
+   "desc": "a wide empty wooden toy shelf with two shelves",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  },
+  "item-sign-board": {
+   "id": "item-sign-board",
+   "kind": "item",
+   "wave": "A",
+   "pack": "building",
+   "size": 640,
+   "desc": "a blank wooden sign board on two posts",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  },
+  "item-plot": {
+   "id": "item-plot",
+   "kind": "item",
+   "wave": "A",
+   "pack": "meadow",
+   "size": 640,
+   "desc": "an empty square plot of soft earth with a small blank picture sign on a post",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  },
+  "building-stable-gate": {
+   "id": "building-stable-gate",
+   "kind": "building",
+   "wave": "A",
+   "pack": "meadow",
+   "size": 640,
+   "desc": "a small arched wooden gate with a lantern",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  }
+ }
+}

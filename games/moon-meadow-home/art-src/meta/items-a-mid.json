@@ -1,0 +1,148 @@
+{
+ "pictures": {
+  "egg-moon": {
+   "src": "items/egg-moon.webp",
+   "w": 407,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-nestling": {
+   "src": "items/egg-nestling.webp",
+   "w": 410,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-pebble": {
+   "src": "items/egg-pebble.webp",
+   "w": 413,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-cosy": {
+   "src": "items/egg-cosy.webp",
+   "w": 413,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-berry": {
+   "src": "items/egg-berry.webp",
+   "w": 411,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-snow": {
+   "src": "items/egg-snow.webp",
+   "w": 415,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-bubble": {
+   "src": "items/egg-bubble.webp",
+   "w": 404,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-post": {
+   "src": "items/egg-post.webp",
+   "w": 407,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-sparkle": {
+   "src": "items/egg-sparkle.webp",
+   "w": 404,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-golden": {
+   "src": "items/egg-golden.webp",
+   "w": 428,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-speckled": {
+   "src": "items/egg-speckled.webp",
+   "w": 417,
+   "h": 512,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-shell-top": {
+   "src": "items/egg-shell-top.webp",
+   "w": 512,
+   "h": 394,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "egg-shell-bottom": {
+   "src": "items/egg-shell-bottom.webp",
+   "w": 512,
+   "h": 373,
+   "kind": "egg",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-gold-bell": {
+   "src": "items/item-gold-bell.webp",
+   "w": 370,
+   "h": 400,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-moon": {
+   "src": "items/item-moon.webp",
+   "w": 469,
+   "h": 480,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-blanket-cover": {
+   "src": "items/item-blanket-cover.webp",
+   "w": 512,
+   "h": 433,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-name-tag": {
+   "src": "items/item-name-tag.webp",
+   "w": 400,
+   "h": 345,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "station-hay-rack": {
+   "src": "items/station-hay-rack.webp",
+   "w": 480,
+   "h": 446,
+   "kind": "station",
+   "pack": "meadow",
+   "source": "codex"
+  }
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "pictures": {
+  "ui-ghost-hand": {
+   "src": "ui/ui-ghost-hand.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "svg"
+  },
+  "ui-replay": {
+   "src": "ui/ui-replay.webp",
+   "w": 192,
+   "h": 192,
+   "kind": "ui",
+   "pack": "core",
+   "source": "svg"
+  },
+  "ui-turn-ipad": {
+   "src": "ui/ui-turn-ipad.webp",
+   "w": 640,
+   "h": 640,
+   "kind": "ui",
+   "pack": "core",
+   "source": "svg"
+  },
+  "ui-play": {
+   "src": "ui/ui-play.webp",
+   "w": 400,
+   "h": 400,
+   "kind": "ui",
+   "pack": "core",
+   "source": "svg"
+  }
+ }
+}

@@ -1,0 +1,80 @@
+{
+ "batch": "items-a-solo",
+ "source": "items",
+ "sheets": [
+  {
+   "id": "items-a-solo-01",
+   "cols": 1,
+   "rows": 1,
+   "ids": [
+    "building-bath-pond"
+   ],
+   "descs": [
+    "a small round bath pond with blue water, a little slide and stones around it"
+   ],
+   "grey": false
+  },
+  {
+   "id": "items-a-solo-02",
+   "cols": 1,
+   "rows": 1,
+   "ids": [
+    "item-moonbeam-bridge"
+   ],
+   "descs": [
+    "a soft glowing arched bridge made of pale moonlight"
+   ],
+   "grey": false
+  },
+  {
+   "id": "items-a-solo-03",
+   "cols": 1,
+   "rows": 1,
+   "ids": [
+    "building-stall-row"
+   ],
+   "descs": [
+    "a long low stable building front with ten empty arched doorways in two rows of five, no doors in them"
+   ],
+   "grey": false
+  }
+ ],
+ "entries": {
+  "building-bath-pond": {
+   "id": "building-bath-pond",
+   "kind": "building",
+   "wave": "A",
+   "pack": "meadow",
+   "size": 1024,
+   "desc": "a small round bath pond with blue water, a little slide and stones around it",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  },
+  "item-moonbeam-bridge": {
+   "id": "item-moonbeam-bridge",
+   "kind": "item",
+   "wave": "A",
+   "pack": "core",
+   "size": 1024,
+   "desc": "a soft glowing arched bridge made of pale moonlight",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  },
+  "building-stall-row": {
+   "id": "building-stall-row",
+   "kind": "building",
+   "wave": "A",
+   "pack": "stables",
+   "size": 1400,
+   "desc": "a long low stable building front with ten empty arched doorways in two rows of five, no doors in them",
+   "tint": null,
+   "slot": null,
+   "step": null,
+   "priority": 2
+  }
+ }
+}

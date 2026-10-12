@@ -1,0 +1,36 @@
+{
+ "pictures": {
+  "item-nest": {
+   "src": "items/item-nest.webp",
+   "w": 640,
+   "h": 562,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-name-tree": {
+   "src": "items/item-name-tree.webp",
+   "w": 620,
+   "h": 640,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-wish-basket": {
+   "src": "items/item-wish-basket.webp",
+   "w": 635,
+   "h": 640,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-toy-shelf": {
+   "src": "items/item-toy-shelf.webp",
+   "w": 800,
+   "h": 743,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  }
+ }
+}

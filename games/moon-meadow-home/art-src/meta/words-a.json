@@ -1,0 +1,180 @@
+{
+ "pictures": {
+  "sock": {
+   "src": "words/sock.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#6cc070"
+   }
+  },
+  "cup": {
+   "src": "words/cup.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#5aa9e6"
+   }
+  },
+  "mug": {
+   "src": "words/mug.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#5aa9e6"
+   }
+  },
+  "hat": {
+   "src": "words/hat.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#6c8fe0"
+   }
+  },
+  "bag": {
+   "src": "words/bag.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#a8754f"
+   }
+  },
+  "ball": {
+   "src": "words/ball.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#e8505b"
+   }
+  },
+  "dress": {
+   "src": "words/dress.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#f48fb1"
+   }
+  },
+  "coat": {
+   "src": "words/coat.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#a77bd6"
+   }
+  },
+  "scarf": {
+   "src": "words/scarf.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#6cc070"
+   }
+  },
+  "bow": {
+   "src": "words/bow.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#ff6fa8"
+   }
+  },
+  "bead": {
+   "src": "words/bead.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#ff9f43"
+   }
+  },
+  "cape": {
+   "src": "words/cape.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#b07ce0"
+   }
+  },
+  "kite": {
+   "src": "words/kite.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#e8505b"
+   }
+  },
+  "ribbon": {
+   "src": "words/ribbon.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#ff6fa8"
+   }
+  },
+  "balloon": {
+   "src": "words/balloon.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#e8505b"
+   }
+  },
+  "jeans": {
+   "src": "words/jeans.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#5a7fc0"
+   }
+  }
+ }
+}
