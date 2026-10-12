@@ -43,6 +43,8 @@ export type WordEntry = {
   station?: StationId; confuse?: string[]; basket: boolean;
   /** R36: indexes into gr of heart-part graphemes (tricky words). */
   heart?: number[];
+  /** A food a baby unicorn eats (docs/v3/next/plan.md N25): tagged food in content and on the allow-list. */
+  food?: true;
 };
 export type NameEntry = {
   /** split[i].gpc: learning's GPC id of that grapheme, when the name comes from the name bank. */

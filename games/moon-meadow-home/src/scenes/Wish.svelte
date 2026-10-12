@@ -22,6 +22,10 @@
   import HbGuides from './heartbeat/HbGuides.svelte';
   import ArtImg from './heartbeat/ArtImg.svelte';
   import Backdrop from './heartbeat/Backdrop.svelte';
+  import { createHintRunner } from './heartbeat/hint-runner.ts';
+  import { foodPool, hungryDue, withoutLookAlikes } from '../core/heartbeat/feed.ts';
+  import { feedFlags, feedMemory, feedState } from './feed/flags.ts';
+  import Munch from './feed/Munch.svelte';
 
   let { params }: { params: Record<string, unknown> } = $props();
   const p = untrack(() => params) as { baby: string; then?: string };
@@ -38,15 +42,34 @@
     built.task = baby ? buildWish({ served: s, baby: baby.id, babyName: baby.name, twinBaby, words, bathPond: game.world.bathPond, sounded, rng: deps.rng }) : null;
     return built.task !== null;
   };
+  // A hungry wish (docs/v3/next/plan.md F3, N11): a unicorn food word, and a basket of unicorn foods without look-alikes.
+  const foods = foodPool(words.values());
+  const makeFood = (s: Served): boolean => {
+    const w = words.get(s.carrier);
+    if (!baby || !w?.food) return false;
+    const pool = withoutLookAlikes(foods, w.one ?? w.word, deps.rng);
+    built.task = buildWish({ served: s, baby: baby.id, babyName: baby.name, twinBaby: null, words, bathPond: game.world.bathPond, sounded, rng: deps.rng, pool });
+    return built.task !== null && built.task.kind === 'basket';
+  };
+  const firstWish = p.then === 'heartbeat';
+  const wantHungry = !!baby && firstWish && hungryDue({ rng: deps.rng, forced: feedFlags.hungry, lastWasHungry: feedMemory.lastWasHungry });
+  const fed = wantHungry ? bridge.serve('feed', deps.rng, makeFood, { firstWish: true }) : null;
+  const hungry = fed !== null && built.task !== null;
   // Review focus 5: a wish that cannot fill its basket is never shown; the planner's accept filter refuses it.
-  const served = baby ? bridge.serve('wish', deps.rng, make, { firstWish: p.then === 'heartbeat' }) : null;
-  const ctrl: WishCtrl | null = served && built.task ? new WishCtrl(built.task, deps, (w) => words.get(w)) : null;
+  const served: Served | null = hungry ? fed : baby ? bridge.serve('wish', deps.rng, make, { firstWish }) : null;
+  if (firstWish) feedMemory.lastWasHungry = hungry;
+  // A hungry wish's idle hints are logged at the feeding place.
+  if (hungry) deps.hints = createHintRunner({ place: 'feed', strand: 'r' });
+  const ctrl: WishCtrl | null = served && built.task
+    ? new WishCtrl(built.task, deps, (w) => words.get(w), hungry ? { intro: 'hungry', place: 'feed', name: baby?.name ?? null } : {})
+    : null;
+  feedState.wish = ctrl ? (hungry ? 'hungry' : 'plain') : null;
 
   let tick = $state(0);
   if (ctrl) ctrl.onchange = () => { tick++; };
   const v = $derived.by(() => {
     void tick;
-    return ctrl ? { part: ctrl.part, funny: ctrl.lastFunny, glow: ctrl.glow, done: ctrl.done, units: ctrl.units, display: ctrl.display, babyId: ctrl.current.baby } : null;
+    return ctrl ? { part: ctrl.part, funny: ctrl.lastFunny, glow: ctrl.glow, done: ctrl.done, fed: ctrl.fed, units: ctrl.units, display: ctrl.display, babyId: ctrl.current.baby } : null;
   });
   const who = $derived(v ? game.world.byId[v.babyId] ?? baby : baby);
   const stations = STATIONS.filter((s) => s !== 'bath' || game.world.bathPond);
@@ -95,7 +118,7 @@
   onMount(() => {
     setBands('#cfe8ff', '#8fc79a');
     if (!ctrl) { void finish(); return; }   // nothing servable: skip the wish quietly
-    goal.set(() => deps.audio.say('g-wish'));
+    goal.set(() => deps.audio.say(hungry ? 'g-hungry' : 'g-wish'));
     void (async () => {
       await ctrl.begin();
       // The very first wish: the ghost hand slides along the print, to show that the letters sing.
@@ -133,10 +156,11 @@
         <PrintWithDots units={v.units} dotsMs={ctrl.task.dotsMs} glow={v.glow} label="wish" onsound={playUnit} />
       {/key}
     </div>
-    <div class="baby {funnyClass}" bind:this={babyEl} data-touch aria-label="wishing baby" use:dropTarget={{ id: 'baby' }}
+    <div class="baby {funnyClass}" class:hungry={hungry && !v.fed} bind:this={babyEl} data-touch aria-label="wishing baby" use:dropTarget={{ id: 'baby' }}
       use:drag={{ data: 'baby', disabled: ctrl.task.kind !== 'station' || v.done,
         onDrop: (d) => { if (d.targetId?.startsWith('station-')) void ctrl.toStation(d.targetId.slice(8) as StationId); } }}>
-      <Unicorn breed={who.breed} stage={who.stage} colours={who.colours} traits={who.traits} height={250} pose={v.done ? 'happy' : 'idle'} label="" />
+      <Unicorn breed={who.breed} stage={who.stage} colours={who.colours} traits={who.traits} height={250} pose={v.done || v.fed ? 'happy' : 'idle'} label="" />
+      {#if v.fed}<Munch picture={ctrl.task.word.picture} size={84} left={228} top={82} />{/if}
     </div>
     {#if ctrl.task.kind !== 'station'}
       <div class="basket basket-{ctrl.task.basket.length}" bind:this={basketEl}>
@@ -165,6 +189,9 @@
   .item { display: grid; place-items: center; width: 176px; height: 176px; background: #fffaf0; border: 4px solid #e8b878; border-radius: 32px; touch-action: none; padding: 0; }
   .stations { position: absolute; left: 40px; right: 40px; bottom: 18px; display: flex; justify-content: space-around; }
   .station { width: 140px; height: 140px; display: grid; place-items: center; }
+  /* A hungry baby's soft tummy wobble (no text, no timer). */
+  .baby.hungry { animation: tummy calc(1800ms * var(--speed, 1)) ease-in-out infinite; transform-origin: 50% 100%; }
+  @keyframes tummy { 0%, 60%, 100% { transform: none; } 70% { transform: scaleX(1.03) rotate(-2deg); } 80% { transform: scaleX(1.03) rotate(2deg); } 90% { transform: scaleX(1.02) rotate(-1deg); } }
   .funny-one-for-many { animation: pat calc(400ms * var(--speed, 1)) 4; }
   .funny-heap-for-one { animation: topple calc(1200ms * var(--speed, 1)) ease-in-out; }
   .funny-wrong-thing { animation: tilt calc(500ms * var(--speed, 1)) 2; }

@@ -30,6 +30,7 @@ describe('WishCtrl', () => {
     expect(await c.give(c.answerKey()!)).toBe('ok');
     expect(f.actions[0]).toMatchObject({ type: 'hb.learn', baby: 'b1', payload: { place: 'wish', result: 'first', error: null, moment: 'one-or-many' } });
     expect(f.said).toEqual(['g-wish', 'word-hats', 'fb-more-than-one', 'foal-yay']);
+    expect(c.fed).toBe(false);
   });
   it('makes one hat for hats funny once, then a second miss is plain', async () => {
     const f = fakeDeps();
@@ -86,5 +87,47 @@ describe('WishCtrl', () => {
     await c2.give(c2.answerKey()!);
     expect(f.said.slice(1, 3)).toEqual(['word-the', 'word-pan']);
     expect(f.actions[0].payload.items).toEqual([{ id: 'r:g:a', r: 'first' }]);
+  });
+
+  describe('hungry wishes (docs/v3/next/plan.md F3)', () => {
+    it('says the name, the baby\'s hunger and the goal, then munches and logs at feed', async () => {
+      const f = fakeDeps({ names: ['Pip'] });
+      const c = new WishCtrl(wish(reading('R05', { kind: 'word', word: 'bun' })), f.deps, get, { intro: 'hungry', place: 'feed', name: 'Pip' });
+      await c.begin();
+      expect(f.said).toEqual(['name:pip!', 'foal-hungry', 'g-hungry']);
+      expect(f.goal()).not.toBeNull();
+      await f.goal()!.repeat();
+      expect(f.said.at(-1)).toBe('g-hungry');
+      expect(await c.give(c.answerKey()!)).toBe('ok');
+      expect(f.said.slice(4)).toEqual(['sfx:munch', 'word-bun', 'foal-yum']);
+      expect(c.fed).toBe(true);
+      expect(f.actions[0]).toMatchObject({ type: 'hb.learn', baby: 'b1', payload: { place: 'feed', result: 'first' } });
+    });
+    it('skips the name when it has no clip', async () => {
+      const f = fakeDeps();
+      const c = new WishCtrl(wish(reading('R05', { kind: 'word', word: 'bun' })), f.deps, get, { intro: 'hungry', place: 'feed', name: 'Zog' });
+      await c.begin();
+      expect(f.said).toEqual(['foal-hungry', 'g-hungry']);
+    });
+    it('keeps both funny mistakes in a one-or-many hungry wish', async () => {
+      const f = fakeDeps();
+      const many = new WishCtrl(wish(reading('R19', { kind: 'plural', word: 'cup', form: 'many', count: 3 }, 'one-or-many')), f.deps, get, { intro: 'hungry', place: 'feed', name: null });
+      await many.begin();
+      expect(await many.give(many.wrongKey('one-for-many')!)).toBe('miss');
+      expect(many.lastFunny).toBe('one-for-many');
+      const one = new WishCtrl(wish(reading('R19', { kind: 'plural', word: 'cup', form: 'one', count: 1 }, 'one-or-many')), f.deps, get, { intro: 'hungry', place: 'feed', name: null });
+      await one.begin();
+      expect(await one.give(one.wrongKey('many-for-one')!)).toBe('miss');
+      expect(one.lastFunny).toBe('heap-for-one');
+      expect(await many.give(many.answerKey()!)).toBe('ok');
+      expect(f.said.slice(-4)).toEqual(['sfx:munch', 'word-cups', 'fb-more-than-one', 'foal-yum']);
+    });
+    it('logs a manger wish at the manger', async () => {
+      const f = fakeDeps();
+      const c = new WishCtrl(wish(reading('R05', { kind: 'word', word: 'bun' })), f.deps, get, { intro: 'hungry', place: 'manger', name: null });
+      await c.begin();
+      await c.give(c.answerKey()!);
+      expect(f.actions[0].payload.place).toBe('manger');
+    });
   });
 });

@@ -12,6 +12,14 @@ import type { SceneDeps } from './deps.ts';
 
 export type WishOutcome = 'ok' | 'next' | 'miss' | 'ignored';
 export type WishFunny = Funny | 'wrong-station';
+/**
+ * How the wish starts and where its result is logged (docs/v3/next/plan.md F3). A hungry wish ("Pip is hungry!")
+ * is a basket wish for a food word; the baby munches instead of cheering. The meadow logs it at 'feed', the
+ * stable at 'manger'.
+ */
+export type WishOpts = { intro: 'wish' | 'hungry'; place: 'wish' | 'feed' | 'manger'; name: string | null };
+const PLAIN: WishOpts = { intro: 'wish', place: 'wish', name: null };
+
 /** The test hook's wrong moves (master 5.1 check 11). */
 export type WrongKind = 'one-for-many' | 'many-for-one' | string;
 
@@ -27,6 +35,8 @@ export class WishCtrl {
   lastFunny: WishFunny | null = null;
   glow = false;
   done = false;
+  /** A hungry wish was answered: the baby is eating (set before the munch and the word are said). */
+  fed = false;
   onchange: () => void = () => {};
   /** The scene shows the ghost hand on the answer before the level 3 hint gives it. */
   onghost: (key: string) => Promise<void> = async () => {};
@@ -38,12 +48,18 @@ export class WishCtrl {
   private firstTouch: number | null = null;
   private d: SceneDeps;
   private get: (w: string) => WordEntry | undefined;
+  readonly opts: WishOpts;
 
-  constructor(task: WishTask, d: SceneDeps, get: (w: string) => WordEntry | undefined) {
+  constructor(task: WishTask, d: SceneDeps, get: (w: string) => WordEntry | undefined, opts: Partial<WishOpts> = {}) {
     this.task = task;
     this.d = d;
     this.get = get;
+    this.opts = { ...PLAIN, ...opts };
   }
+
+  get hungry(): boolean { return this.opts.intro === 'hungry'; }
+  /** The goal line: the plain wish, or "Read the wish, and feed your baby." */
+  private get goalLine(): string { return this.hungry ? 'g-hungry' : 'g-wish'; }
 
   get current(): WishPart {
     return this.part === 'first' ? { baby: this.task.baby, served: this.task.served, word: this.task.word, units: this.task.units } : this.task.next!;
@@ -59,7 +75,7 @@ export class WishCtrl {
     this.lastError = null;
     this.d.hints.begin({
       step: this.current.served.step,
-      repeat: () => this.d.audio.say('g-wish'),
+      repeat: () => this.d.audio.say(this.goalLine),
       focused: () => this.slowSounds(),
       answer: async () => {
         const k = this.answerKey();
@@ -69,7 +85,13 @@ export class WishCtrl {
       },
       target: () => this.answerLabel(),
     });
-    await this.d.audio.say('g-wish');
+    if (this.hungry && this.part === 'first') {
+      // N14: "Pip!" (only when the name has a clip), the baby's "I'm hungry!", then Elizabeth's goal.
+      const name = this.opts.name;
+      if (name && this.d.audio.hasName(name)) await this.d.audio.sayName(name, '!');
+      await this.d.audio.say('foal-hungry');
+    }
+    await this.d.audio.say(this.goalLine);
   }
 
   private async slowSounds(): Promise<void> {
@@ -155,18 +177,21 @@ export class WishCtrl {
     const result = momentResult(this.misses, this.d.hints.level);
     const ms = Math.max(0, (this.firstTouch ?? this.d.now()) - this.startedAt);
     const error = result === 'first' ? null : this.lastError;
-    const log = learnLog(cur.served, { result, ms, place: 'wish', error }, cur.baby);
+    const log = learnLog(cur.served, { result, ms, place: this.opts.place, error }, cur.baby);
     if (this.task.kind === 'station') this.d.dispatch({ type: 'hb.care', baby: cur.baby, station: this.task.station!, learn: log });
     else if (log) this.d.dispatch({ type: 'hb.learn', payload: log.payload, baby: cur.baby });
     this.d.hints.end();
     const display = this.display;
     this.glow = false;
     this.lastFunny = null;
+    this.fed = this.hungry;
     this.onchange();
+    if (this.hungry) await this.d.audio.sfx('munch');
     // Reading: the word is said only after she acts. Display words first, then the carrier: two sentences (R36, AD5).
     await this.d.audio.sayAll([...display.map((w) => wordId(w)), cur.word.clip]);
     if (this.task.plural) await this.d.audio.say(cur.word.one ? 'fb-more-than-one' : 'fb-just-one');
-    await this.d.audio.say(this.task.kind === 'station' ? (this.task.station === 'swing' ? 'foal-wee' : this.task.station === 'hay' ? 'foal-yum' : 'foal-cuddle') : 'foal-yay');
+    await this.d.audio.say(this.task.kind === 'station' ? (this.task.station === 'swing' ? 'foal-wee' : this.task.station === 'hay' ? 'foal-yum' : 'foal-cuddle')
+      : this.hungry ? 'foal-yum' : 'foal-yay');
     if (this.task.kind === 'twin' && this.part === 'first') {
       this.part = 'second';
       this.funnyShown.clear();

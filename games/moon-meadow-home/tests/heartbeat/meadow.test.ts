@@ -34,7 +34,7 @@ describe('meadow life', () => {
     expect(m[1].id).toBe('b20');
   });
   it('maps care tools to care stations and every care to a baby line', () => {
-    expect(CARE_OF_TOOL).toEqual({ brush: 'brush', treat: 'treat', heart: 'cuddle' });
+    expect(CARE_OF_TOOL).toEqual({ brush: 'brush', food: 'treat', heart: 'cuddle' });
     const ids = new Set(heartbeatLines().map((l) => l.id));
     for (const id of Object.values(FOAL_LINE)) expect(ids.has(id)).toBe(true);
   });

@@ -1,6 +1,7 @@
 <script lang="ts">
   // The heartbeat's living layer in places' meadow (spec 2.5, 2.7): moonflowers, the nest with its waiting egg,
-  // up to 12 babies, and care free play (drag the brush, a treat or the heart onto a baby; tap a baby for a trick).
+  // up to 12 babies, and care free play (drag the brush, a food from the tray or the heart onto a baby; tap a baby
+  // for a trick). The tray (docs/v3/next/plan.md F4) holds three food words: a tap says the word, a drop feeds a baby.
   // Free play is never checked; care gives a heart at most once per baby per visit (the store decides).
   import { game } from '../../game.svelte.ts';
   import { audio } from '../../audio/index.ts';
@@ -15,6 +16,10 @@
   import { bridge } from './deps.ts';
   import ArtImg from './ArtImg.svelte';
   import Moonflowers from './Moonflowers.svelte';
+  import { feedState } from '../feed/flags.ts';
+  import { pickTray, trayRng, trayWordMap } from '../feed/tray.ts';
+  import FoodTray from '../feed/FoodTray.svelte';
+  import Munch from '../feed/Munch.svelte';
 
   let { onbabytouch = undefined, ribbonMode = false, ribbons = {}, ontieribbon = undefined, lite = false }: {
     onbabytouch?: (id: string) => void; ribbonMode?: boolean; ribbons?: Record<string, boolean>; ontieribbon?: (id: string) => void; lite?: boolean;
@@ -25,8 +30,13 @@
     [250, 470], [820, 470], [990, 520], [400, 600], [700, 610], [140, 600],
     [300, 300], [520, 290], [760, 300], [960, 330], [1060, 660], [130, 380],
   ];
-  const TOOLS: CareTool[] = ['brush', 'treat', 'heart'];
-  const TOOL_ART: Record<CareTool, string> = { brush: SCENE_ART_IDS.careBrush, treat: SCENE_ART_IDS.careTreat, heart: SCENE_ART_IDS.careHeart };
+  const TOOLS: Exclude<CareTool, 'food'>[] = ['brush', 'heart'];
+  const TOOL_ART: Record<Exclude<CareTool, 'food'>, string> = { brush: SCENE_ART_IDS.careBrush, heart: SCENE_ART_IDS.careHeart };
+  // The tray: three foods she can read when there are, new on each meadow arrival (N23). Only pictured foods with a clip.
+  const trayWords = trayWordMap();
+  const tray = pickTray(trayWords, trayRng(4111));
+  feedState.tray = [...tray];
+  let munch = $state<{ baby: string; picture: string; n: number } | null>(null);
   const babies = $derived(meadowBabies(game.world.herd));
   const eggBreed = $derived.by(() => { void game.version; return breedForStep(bridge.content(), bridge.currentStepOf('m')); });
   let trick = $state<string | null>(null);
@@ -50,6 +60,20 @@
     void sleep(1200).then(() => { if (happy === id) happy = null; });
   }
 
+  /** A tray food dropped on a baby: it munches (sfx, three bites), says "Yum!", and the care is a treat. */
+  async function feed(word: string, target: string): Promise<void> {
+    if (!target.startsWith('meadow-baby-')) return;
+    const id = target.slice('meadow-baby-'.length);
+    heartbeat.noteOtherActivity();
+    game.dispatch({ type: 'hb.care', baby: id, station: CARE_OF_TOOL.food });
+    const m = { baby: id, picture: trayWords.get(word)?.picture ?? word, n: (munch?.n ?? 0) + 1 };
+    munch = m;
+    happy = id;
+    void sleep(1200).then(() => { if (munch === m) munch = null; if (happy === id) happy = null; });
+    await audio.sfx('munch');
+    await audio.say(FOAL_LINE.treat);
+  }
+
   function dropTool(tool: CareTool, target: string | null): void {
     if (!target?.startsWith('meadow-baby-')) return;
     care(target.slice('meadow-baby-'.length), CARE_OF_TOOL[tool]);
@@ -69,6 +93,7 @@
       <Unicorn breed={b.breed} stage={b.stage} colours={b.colours} traits={b.traits} height={130}
         pose={happy === b.id ? 'happy' : trick === b.id ? 'hop' : 'idle'} seed={i} {lite} label="" />
       {#if ribbons[b.id]}<span class="ribbon" aria-hidden="true"></span>{/if}
+      {#if munch?.baby === b.id}{#key munch.n}<Munch picture={munch.picture} size={50} left={98} top={22} />{/key}{/if}
     </button>
   {/each}
   {#if babies.length}
@@ -79,6 +104,9 @@
         </button>
       {/each}
     </div>
+    {#if tray.length}
+      <div class="food-tray"><FoodTray foods={tray} words={trayWords} onfeed={(w, t) => void feed(w, t)} /></div>
+    {/if}
   {/if}
 </div>
 
@@ -92,6 +120,8 @@
   .baby.trick { animation: hop calc(450ms * var(--speed, 1)) 2; }
   .ribbon { position: absolute; right: 18px; top: 26px; width: 28px; height: 28px; border-radius: 50%; background: #ff7fbf; border: 3px solid #e0559c; }
   .tools { position: absolute; left: 24px; bottom: 24px; display: flex; gap: 14px; }
+  /* The tray sits in the free sky between the top-left buttons and the moon (it was the treat tool, bottom left). */
+  .food-tray { position: absolute; left: 400px; top: 10px; }
   .tool { width: 96px; height: 96px; display: grid; place-items: center; background: #fff; border: 4px solid #c9b8ff; border-radius: 28px; touch-action: none; padding: 0; }
   @keyframes hop { 50% { transform: translate(-50%, -62%) rotate(-8deg); } }
 </style>

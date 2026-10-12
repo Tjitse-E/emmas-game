@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# Feeding in the stable (docs/v3/next/plan.md F6, N18 to N21). Runs after the merge: it needs the night lane's
+# goodnight stages (goodnight.stage, goodnight.long, goodnight.walk) around the mangers.
+# A manger wish (read it, give it at that baby's manger), free feeding (a refused food and an eaten one), the moon
+# to bed with the tray gone, the door pick and a tuck; the hay rack with a miss on another evening; a long visit
+# that skips the mangers.
+. "$(dirname "$0")/../lib.sh"
+. "$(dirname "$0")/lib-hb.sh"
+pw delete-data >/dev/null 2>&1 || true
+open_app
+hook 'seed(13)' >/dev/null
+hook 'mute(true)' >/dev/null
+start_play
+hook 'herd(6)' >/dev/null
+hook "setStep('r', 'R19')" >/dev/null
+
+said_has() { val "() => window.__game.said().includes($(jsq "$1"))"; }
+fs() { val "async () => { const s = await window.__game.call('feed.state'); return $1; }"; }
+treats() { fs "s.cares.filter((c) => c.station === 'treat').length"; }
+naps() { fs "s.cares.filter((c) => c.station === 'nap').length"; }
+stage() {
+  [ "$(state scene)" = goodnight ] || { state scene; return; }
+  hook "call('goodnight.stage')" 2>/dev/null || echo none
+}
+# Drives goodnight until the stage is $1 (or the scene is $1): the walk and the bed by answer(), the herd walking
+# in by waiting, the moon by a tap, the sky unicorn's name by the gold bell.
+until_stage() {
+  local s
+  for _ in $(seq 1 60); do
+    s="$(stage)"
+    [ "$s" = "$1" ] && return 0
+    case "$s" in
+      herd-in|none) sleep 0.2 ;;
+      free) tap moon ;;
+      sky-name) hook "call('naming.gold', ['S', 'a', 'm'])" >/dev/null || true ;;
+      rest) fail "reached rest before $1" ;;
+      *) hook 'answer()' >/dev/null || true; sleep 0.2 ;;
+    esac
+  done
+  fail "goodnight never reached $1 (last $s)"
+}
+
+# ---- a manger wish
+hook "call('goodnight.long', false)" >/dev/null
+hook "call('feed.manger', 'wish')" >/dev/null
+hook "call('hb.goodnight')" >/dev/null
+until_stage manger
+expect_eq "$(fs 's.manger')" wish 'tonight is a manger wish'
+wait_for "() => window.__game.said().includes('g-hungry')"
+drop="$(fs 's.drop')"
+case "$drop" in "manger "*) ;; *) fail "manger wish drop is '$drop'" ;; esac
+drag_to "$(hook 'target()')" "$drop"
+wait_for "() => window.__game.state().lastLog && window.__game.state().lastLog.place === 'manger'"
+until_stage free
+wait_for "() => window.__game.said().includes('g-feed-free')"
+expect_eq "$(fs 's.manger')" free 'free feeding'
+
+# ---- free feeding: a refused food, then the wanted one
+door="$(fs 'Object.keys(s.wants)[0] ?? ""')"
+[ -n "$door" ] || fail 'no baby wants anything'
+want="$(fs "s.wants[$(jsq "$door")]")"
+other="$(fs "s.tray.find((f) => f !== s.wants[$(jsq "$door")]) ?? ''")"
+before="$(treats)"
+if [ -n "$other" ]; then
+  drag_to "tray food $other" "manger $door"
+  expect_eq "$(treats)" "$before" 'a refused food writes nothing'
+fi
+drag_to "tray food $want" "manger $door"
+expect_eq "$(treats)" "$((before + 1))" 'the wanted food is eaten'
+wait_for "() => window.__game.said().includes('foal-yum')"
+expect_eq "$(fs "s.wants[$(jsq "$door")] ?? 'gone'")" gone 'the want bubble goes'
+small_targets
+shot stable-free
+
+# ---- bed: the tray is gone, the door pick, a tuck
+tap moon
+until_stage bed
+expect_eq "$(val "() => document.querySelectorAll('[aria-label^=\"tray food \"]').length")" 0 'no tray at bedtime'
+t="$(hook 'target()')"
+case "$t" in "stall "*) tap "$t"; sleep 0.3 ;; esac
+naps0="$(naps)"
+sleeper="$(val "() => document.querySelector('[aria-label^=\"sleeping baby \"]')?.getAttribute('aria-label') ?? ''")"
+if [ -n "$sleeper" ]; then
+  tap "$sleeper"
+  [ "$(naps)" -ge "$naps0" ] || fail 'tuck in'
+fi
+until_stage rest
+
+# ---- the hay rack, with a miss, on the next evening
+hook 'newVisit()' >/dev/null
+hook "setNow(Date.now() + 86400000)" >/dev/null
+hook "setStep('m', 'M12F')" >/dev/null
+hook "call('feed.manger', 'rack')" >/dev/null
+hook "call('hb.goodnight')" >/dev/null
+until_stage manger
+expect_eq "$(fs 's.manger')" rack 'tonight is the hay rack'
+wait_for "() => window.__game.said().includes('g-hay-rack')"
+expect_eq "$(val "() => window.__game.said().some((x) => /^num-rack-\\d+\$/.test(x)) && window.__game.said().some((x) => /^num-in-\\d+\$/.test(x))")" true 'the rack says its numbers'
+hook 'wrong()' >/dev/null
+expect_eq "$(val "() => window.__game.said().some((x) => x === 'fb-too-many' || /^num-more-\\d+\$/.test(x))")" true 'a wrong pile says how far off'
+drag_to "$(hook 'target()')" 'hay rack'
+wait_for "() => window.__game.state().lastLog && window.__game.state().lastLog.moment === 'hay-rack'"
+expect_eq "$(val "() => { const l = window.__game.state().lastLog; return [l.strand, l.place, l.result, l.baby].join(' '); }")" 'm manger miss ' 'the hay rack result'
+shot hay-rack
+until_stage rest
+
+# ---- a long visit skips the mangers
+hook 'newVisit()' >/dev/null
+hook "call('feed.manger', null)" >/dev/null
+hook "call('goodnight.long', true)" >/dev/null
+hook "call('hb.goodnight')" >/dev/null
+until_stage rest
+stages="$(val "async () => (await window.__game.call('goodnight.walk')).stages.join(',')")"
+case ",$stages," in *,manger,*|*,free,*) fail "a long visit fed the babies: $stages" ;; esac
+case ",$stages," in *,bed,*) ;; *) fail "a long visit has no bed stage: $stages" ;; esac
+hook "call('goodnight.long', null)" >/dev/null
+finish

@@ -43,6 +43,8 @@ export function soundedGraphemes(ladder: { id: string; items: string[] }[], stat
 export function buildWish(input: {
   served: Served; baby: string; babyName: string | null; twinBaby: string | null;
   words: Map<string, WordEntry>; bathPond: boolean; sounded: Set<string>; rng: Rng;
+  /** The basket's other things. Feeding passes unicorn foods without look-alikes (docs/v3/next/plan.md F2); default every pictured thing. */
+  pool?: WordEntry[];
 }): WishTask | null {
   const { served } = input;
   const word = input.words.get(served.carrier);
@@ -60,7 +62,7 @@ export function buildWish(input: {
     if (word.station === 'bath' && !input.bathPond) return null;
     return { ...base, kind: 'station', basket: [], station: word.station, plural: false };
   }
-  const pool = [...input.words.values()].filter((w) => w.basket && !w.one);
+  const pool = input.pool ?? [...input.words.values()].filter((w) => w.basket && !w.one);
   if (plural) {
     const basket = planPluralBasket({ target: word, scaffold: sc, pool, get: (w) => input.words.get(w), rng: input.rng });
     return basket ? { ...base, kind: 'basket', basket, station: null, plural: true } : null;
