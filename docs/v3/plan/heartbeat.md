@@ -12,6 +12,25 @@
 
 All paths below are relative to `games/moon-meadow-home/` unless they start with `docs/`, `shared/` or `scripts/`. All commands run from `/Users/tjitse/sites/emmas-game/games/moon-meadow-home` unless stated.
 
+## Reconciled with the master plan (binding)
+
+`docs/v3/plan.md` (sections 2 and 3) and `docs/v3/plan/contracts.ts` are binding for this plan. Where a task below still shows another name, shape, port or owner, the master plan and `contracts.ts` win, and the builder changes this plan's code, never another stream's. Decisions are numbered R1 to R33 in master section 2.1.
+
+**Changed tasks.**
+- Task 1 (R6, R7): `lines.ts` keeps the fixed lines and drops every number line. `lineId` becomes `HEARTBEAT_NUMBER_IDS` (contracts C12) built on `numId`, `bondId` and `ordId` from `src/audio/ids.ts`. `tools/heartbeat-lines.ts` writes `content/lines/heartbeat.json` in the audio line-file format `{ "scene": "heartbeat", "lines": [...] }` without `tier`, and leaves out ids that `content/lines/common.json` defines (`foal-hello`, `foal-yay`, `foal-silly`, `foal-notme`, `foal-wee`, `foal-yum`, `foal-cuddle`, `foal-yawn`, `fb-lovely`, `fb-letters`, `h-sounds`, `g-listen`); the code keeps using those ids. There is no tier 2 and no `sayOptional`; a missing number clip is skipped by the facade. `Traits` are four required booleans and `BreedId` is the nine-breed union from contracts C1.
+- Tasks 2 and 4: the egg kind of the small nest is `small-nest` (learning's `EggKind`), not `nest`; the place and the scene stay `nest`. Every `EGG_STEPS`, `BREED_OF` and test key that names the egg kind uses `small-nest`. Hatch colours come from art's `randomColours(rng)` and `GOLDEN_BODY` (`src/art/palette.ts`), so every colour stays light enough for the tinted layers (art Review Focus 3); `hatch.ts` keeps no palette of its own.
+- Tasks 5, 6 and 20 (R13): picture ids are the bare word (`hat`), the same id for one thing and its heap.
+- Task 10 (R23): `src/core/naming/blocklist.ts` re-exports `checkBlocked` and `buildBlocklist` from learning's `src/core/content/blocklist.ts` and reads `shared/blocklist.json` in learning's shape. `sounds.ts` turns gems into learning's phonemes with `phonemesOf(gems, content.gpcs)`. The test cases stay.
+- Task 15 (R19): action types are `naming.spelled`, `naming.partial` and `naming.assign` (prefix `naming.`, so an action never looks like an event type). Drafts follow contracts C2: gems in events are lowercase; `egg.hatched` carries `egg` and all four traits; `baby.named` is `{ baby, name, gems, route, listName }` (ordinal, clip key and unknown are derived by the world view); `name.built` uses `baby` (null for a row or sky name), `phonemes` as one space-separated string, `route` `garden` for both garden routes, `listName`, and `strong: blockKind === 'strong'`; `care.done` is `{ baby, station }` (the router sets `heart`); `sky.named` is `{ sky: index + 1, name }`. Every `learn.result` draft is built by learning's `learnResultPayload` inside `learn-bridge.ts`. Export `HEARTBEAT_SAMPLE_ACTIONS` and `NAMING_SAMPLE_ACTIONS` (one sample per action type) for integration Task I-1, and the test-only action `hb.test-hatch { baby, name }` (one `egg.hatched` with source `nest` and one `baby.named` with route `gold`).
+- Task 17 (R11, R12): drop `src/ui/drag.ts`; use platform's `use:press`, `use:drag` and `use:dropTarget`. `src/ui/geometry.ts` keeps the slider index, dice and scatter dots only. Heaps are art's `<Heap id count size seed />`. Print dots play `sound('iz')` for the `-es` ending.
+- Task 17B (R20, R28): name items are `name:<nameKey(name)>`. The store gives `game.planContext()` (a function) and `game.rng` (an `Rng`). `hint-runner.ts` wraps places' `createMoment`; `guides.svelte.ts` wraps platform's `ghost` and `moonbeam`.
+- Tasks 18 to 23: `Unicorn` takes `breed stage colours traits height pose` (pose `stand` is `idle`, `sit` is `still`; the head-only door view is `headOnly`). `<Egg kind={BREED_OF[eggKind]} skin size />`. `ArtImg.svelte` uses `hasPicture(id)` and `<Picture>` with ids from `SCENE_ART_IDS` (contracts C9) and keeps its SVG fallback. Stage helpers are platform's `clientToStage` and `elementRect`. Audio calls are the facade's (`speak`, `say`, `sayName`, `listen(id)`, `listenSound(code)`). The world is `game.world` (contracts C3): `rowsBuilt`, `camp`, `byId`, `announced`, `settings.skipWishAfterThree`.
+- Task 23 (R14, R15): scene hooks use `registerSceneHook`, `testSeed` and `isFast` from `src/platform/hooks.ts`. Flows become `flows/heartbeat/heartbeat.flow.sh` and `flows/heartbeat/naming.flow.sh`, source `flows/lib.sh`, and run with `MMH_LANE=heartbeat MMH_PORT=8772 bash flows/run.sh heartbeat/heartbeat heartbeat/naming`. `run-heartbeat-all.sh` is not written.
+- Task 23B: exports `currentEggBreed(state, learner, content)`, `ownSlots(graphemes, learner, content)`, `planTray(graphemes, step, scaffold, rng)`, `canReviewName(baby: WorldBaby, learner, content)` and `BREEDS` (from `hatch.ts`) as contracts C7.
+- Tasks 26 and 27 move to batch C2 (they need learning's meadow phrases from Task C2). Task 27 owns asking bubbles and two-state wishes; places Task C7 is dropped (R9).
+
+**Batches.** A1: 1 to 9. A2: 10 to 14. A3: 15, 16. A4: 17. A5: 17B, 18 to 23, 23B. B1: 24. B2: 25. C1: 28, 29. C2: 26, 27. Lane port 8772.
+
 ## Global constraints
 
 - British English only in the app. No Dutch words, text or audio. The blocklist may hold Dutch words, which are never shown or played.
@@ -157,7 +176,7 @@ These are assumptions about other workstreams. The integrator reconciles them. W
 - `package.json` scripts: `test` = `vitest run`, `check` = `svelte-check --tsconfig ./tsconfig.json`, `build:test` = `vite build --mode test`, `lines:heartbeat` = `node tools/heartbeat-lines.ts` (this workstream adds this one line to `package.json`; if CORE prefers, CORE adds it).
 - `tsconfig.json` has `"allowImportingTsExtensions": true`, `"noEmit": true`, `"strict": true`, and includes `src`, `tests`, `tools`.
 - `vitest.config.ts` includes `tests/**/*.test.ts` with `environment: 'node'`.
-- The Node server (`server/serve.ts`, CORE) serves the repo root on port 8765 and maps `/games/moon-meadow-home/` to `games/moon-meadow-home/dist/`. Test builds (`npm run build:test`) include the test hook. Start it from the repo root: `node games/moon-meadow-home/server/serve.ts --port 8765`.
+- The Node server (`server/serve.ts`, CORE) serves the repo root on a lane port (8772 for this lane, never 8765) and maps `/games/moon-meadow-home/` to `games/moon-meadow-home/dist/`. Test builds (`npm run build:test`) include the test hook. Start it from the repo root: `MOON_DIST=dist-test-heartbeat PORT=8772 HOST=127.0.0.1 node games/moon-meadow-home/server/serve.ts`.
 
 ### C2. Random numbers (CORE, `src/core/rng.ts`)
 
@@ -334,7 +353,7 @@ type WordEntry = {
   word: string;                 // 'hats'
   gr: string[];                 // ['h','a','t','-s']; split digraphs as 'a-e'
   step: string;                 // reading step it serves
-  picture: string;              // art id of the ONE picture ('pic-hat'), also for plurals
+  picture: string;              // art id of the ONE picture ('hat'), also for plurals
   clip: string;                 // 'word-hats'
   one?: string;                 // plural words: the one word ('hat')
   plural?: string;              // one words with a plural ('hats')
@@ -844,7 +863,7 @@ git commit -m "Add heartbeat types, number words, audio lines and place declarat
 - Produces:
 
 ```ts
-export type EggKind = 'moon' | 'nest' | 'two-stone' | 'blanket' | 'berry' | 'snow';
+export type EggKind = 'moon' | 'small-nest' | 'two-stone' | 'blanket' | 'berry' | 'snow';
 export type EggMode = 'stars-flash' | 'stars' | 'cups' | 'two-stone' | 'blanket' | 'berry-more-less' | 'berry-bowls' | 'snow';
 export type MathsItem = { op: 'subitise'; n: number } | { op: 'numeral'; n: number } | { op: 'add'; a: number; b: number } | { op: 'take'; a: number; b: number };
 export type EggTask = { kind: EggKind; mode: EggMode; step: string; itemId: string; scaffold: Scaffold;
@@ -895,8 +914,8 @@ describe('buildEggTask', () => {
   });
   it('builds cup eggs', () => {
     expect(buildEggTask(served('M09', '3+7'))).toMatchObject({ kind: 'moon', mode: 'cups', cups: 10, warm: 3, target: 7 });
-    expect(buildEggTask(served('M05', '2+3'))).toMatchObject({ kind: 'nest', mode: 'cups', cups: 5, warm: 2, target: 3 });
-    expect(buildEggTask(served('M12', '4+3'))).toMatchObject({ kind: 'nest', mode: 'cups', cups: 7, warm: 4, target: 3 });
+    expect(buildEggTask(served('M05', '2+3'))).toMatchObject({ kind: 'small-nest', mode: 'cups', cups: 5, warm: 2, target: 3 });
+    expect(buildEggTask(served('M12', '4+3'))).toMatchObject({ kind: 'small-nest', mode: 'cups', cups: 7, warm: 4, target: 3 });
     expect(buildEggTask(served('M11', '6+4'))).toMatchObject({ kind: 'blanket', mode: 'blanket', cups: 10, warm: 6, target: 4 });
   });
   it('builds a two-stone egg that needs a pair to ten', () => {
@@ -961,7 +980,7 @@ Expected: FAIL, cannot resolve `src/core/maths/eggs.ts`.
 import type { ErrorTag, Scaffold, Served } from '../heartbeat/types.ts';
 import { lineId } from '../heartbeat/lines.ts';
 
-export type EggKind = 'moon' | 'nest' | 'two-stone' | 'blanket' | 'berry' | 'snow';
+export type EggKind = 'moon' | 'small-nest' | 'two-stone' | 'blanket' | 'berry' | 'snow';
 export type EggMode = 'stars-flash' | 'stars' | 'cups' | 'two-stone' | 'blanket' | 'berry-more-less' | 'berry-bowls' | 'snow';
 export type MathsItem =
   | { op: 'subitise'; n: number }
@@ -980,7 +999,7 @@ export type EggTask = {
 };
 
 export const EGG_STEPS: Record<string, EggKind> = {
-  M01: 'moon', M02: 'moon', M09: 'moon', M05: 'nest', M12: 'nest', M10: 'two-stone', M11: 'blanket',
+  M01: 'moon', M02: 'moon', M09: 'moon', M05: 'small-nest', M12: 'small-nest', M10: 'two-stone', M11: 'blanket',
   M04: 'berry', M13: 'berry', M14: 'snow',
 };
 
@@ -1277,12 +1296,12 @@ import { makeRng } from '../../src/core/rng.ts';
 
 describe('rollHatch', () => {
   it('maps each egg kind to its breed', () => {
-    expect(BREED_OF).toEqual({ moon: 'moon', nest: 'nestling', 'two-stone': 'pebble', blanket: 'cosy', berry: 'berry', snow: 'snow' });
+    expect(BREED_OF).toEqual({ moon: 'moon', 'small-nest': 'nestling', 'two-stone': 'pebble', blanket: 'cosy', berry: 'berry', snow: 'snow' });
   });
   it('uses the palettes and never repeats the mane colour', () => {
     const rng = makeRng(1);
     for (let i = 0; i < 200; i++) {
-      const r = rollHatch({ kind: 'nest', result: 'miss', golden: false, speckled: false, rng });
+      const r = rollHatch({ kind: 'small-nest', result: 'miss', golden: false, speckled: false, rng });
       expect(BODY).toContain(r.colours.body);
       expect(MANE).toContain(r.colours.mane);
       expect(r.colours.mane2).not.toBe(r.colours.mane);
@@ -1330,7 +1349,7 @@ import type { EggKind } from '../maths/eggs.ts';
 import type { BreedId, Colours, Result, Traits } from './types.ts';
 
 export const BREED_OF: Record<EggKind, BreedId> = {
-  moon: 'moon', nest: 'nestling', 'two-stone': 'pebble', blanket: 'cosy', berry: 'berry', snow: 'snow',
+  moon: 'moon', 'small-nest': 'nestling', 'two-stone': 'pebble', blanket: 'cosy', berry: 'berry', snow: 'snow',
 };
 // Pastel bodies and saturated manes, as v2 (art STYLE.md: pastel base colours).
 export const BODY = ['#ffe0ef', '#e6dcff', '#d6f1ff', '#fff3c4', '#dcffe8', '#ffe2cf', '#ffffff', '#f5d9ff'];
@@ -1397,7 +1416,7 @@ export function judgeGive(target: WordEntry, item: BasketItem, get: (w: string) 
 import type { WordEntry } from '../../src/core/heartbeat/types.ts';
 
 const w = (word: string, gr: string[], step: string, extra: Partial<WordEntry> = {}): WordEntry =>
-  ({ word, gr, step, picture: `pic-${extra.one ?? word}`, clip: `word-${word}`, basket: !extra.one, ...extra });
+  ({ word, gr, step, picture: `${extra.one ?? word}`, clip: `word-${word}`, basket: !extra.one, ...extra });
 
 export const WORDS: WordEntry[] = [
   w('pan', ['p', 'a', 'n'], 'R01', { pair: 'pen', pairTag: 'aeu', confuse: ['pot'] }),
@@ -1488,8 +1507,8 @@ describe('planPluralBasket', () => {
 });
 
 describe('judgeGive', () => {
-  const one = (word: string) => ({ key: word, word, picture: `pic-${word}`, heap: false });
-  const heap = (word: string) => ({ key: `${word}-heap`, word, picture: `pic-${word}`, heap: true });
+  const one = (word: string) => ({ key: word, word, picture: `${word}`, heap: false });
+  const heap = (word: string) => ({ key: `${word}-heap`, word, picture: `${word}`, heap: true });
   it('wants the heap for a plural and the one for a singular', () => {
     expect(judgeGive(W('hats'), heap('hat'), get)).toEqual({ ok: true });
     expect(judgeGive(W('hats'), one('hat'), get)).toEqual({ ok: false, error: 'other', funny: 'one-for-many' });
@@ -3606,9 +3625,9 @@ export type NameClipHeardDraft = { type: 'name.clipHeard'; baby: string };
 export type NamingDraft = LearnResultDraft | NameBuiltDraft | BabyNamedDraft | NameClipHeardDraft;
 export type NamingAction =
   | { type: 'name.gold.slide'; target: NameTarget; gems: string[]; outcome: GoldOutcome }
-  | { type: 'name.spelled'; target: NameTarget; route: 'bell' | 'garden-pic' | 'garden-sound'; entryKey: string; phonemes: string[]; gems: string[]; results: LearnResultDraft[] }
-  | { type: 'name.partial'; results: LearnResultDraft[] }
-  | { type: 'name.assign'; baby: string; name: string; gems: string[]; clipKey: string | null; ordinal: number; route: NameRoute; unknown: boolean }
+  | { type: 'naming.spelled'; target: NameTarget; route: 'bell' | 'garden-pic' | 'garden-sound'; entryKey: string; phonemes: string[]; gems: string[]; results: LearnResultDraft[] }
+  | { type: 'naming.partial'; results: LearnResultDraft[] }
+  | { type: 'naming.assign'; baby: string; name: string; gems: string[]; clipKey: string | null; ordinal: number; route: NameRoute; unknown: boolean }
   | { type: 'name.clipHeard'; baby: string };
 export function applyNaming(a: NamingAction): NamingDraft[];
 ```
@@ -3678,14 +3697,14 @@ describe('applyNaming', () => {
   });
   it('logs a spelled bell name with its results', () => {
     const res = { type: 'learn.result' as const, strand: 's' as const, step: 'S03', carrier: 'Ken', items: [], result: 'first' as const, ms: 1, scaffold: 1 as const, place: 'naming' as const, probe: false, source: 'current' as const };
-    const d = applyNaming({ type: 'name.spelled', target, route: 'bell', entryKey: 'ken', phonemes: ['k', 'e', 'n'], gems: ['K', 'e', 'n'], results: [res] });
+    const d = applyNaming({ type: 'naming.spelled', target, route: 'bell', entryKey: 'ken', phonemes: ['k', 'e', 'n'], gems: ['K', 'e', 'n'], results: [res] });
     expect(d).toEqual([res, { type: 'name.built', target, route: 'bell', gems: ['K', 'e', 'n'], phonemes: ['k', 'e', 'n'], outcome: 'chosen', listName: 'ken' }]);
   });
   it('names the baby and records a clip heard', () => {
-    expect(applyNaming({ type: 'name.assign', baby: 'b1', name: 'Tamo', gems: ['T', 'a', 'm', 'o'], clipKey: null, ordinal: 1, route: 'gold', unknown: true }))
+    expect(applyNaming({ type: 'naming.assign', baby: 'b1', name: 'Tamo', gems: ['T', 'a', 'm', 'o'], clipKey: null, ordinal: 1, route: 'gold', unknown: true }))
       .toEqual([{ type: 'baby.named', baby: 'b1', name: 'Tamo', gems: ['T', 'a', 'm', 'o'], clipKey: null, ordinal: 1, route: 'gold', unknown: true }]);
     expect(applyNaming({ type: 'name.clipHeard', baby: 'b1' })).toEqual([{ type: 'name.clipHeard', baby: 'b1' }]);
-    expect(applyNaming({ type: 'name.partial', results: [] })).toEqual([]);
+    expect(applyNaming({ type: 'naming.partial', results: [] })).toEqual([]);
   });
 });
 ```
@@ -3789,9 +3808,9 @@ export type NamingDraft = LearnResultDraft | NameBuiltDraft | BabyNamedDraft | N
 
 export type NamingAction =
   | { type: 'name.gold.slide'; target: NameTarget; gems: string[]; outcome: GoldOutcome }
-  | { type: 'name.spelled'; target: NameTarget; route: 'bell' | 'garden-pic' | 'garden-sound'; entryKey: string; phonemes: string[]; gems: string[]; results: LearnResultDraft[] }
-  | { type: 'name.partial'; results: LearnResultDraft[] }
-  | { type: 'name.assign'; baby: string; name: string; gems: string[]; clipKey: string | null; ordinal: number; route: NameRoute; unknown: boolean }
+  | { type: 'naming.spelled'; target: NameTarget; route: 'bell' | 'garden-pic' | 'garden-sound'; entryKey: string; phonemes: string[]; gems: string[]; results: LearnResultDraft[] }
+  | { type: 'naming.partial'; results: LearnResultDraft[] }
+  | { type: 'naming.assign'; baby: string; name: string; gems: string[]; clipKey: string | null; ordinal: number; route: NameRoute; unknown: boolean }
   | { type: 'name.clipHeard'; baby: string };
 
 export function applyNaming(a: NamingAction): NamingDraft[] {
@@ -3804,11 +3823,11 @@ export function applyNaming(a: NamingAction): NamingDraft[] {
         ...(o.outcome === 'blocked' ? { blockKind: o.kind } : {}),
       }];
     }
-    case 'name.spelled':
+    case 'naming.spelled':
       return [...a.results, { type: 'name.built', target: a.target, route: a.route, gems: a.gems, phonemes: a.phonemes, outcome: 'chosen', listName: a.entryKey }];
-    case 'name.partial':
+    case 'naming.partial':
       return [...a.results];
-    case 'name.assign':
+    case 'naming.assign':
       return [{ type: 'baby.named', baby: a.baby, name: a.name, gems: a.gems, clipKey: a.clipKey, ordinal: a.ordinal, route: a.route, unknown: a.unknown }];
     case 'name.clipHeard':
       return [{ type: 'name.clipHeard', baby: a.baby }];
@@ -4505,8 +4524,8 @@ const c: any = {
     k: { id: 'k', text: 'k', phonemes: ['k'] },
   },
   words: {
-    hat: { w: 'hat', gpcs: ['h', 'a', 't'], pic: 'w-hat', kind: 'thing', clip: 'word-hat', pluralClip: 'word-hats', plural: { w: 'hats', ending: 's' }, rStep: 'R05', rItems: ['r:g:h'], sItems: [] },
-    nap: { w: 'nap', gpcs: [], pic: 'w-nap', kind: 'station', clip: 'word-nap', pluralClip: null, rStep: 'R02', rItems: [], sItems: [] },
+    hat: { w: 'hat', gpcs: ['h', 'a', 't'], pic: 'hat', kind: 'thing', clip: 'word-hat', pluralClip: 'word-hats', plural: { w: 'hats', ending: 's' }, rStep: 'R05', rItems: ['r:g:h'], sItems: [] },
+    nap: { w: 'nap', gpcs: [], pic: 'nap', kind: 'station', clip: 'word-nap', pluralClip: null, rStep: 'R02', rItems: [], sItems: [] },
   },
   names: [{ name: 'Lily', slug: 'lily', gpcs: ['l', 'i', 'l', 'y-ee'], phonemes: ['l', 'ɪ', 'l', 'i'], first: 'l', priority: 1, source: 'uk', pic: 'flowers' }],
   items: { 's:g:k': { id: 's:g:k', kind: 'grapheme', gpc: 'k', strand: 's', step: 'S03' }, 'm:num:14': { id: 'm:num:14', kind: 'numeral', task: { op: 'numeral', n: 14 }, strand: 'm', step: 'M07' },
@@ -4533,8 +4552,8 @@ describe('learn bridge', () => {
   });
   it('builds word entries with plural forms and stations', () => {
     const w = wordEntries(c);
-    expect(w.get('hat')).toMatchObject({ gr: ['h', 'a', 't'], picture: 'w-hat', plural: 'hats', basket: true, step: 'R05' });
-    expect(w.get('hats')).toMatchObject({ gr: ['h', 'a', 't', '-s'], one: 'hat', ending: '-s', picture: 'w-hat', clip: 'word-hats', basket: false });
+    expect(w.get('hat')).toMatchObject({ gr: ['h', 'a', 't'], picture: 'hat', plural: 'hats', basket: true, step: 'R05' });
+    expect(w.get('hats')).toMatchObject({ gr: ['h', 'a', 't', '-s'], one: 'hat', ending: '-s', picture: 'hat', clip: 'word-hats', basket: false });
     expect(w.get('nap')).toMatchObject({ station: 'nap', basket: false });
   });
   it('builds name entries with a split per grapheme', () => {
@@ -5218,7 +5237,7 @@ Expected: PASS.
     <path d="M100 10 C160 10 190 100 190 140 C190 180 150 196 100 196 C50 196 10 180 10 140 C10 100 40 10 100 10 Z" fill={tint || EGG[id] || '#e6dcff'} stroke="#9a7bc4" stroke-width="6" />
     {#if id === 'egg-speckled'}{#each [[70, 70], [130, 90], [90, 140], [140, 150], [60, 120]] as [x, y]}<circle cx={x} cy={y} r="7" fill="#c9a77a" />{/each}{/if}
     <path d="M100 10 C160 10 190 100 190 140 C190 180 150 196 100 196 C50 196 10 180 10 140 C10 100 40 10 100 10 Z" fill="url(#hl)" />
-  {:else if kind === 'nest'}
+  {:else if kind === 'small-nest'}
     <ellipse cx="100" cy="140" rx="92" ry="44" fill="#d9a066" stroke="#a46a33" stroke-width="6" />
   {:else if kind === 'blanket'}
     <path d="M10 90 Q100 50 190 90 L190 170 Q100 196 10 170 Z" fill="#ffc4e1" stroke="#e0559c" stroke-width="6" />
@@ -5485,9 +5504,9 @@ describe('NamingCtrl', () => {
     expect(c.tray).toEqual(expect.arrayContaining(['k', 'e', 'n']));
     spellAll(c);
     expect(await c.slide()).toBe('right');
-    const spelled = f.actions.find((a) => a.type === 'name.spelled');
+    const spelled = f.actions.find((a) => a.type === 'naming.spelled');
     expect(spelled.results[0]).toMatchObject({ step: 'S03', result: 'first' });
-    expect(f.actions.find((a) => a.type === 'name.assign')).toMatchObject({ baby: 'b9', name: 'Ken', clipKey: 'ken', ordinal: 1, route: 'bell', unknown: false });
+    expect(f.actions.find((a) => a.type === 'naming.assign')).toMatchObject({ baby: 'b9', name: 'Ken', clipKey: 'ken', ordinal: 1, route: 'bell', unknown: false });
     expect(f.said).toEqual(expect.arrayContaining(['g-spell', 'name:ken!', 'fb-spelled', 'foal-yay']));
     expect(c.mode).toBe('done');
   });
@@ -5502,7 +5521,7 @@ describe('NamingCtrl', () => {
     expect(f.said).toEqual(expect.arrayContaining(['fb-that-says', 'g-listen']));
     c.dropGem(1, 'e');
     expect(await c.slide()).toBe('right');
-    const r = f.actions.find((a) => a.type === 'name.spelled').results[0];
+    const r = f.actions.find((a) => a.type === 'naming.spelled').results[0];
     expect(r.result).toBe('miss');
     expect(r.items).toEqual([{ id: 'k', result: 'first' }, { id: 'e', result: 'miss' }, { id: 'n', result: 'first' }]);
   });
@@ -5517,7 +5536,7 @@ describe('NamingCtrl', () => {
     expect(await c.slide()).toBe('wrong');
     spellAll(c);
     expect(await c.slide()).toBe('right');
-    const res = f.actions.find((a) => a.type === 'name.spelled').results;
+    const res = f.actions.find((a) => a.type === 'naming.spelled').results;
     expect(res[1]).toMatchObject({ step: 'S11', items: [{ id: 'capital', result: 'miss' }] });
   });
   it('runs the gold bell checks', async () => {
@@ -5530,10 +5549,10 @@ describe('NamingCtrl', () => {
     expect(await c.goldSlide()).toBe('blocked');
     expect(c.gold.every((g) => g === null)).toBe(true);
     expect(f.said).toContain('fb-silly');
-    expect(f.actions.some((a) => a.type === 'name.assign')).toBe(false);
+    expect(f.actions.some((a) => a.type === 'naming.assign')).toBe(false);
     c.openGold(['L', 'i', 'l', 'i']);
     expect(await c.goldSlide()).toBe('list');
-    expect(f.actions.find((a) => a.type === 'name.assign')).toMatchObject({ name: 'Lili', clipKey: 'lily', unknown: false, route: 'gold' });
+    expect(f.actions.find((a) => a.type === 'naming.assign')).toMatchObject({ name: 'Lili', clipKey: 'lily', unknown: false, route: 'gold' });
     expect(f.said).toEqual(expect.arrayContaining(['name:lily!', 'fb-gold-yes']));
   });
   it('accepts an unknown name with the kind line, and makes a duplicate royal', async () => {
@@ -5542,7 +5561,7 @@ describe('NamingCtrl', () => {
     c.openGold(['T', 'a', 'm', 'o', 'b', 'e', 'l']);
     expect(await c.goldSlide()).toBe('unknown');
     expect(f.said).toContain('fb-tricky');
-    expect(f.actions.find((a) => a.type === 'name.assign')).toMatchObject({ name: 'Tamobel', clipKey: null, unknown: true, ordinal: 2 });
+    expect(f.actions.find((a) => a.type === 'naming.assign')).toMatchObject({ name: 'Tamobel', clipKey: null, unknown: true, ordinal: 2 });
     expect(f.said).toContain('name-ordinal-2');
   });
   it('adds slots up to eight and removes empty ones down to two', () => {
@@ -5566,7 +5585,7 @@ describe('NamingCtrl', () => {
     await c.switchToGold();
     expect(c.mode).toBe('gold');
     expect(c.gold).toEqual(['k', 'e', null]);
-    expect(f.actions.find((a) => a.type === 'name.partial').results[0].items).toEqual([{ id: 'k', result: 'first' }, { id: 'e', result: 'first' }]);
+    expect(f.actions.find((a) => a.type === 'naming.partial').results[0].items).toEqual([{ id: 'k', result: 'first' }, { id: 'e', result: 'first' }]);
   });
   it('logs no spelling result for a free-naming garden name', async () => {
     const f = fakeDeps({ names: ALL });
@@ -5575,8 +5594,8 @@ describe('NamingCtrl', () => {
     await c.choose('rose');
     spellAll(c);
     expect(await c.slide()).toBe('right');
-    expect(f.actions.find((a) => a.type === 'name.spelled').results).toEqual([]);
-    expect(f.actions.find((a) => a.type === 'name.assign')).toMatchObject({ name: 'Rose', route: 'garden-pic' });
+    expect(f.actions.find((a) => a.type === 'naming.spelled').results).toEqual([]);
+    expect(f.actions.find((a) => a.type === 'naming.assign')).toMatchObject({ name: 'Rose', route: 'garden-pic' });
   });
 });
 ```
@@ -5772,7 +5791,7 @@ export class NamingCtrl {
       carrier: e.name, served: this.i.served, slots: this.slots.map((s) => ({ slot: s.slot, misses: s.misses, ghost: s.ghost })),
       capital: this.capital, hintLevel: this.d.hints.level, ms: this.ms(), error: this.lastError, baby: this.babyId(),
     });
-    this.d.dispatch({ type: 'name.spelled', target: this.i.target, route: this.route === 'gold' ? 'bell' : this.route, entryKey: e.key, phonemes: e.ph, gems, results });
+    this.d.dispatch({ type: 'naming.spelled', target: this.i.target, route: this.route === 'gold' ? 'bell' : this.route, entryKey: e.key, phonemes: e.ph, gems, results });
     this.d.hints.end();
     await this.d.audio.say('fb-spelled');
     await this.assign(e.name, gems, e.key, this.route, false);
@@ -5797,7 +5816,7 @@ export class NamingCtrl {
       });
       const results = namingResults({ carrier: this.chosen!.name, served: this.i.served, slots: outcomes, capital: null,
         hintLevel: this.d.hints.level, ms: this.ms(), error: this.lastError, baby: this.babyId() });
-      this.d.dispatch({ type: 'name.partial', results });
+      this.d.dispatch({ type: 'naming.partial', results });
     }
     this.d.hints.end();
     this.openGold(this.slots.map((s) => s.gem));
@@ -5854,7 +5873,7 @@ export class NamingCtrl {
     const self = this.babyId() ?? null;
     const ordinal = self ? ordinalFor(name, this.i.herd, self) : 1;
     this.named = { name, gems, clipKey, ordinal, route, unknown };
-    if (self) this.d.dispatch({ type: 'name.assign', baby: self, name, gems, clipKey, ordinal, route, unknown });
+    if (self) this.d.dispatch({ type: 'naming.assign', baby: self, name, gems, clipKey, ordinal, route, unknown });
     this.mode = 'done';
     this.changed();
     if (route !== 'gold' && clipKey) await this.d.audio.sayName(clipKey, '!');
@@ -7363,11 +7382,11 @@ Expected: PASS, including line coverage.
 #!/bin/sh
 # Heartbeat flow at one viewport. Run outside the sandbox, from the repo root, after
 #   (cd games/moon-meadow-home && npm run build:test)
-#   node games/moon-meadow-home/server/serve.ts --port 8765 &
+#   MOON_DIST=dist-test-heartbeat PORT=8772 HOST=127.0.0.1 node games/moon-meadow-home/server/serve.ts &
 # Usage: sh games/moon-meadow-home/flows/heartbeat.sh 1180 820
 set -eu
 W=$1; H=$2; S="hb$W"
-URL="http://127.0.0.1:8765/games/moon-meadow-home/"
+URL="${MMH_URL:-http://127.0.0.1:8772/games/moon-meadow-home/}"
 SHOTS="${TMPDIR:-/tmp}/mmh-flows"; mkdir -p "$SHOTS"
 pw() { playwright-cli -s="$S" "$@"; }
 ev() { pw eval "$1"; }
@@ -7441,7 +7460,7 @@ echo "heartbeat flow passed at $W x $H"
 # Naming flow at one viewport (same setup as heartbeat.sh).
 set -eu
 W=$1; H=$2; S="nm$W"
-URL="http://127.0.0.1:8765/games/moon-meadow-home/"
+URL="${MMH_URL:-http://127.0.0.1:8772/games/moon-meadow-home/}"
 SHOTS="${TMPDIR:-/tmp}/mmh-flows"; mkdir -p "$SHOTS"
 pw() { playwright-cli -s="$S" "$@"; }
 ev() { pw eval "$1"; }
@@ -7517,7 +7536,7 @@ for vp in "1180 820" "1080 810" "1024 768"; do
 done
 S=hbp
 playwright-cli -s=$S delete-data >/dev/null 2>&1 || true
-playwright-cli -s=$S open http://127.0.0.1:8765/games/moon-meadow-home/ >/dev/null
+playwright-cli -s=$S open "${MMH_URL:-http://127.0.0.1:8772/games/moon-meadow-home/}" >/dev/null
 playwright-cli -s=$S resize 820 1180 >/dev/null
 out=$(playwright-cli -s=$S eval "() => 'turn ' + !!document.querySelector('[aria-label=\"turn the iPad\"]')")
 playwright-cli -s=$S screenshot --filename="${TMPDIR:-/tmp}/mmh-flows/portrait.png" >/dev/null
@@ -7530,7 +7549,7 @@ echo 'All heartbeat flows passed.'
 
 ```bash
 cd /Users/tjitse/sites/emmas-game/games/moon-meadow-home && npm run build:test
-cd /Users/tjitse/sites/emmas-game && node games/moon-meadow-home/server/serve.ts --port 8765 &
+cd /Users/tjitse/sites/emmas-game && MOON_DIST=dist-test-heartbeat PORT=8772 HOST=127.0.0.1 node games/moon-meadow-home/server/serve.ts &
 sh games/moon-meadow-home/flows/run-heartbeat-all.sh
 ```
 
@@ -8309,7 +8328,7 @@ describe('phrase wishes', () => {
   });
   it('matches gives by word, colour and size', () => {
     const act = P[0].lines[0].acts[0];
-    const item = (colour: any, size: any) => ({ key: 'k', word: 'hat', picture: 'pic-hat', heap: false as const, colour, size });
+    const item = (colour: any, size: any) => ({ key: 'k', word: 'hat', picture: 'hat', heap: false as const, colour, size });
     expect(matchAct(act, { kind: 'give', item: item('pink', 'tiny') })).toBe(true);
     expect(matchAct(act, { kind: 'give', item: item('blue', 'tiny') })).toBe(false);
     expect(matchAct(act, { kind: 'give', item: item('pink', 'big') })).toBe(false);
@@ -8320,7 +8339,7 @@ describe('phrase wishes', () => {
     expect(openActs(line, [true, true])).toEqual([]);
   });
   it('tells in from on, and push from pull', () => {
-    const hat = { key: 'hat', word: 'hat', picture: 'pic-hat', heap: false as const };
+    const hat = { key: 'hat', word: 'hat', picture: 'hat', heap: false as const };
     expect(matchAct(P[2].lines[0].acts[0], { kind: 'put', item: hat, where: 'in' })).toBe(true);
     expect(matchAct(P[2].lines[0].acts[0], { kind: 'put', item: hat, where: 'on' })).toBe(false);
     expect(matchAct(P[3].lines[0].acts[0], { kind: 'station', station: 'swing', how: 'pull' })).toBe(false);

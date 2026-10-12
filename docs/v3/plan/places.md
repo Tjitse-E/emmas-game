@@ -12,6 +12,35 @@
 
 All paths below are relative to `games/moon-meadow-home/` unless they start with `docs/`, `shared/` or `scripts/`. Commands run from `games/moon-meadow-home/` unless stated. Commits run from the repo root.
 
+## Reconciled with the master plan (binding)
+
+`docs/v3/plan.md` (sections 2 and 3) and `docs/v3/plan/contracts.ts` are binding for this plan. Where a task below still shows another name, shape, port or owner, the master plan and `contracts.ts` win, and the builder changes this plan's code, never another stream's. Decisions are numbered R1 to R33 in master section 2.1.
+
+**Dropped files and tasks.**
+- `src/ui/ghost.ts`, `src/ui/GhostHand.svelte`, `src/ui/Moonbeam.svelte` (A3, A4): platform's controllers and components (R10).
+- `src/ui/Heap.svelte` and the heap layout in `plurals.ts` (A8): art's `Heap` and `heapLayout` (R12).
+- `rowsBuilt` (A12): rows come from core's herd slice through `game.world.rowsBuilt` (R26). Row plots are `row-<n>`.
+- `content/places/release.json`: learning's `content/release.json` is the only release file (R27).
+- `content/places/notes.json` (B7), the card lines in `content/places/salon.json` (C1) and `content/places/year1.json`: learning's `content/phrases/*.json` (R8). Task C7 is dropped; heartbeat Task 27 owns asking bubbles and two-state wishes (R9).
+- `src/core/learning/view.ts` is not expected from core; `src/places/serve.ts` builds `toLearnerView` itself.
+
+**Changed tasks.**
+- A1 (R17 to R19, R32): `GameEvent` and `DraftOf` come from `src/core/events.ts`. `src/core/places/index.ts` exports `createPlacesSlice()` (`{ name: 'places', version: 1, init: initPlaces, apply: (s, e) => reducePlaces(s, e) }`), and `titlesToGive` and `momentPinsDue`, which return `[]` until Tasks C5 and B2 replace them. `applyPlaceAction(action, ctx: ActionCtx)` returns drafts without `visit` (the router fills it); there is no `make`. Payloads are contracts C2: `care.done { baby, station }`, `pin.given { baby, pin, kind, set, key }`, `jar.labelled { jar, word, gems, count, plural, picture, baby }`, `learn.override` in learning's four shapes, `note.sent { note, words, mark, gift }`. `place.enter` and `place.leave` are written by the store on every router change; `nav.ts` only navigates. Every `learn.result` is built with learning's `learnResultPayload(pick, outcome)`; `logItems` returns `{ id, r }`. Export `PLACE_SAMPLE_ACTIONS` (one sample per action type) for integration Task I-1.
+- A1b (R21, R22): slot kinds map to learning moment kinds: `toy-shelf/label` to `label` or `label-plural`, `bath-pond/pond-word` to `one-or-many` with tags `['bath']`, `building/sum` to `wall`, `building/pattern` to `trim`, `post-box/sum` to `post-sash`, `post-box/fewest` to `post-pin`, `post-box/missing` to `parcel`, `post-box/note` to `note`, `salon/salon-word` to `salon-card`, `salon/pattern` to `beads`, `letter-lane/letters` to `letter-order`. Word tags: `pond` is `bath`, `shelf` is `found`, `salon` is `salon`. Name items are `name:<nameKey(name)>` (R20).
+- A2 to A4: the moment controller drives platform's `ghostMove`, `ghostTap`, `ghostStop` and `moonbeam`.
+- A7: the meadow mounts heartbeat's `MeadowLife`; an asking bubble calls `heartbeat.startWish(babyId)`.
+- A8 to A11, A16, C1 (R13): picture ids are the bare word (`fox`, `mouse`, `hat`); other ids come from the art lists (`bg-building-yard`, `building-bath-pond`, `building-post-box`, `building-salon`, `item-toy-shelf`). An id that is not in the art lists is drawn from `places-svg.ts` and added to `art-src/lists/requests.txt`.
+- A15: the parent corner uses core's `GameData` through `game.data` (`exportFile`, `saveExportFile`, `markExported`, `importText`, `readFileText`, `exclude`, `excludeLocalPlay`, `reset`), learning's `setCurrentOverride` through `game.dispatch({ type: 'game/override', payload })`, and settings through `game.dispatch({ type: 'game/setting', key, value })` with the keys in contracts `SettingKey`.
+- A16 (R6): lines live in `content/lines/places.json` as `{ "scene": "places", "pack": "places", "lines": [...] }`. Use `fb-more-than-one` and `fb-just-one` (heartbeat) and `num-over-<n>` (audio numbers) instead of `pl-more-than-one`, `pl-just-one` and `nm-too-many-<n>`; word clips are `word-<word>`.
+- A17, B10, C9 (R15): flows are `flows/places/<name>.flow.sh`; they source `flows/lib.sh` and then `flows/places/lib.sh` (place helpers only, `BASE` defaults to `MMH_URL`). Run with `MMH_LANE=places MMH_PORT=8773 bash flows/run.sh places/<name> ...`. Never port 8765.
+- B2: moment pins carry `key` (`first-bath`, `tenth-baby`, `first-building`, `moving-day`), which makes each a recorded fact.
+- B7 (R8): a note is a learning phrase with `act.kind === 'note'`: `cards`, `mark` (`stop` is `.`, `q` is `?`, `bang` is `!`), `spell` (the card index she spells) and `answer` (the gift). `note.sent.note` is the phrase id.
+- C1 (R8): each card line is a learning pick with moment `salon-card`; cousins (Dot, Fen, Bex) and bead colours stay in `content/places/`.
+- C8: pairing uses the sync client `sync` exported by `src/game.svelte.ts` (integration Task I-5): `sync.pair(code)`, `sync.status()`, `sync.unpair()`. Register the test hook `pairForTest(code)`.
+- Decisions D6 and D14 are replaced by R27 and R8. The others stand.
+
+**Batches.** A1: A2, A8 (pure part). A2: A1, A5, A6, A9 (logic). A3: A12 (logic), A14. A4: A1b, A3, A4, A16. A5: A10, A11. A6: A7, A13, A15, A17. B1: B1, B2, B3. B2: B4, B5, B6, B7, B8, B9. B3: B10. C1: C1, C3, C4, C5, C6. C2: C2. C3: C8, C9. Lane port 8773.
+
 ## Global Constraints
 
 - The app is fully British English. No Dutch word, text, audio or help anywhere. Unicorns only (Queen Lumi, babies, cousins and builders are unicorns).
@@ -231,7 +260,7 @@ These are assumptions about other workstreams. Each is the exact shape this plan
 | Test hook base | `window.__game` with `state()`, `jump(scene)`, `seed(n)`, `fast(on)`, `mute(on)`, `setNow(ms)`, `setStep(strand, step)`, `answer()`, `wrong()`, `idle()`, `play()` (taps Play), `herd(n)` (hatches and names n babies through real events), `newVisit()` (ends the visit and starts the next one 6 hours later), `importFixture(name)`, `setScaffold(strand, step, level)` (sets a step's scaffold level for flows), `pass(strand, step)` (records a real `step.passed` for flows), `errors(): string[]` (console errors and uncaught errors captured in the test build). The test build sets `window.EmmaAudio` (from `shared/audio.js`) so flows can read `EmmaAudio.missing`. Core's `answer()`, `wrong()` and `idle()` call `activeMoment()?.hookAnswer()` and friends from `src/ui/moment.ts` when a place moment is active. Core's `test-hook.ts` sets `window.__game.places = placesHook()`. | Core's `src/test-hook.ts`. |
 | Router | The scene router spreads `placeScenes` from `src/places/scenes.ts` into its map. | Skeleton's router. |
 | Vitest | `vitest.config.ts` includes `tests/**/*.test.ts`. Pure tests need no DOM. | Skeleton. |
-| npm scripts | `npm test` (vitest run), `npm run check` (svelte-check), `npm run check:content`, `npm run build:test` (vite build --mode test). The skeleton's Node server serves the built test app at `http://127.0.0.1:8765/games/moon-meadow-home/`. | Skeleton. |
+| npm scripts | `npm test` (vitest run), `npm run check` (svelte-check), `npm run check:content`, `npm run build:test` (vite build --mode test). Core's Node server serves the lane test build at `http://127.0.0.1:8773/games/moon-meadow-home/` (master plan R15). | Skeleton. |
 | TS imports | `.ts` extensions in relative imports (Node type stripping, as core's `events.ts`). No enums. `allowImportingTsExtensions` on. | Skeleton tsconfig. |
 | Visit time zone | `visit.start.tz` is the offset in minutes east of UTC (`-new Date().getTimezoneOffset()`), so Cyprus in winter is `120`. | Core events. |
 | Ladder item ids | R19 and S10 items are `-s`, `-es` and (R19 only) `none`. S18: `card-order`. S21: `capital-start`, `mark-.`. S23: `mark-?`, `mark-!`, `and`. S08 and S17: the tricky words as written (`I` with a capital). S19: `pair-<letter>` and `order-<letter>`. R33: `mark-?`, `mark-.`, `mark-!`. R37: `un` and `base`. M08 carriers: `AB`, `ABB`, `ABC`, `AAB`. M03 carrier: `fewest`. | Content workstream ladder files. |
@@ -442,7 +471,7 @@ export function learner(o: Partial<LearnerView> & { reachedSteps?: StepId[]; lev
 }
 
 export function word(id: string, graphemes: string[], extra: Partial<WordView> = {}): WordView {
-  return { id, word: id, graphemes, picture: `pic-${id}`, rStep: 'R05', sStep: 'S04', tags: [], ...extra };
+  return { id, word: id, graphemes, picture: `${id}`, rStep: 'R05', sStep: 'S04', tags: [], ...extra };
 }
 
 export function served(strand: 'r' | 's' | 'm', step: StepId, carrier: string, items: string[], extra: Partial<ServedItem> = {}): ServedItem {
@@ -811,7 +840,7 @@ describe('place actions', () => {
       [{ type: 'place/enter', place: 'bath-pond' }, 'place.enter'],
       [{ type: 'place/leave', place: 'bath-pond' }, 'place.leave'],
       [{ type: 'place/idle', strand: 'r', step: 'R19', place: 'bath-pond' }, 'learn.idle'],
-      [{ type: 'place/jar', jar: 'j1', word: 'foxes', plural: true, count: 3, picture: 'pic-fox', baby: 'a' }, 'jar.labelled'],
+      [{ type: 'place/jar', jar: 'j1', word: 'foxes', plural: true, count: 3, picture: 'fox', baby: 'a' }, 'jar.labelled'],
       [{ type: 'place/care', baby: 'a', care: 'bath' }, 'care.done'],
       [{ type: 'place/part', plot: 'row-2', part: 'walls' }, 'building.part'],
       [{ type: 'place/row-name', row: 2, name: 'Rose' }, 'row.named'],
@@ -3071,7 +3100,7 @@ git commit -m "Add toy shelf label planning and checks for plural endings"
 - Consumes: `PlacesState` (A1); `planLabel`, `checkLabel`, `labelItems`, `labelAfterLines`, `labelModel` (A9); `createMoment`, `defaultDeps` (A3); `Heap` (A8); `MeadowArrow`, `enterPlace`, `toMeadow`, `learnerView`, `herdView` (A7); heartbeat `GemSlots`, `ownSlots`, `planTray`; planner `serve('s', 'toy-shelf', 'label')`; content `words()`; audio `sayAll`, `sound`, `sfx`.
 - Produces:
   - `type ShelfJar = { jar: string; word: string; plural: boolean; count: number; picture: string; golden: boolean; clip: string }`
-  - `MICE_JAR: ShelfJar` (`{ jar: 'mice', word: 'mice', plural: true, count: 4, picture: 'pic-mouse', golden: true, clip: 'pl-mice' }`)
+  - `MICE_JAR: ShelfJar` (`{ jar: 'mice', word: 'mice', plural: true, count: 4, picture: 'mouse', golden: true, clip: 'pl-mice' }`)
   - `shelfJars(s: PlacesState): ShelfJar[]` (mice first, then labelled jars oldest first)
   - `shelfPages(jars: ShelfJar[], perPage?: number): ShelfJar[][]` (default 8 per page)
   - `newJarId(s: PlacesState, visitId: string): string` (`jar:<visit>:<n>`)
@@ -3097,20 +3126,20 @@ describe('toy shelf', () => {
 
   it('adds one jar per label, oldest first, each reading its own word', () => {
     const s = foldAll([
-      ev('jar.labelled', { jar: 'j1', word: 'foxes', plural: true, count: 3, picture: 'pic-fox', baby: 'a' }),
-      ev('jar.labelled', { jar: 'j2', word: 'bed', plural: false, count: 1, picture: 'pic-bed', baby: 'b' }),
+      ev('jar.labelled', { jar: 'j1', word: 'foxes', plural: true, count: 3, picture: 'fox', baby: 'a' }),
+      ev('jar.labelled', { jar: 'j2', word: 'bed', plural: false, count: 1, picture: 'bed', baby: 'b' }),
     ]);
     expect(shelfJars(s).map((j) => [j.word, j.clip, j.golden])).toEqual([['mice', 'pl-mice', true], ['foxes', 'word-foxes', false], ['bed', 'word-bed', false]]);
   });
 
   it('pages the shelf by eight jars', () => {
-    const s = foldAll(Array.from({ length: 10 }, (_, i) => ev('jar.labelled', { jar: `j${i}`, word: 'hats', plural: true, count: 3, picture: 'pic-hat', baby: null })));
+    const s = foldAll(Array.from({ length: 10 }, (_, i) => ev('jar.labelled', { jar: `j${i}`, word: 'hats', plural: true, count: 3, picture: 'hat', baby: null })));
     const pages = shelfPages(shelfJars(s));
     expect(pages.map((p) => p.length)).toEqual([8, 3]);
   });
 
   it('makes a new jar id per visit and count', () => {
-    const s = foldAll([ev('visit.start', { visit: 'v3', tz: 0 }), ev('jar.labelled', { jar: 'jar:v3:0', word: 'hats', plural: true, count: 3, picture: 'pic-hat', baby: null })]);
+    const s = foldAll([ev('visit.start', { visit: 'v3', tz: 0 }), ev('jar.labelled', { jar: 'jar:v3:0', word: 'hats', plural: true, count: 3, picture: 'hat', baby: null })]);
     expect(newJarId(s, 'v3')).toBe('jar:v3:1');
   });
 });
@@ -3128,7 +3157,7 @@ import type { PlacesState } from './state.ts';
 
 export type ShelfJar = { jar: string; word: string; plural: boolean; count: number; picture: string; golden: boolean; clip: string };
 
-export const MICE_JAR: ShelfJar = { jar: 'mice', word: 'mice', plural: true, count: 4, picture: 'pic-mouse', golden: true, clip: 'pl-mice' };
+export const MICE_JAR: ShelfJar = { jar: 'mice', word: 'mice', plural: true, count: 4, picture: 'mouse', golden: true, clip: 'pl-mice' };
 
 export function shelfJars(s: PlacesState): ShelfJar[] {
   return [MICE_JAR, ...s.jars.map((j) => ({ jar: j.jar, word: j.word, plural: j.plural, count: j.count, picture: j.picture, golden: false, clip: `word-${j.word}` }))];
@@ -4767,7 +4796,7 @@ The scenes fall back to `places-svg.ts` for every id below that has no art in `p
 
 | Wave | Art ids (cut out on white unless a background) |
 |---|---|
-| A | backgrounds `bg-meadow`, `bg-bath-pond`, `bg-building-yard`; places `place-bath-pond`, `place-post-box`, `place-dressing`, `place-letter-lane`, `place-salon`; `shelf`, `plank`, `wheelbarrow`, `builder-hat`; word picture `pic-mouse` (toy mouse) |
+| A | backgrounds `bg-meadow`, `bg-bath-pond`, `bg-building-yard`; places `place-bath-pond`, `place-post-box`, `place-dressing`, `place-letter-lane`, `place-salon`; `shelf`, `plank`, `wheelbarrow`, `builder-hat`; word picture `mouse` (toy mouse) |
 | B | backgrounds `bg-post-box`, `bg-dressing`; decorations `decor-fountain`, `decor-lantern-arch`, `decor-flower-bridge`, `decor-star-bench`, `decor-wishing-well`, `decor-rose-arbour`, `decor-moon-swing`, `decor-flower-cart`, `decor-crystal-rock`, `decor-kite-pole`, `decor-bubble-fountain`, `decor-heart-hedge`; wardrobe `dress-gold-crown`, `dress-silver-crown`, `dress-flower-crown`, `dress-star-crown`, `dress-pink-cape`, `dress-blue-cape`, `dress-purple-cape`, `dress-gold-cape`, `dress-daisy-garland`, `dress-rose-garland`, `dress-star-garland`; pins `pin-star` and the 30 set pins and 4 moment pins named in `pin-sets.json`; gifts `gift-swing`, `gift-kite`, `gift-boat`, `gift-cake`, `gift-bell`; rewards `reward-salon-flower-arch`, `reward-stable-star-lanterns`, `reward-meadow-moon-lamps`, `reward-crown-gem-trim`, `reward-pond-shell-path`, `reward-meadow-heart-garland`; novelty `nv-bubble-machine`, `nv-stall-lanterns`, `nv-flowerboxes`; `pin-pot`, `post-box-open`, `book-frame`, `place-row` |
 | C | backgrounds `bg-salon`, `bg-valley`, `bg-letter-lane`; `herd-banner`, `party-flag`, salon tools `salon-brush`, `salon-mist`, `salon-mirror`, `salon-beads`; half-done objects `ts-basket`, `ts-bow`, `ts-gate`, `ts-bag`, `ts-cape` |
 
@@ -4797,7 +4826,7 @@ git commit -m "Add every spoken line for the meadow places"
 #!/bin/sh
 # Helpers for the place flows. Run from the repo root, outside the sandbox.
 set -eu
-BASE="${BASE:-http://127.0.0.1:8765/games/moon-meadow-home/}"
+BASE="${BASE:-${MMH_URL:-http://127.0.0.1:8773/games/moon-meadow-home/}}"
 SHOTS="${TMPDIR:-/tmp}/flows"
 mkdir -p "$SHOTS"
 
@@ -4993,7 +5022,7 @@ sh "$DIR/parent.sh" 820 1180
 From `games/moon-meadow-home/`: `npm test && npm run check && npm run check:content && npm run build:test`
 Expected: all pass.
 
-With the skeleton's server running on port 8765, from the repo root and outside the sandbox: `sh games/moon-meadow-home/flows/places/run.sh meadow label pond building parent`
+With core's server serving `dist-test-places` on port 8773, from the repo root and outside the sandbox: `sh games/moon-meadow-home/flows/places/run.sh meadow label pond building parent`
 Expected: every line `ok:`; screenshots in `$TMPDIR/flows/`. Look at each screenshot: one goal per screen, no clipped buttons at 1024 x 768, the turn picture in portrait for play scenes.
 
 - [ ] **Step 4: Commit**
@@ -6951,7 +6980,7 @@ function shuffle<T>(a: T[], rng: Rng): T[] {
 const pick = <T>(a: T[], rng: Rng): T => a[Math.floor(rng() * a.length)];
 const dotsOf = (sc: 1 | 2 | 3) => (sc === 1 ? 500 : sc === 2 ? 300 : null) as 500 | 300 | null;
 const extraCount = (sc: 1 | 2 | 3) => (sc === 1 ? 0 : sc === 2 ? 1 : 3);
-const plain = (thing: string, picture = `pic-${thing}`): SalonOption => ({ id: `${thing}:1`, thing, colour: null, size: 'big', many: false, picture });
+const plain = (thing: string, picture = `${thing}`): SalonOption => ({ id: `${thing}:1`, thing, colour: null, size: 'big', many: false, picture });
 
 export function cousinsAvailable(s: PlacesState, release: string): CousinDef[] {
   return cousinDefs.filter((c) => released(c.release, release) && (!c.novelty || s.unlocked.includes(c.novelty)));
@@ -7678,8 +7707,8 @@ git commit -m "Let babies come along to places with a come-along ribbon"
 ```json
 {
   "asking": [
-    { "thing": "bow", "picture": "pic-bow" }, { "thing": "hat", "picture": "pic-hat" }, { "thing": "cake", "picture": "pic-cake" },
-    { "thing": "kite", "picture": "pic-kite" }, { "thing": "bell", "picture": "pic-bell" }, { "thing": "cape", "picture": "pic-cape" }
+    { "thing": "bow", "picture": "bow" }, { "thing": "hat", "picture": "hat" }, { "thing": "cake", "picture": "cake" },
+    { "thing": "kite", "picture": "kite" }, { "thing": "bell", "picture": "bell" }, { "thing": "cape", "picture": "cape" }
   ],
   "twoState": [
     { "id": "basket", "picture": "ts-basket", "do": { "text": "Pack the basket.", "clip": "y1-pack-basket", "to": "packed" }, "undo": { "text": "Unpack the basket.", "clip": "y1-unpack-basket", "to": "unpacked" }, "reaction": "lid-pops" },
@@ -7940,7 +7969,7 @@ git commit -m "Add missing clips, idle flags, settings and pairing to the parent
 - Modify: `flows/places/parent.sh` (pairing against the local server)
 
 **Interfaces:**
-- Consumes: hooks from Tasks C2 to C8; the skeleton's local server with the save API on port 8765; the sync workstream's `node server/admin.ts pair --family test` that prints a code.
+- Consumes: hooks from Tasks C2 to C8; core's server with the save API on the lane port 8773 and a temp `MOON_DATA`; the sync workstream's `node server/admin.ts pair --family test` that prints a code.
 - Produces: flows that exit non-zero on failure.
 
 - [ ] **Step 1: Write the flows**

@@ -12,6 +12,25 @@
 
 ---
 
+## Reconciled with the master plan (binding)
+
+`docs/v3/plan.md` (sections 2 and 3) and `docs/v3/plan/contracts.ts` are binding for this plan. Where a task below still shows another name, shape, port or owner, the master plan and `contracts.ts` win, and the builder changes this plan's code, never another stream's. Decisions are numbered R1 to R33 in master section 2.1.
+
+**Ownership.** Audio owns the `shared/audio.js` additions, `shared/audio.d.ts` and all of `src/audio/` (R3); platform's Tasks A6 and A7 are dropped.
+
+**Changed tasks.**
+- Contracts I need, item 2 (word bank, phrases and name bank shapes) is replaced by learning's content types (contracts C4): words are `RawWord` (`w`, `gpcs`, `pic`, `plural`), names are `RawName` in `content/names/tier1.json`, phrases are `RawPhrase`. The IPA probe and `pronounce.ts` (Task B2) take a name's phonemes from learning's `phonemesOf(gpcs, content.gpcs)`.
+- A4 (R4, R5): `nameId(name, mark)` is `'name-' + slugName(name)` for `!` and `'name-' + slugName(name) + '-q'` for `?`, with `slugName` from contracts C12 (lowercase ASCII letters only). `phraseId(id)` is `'phrase-' + id`, with the phrase id from learning's `content/phrases/*.json`. Update the tests: `nameId('Lily', '!')` is `name-lily`, `nameId('Lily-Rose', '?')` is `name-lilyrose-q`, `phraseId('note-swing')` is `phrase-note-swing`.
+- A5 (R6, R7): number lines as written, with `sky` from 1 to 12. The hand-written Wave A files are only `content/lines/common.json`, `start.json` and `moving-day.json`. The nest, naming, wish, stalls, goodnight, label, building and meadow lines are owned by heartbeat (`content/lines/heartbeat.json`) and places (`content/lines/places.json`). The line recipes table is advisory; heartbeat's and places' ids win.
+- A6 (R6, R33): `tools/audio/build-lines.ts` writes the packs `core`, `numbers`, `places`, `area-*` and `names-new` from `content/lines/*.json` and the number lines. It never writes learning's packs (`words-*`, `names-t1`, `phrases-*`), which learning's `npm run build:lines` writes. The word, phrase and name builders in `lines-lib.ts` are not written. `PACKS` is contracts C8.
+- A7: `SCENES` come from the `scene` field of the line files (`common`, `start`, `moving-day`, `heartbeat`, `places`, and the area files).
+- A8: `sayName(name, mark)` returns `Promise<boolean>` (true when a clip played). The facade is contracts C8. `audio.init` runs in platform's `main.ts` before Play.
+- A9: `npm run check:audio` also fails on an id defined twice across all `lines.json` files. Narrator-only prefixes include `ord-` and `model-`.
+- A10 and later runs follow the order and estimates in master section 3.5. Numbers 61 to 100 (Task C1) are not generated this session. `names-t1` is generated from learning's `lines.json`, which lists v2 names first.
+- B3, C2 (R29): the name bank is learning's `content/names/tier1.json` (`RawName`: `name`, `gpcs`, `source`, `priority`), not `content/names/t1.json`; nearest names come from learning's `nearestNames` (Task B5). `name.built` is core's shape (lowercase gem strings, phonemes as one space-separated string). The admin token is `MOON_ADMIN_TOKEN`, which the tool loads itself with `process.loadEnvFile()`. On the Mac the tool reads `<repo>/.data/moon-meadow/families/emma/events.jsonl` with core's `unknownNamesFrom` and needs no token. `G/server/data/admin-token` is not used.
+
+**Batches.** A0: A1, A2 (run 0). A1: A3, A4, A5. A2: A6, A7, A8, A9. Runs per master 3.5 from A2 on. B1: B1, B2. B2: B3. C1: C1. C2: C2, C3. C3: C4. Lane port 8775.
+
 ## Decisions this plan makes
 
 | # | Topic | Decision |
@@ -19,8 +38,8 @@
 | AD1 | Source of lines | Hand-written lines live in `games/moon-meadow-home/content/lines/<scene>.json`. Numbers, words, plurals, phrases and names are derived by code. Nobody edits a pack's `lines.json` by hand. |
 | AD2 | Packs | `core`, `numbers`, `words-phase2`, `words-phase3-4`, `words-year1`, `phrases`, `names-t1`, `names-new`, `area-stable-yard`, `area-village-lane`, `places`. Folder: `games/moon-meadow-home/public/audio/<pack>/`. Letter sounds stay in `shared/audio/phonics/` and are copied into the build at `audio/phonics/`. |
 | AD3 | Voices | Per `VOICES.md`: `narrator` (Elizabeth) for every goal, hint, feedback, number, name, word and phrase; `queen` (Lumi, Posh) for story lines only; `foal` (Flicker) for giggles and tiny fixed words. Ids starting `word-`, `name-`, `num-`, `sound-`, `phrase-` and `ord-` must be narrator, enforced by the build tool and by the generator. |
-| AD4 | Ids | `g-` goal, `h-` hint, `fb-` feedback, `lumi-` queen, `foal-` foal, `word-<slug>`, `phrase-<slug>[-q|-x]`, `name-<slug>-x` ("Pip!") and `name-<slug>-q` ("Pip?"), `num-<n>` ("Seven."), `num-<kind>-<n>`, `num-bond-<a>-<b>`, `num-parcel-<n>-<plural>`, `ord-<n>` ("The Second!"). Ids never contain digits that are not numbers. |
-| AD5 | No splicing | Clips join only at sentence boundaries. A name is always its own clip. "Let's write hat. Listen: hat." is played as `g-write-label` ("Let's write a label. Listen.") then `word-hat` ("Hat."). "Bella wants to visit door fourteen." is `name-bella-x` then `num-visit-14` ("Off to door fourteen!"). |
+| AD4 | Ids | `g-` goal, `h-` hint, `fb-` feedback, `lumi-` queen, `foal-` foal, `word-<slug>`, `phrase-<slug>[-q|-x]`, `name-<slugName>` ("Pip!") and `name-<slugName>-q` ("Pip?"), `num-<n>` ("Seven."), `num-<kind>-<n>`, `num-bond-<a>-<b>`, `num-parcel-<n>-<plural>`, `ord-<n>` ("The Second!"). Ids never contain digits that are not numbers. |
+| AD5 | No splicing | Clips join only at sentence boundaries. A name is always its own clip. "Let's write hat. Listen: hat." is played as `g-write-label` ("Let's write a label. Listen.") then `word-hat` ("Hat."). "Bella wants to visit door fourteen." is `name-bella` then `num-visit-14` ("Off to door fourteen!"). |
 | AD6 | v2 reuse | Where a v2 line fits, the v3 line copies its text, speaker and seed exactly. Same request, same hash, so the clip comes from the raw cache in `.cache/tts/` for 0 credits (verified: all 246 v2 clips hash-match today). 40 core lines, 52 number lines and every v2 name's "!" clip are free. |
 | AD7 | Speech-to-text replaces the ear check this session | `--stt` checks narrator and queen clips with `scribe_v2`. A sound-alike key accepts spelling variants (Lin/Lynn, Mitt/Mit, "A net"/Annette, "41"/"forty-one"). Words and phrases fail when the transcript is another word of the same pack (pan heard for pen, cape for cap). A failing clip is regenerated with a new seed up to 2 times. A learning clip (`word-`, `phrase-`, `name-`, `num-`, `ord-`) that still fails gets `"ok": false` in its manifest, and the app treats it as absent: the planner never serves that word, and a name falls back to the no-clip path. Game lines that still fail are kept and listed for Tjitse. |
 | AD8 | Budget guard | `tools/audio/budget.json` holds `cap` 24,000 and `floor` = max(8,000, credits at start minus 24,000). Every run passes `--floor`, `--ledger tools/audio/ledger.jsonl` and `--cap`, so no run can pass the build budget, and speech-to-text costs (if any) are caught by the floor on the live counter. |
@@ -314,7 +333,7 @@ class SttJudge(unittest.TestCase):
 
     def test_judge_line_uses_other_words_only_for_words_and_phrases(self):
         lines = [{'id': 'word-full', 'text': 'Full.'}, {'id': 'word-fool', 'text': 'Fool.'},
-                 {'id': 'name-lin-x', 'text': 'Lin!'}, {'id': 'name-lynn-x', 'text': 'Lynn!'}]
+                 {'id': 'name-lin', 'text': 'Lin!'}, {'id': 'name-lynn', 'text': 'Lynn!'}]
         self.assertEqual(ga.judge_line(lines[0], 'Fool', lines), 'other-word')
         self.assertIn(ga.judge_line(lines[2], 'Lynn', lines), ga.STT_PASS)
 
@@ -1100,9 +1119,9 @@ afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 describe('shared/audio.js packs', () => {
   const files = {
     'a/core/manifest.json': { clips: { 'g-hello': clip('g-hello.mp3') } },
-    'a/names/manifest.json': { clips: { 'name-pip-x': clip('name-pip-x.mp3'), 'g-hello': clip('other.mp3') } },
+    'a/names/manifest.json': { clips: { 'name-pip': clip('name-pip.mp3'), 'g-hello': clip('other.mp3') } },
     'a/core/g-hello.mp3': 1,
-    'a/names/name-pip-x.mp3': 1,
+    'a/names/name-pip.mp3': 1,
   };
 
   it('finds a clip in the first pack that lists it', async () => {
@@ -1111,9 +1130,9 @@ describe('shared/audio.js packs', () => {
     A.addPack('core', 'a/core/');
     A.addPack('names', 'a/names/');
     await A.say('g-hello');
-    await A.say('name-pip-x');
+    await A.say('name-pip');
     expect(fetch.calls).toContain('a/core/g-hello.mp3');
-    expect(fetch.calls).toContain('a/names/name-pip-x.mp3');
+    expect(fetch.calls).toContain('a/names/name-pip.mp3');
     expect(fetch.calls).not.toContain('a/names/other.mp3');
     expect(A.missing).toEqual([]);
   });
@@ -1136,7 +1155,7 @@ describe('shared/audio.js packs', () => {
     const { A } = await loadPlayer(files);
     A.addPack('core', 'a/core/');
     A.addPack('names', 'a/names/');
-    expect(await A.has('name-pip-x')).toBe(true);
+    expect(await A.has('name-pip')).toBe(true);
     expect(await A.has('word-nope')).toBe(false);
   });
 
@@ -1154,7 +1173,7 @@ describe('shared/audio.js packs', () => {
   it('addPack with fresh asks the server to revalidate the manifest, and a second addPack replaces the pack', async () => {
     const { A, fetch } = await loadPlayer(files);
     const m = await A.addPack('names', 'a/names/', { fresh: true });
-    expect(m?.clips['name-pip-x'].file).toBe('name-pip-x.mp3');
+    expect(m?.clips['name-pip'].file).toBe('name-pip.mp3');
     expect(fetch.inits[fetch.calls.indexOf('a/names/manifest.json')]).toEqual({ cache: 'no-cache' });
     await A.addPack('names', 'a/names/', { fresh: true });
     expect(fetch.calls.filter((u) => u === 'a/names/manifest.json')).toHaveLength(2);
@@ -1350,10 +1369,11 @@ describe('clip ids', () => {
     expect(wordId('hats')).toBe('word-hats');
     expect(wordId('post box')).toBe('word-post-box');
     expect(phraseId('Can we have a swing?')).toBe('phrase-can-we-have-a-swing-q');
-    expect(phraseId('We love the pond!')).toBe('phrase-we-love-the-pond-x');
+    expect(phraseId('note-swing')).toBe('phrase-note-swing');
     expect(phraseId('a tiny pink bow')).toBe('phrase-a-tiny-pink-bow');
     expect(phraseId('Can we have a swing.')).toBe('phrase-can-we-have-a-swing');
-    expect(nameId('Lily', '!')).toBe('name-lily-x');
+    expect(nameId('Lily', '!')).toBe('name-lily');
+    expect(nameId('Lily-Rose', '?')).toBe('name-lilyrose-q');
     expect(nameId('Lily', '?')).toBe('name-lily-q');
   });
   it('builds number ids', () => {
@@ -1365,7 +1385,7 @@ describe('clip ids', () => {
     expect(ordId(2)).toBe('ord-2');
   });
   it('knows which ids are dynamic', () => {
-    for (const id of ['word-hat', 'phrase-a-hat', 'name-pip-x', 'num-7', 'ord-2']) expect(isDynamic(id)).toBe(true);
+    for (const id of ['word-hat', 'phrase-a-hat', 'name-pip', 'num-7', 'ord-2']) expect(isDynamic(id)).toBe(true);
     for (const id of ['g-egg', 'fb-hot', 'lumi-hello', 'foal-yay', 'h-count']) expect(isDynamic(id)).toBe(false);
   });
 });
@@ -1403,15 +1423,19 @@ export function wordId(word: string): WordId {
   return `word-${slug(word)}`;
 }
 
-/** The end mark is part of the id, because "Can we have a swing?" and "Can we have a swing." are two clips. */
-export function phraseId(text: string): PhraseId {
-  const t = text.trim();
-  const mark = t.endsWith('?') ? '-q' : t.endsWith('!') ? '-x' : '';
-  return `phrase-${slug(t)}${mark}`;
+/** A phrase clip is named after the phrase id in learning's content/phrases/*.json (master plan R5). */
+export function phraseId(id: string): PhraseId {
+  return `phrase-${id}`;
+}
+
+/** Name key: lowercase ASCII letters only (contracts C12). */
+export function slugName(name: string): string {
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
 }
 
 export function nameId(name: string, mark: NameMark): NameClipId {
-  return `name-${slug(name)}-${mark === '!' ? 'x' : 'q'}`;
+  const key = slugName(name);
+  return mark === '!' ? `name-${key}` : `name-${key}-q`;
 }
 
 export function numId(kind: NumKind, n: number): NumId {
@@ -1880,20 +1904,20 @@ describe('name lines', () => {
     const v2Names = v2.filter((l) => l.id.startsWith('name-'));
     expect(lines.slice(0, v2Names.length * 2).every((l) => l.note === 'v2 name')).toBe(true);
     const nop = v2.find((l) => l.id === 'name-nop')!;
-    expect(lines.find((l) => l.id === 'name-nop-x')).toMatchObject({ text: nop.text, seed: nop.seed });
+    expect(lines.find((l) => l.id === 'name-nop')).toMatchObject({ text: nop.text, seed: nop.seed });
     expect(lines.find((l) => l.id === 'name-nop-q')?.text).toBe('Nopp?');
   });
   it('then the bank by rank, two clips per name, a v2 name only once', () => {
     const rest = lines.filter((l) => l.note !== 'v2 name');
-    expect(rest.map((l) => l.id)).toEqual(['name-lily-x', 'name-lily-q', 'name-tamo-x', 'name-tamo-q']);
+    expect(rest.map((l) => l.id)).toEqual(['name-lily', 'name-lily-q', 'name-tamo', 'name-tamo-q']);
     expect(rest[2].text).toBe('/tæmɒ/!');
     expect(rest[0].expect).toEqual(['Lily']);
-    expect(lines.filter((l) => l.id === 'name-sam-x')).toHaveLength(1);
+    expect(lines.filter((l) => l.id === 'name-sam')).toHaveLength(1);
   });
   it('makes clips for invented names from their pronunciation', () => {
     expect(newNameLines([{ name: 'Zibbo', graphemes: [], phonemes: [], firstSeen: '', count: 1, nearest: 'Zoe', distance: 3, mode: 'respell', text: 'Zibbo' }]))
       .toEqual([
-        { id: 'name-zibbo-x', speaker: 'narrator', text: 'Zibbo!', expect: ['Zibbo'], note: 'invented, nearest Zoe' },
+        { id: 'name-zibbo', speaker: 'narrator', text: 'Zibbo!', expect: ['Zibbo'], note: 'invented, nearest Zoe' },
         { id: 'name-zibbo-q', speaker: 'narrator', text: 'Zibbo?', expect: ['Zibbo'], note: 'invented, nearest Zoe' },
       ]);
   });
@@ -2144,7 +2168,7 @@ const optional = <T>(path: string, fallback: T): T => (existsSync(path) ? readJs
 const scenes = jsonFiles(join(G, 'content/lines')).map((p) => readJson<SceneFile>(p));
 const words = jsonFiles(join(G, 'content/words')).flatMap((p) => readJson<{ words: WordEntry[] }>(p).words);
 const phrases = jsonFiles(join(G, 'content/phrases')).flatMap((p) => readJson<{ phrases: PhraseEntry[] }>(p).phrases);
-const bank = optional<{ names: NameEntry[] }>(join(G, 'content/names/t1.json'), { names: [] }).names;
+const bank = optional<{ names: NameEntry[] }>(join(G, 'content/names/tier1.json'), { names: [] }).names;
 const invented = optional<{ names: NewName[] }>(join(G, 'content/names/new.json'), { names: [] }).names;
 const v2 = readJson<{ lines: V2Line[] }>(join(REPO, 'ideas/opus-5-5-unicorn-egg-nest-v2/audio/lines.json')).lines;
 
@@ -2333,20 +2357,20 @@ describe('ClipIndex', () => {
   it('knows clips across packs and treats ok: false as absent', () => {
     const ix = new ClipIndex();
     ix.set('core', { clips: { 'g-egg': clip() } });
-    ix.set('names-t1', { clips: { 'name-pip-x': clip(true), 'name-lin-x': clip(false) } });
+    ix.set('names-t1', { clips: { 'name-pip': clip(true), 'name-lin': clip(false) } });
     ix.set('names-new', null);
     expect(ix.has('g-egg')).toBe(true);
-    expect(ix.has('name-pip-x')).toBe(true);
-    expect(ix.has('name-lin-x')).toBe(false);
+    expect(ix.has('name-pip')).toBe(true);
+    expect(ix.has('name-lin')).toBe(false);
     expect(ix.has('word-hat')).toBe(false);
-    expect(ix.ids('name-')).toEqual(['name-pip-x']);
+    expect(ix.ids('name-')).toEqual(['name-pip']);
   });
   it('replaces a pack when it is set again', () => {
     const ix = new ClipIndex();
     ix.set('names-new', { clips: {} });
-    expect(ix.has('name-zibbo-x')).toBe(false);
-    ix.set('names-new', { clips: { 'name-zibbo-x': clip() } });
-    expect(ix.has('name-zibbo-x')).toBe(true);
+    expect(ix.has('name-zibbo')).toBe(false);
+    ix.set('names-new', { clips: { 'name-zibbo': clip() } });
+    expect(ix.has('name-zibbo')).toBe(true);
   });
 });
 ```
@@ -2457,7 +2481,7 @@ const clip = (ok = true): ClipEntry => ({ hash: 'h', speaker: 'narrator', text: 
 const MANIFESTS: Record<string, ClipManifest> = {
   core: { clips: { 'g-egg': clip(), 'g-stone': clip() } },
   numbers: { clips: { 'num-movein-19': clip() } },
-  'names-t1': { clips: { 'name-pip-x': clip(), 'name-lily-x': clip(false) } },
+  'names-t1': { clips: { 'name-pip': clip(), 'name-lily': clip(false) } },
 };
 
 function fakePlayer(manifests: Record<string, ClipManifest | null> = MANIFESTS) {
@@ -2512,10 +2536,10 @@ describe('audio facade', () => {
     const { audio, calls } = await ready();
     expect(audio.hasName('Pip')).toBe(true);
     expect(audio.hasName('Lily')).toBe(false);
-    expect(audio.nameClip('Pip', '?')).toBe('name-pip-x');
+    expect(audio.nameClip('Pip', '?')).toBe('name-pip');
     await audio.sayName('Lily', '!');
     await audio.sayName('Pip', '?');
-    expect(calls.filter((c) => c.startsWith('say:'))).toEqual(['say:name-pip-x']);
+    expect(calls.filter((c) => c.startsWith('say:'))).toEqual(['say:name-pip']);
   });
 
   it('has sayAll and has as aliases', async () => {
@@ -2962,15 +2986,15 @@ function fixture() {
     'foal-d': { file: 'foal-d.mp3', text: 'Yay!' },
   }, ['g-a.mp3', 'g-c.mp3', 'foal-d.mp3']);
   pack('names-t1', [
-    { id: 'name-pip-x', speaker: 'narrator', text: 'Pip!' },
-    { id: 'name-lin-x', speaker: 'narrator', text: 'Lin!' },
-    { id: 'name-sam-x', speaker: 'narrator', text: 'Sam!' },
-    { id: 'name-zed-x', speaker: 'narrator', text: 'Zed!' },
+    { id: 'name-pip', speaker: 'narrator', text: 'Pip!' },
+    { id: 'name-lin', speaker: 'narrator', text: 'Lin!' },
+    { id: 'name-sam', speaker: 'narrator', text: 'Sam!' },
+    { id: 'name-zed', speaker: 'narrator', text: 'Zed!' },
   ], {
-    'name-pip-x': { file: 'name-pip-x.mp3', text: 'Pip!', stt: stt('Pip') },
-    'name-lin-x': { file: 'name-lin-x.mp3', text: 'Lin!', ok: false, stt: stt('Lean', false) },
-    'name-sam-x': { file: 'name-sam-x.mp3', text: 'Sam!' },
-  }, ['name-pip-x.mp3', 'name-lin-x.mp3', 'name-sam-x.mp3']);
+    'name-pip': { file: 'name-pip.mp3', text: 'Pip!', stt: stt('Pip') },
+    'name-lin': { file: 'name-lin.mp3', text: 'Lin!', ok: false, stt: stt('Lean', false) },
+    'name-sam': { file: 'name-sam.mp3', text: 'Sam!' },
+  }, ['name-pip.mp3', 'name-lin.mp3', 'name-sam.mp3']);
   pack('empty', [], null, []);
   return root;
 }
@@ -2981,9 +3005,9 @@ describe('checkAudio', () => {
     expect(issues).toEqual([
       ['core', 'g-b', 'error', 'no-clip'],
       ['core', 'g-c', 'error', 'stale'],
-      ['names-t1', 'name-lin-x', 'warn', 'excluded'],
-      ['names-t1', 'name-sam-x', 'error', 'unchecked'],
-      ['names-t1', 'name-zed-x', 'warn', 'no-clip'],
+      ['names-t1', 'name-lin', 'warn', 'excluded'],
+      ['names-t1', 'name-sam', 'error', 'unchecked'],
+      ['names-t1', 'name-zed', 'warn', 'no-clip'],
     ]);
   });
 });
@@ -3762,7 +3786,7 @@ export async function fetchBuilds(base: string, token: string, fetchFn: typeof f
 /**
  * Adds the names Emma invented to content/names/new.json, so the next generator run makes their clips.
  *   npm run names:pull -- --file <v3 save export or v2 save from move.html>
- *   npm run names:pull -- --server http://127.0.0.1:8765/games/moon-meadow-home/ [--token-file server/data/admin-token]
+ *   npm run names:pull -- --server http://127.0.0.1:8765/games/moon-meadow-home/ (token from MOON_ADMIN_TOKEN, loaded by the tool)
  * Then: npm run audio:lines, and sh games/moon-meadow-home/tools/audio/gen.sh names-new ... from the repo root.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -3774,7 +3798,7 @@ import type { NameEntry, NewName, V2Line } from './audio/lines-lib.ts';
 
 const G = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REPO = resolve(G, '../..');
-const { values } = parseArgs({ options: { file: { type: 'string' }, server: { type: 'string' }, 'token-file': { type: 'string' } } });
+const { values } = parseArgs({ options: { file: { type: 'string' }, server: { type: 'string' } } });
 const readJson = <T>(p: string, fallback: T): T => (existsSync(p) ? (JSON.parse(readFileSync(p, 'utf8')) as T) : fallback);
 
 async function builds(): Promise<Build[]> {
@@ -3785,13 +3809,15 @@ async function builds(): Promise<Build[]> {
     throw new Error(`${values.file} is neither a Moon Meadow export nor a v2 save`);
   }
   if (values.server) {
-    const token = readFileSync(resolve(G, values['token-file'] ?? 'server/data/admin-token'), 'utf8').trim();
+    // The tool loads the repo's key file itself (master plan R29); the token is never printed.
+    try { process.loadEnvFile(join(REPO, '.' + 'env')); } catch { /* no key file: the server call fails with 401 */ }
+    const token = process.env.MOON_ADMIN_TOKEN ?? '';
     return fetchBuilds(values.server, token);
   }
   throw new Error('Pass --file <export or v2 save .json> or --server <base url>');
 }
 
-const bank = readJson<{ names: NameEntry[] }>(join(G, 'content/names/t1.json'), { names: [] }).names;
+const bank = readJson<{ names: NameEntry[] }>(join(G, 'content/names/tier1.json'), { names: [] }).names;
 const v2 = readJson<{ lines: V2Line[] }>(join(REPO, 'ideas/opus-5-5-unicorn-egg-nest-v2/audio/lines.json'), { lines: [] }).lines;
 const known = new Set([...bank.map((n) => n.name.toLowerCase()), ...v2.filter((l) => l.id.startsWith('name-')).map((l) => l.id.slice(5))]);
 const mode = readJson<{ mode?: PronounceMode }>(join(G, 'tools/audio/pronounce-mode.json'), {}).mode ?? 'respell';

@@ -10,6 +10,22 @@
 
 **Spec:** `docs/v3/spec.md` (sections 2.6, 2.7, 3.10, 5.2, 5.4, 5.5, 7.1), `docs/v3/decisions.md` (wins on conflicts), `docs/v3/art/STYLE.md`, `docs/v3/research/curriculum.md` (ladders and workbook words), `docs/v3/research/image-models-pipeline.md` (sections 4.2 to 4.4, reference only).
 
+## Reconciled with the master plan (binding)
+
+`docs/v3/plan.md` (sections 2 and 3) and `docs/v3/plan/contracts.ts` are binding for this plan. Where a task below still shows another name, shape, port or owner, the master plan and `contracts.ts` win, and the builder changes this plan's code, never another stream's. Decisions are numbered R1 to R33 in master section 2.1.
+
+**Changed tasks.**
+- A6 (R25): `src/art/heap.ts` imports `mulberry32` from `src/core/rng.ts` and re-exports it; it has no copy of its own. Art's `Heap` and `heapLayout` are the only heap (R12).
+- A9: component props are contracts C9. `Egg.kind` is a breed id; callers pass `BREED_OF[eggKind]` (egg kinds are learning's `EggKind`).
+- A10, A11, C4 (R15): `stress.html` is an input of the skeleton's `vite.config.ts`. The stress page is served by the lane test build at `${MMH_URL}stress.html`; `flows/art-stress.sh` takes `MMH_URL` (default `http://127.0.0.1:8774/games/moon-meadow-home/`) and builds with `npm run build:test -- --outDir dist-test-art`. No Vite dev server. Tjitse's iPad check opens `http://<mac>.local:8765/games/moon-meadow-home/stress.html`.
+- A14 contact page: open it from the lane server at `http://127.0.0.1:8774/games/moon-meadow-home/art-src/contact/index.html` (core's server falls back to the game folder for `art-src/`). Never start `python3 -m http.server`.
+- Codex jobs close stdin (`< /dev/null`), as `docs/v3/art/STYLE.md` says.
+- Requests: `art-src/lists/requests.txt` collects word and item ids that heartbeat and places need beyond the lists (`id | step-or-kind | description`). Task B5 reads both kinds.
+- The style-exploration files already in `art-src/` (`bg-*.png`, `breed-*.png`) may be used as sources; they go through review like any Codex output.
+- Ids that other streams use are listed in `SCENE_ART_IDS` (contracts C9). Keep those ids in the lists.
+
+**Batches.** art-gen: A0: A1 to A5; then rolling across A1 to A6: A3 calibration, A13, A11 sprites and Lumi, A12 (60 minutes), A14; B1: B1 to B5; C1: C1 to C3. art-app: A1: A6; A2: A7, A8, A9, A10; A6: A11 (second stress run), A14 check; C3: C4. Lane port 8774.
+
 ## Global Constraints
 
 - Style: clean picture-book look, clean shapes, smooth soft shading, light from the top left, a warm outline in a darker shade of each fill. No paint, gouache, watercolour, brush or paper texture (STYLE.md).
@@ -140,7 +156,7 @@ The integrator checks each of these against the other workstreams' plans.
 6. **Content validator.** `tools/validate-content.ts` reads `public/art/manifest.json` to check that every word's `picture` exists.
 7. **Scenes and UI parts.** Draw pictures only through `Picture`, `Heap`, `Unicorn`, `Egg` and `Lumi`, and backgrounds with `artUrl(background(id)!.src)`. Set `talking` on `Lumi` while a Lumi clip plays. Gem letters, slots, stones' dots, word cards, bubbles, the moonbeam and the mist gradient are drawn by the UI workstream in code. Art supplies their base pictures (`ui-gem`, `ui-gem-crescent`, `ui-stone`, `ui-stone-snow`, `ui-star`, `ui-sparkle`).
 8. **Meadow scene owner.** Reads `art-src/stress-results.json` to choose DOM or PixiJS. A PixiJS meadow reads the same manifest: each tinted layer is a sprite with `tint` set to the colour (PixiJS tint multiplies, as the CSS does).
-9. **Local server.** The repo server on port 8765 serves `.webp` as `image/webp`, `.json` as `application/json` and `.svg` as `image/svg+xml`.
+9. **Local server.** Core's server (lane port 8774 for agents, 8765 for Emma) serves `.webp` as `image/webp`, `.json` as `application/json` and `.svg` as `image/svg+xml`.
 10. **Service worker (when present).** Precaches `art/manifest.json`, every picture with `pack` `core`, `words` or `meadow`, and the other packs when their area opens.
 
 ---
@@ -4086,7 +4102,7 @@ export function verdict(s: FrameStats, decodedMB: number, budget?: { p95: number
 - `stress.html?n=44&walk=4&heads=11&flowers=60&art=real|placeholder&duration=30`: `n` is the total number of unicorns drawn: `n - walk - heads - 1` idle, `walk` walking, 1 dragged along a path by `requestAnimationFrame`, `heads` as static stall-door heads. At the end it sets `window.__stress: StressResult` and logs `[stress] ` plus the JSON.
 - `art-src/stress-results.json`: `{"runs": [StressResult & {"at": string}], "decision": "dom" | "pixi", "why": string}`.
 
-Pass on the Mac WebKit run: p95 frame time at most 20 ms, dropped frames at most 5 percent, decoded images at most 150 MB, at 1180 x 820, 1080 x 810 and 1024 x 768. The iPad check is the same page on Emma's iPad: Tjitse opens `http://<mac>.local:8765/games/moon-meadow-home/dist/stress.html` and reads the green or red verdict in the corner. The Mac numbers are a lower bound, not proof for the Air 2.
+Pass on the Mac WebKit run: p95 frame time at most 20 ms, dropped frames at most 5 percent, decoded images at most 150 MB, at 1180 x 820, 1080 x 810 and 1024 x 768. The iPad check is the same page on Emma's iPad: Tjitse opens `http://<mac>.local:8765/games/moon-meadow-home/stress.html` and reads the green or red verdict in the corner. The Mac numbers are a lower bound, not proof for the Air 2.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -4728,7 +4744,7 @@ Expected: PASS, including `test_wave_a.py`.
 
 - [ ] **Step 5: Look at the art in the browser at iPad size (outside the sandbox)**
 
-Run: `playwright-cli -s=artA open http://127.0.0.1:8765/games/moon-meadow-home/art-src/contact/index.html` (the repo server from the server workstream; if it is not running yet, `cd /Users/tjitse/sites/emmas-game && python3 -m http.server 8765 --bind 127.0.0.1` in the background for this check only), then `playwright-cli -s=artA screenshot`, `playwright-cli -s=artA resize 1024 768`, `playwright-cli -s=artA screenshot`, `playwright-cli -s=artA close`, and move the PNGs from `.playwright-cli/` to `$TMPDIR`. Open them with the Read tool.
+Run: `playwright-cli -s=artA open http://127.0.0.1:8774/games/moon-meadow-home/art-src/contact/index.html` (core's server on the art lane port, started from `G` with `MOON_DIST=dist-test-art PORT=8774 HOST=127.0.0.1 node server/serve.ts`), then `playwright-cli -s=artA screenshot`, `playwright-cli -s=artA resize 1024 768`, `playwright-cli -s=artA screenshot`, `playwright-cli -s=artA close`, and move the PNGs from `.playwright-cli/` to `$TMPDIR`. Open them with the Read tool.
 Expected: every picture shows at its real size, sharp, with no halo.
 
 - [ ] **Step 6: Commit**
@@ -5199,7 +5215,7 @@ Expected: both record `dom` with all three sizes passing. Read the screenshots: 
 
 - [ ] **Step 2: Run the stress page from the built app through the repo server**
 
-Run: `cd games/moon-meadow-home && npx vite build && sh flows/art-stress.sh http://127.0.0.1:8765/games/moon-meadow-home/dist`
+Run: `cd games/moon-meadow-home && npm run build:test -- --outDir dist-test-art && MMH_URL=http://127.0.0.1:8774/games/moon-meadow-home/ bash flows/art-stress.sh` (with `MOON_DIST=dist-test-art PORT=8774 HOST=127.0.0.1 node server/serve.ts` running)
 Expected: the same verdict as the dev run. This is the address Tjitse uses on the iPad (with the Mac's `.local` name in place of 127.0.0.1).
 
 - [ ] **Step 3: Full checks**

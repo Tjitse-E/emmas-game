@@ -12,6 +12,37 @@
 
 All code in this plan was written and run before the plan was saved: 115 Vitest tests pass and `tsc --strict --noUnusedLocals` is clean on TypeScript 5.9 with the flags in Contract K1.
 
+## Reconciled with the master plan (binding)
+
+`docs/v3/plan.md` (sections 2 and 3) and `docs/v3/plan/contracts.ts` are binding for this plan. Where a task below still shows another name, shape, port or owner, the master plan and `contracts.ts` win, and the builder changes this plan's code, never another stream's. Decisions are numbered R1 to R33 in master section 2.1.
+
+**Ownership.** Core owns all of `server/` and `src/sync/` (R1), including the static server that replaces `python3 -m http.server`, the save API, pairing, the admin command line and the deploy note. Platform's server tasks are dropped. Core's ids and hashes are the only ones (R2).
+
+**Changed tasks.**
+- K1: Vite `base` is `'./'` (R16). The dev proxy and `__BUILD_ID__` are in master section 2.3. The API base is `new URL('api/', document.baseURI).href`.
+- K4: the store records `pendingLearnFacts(learner, content)` (learning), not `passReady`.
+- K11a is settled by contracts C2 (R17 to R19).
+- A3: `Payloads` and `PAYLOAD_CHECKS` follow contracts C2 exactly:
+  - `learn.result`: `items: arr(obj({ id: key, r: result }), 20)`, `step: nullable(key)`, `ms: nullable(int(0, 3_600_000))`, plus `moment: key` and `slot: oneOf('current', 'school', 'side', 'review', 'mixed', 'probe', 'warmup', 'golden', 'name')`.
+  - `learn.idle.step: nullable(key)`.
+  - `learn.override`: one of four shapes, checked by `op`: `profile { profile }`, `set-current { strand, step, placed, side }`, `mark-placed` or `unmark-placed { strand, step }`, `school { strand, step, on }`. Write a custom check that picks the shape from `op`.
+  - `egg.hatched.kind`: one of the six egg kinds or `'building'`; `breed`: one of the nine breed ids.
+  - `baby.named` adds `listName: nullable(babyName)`.
+  - `care.done.station`: one of `hay`, `brush`, `hat`, `nap`, `swing`, `bath`, `cuddle`, `treat`, `trick`, `splash`, `rollcall`.
+  - `pin.given` adds `key: nullable(key)`.
+  - `jar.labelled` adds `plural: bool`, `picture: key`, `baby: nullable(key)`.
+  - `settings.set.key`: any key (contracts `SettingKey` lists the shared ones).
+  - Test helpers: `named(baby, name)` adds `listName: name`; `pin(baby, id)` adds `key: null`; `care(baby)` keeps `station: 'brush'`. The sample table in the test gets the new fields.
+- A6: `factKey` returns `d.key` for a `pin.given` whose `key` is not null (a moment pin is a recorded fact); `FACT_TYPES` includes `pin.given` with that rule.
+- A7: `Baby` adds `listName: string | null` (from `baby.named`), `clipHeard: boolean` (true after `name.clipHeard`) and `comeAlong: boolean` (false until Task C1). Rows stay here; places reads `rowCount` through the world view (R26).
+- A11: `GAME_DIR` is `path.resolve(import.meta.dirname, '..', process.env.MOON_DIST ?? 'dist')`. Under the base path, a file not found in the build folder falls back to the game folder for paths that start with `art-src/` or `flows/` (read only, same dot-path and `node_modules` refusals), so the art contact page and `flows/audio-check.html` load from the lane server. Agent tests use `HOST=127.0.0.1` and a lane port, never 8765. Server tests use port 8799 or an ephemeral port.
+- A10: `requestPersist` here is the only one; platform's `pwa.ts` reads its result.
+- B1: `note.sent` adds `note: key` (the phrase id of the note in learning's `content/phrases/notes.json`).
+- C5: `createSync({ port, apiBase: new URL('api/', document.baseURI).href })`; integration Task I-5 wires it into the store.
+- C6: `server/DEPLOY.md` is the only deploy note.
+
+**Batches.** A1: A1, A2, A3, A4, A5, A11. A2: A6, A7, A8, A9, A10, A12. B1: B1, B2. C1: C1, C2, C3, C4. C2: C5, C6. Lane port 8799.
+
 ## Conventions
 
 - Paths without a leading folder are inside `games/moon-meadow-home/`. Paths that start with `ideas/`, `docs/` or `.gitignore` are from the repo root.
@@ -52,7 +83,7 @@ These are assumptions about other workstreams. The integrator reconciles them be
 **K1. Skeleton (spec 7.1 item 1).**
 - `package.json` has `"type": "module"`, scripts `"test": "vitest run"`, `"check"` (svelte-check plus `tsc --noEmit`), `"build": "vite build"`, `"serve": "node server/serve.ts"`, dependency `idb@8.0.3` and dev dependencies `vitest@5.0.3`, `fake-indexeddb@6.2.5`, `@types/node@24.19.2`, `typescript@6.0.3`. If a dependency is missing when a core task starts, the core builder runs `npm install --save-exact <pkg>@<version>` and commits `package.json` and `package-lock.json` alone in a separate commit.
 - `tsconfig.json` compiler options include `"strict": true`, `"noEmit": true`, `"allowImportingTsExtensions": true`, `"verbatimModuleSyntax": true`, `"erasableSyntaxOnly": true`, `"moduleResolution": "bundler"`, `"lib": ["ES2023", "DOM"]`, `"types": ["node"]`, and `include` covers `src`, `server` and `tests`.
-- `vite.config.ts`: `base: '/games/moon-meadow-home/'` (odin builds with `--base /unicorns/`), `build.outDir: 'dist'`, `build.target: 'safari15'`, `server.proxy: { '/games/moon-meadow-home/api': 'http://127.0.0.1:8765' }`, and `define: { __BUILD_ID__: JSON.stringify(<git short sha>-<build time>) }`.
+- `vite.config.ts`: `base: './'` (master plan R16; the same build serves `/games/moon-meadow-home/` and `/unicorns/`), `build.outDir: 'dist'`, `build.target: 'safari15'`, `server.proxy: { '/games/moon-meadow-home/api': 'http://127.0.0.1:8765' }`, and `define: { __BUILD_ID__: JSON.stringify(<git short sha>-<build time>) }`.
 - Vitest config: `test.include: ['tests/**/*.test.ts']`, `test.environment: 'node'`, `test.testTimeout: 20000`.
 - The skeleton writes no static server of its own. STACK.md "Testing" switches from `python3 -m http.server` to `node games/moon-meadow-home/server/serve.ts` (Task A11), with `PORT=8799 HOST=127.0.0.1` for agent tests, so tests never share an origin with Emma's port 8765.
 - Every asset v3 loads (audio packs, letter sounds, art, fonts) is under the app's base path, copied into `public/`. No absolute paths into the repo such as `/shared/audio/`. Otherwise the odin build under `/unicorns/` breaks and the CSP header blocks nothing useful.
@@ -3878,7 +3909,7 @@ export type ApiHandler = (req: http.IncomingMessage, res: http.ServerResponse, s
 export type ServerOptions = { root: string; base: string; gameDir: string; csp: boolean; api?: ApiHandler };
 
 export const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
-export const GAME_DIR = path.resolve(import.meta.dirname, '../dist');
+export const GAME_DIR = path.resolve(import.meta.dirname, '..', process.env.MOON_DIST ?? 'dist');
 export const DEFAULT_BASE = '/games/moon-meadow-home/';
 
 export function createServer(o: ServerOptions): http.Server {
@@ -5428,7 +5459,7 @@ export type ApiHandler = (req: http.IncomingMessage, res: http.ServerResponse, s
 export type ServerOptions = { root: string; base: string; gameDir: string; csp: boolean; api?: ApiHandler };
 
 export const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
-export const GAME_DIR = path.resolve(import.meta.dirname, '../dist');
+export const GAME_DIR = path.resolve(import.meta.dirname, '..', process.env.MOON_DIST ?? 'dist');
 export const DEFAULT_BASE = '/games/moon-meadow-home/';
 
 export function createServer(o: ServerOptions): http.Server {

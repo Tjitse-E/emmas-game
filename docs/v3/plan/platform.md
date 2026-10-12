@@ -10,6 +10,30 @@
 
 **Spec:** `docs/v3/spec.md` (sections 4.1, 4.2, 4.5, 4.7, 4.8, 5.1 to 5.3, 6.1, 6.2, 7.1 item 1, 25, 26), with `docs/v3/decisions.md` winning on conflicts, and the lead's session decisions quoted in the task (Mac hosting on port 8765, Waves A to C, odin deploy note only).
 
+## Reconciled with the master plan (binding)
+
+`docs/v3/plan.md` (sections 2 and 3) and `docs/v3/plan/contracts.ts` are binding for this plan. Where a task below still shows another name, shape, port or owner, the master plan and `contracts.ts` win, and the builder changes this plan's code, never another stream's. Decisions are numbered R1 to R33 in master section 2.1.
+
+**Dropped tasks.**
+- A2 (ids and hashes): core owns `src/core/ids.ts` and `src/core/hash.ts` (R2). Platform code imports `uuid4`, `uuid5`, `newDeviceId` and `randomBytes` from `src/core/ids.ts` and `sha256Hex`, `sha1Hex` from `src/core/hash.ts` (there is no `uuidv5` or `randomBase32`).
+- A6 and A7 (player additions, audio facade, phonics copy, clip id generation): the audio stream owns `shared/audio.js`, `shared/audio.d.ts` and all of `src/audio/` (R3). `tools/sync-phonics.ts` and `tools/gen-clip-ids.ts` are not written.
+- A8 (static server): core Task A11 owns `server/` (R1).
+- B3 (unknown names): core Task B2 and audio Task B3 (R29).
+- C1, C2, C3, C4 (event log, tokens, save API, deploy note): core Tasks C2 to C6 (R1, R30).
+
+**Changed tasks.**
+- A1: write `package.json`, `tsconfig.json`, `vite.config.ts`, `src/core/rng.ts` (with `tests/core/rng.test.ts`), `content/release.json` and a placeholder `stress.html` exactly as master section 2.3. No `prepare:assets` script. `vite-plugin-pwa` waits for B1.
+- A4: `src/platform/hooks.ts` also exports `registerSceneHook(scene, hook): () => void`, `sceneHook(scene)`, `testSeed(): number | null`, `isFast(): boolean` (true when `timing.speed === 0`) next to the existing `callHook(name, args)` (contracts C10). Add tests for each.
+- A5: `KNOWN_SCENES` is `SCENE_IDS` from contracts C7.
+- A10 test hook: `fast(on)` calls `setFast(on)` (timing) and `audio.setFast(on)`; `mute(on)` calls `audio.mute(on)`. Platform no longer owns a voice instance.
+- A9: `src/main.ts` awaits `Promise.all([audio.init({ base: import.meta.env.BASE_URL + 'audio/' }), loadArtManifest()])` (audio `src/audio/index.ts`, art `src/art/manifest.ts`) before it shows Play. The Play button's pointerdown calls `audio.unlock()`. On a scene change the router calls `audio.stop()` only; scenes preload and release their own audio scene. `requestPersist` comes from core `src/save/persist.ts`; `src/platform/pwa.ts` keeps `platformStatus` and stores that result. `main.ts` imports `./game.svelte.ts` (integration Task I-1) through the eager glob until batch A4, then statically.
+- A10: the test hook is contracts C10; the store registers the handlers (integration Task I-1). `flows/lib.sh` sets `MMH_URL="${MMH_URL:-http://127.0.0.1:${MMH_PORT:-8766}/games/moon-meadow-home/}"` (no `/test/` mount). `finish` checks `window.__game.audioMissing()` instead of `window.EmmaAudio.missing`. `flows/run.sh` builds `npm run build:test -- --outDir dist-test-${MMH_LANE:-gate}` unless `MMH_NO_BUILD=1`, starts core's server with `MOON_DIST=dist-test-${MMH_LANE:-gate} PORT=$MMH_PORT HOST=127.0.0.1 MOON_DATA=${TMPDIR}/mmh-${MMH_LANE:-gate}-data node server/serve.ts`, and runs each flow at 1180 x 820, 1080 x 810 and 1024 x 768. Flow files are `flows/<name>.flow.sh` or `flows/<folder>/<name>.flow.sh`. The insecure-context run starts the same server with `HOST=0.0.0.0` and opens `http://<LocalHostName>.local:$MMH_PORT/games/moon-meadow-home/`.
+- A11: the controllers stay here and are the only ghost hand and moonbeam (R10). Places and heartbeat import `ghost`, `ghostTap`, `ghostMove`, `ghostStop` and `moonbeam`.
+- A13: STACK.md "Testing" serves the repo with `node games/moon-meadow-home/server/serve.ts` (`PORT`, `HOST`, `MOON_DIST`), lanes never on 8765.
+- B1: the service worker registers only on `https:` or on `127.0.0.1` with `?sw=1`; plain http on the home network never registers it.
+
+**Batches (master 3.2, 3.3).** A0: A1. A1: A3, A4, A5. A2: A12, A13. A3: A9, A10, A11. B1: B1, B2, B4. Lane port 8771.
+
 ## Global Constraints
 
 - Node 24.19.0 and npm 12. Exact versions in `package.json` (no `^` or `~`), `package-lock.json` committed.
@@ -3445,7 +3469,7 @@ cd "$REPO"
 S="${S:-mmh}"
 W="${W:-1180}"
 H="${H:-820}"
-MMH_URL="${MMH_URL:-http://127.0.0.1:${MMH_PORT:-8766}/games/moon-meadow-home/test/}"
+MMH_URL="${MMH_URL:-http://127.0.0.1:${MMH_PORT:-8766}/games/moon-meadow-home/}"
 MMH_SHOTS="${MMH_SHOTS:-${TMPDIR:-/tmp}/mmh-shots}"
 mkdir -p "$MMH_SHOTS"
 

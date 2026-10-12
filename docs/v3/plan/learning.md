@@ -16,6 +16,24 @@ All paths below are relative to the repo root `/Users/tjitse/sites/emmas-game`. 
 cd /Users/tjitse/sites/emmas-game/games/moon-meadow-home
 ```
 
+## Reconciled with the master plan (binding)
+
+`docs/v3/plan.md` (sections 2 and 3) and `docs/v3/plan/contracts.ts` are binding for this plan. Where a task below still shows another name, shape, port or owner, the master plan and `contracts.ts` win, and the builder changes this plan's code, never another stream's. Decisions are numbered R1 to R33 in master section 2.1.
+
+**Changed tasks.**
+- Pictures (R13): a word picture id is the bare word (`hat`), the same id as `art-src/lists/words.txt`. `RawWord.pic` is the word itself or null. Validator `WORD_PIC`: `pic` is not null and not `w`. Phrase picture variants are `<word>-<variant>` (`hat-pink`), optionally with `@big` or `@tiny`. `pictures-needed.json` uses the same ids.
+- Letter-sound keys (R24): `oo.uu` and `u.uu` use sound `oo-short`; `ew`, `ue.yoo`, `u-e`, `u.yoo` use `yoo`; the `-es` ending plays `iz`. These are the audio stream's keys.
+- A1: `MomentKind` and `MOMENT_KINDS` add `wall` (R22). `slugName` normalises accents first: `name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '')`.
+- A6: `moments.json` adds `{ "id": "wall", "strand": "m", "release": "1.0", "needs": [] }`; M05 and M09 to M13 list `wall` in their moments.
+- A7: add the tag `salon` to bow, clip, beads, comb, brush, star, bell, shell and ribbon (add a word entry where one is missing). Places maps its `pond` tag to `bath` and `shelf` to `found`.
+- A10 (R6): `npm run build:lines` writes only `public/audio/words-phase2`, `words-phase3-4`, `words-year1` and `names-t1` `lines.json` (and from B1, C1, C2 the three `phrases-*` packs). There is no `numbers` pack here; number clips are the audio stream's `num-*` lines. Names come in this order: every `source: "v2"` name, then by priority, then file order, each as `name-<slugName>` ("Pip!") and `name-<slugName>-q` ("Pip?"). `src/core/content/static.ts` also exports `CONTENT_HASH`, the `sha256Hex` (core `src/core/hash.ts`) of the canonical JSON of the raw content.
+- A17: `src/core/planner/rng.ts` is `export { mulberry32, shuffle, pick, makeRng } from '../rng.ts'; export type { Rng } from '../rng.ts';` (R25). `carrierFor` routes `wall` like the egg moments (a maths carrier).
+- A19: unchanged; the integration router adds `visit`, `baby` and `heart` to the payload (R17).
+- Releases (R27): `content/release.json` is the only release file. The integrator sets it to `1.0`, `1.1` and `1.3` at the start of Waves A, B and C.
+- Phrases (R8): this plan's `content/phrases/*.json` is the only source of note, Salon card, asking-bubble, two-state and tricky-act text. Places renders notes and card lines from the phrase `act`; heartbeat renders phrase wishes, asking bubbles and two-state wishes.
+
+**Batches.** learn-data: A1: A1 to A5; A2: A6 to A10; B1: B1, B2; C1: C1, C2, C3. learn-engine: A2: A11 to A15; A3: A16 to A20; A4: A21; A6: A22; B1: B3, B4, B5; B2: B6; C1: C4; C2: C5; C3: C6. Lane port 8776.
+
 ## Global Constraints
 
 - Node.js 24.19.0, npm 12. TypeScript 6.0.3, Vitest 5.0.3, exact versions, lock file committed (spec 5.1). This workstream adds no dependencies.
@@ -45,7 +63,7 @@ The lead said: decide, do not ask. These choices fill gaps or resolve conflicts 
 10. **Tired eggs.** After 30 checked moments the nest serves only items in box 3 or higher (spec 3.6). When none qualifies, `nextEgg` returns the egg kind with `pick: null`: a free egg that hatches without a check. The nest always holds an egg.
 11. **Words carry no declared step.** The reading and spelling step of a word is computed from its items (the highest step among them). This removes a whole class of authoring errors.
 12. **R24 (-ing, -ed, -est), R12 (checked tricky words) and R27 to R29 load with release 1.2**, because their only sensible carriers are Salon card lines and the Year 1 meadow acts. In the first playable they are `waiting`, which the spec allows (3.6, "A step with no place is waiting").
-13. **Pictures:** every word picture id is `w-<word>`. A heap for a plural is drawn by code from the one picture (spec 3.10).
+13. **Pictures:** every word picture id is the bare word (`hat`), the art list id (master plan R13). A heap for a plural is drawn by code from the one picture (spec 3.10).
 14. **Packs this workstream writes `lines.json` for:** `words-phase2`, `words-phase3-4`, `words-year1`, `numbers`, `names-t1`, and from 1.1 `phrases-notes`, from 1.2 `phrases-salon` and `phrases-meadow`. The audio workstream generates the mp3 files and manifests.
 
 ## Review Focus
@@ -107,7 +125,7 @@ If the skeleton is not merged when Task A1 starts, the implementer stops and rep
 
 1. A synchronous `hasClip(id: string): boolean` that is true only when the clip is in a loaded manifest (and cached when offline). The store adapts it into `AssetIndex.clip`.
 2. Packs registered with `addPack(name, base)`: `words-phase2`, `words-phase3-4`, `words-year1`, `numbers`, `names-t1`, and later `phrases-notes`, `phrases-salon`, `phrases-meadow`. Their `lines.json` files are written by this workstream (Tasks A10, B1, C1, C2). The audio workstream runs the generator on them in this order: core lines, then the words packs and `numbers`, then `names-t1` in file order (sorted by priority) until the name budget is spent.
-3. New letter-sound keys in `shared/audio/phonics/index.json`: `es` (the /ɪz/ ending), `yoo` (/juː/ as in new), `uu` (short oo as in book). The validator lists any other missing key under `GPC_SOUND`.
+3. New letter-sound keys in `shared/audio/phonics/index.json` (the audio stream's names, master plan R24): `iz` (the /ɪz/ ending), `yoo` (/juː/ as in new), `oo-short` (short oo as in book). The validator lists any other missing key under `GPC_SOUND`.
 4. `say(id)` call sites use string literals, so the validator can scan for unknown ids.
 
 **C-ART (art pipeline):**
@@ -328,7 +346,7 @@ export type WordPackName = 'words-phase2' | 'words-phase3-4' | 'words-year1';
 export type RawWord = {
   w: string;                         // lowercase, as printed
   gpcs: GpcId[];
-  pic: string | null;                // "w-<w>" or null when the word is never pictured
+  pic: string | null;                // the word itself ("hat"), or null when the word is never pictured
   kind: WordKind;
   prompt?: string;                   // subject for the art prompt, "a toy fox"
   tags?: string[];                   // "bath", "food", "clothes", "toy", "care", "found"
@@ -892,7 +910,7 @@ describe('buildContent', () => {
   it('a word with a GPC that has no reading item is not readable', () => {
     const raw = miniRaw();
     raw.gpcs = [...raw.gpcs, { id: 'y.ee', text: 'y', phonemes: ['ee'], vowel: true, sound: 'ee', fluency: false }];
-    raw.words[0].words.push({ w: 'puppy', gpcs: ['p', 'u', 'p', 'p', 'y.ee'], pic: 'w-puppy', kind: 'thing', syllables: 2 });
+    raw.words[0].words.push({ w: 'puppy', gpcs: ['p', 'u', 'p', 'p', 'y.ee'], pic: 'puppy', kind: 'thing', syllables: 2 });
     const c2 = buildContent(raw);
     expect(c2.words.puppy.rStep).toBeNull();
     expect(c2.words.puppy.sStep).toBe('S03');
@@ -949,7 +967,7 @@ describe('buildContent', () => {
     a.ladders[0].steps.push({ ...a.ladders[0].steps[0] });
     expect(() => buildContent(a)).toThrow(/Duplicate step R01/);
     const b = miniRaw();
-    b.words[0].words.push({ w: 'hat', gpcs: ['h', 'a', 't'], pic: 'w-hat', kind: 'thing' });
+    b.words[0].words.push({ w: 'hat', gpcs: ['h', 'a', 't'], pic: 'hat', kind: 'thing' });
     expect(() => buildContent(b)).toThrow(/Duplicate word hat/);
   });
 });
@@ -1288,7 +1306,7 @@ git commit -m "Check names against the blocklist by sound"
 | `TWIN_WORD` | error | a twin names a word that is not in a words pack |
 | `WORD_GPC` | error | a word uses an unknown GPC |
 | `WORD_SPELL` | error | `spell(gpcs) !== w` |
-| `WORD_PIC` | error | `pic` is not null and not `'w-' + w` |
+| `WORD_PIC` | error | `pic` is not null and not `w` |
 | `WORD_PLURAL` | error | a plural is not `w + 'es'` after a final s, x, ch, sh, ss or zz, or `w + 's'` otherwise |
 | `WORD_DUP` | error | a plural equals another word or plural (clip ids would collide) |
 | `WORD_CLUSTER` | error | a thing word whose `rStep` is loaded has a leading or trailing run of 2 or more consonant GPCs whose cluster item (`r:cl:...`) does not exist |
@@ -1381,7 +1399,7 @@ describe('validate', () => {
   });
 
   it('catches a word whose GPCs do not spell it', () => {
-    expect(errors(validate(input(raw => raw.words[0].words.push({ w: 'cat', gpcs: ['c', 'a', 'p'], pic: 'w-cat', kind: 'thing' })), LOW)))
+    expect(errors(validate(input(raw => raw.words[0].words.push({ w: 'cat', gpcs: ['c', 'a', 'p'], pic: 'cat', kind: 'thing' })), LOW)))
       .toContain('WORD_SPELL');
   });
 
@@ -1396,7 +1414,7 @@ describe('validate', () => {
   });
 
   it('catches a cluster that has no item', () => {
-    const f = validate(input(raw => raw.words[0].words.push({ w: 'help', gpcs: ['h', 'e', 'l', 'p'], pic: 'w-help', kind: 'thing' })), LOW);
+    const f = validate(input(raw => raw.words[0].words.push({ w: 'help', gpcs: ['h', 'e', 'l', 'p'], pic: 'help', kind: 'thing' })), LOW);
     expect(errors(f)).toContain('WORD_CLUSTER');
   });
 
@@ -1518,11 +1536,11 @@ git commit -m "Add the content validator and npm run check:content"
 | Group | Rows |
 |---|---|
 | Phase 2, fluency true, sound = id | `s`[s] `a`[a] v, `t` `p` `i`[i] v, `n` `m` `d` `g` `o`[o] v, `c`[k] `k`[k] `ck`[k] `e`[e] v, `u`[u] v, `r` `h` `b` `f` `ff`[f] `l` `ll`[l] `ss`[s] `j` `v` `w` `x`[k,s] `y`[y] `z` `zz`[z] `qu`[k,w] `ch` `sh` `th` `ng` `nk`[ng,k] |
-| Phase 3, fluency true | `ai` `ee` `igh` `oa` `oo` (all vowel, sound = id), `oo.uu`[uu] vowel sound `uu`, `ar` `or` `ur` `ow` `oi` `ear` `air` (vowel, sound = id), `er`[@] vowel sound `er` |
+| Phase 3, fluency true | `ai` `ee` `igh` `oa` `oo` (all vowel, sound = id), `oo.uu`[uu] vowel sound `oo-short`, `ar` `or` `ur` `ow` `oi` `ear` `air` (vowel, sound = id), `er`[@] vowel sound `er` |
 | Middle s as /z/, fluency false | `s.z`[z] sound `z` |
 | Phase 5, fluency false, all vowels | `ay`[ai] sound ai; `a-e`[ai] split sound ai; `ea`[ee] sound ee; `ie`[igh] sound igh; `i-e`[igh] split sound igh; `y.igh`[igh] sound igh; `ir`[ur] sound ur; `er.ur`[ur] sound ur; `o-e`[oa] split sound oa; `ow.oa`[oa] sound oa; `oe`[oa] sound oa; `ew`[y,oo] sound yoo; `ew.oo`[oo] sound oo; `ue`[oo] sound oo; `ue.yoo`[y,oo] sound yoo; `u-e`[y,oo] split sound yoo; `e-e`[ee] split sound ee; `y.ee`[ee] sound ee; `ie.ee`[ee] sound ee; `ea.e`[e] sound e; `ou`[ow] sound ow; `oy`[oi] sound oi; `aw`[or] sound or |
 | Consonant alternatives, fluency false, not vowels | `ph`[f] sound f; `wh`[w] sound w; `c.s`[s] sound s; `g.j`[j] sound j; `ch.k`[k] sound k; `ch.sh`[sh] sound sh; `se`[s] sound s (horse); `le`[@,l] sound null (castle, apple) |
-| Other vowel alternatives, fluency false | `u.uu`[uu] sound uu (bush, push); `a.@`[@] sound null; `o.oa`[oa] sound oa; `e.ee`[ee] sound ee; `i.igh`[igh] sound igh; `u.yoo`[y,oo] sound yoo; `a.ai`[ai] sound ai; `y.i`[i] sound i; `ey.ee`[ee] sound ee; `ey.ai`[ai] sound ai |
+| Other vowel alternatives, fluency false | `u.uu`[uu] sound oo-short (bush, push); `a.@`[@] sound null; `o.oa`[oa] sound oa; `e.ee`[ee] sound ee; `i.igh`[igh] sound igh; `u.yoo`[y,oo] sound yoo; `a.ai`[ai] sound ai; `y.i`[i] sound i; `ey.ee`[ee] sound ee; `ey.ai`[ai] sound ai |
 
 Task A9 may add rows for names (for example `tch`, `dge`, `kn`); every new row follows the same id rule and gets a sound key that exists, or null.
 
@@ -1777,7 +1795,7 @@ Run: `npx vitest run tests/content/real-ladders.test.ts`
 Expected: PASS.
 
 Run: `npm run check:content -- --data-only --only GPC_SOUND`
-Expected: errors only for the keys `uu` (used by `oo.uu` in R14) and `yoo` (used by `ew` in R41). The audio workstream adds them (contract C-AUDIO 3), so they are not this task's failure. The ending sound `es` is not a GPC and does not show here.
+Expected: errors only for the keys `oo-short` (used by `oo.uu` in R14) and `yoo` (used by `ew` in R41) when audio Task A2 has not run yet. The audio workstream adds them (contract C-AUDIO 3), so they are not this task's failure. The ending sound `iz` is not a GPC and does not show here.
 
 - [ ] **Step 5: Commit**
 
@@ -1883,7 +1901,7 @@ Expected: FAIL on the word count.
 
 - [ ] **Step 3: Write `tools/propose-splits.ts`**
 
-It reads standard input, one entry per line, and a mode argument `words` or `names`. For each entry it prints a JSON row: words as `{"w": "...", "gpcs": [...], "pic": "w-...", "kind": "thing"}`, names as `{"name": "...", "gpcs": [...], "source": "uk", "priority": 3}`, using `splitUsual` on the lowercase text against `content/gpcs.json`. An entry that does not split prints `{"unsplit": "<entry>"}`. Nothing is written to disk.
+It reads standard input, one entry per line, and a mode argument `words` or `names`. For each entry it prints a JSON row: words as `{"w": "...", "gpcs": [...], "pic": "<word>", "kind": "thing"}`, names as `{"name": "...", "gpcs": [...], "source": "uk", "priority": 3}`, using `splitUsual` on the lowercase text against `content/gpcs.json`. An entry that does not split prints `{"unsplit": "<entry>"}`. Nothing is written to disk.
 
 - [ ] **Step 4: Author the three packs** following the rules, then run:
 
@@ -2110,8 +2128,8 @@ describe('line packs', () => {
   it('lists pictures with plural stems first', () => {
     const p = picturesNeeded(c);
     expect(p[0].priority).toBe(1);
-    expect(p.find(x => x.id === 'w-fox')).toMatchObject({ subject: 'a toy fox', priority: 1, words: ['fox', 'foxes'] });
-    expect(p.some(x => x.id === 'w-sat')).toBe(false);
+    expect(p.find(x => x.id === 'fox')).toMatchObject({ subject: 'a toy fox', priority: 1, words: ['fox', 'foxes'] });
+    expect(p.some(x => x.id === 'sat')).toBe(false);
   });
 });
 ```
@@ -3674,7 +3692,7 @@ describe('nextItem', () => {
   });
 
   it('never serves a word whose picture is missing', () => {
-    const x = setup({ r: 'R05', s: 'S04', m: 'M05' }, { school: false }).ctx([], { clip: () => true, picture: id => id !== 'w-hat' });
+    const x = setup({ r: 'R05', s: 'S04', m: 'M05' }, { school: false }).ctx([], { clip: () => true, picture: id => id !== 'hat' });
     const rng = mulberry32(6);
     for (let i = 0; i < 300; i++) {
       const p = nextItem(x, { strand: 'r', moments: ['wish', 'twin-wish'], place: 'meadow' }, rng);
@@ -4686,7 +4704,7 @@ Starts after Wave B. Order: C1, then C2, then C3, then C4 and C5 in parallel, th
 - Consumes: A17 carrier rules, B1 phrase checks.
 - Produces:
   - `salon-card` routing in `carrierFor`: grapheme, cluster and pattern items use the `wish` word rule (no tag needed); ending items use the `one-or-many` rule; every other kind uses the phrase rule.
-  - Phrase picture ids: `w-<word>` of a pictured word, or a variant `w-<word>-<variant>` (`w-bow-pink`, `w-bow-spotted`), each optionally followed by `@big` or `@tiny`, which the scene draws by scaling. `picturesNeeded` adds every variant id with subject `a <variant> <word>` at priority 2.
+  - Phrase picture ids: `<word>` of a pictured word, or a variant `<word>-<variant>` (`bow-pink`, `bow-spotted`), each optionally followed by `@big` or `@tiny`, which the scene draws by scaling. `picturesNeeded` adds every variant id with subject `a <variant> <word>` at priority 2.
   - Validator rows: `PHRASE_PIC` (strict: a phrase picture's base id is not in the art manifest; data-only: a variant whose word is not a pictured word), `PHRASE_ACT` (`give`: `target` is not inside `options`, or `options` has fewer than 3 entries, spec 2.5 rule 5).
 - Content (spec 2.5 Salon row, 3.9): at least 2 phrases per item of R24 (`r:sfx:ing`, `r:sfx:ed`, `r:sfx:est`), R27 (`r:adj:colour`, `r:adj:size`, `r:adj:feel`), R28 (`r:and`, `r:sent:act`) and R29 (`r:sent:two`), and about 10 lines that review R19 with a colour ("pink bows", "pink bow"). Lines read as card lines: "a tiny pink bow", "green beads", "the longest ribbon", "a spotted bow", "a bow and a clip", "Put the bow on Fen.", "Fen is sleepy. Give her the soft blanket." Every phrase lists the items it exercises, including the grapheme items of its words where they decide the choice. `clip: true` on every line, so Elizabeth reads it after the act. Cousin names on cards are Dot and Fen only (spec 2.5).
 
@@ -4715,9 +4733,9 @@ function salonContent() {
   });
   raw.phrases = [{ pack: 'phrases-salon', phrases: [
     { id: 'salon-pink-hat', moment: 'salon-card', text: 'a pink hat', items: ['r:adj:colour', 'r:g:h'], words: ['hat'], clip: true,
-      act: { kind: 'give', target: ['w-hat-pink'], options: ['w-hat-pink', 'w-hat-blue', 'w-hat-green'] } },
+      act: { kind: 'give', target: ['hat-pink'], options: ['hat-pink', 'hat-blue', 'hat-green'] } },
     { id: 'salon-red-cup', moment: 'salon-card', text: 'a red cup', items: ['r:adj:colour'], words: ['cup'], clip: true,
-      act: { kind: 'give', target: ['w-cup-red'], options: ['w-cup-red', 'w-cup-blue', 'w-cup-pink'] } },
+      act: { kind: 'give', target: ['cup-red'], options: ['cup-red', 'cup-blue', 'cup-pink'] } },
   ] }];
   return buildContent(raw);
 }
@@ -4744,7 +4762,7 @@ describe('salon cards', () => {
     expect(carrierFor(ctxAt('R27'), 'R19', 'r:end:es', 'salon-card', 3, mulberry32(1), REQ)!.carrier).toMatchObject({ kind: 'plural', form: 'many' });
   });
   it('skip a phrase whose picture is missing', () => {
-    const x = ctxAt('R27', { clip: () => true, picture: id => id !== 'w-hat-pink' });
+    const x = ctxAt('R27', { clip: () => true, picture: id => id !== 'hat-pink' });
     for (let i = 0; i < 20; i++) {
       expect(carrierFor(x, 'R27', 'r:adj:colour', 'salon-card', 1, mulberry32(i), REQ)!.carrier).toEqual({ kind: 'phrase', phrase: 'salon-red-cup' });
     }
