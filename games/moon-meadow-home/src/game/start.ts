@@ -25,7 +25,19 @@ type StartData = {
   allEvents(): readonly Ev[];
   importText(t: string, d: V2ImportDeps): Promise<{ kind: string; status?: string }>;
 };
-type StoreLike = { data: unknown; world: { announced: ReadonlySet<string> }; markRefolded(): void };
+type StoreLike = {
+  data: unknown;
+  world: { announced: ReadonlySet<string>; herd?: readonly { name: string | null; source: string }[] };
+  markRefolded(): void;
+};
+
+/**
+ * Master Review Focus 5: a reload (or a sleep) between the hatch and the naming. The start goes to the nest,
+ * whose heartbeat finds the unnamed baby and opens naming for it (heartbeat atNest), so no second egg hatches.
+ * Only a baby from a v3 egg counts: unnamed v2 babies are named one per heartbeat after Moving Day (R55).
+ */
+const interruptedNaming = (game: StoreLike): boolean =>
+  (game.world.herd ?? []).some((b) => b.name === null && b.source !== 'v2');
 
 export async function chooseStart(game: StoreLike, readV2: () => string | null = readV2Local): Promise<StartTarget> {
   const data = game.data as StartData | null;
@@ -34,6 +46,7 @@ export async function chooseStart(game: StoreLike, readV2: () => string | null =
   // K7: try her v2 save on every start while there is no import and no hatch that did not come from v2.
   const v2 = !f.imported && !f.nonV2Hatch ? readV2() : null;
   const next = decideStart({ played: f.played, imported: f.imported, v2, movingDayDone: game.world.announced.has('moving-day') });
+  if (next.id === 'meadow' && interruptedNaming(game)) return { id: 'nest' };
   if (next.id !== 'import-v2') return next;
   try {
     const out = await data.importText(v2 as string, v2Deps);

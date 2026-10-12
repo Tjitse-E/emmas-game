@@ -66,3 +66,20 @@ describe('chooseStart', () => {
     expect(await chooseStart(store([{ type: 'import.v2' }], 'imported', ['moving-day']), () => null)).toEqual({ id: 'meadow' });
   });
 });
+
+describe('chooseStart after a reload between the hatch and the naming (master Review Focus 5)', () => {
+  const store = (herd: { name: string | null; source: string }[], announced: string[] = []) => ({
+    data: { allEvents: () => [{ type: 'egg.hatched', source: 'nest' }], importText: async () => ({ kind: 'v2' }) },
+    world: { announced: new Set(announced), herd },
+    markRefolded: () => {},
+  });
+  it('a nest baby without a name sends the start to the nest, whose heartbeat opens naming for it', async () => {
+    expect(await chooseStart(store([{ name: 'Pip', source: 'nest' }, { name: null, source: 'nest' }]), () => null)).toEqual({ id: 'nest' });
+  });
+  it('unnamed v2 babies wait for the next heartbeat (R55), so the start stays in the meadow', async () => {
+    expect(await chooseStart(store([{ name: null, source: 'v2' }], ['moving-day']), () => null)).toEqual({ id: 'meadow' });
+  });
+  it('a herd that is all named starts in the meadow', async () => {
+    expect(await chooseStart(store([{ name: 'Pip', source: 'nest' }]), () => null)).toEqual({ id: 'meadow' });
+  });
+});

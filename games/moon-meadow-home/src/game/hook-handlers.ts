@@ -87,7 +87,9 @@ export function registerGameHooks(game: G, o: HookOpts): void {
       sleep: (ms) => new Promise((r) => setTimeout(r, ms)), now: () => Date.now(),
       onScene: (fn) => router.onChange((_from, to) => fn(to.id)),
     }, opts);
-    return { ...log, problems: judgeLog(log, (id) => audio.hasClip(id)) };
+    // The first entry is the scene that was on screen when autoplay began: it spoke its goal before the log
+    // started, so only the scenes autoplay saw arrive are judged (the stuck scene still counts).
+    return { ...log, problems: judgeLog({ ...log, scenes: log.scenes.slice(1) }, (id) => audio.hasClip(id)) };
   }));
 
   // Platform's importFixture loads tests/fixtures/<name>.json and calls this handler with (data, name).
