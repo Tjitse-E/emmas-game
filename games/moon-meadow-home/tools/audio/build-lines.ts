@@ -41,11 +41,20 @@ const all = new Map<string, readonly PackLine[]>(packs);
 for (const p of LEARNING_PACKS) all.set(p, optional<{ lines: PackLine[] }>(join(AUDIO, p, 'lines.json'), { lines: [] }).lines);
 for (const d of crossPackDuplicates(all)) console.warn('warning:', d);
 
+// Every pack the app loads has a manifest.json, so the app never asks the server for a file that is not there
+// (a 404 shows as a console error in the flows). Audio owns the manifests of learning's packs too.
+const emptyManifest = JSON.stringify({ clips: {} }, null, 1) + '\n';
+for (const p of LEARNING_PACKS) {
+  const dir = join(AUDIO, p);
+  mkdirSync(dir, { recursive: true });
+  if (!existsSync(join(dir, 'manifest.json'))) writeFileSync(join(dir, 'manifest.json'), emptyManifest);
+}
+
 for (const [pack, lines] of packs) {
   const dir = join(AUDIO, pack);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'lines.json'), JSON.stringify({ pack, lines }, null, 1) + '\n');
-  if (!existsSync(join(dir, 'manifest.json'))) writeFileSync(join(dir, 'manifest.json'), JSON.stringify({ clips: {} }, null, 1) + '\n');
+  if (!existsSync(join(dir, 'manifest.json'))) writeFileSync(join(dir, 'manifest.json'), emptyManifest);
   const chars = lines.reduce((n, l) => n + l.text.length, 0);
   console.log(`${pack.padEnd(18)} ${String(lines.length).padStart(5)} lines ${String(chars).padStart(6)} characters`);
 }
