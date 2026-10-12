@@ -1,0 +1,15 @@
+{
+  "jewels": { "id": "jewels", "release": "1.1", "where": "meadow", "lines": ["jw-new-jewel"], "ghost": "jewel" },
+  "order": [
+    { "id": "bath-pond", "release": "1.0", "where": "meadow", "lines": ["mw-pond-ready"], "ghost": "bath-pond" },
+    { "id": "bubbles", "release": "1.0", "where": "meadow", "lines": ["mw-bubbles-explain"], "ghost": "bubble" },
+    { "id": "two-egg", "release": "1.1", "where": "nest", "lines": [], "ghost": null },
+    { "id": "dressing", "release": "1.1", "where": "meadow", "lines": ["lumi-dressing-open"], "ghost": "dressing" },
+    { "id": "post-box", "release": "1.1", "where": "meadow", "lines": ["mw-post-ready"], "ghost": "post-box" },
+    { "id": "notes", "release": "1.1", "where": "meadow", "lines": ["mw-notes-open"], "ghost": "post-box" },
+    { "id": "letter-lane", "release": "1.2", "where": "meadow", "lines": ["mw-letter-lane-open"], "ghost": "letter-lane" },
+    { "id": "valley-map", "release": "1.2", "where": "meadow", "lines": ["vm-this-is-valley"], "ghost": "map" },
+    { "id": "asking-wishes", "release": "1.2", "where": "meadow", "lines": ["y1-open"], "ghost": "meadow-wishes" },
+    { "id": "come-along", "release": "1.2", "where": "meadow", "lines": ["ca-ribbon"], "ghost": "ribbon" }
+  ]
+}

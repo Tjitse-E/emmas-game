@@ -11,6 +11,8 @@ export type { PlacesState } from './state.ts';
 export { applyPlaceAction, PLACE_SAMPLE_ACTIONS } from './actions.ts';
 export type { PlaceAction, PlaceDraft, LearnPayload } from './actions.ts';
 export { CURRENT_RELEASE, released } from './content.ts';
+export { earned, isAnnounced, JEWELS_OPENING, openingCtx, openingDefs, openingDue, REWARD_OPENINGS } from './openings.ts';
+export type { OpeningCtx, OpeningDef } from './openings.ts';
 
 /** Bump when the places fold changes (part of the snapshot key). */
 export const PLACES_FOLD_VERSION = 1;
