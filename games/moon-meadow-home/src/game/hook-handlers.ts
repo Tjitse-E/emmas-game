@@ -45,22 +45,50 @@ export function registerGameHooks(game: G, o: HookOpts): void {
   registerHook('pass', after((strand: StrandId, step: string) => game.dispatch({ type: 'game/pass', strand, step })));
   registerHook('announce', after((opening: string) => game.dispatch({ type: 'game/announce', opening })));
 
-  // The current scene's hook. I-3b adds the activeMoment() fallback for answer, wrong and idle.
+  registerState('visits', () => ((game.data?.allEvents() ?? []) as readonly { type: string }[]).filter((e) => e.type === 'visit.start').length);
+
+  // The current scene's hook first, else the moment on screen (R14). A scene that registers no hook (a place
+  // built from moments) still answers, so flows and autoplay never meet a dead end in a scene with a moment.
+  const momentNow = async () => (await import('../ui/moment.ts')).activeMoment();
   const route = (name: 'answer' | 'wrong' | 'idle') => async (...args: unknown[]) => {
     await o.ready();
     const h = sceneHook(game.scene);
     if (h && typeof h[name] === 'function') return h[name](...args);
-    throw new Error(`no scene hook ${name} in scene ${game.scene}`);
+    const m = await momentNow();
+    if (!m) throw new Error(`no moment to ${name} in scene ${game.scene}`);
+    if (name === 'answer') return m.hookAnswer();
+    if (name === 'wrong') return m.hookWrong(...(args as [string?]));
+    return m.hookIdle();
   };
   registerHook('answer', route('answer'));
   registerHook('wrong', route('wrong'));     // wrong(kind?): 'one-for-many', 'many-for-one', 'count-low', 'count-high', 'ending', ...
   registerHook('idle', route('idle'));
-  /** aria-label of the right answer, for real taps in flows; null when the scene names none. */
+  /** aria-label of the right answer, for real taps in flows; null when neither the scene nor a moment names one. */
   registerHook('target', async () => {
     await o.ready();
     const h = sceneHook(game.scene);
-    return h && typeof h.target === 'function' ? ((await h.target()) ?? null) : null;
+    const fromScene = h && typeof h.target === 'function' ? ((await h.target()) ?? null) : null;
+    if (fromScene !== null) return fromScene;
+    return (await momentNow())?.target() ?? null;
   });
+
+  /** Plays whole heartbeats (and goodnight) by answering every moment, and judges the log (I-3a, spec 7.3 check 10). */
+  registerHook('autoplay', after(async (opts: { heartbeats: number; goodnight: boolean; maxMs?: number }) => {
+    const { autoplay, judgeLog } = await import('./autoplay.ts');
+    const { heartbeat } = await import('../scenes/heartbeat/flow.svelte.ts');
+    const { callHook } = await import('../platform/hooks.ts');
+    const { router } = await import('../platform/router.svelte.ts');
+    const { audio } = await import('../audio/index.ts');
+    const { emitTouch } = await import('../platform/touch.ts');
+    const log = await autoplay({
+      // As window.__game.answer: a touch first, so the 30-minute visit timer sees her playing.
+      scene: () => game.scene, said: () => audio.said, answer: () => { emitTouch(); return callHook('answer', []); },
+      startHeartbeat: () => heartbeat.start(), startGoodnight: () => heartbeat.startGoodnight(), visitOpen: () => game.visitOpen,
+      sleep: (ms) => new Promise((r) => setTimeout(r, ms)), now: () => Date.now(),
+      onScene: (fn) => router.onChange((_from, to) => fn(to.id)),
+    }, opts);
+    return { ...log, problems: judgeLog(log, (id) => audio.hasClip(id)) };
+  }));
 
   // Platform's importFixture loads tests/fixtures/<name>.json and calls this handler with (data, name).
   registerHook('importFixture', after(async (data: unknown) => {
