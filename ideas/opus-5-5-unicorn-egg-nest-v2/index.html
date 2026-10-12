@@ -66,6 +66,10 @@ button{font:inherit;border:0;background:none;padding:0;cursor:pointer;-webkit-ap
 @keyframes bumpS{50%{transform:scale(1.2)}}
 #moonBtn{position:absolute;left:930px;top:52px;width:120px;height:120px;border-radius:50%;z-index:55;touch-action:none}
 #moonBtn.glow{box-shadow:0 0 0 6px rgba(255,240,180,.5),0 0 60px 20px rgba(255,240,180,.45);animation:pulse 1.6s ease-in-out infinite}
+/* the moon link to Moon Meadow Home (v3), under the home button and clear of the book close button; same address, so v3 can read this herd */
+#v3Link{position:absolute;left:1092px;top:178px;width:64px;height:64px;border-radius:50%;z-index:101;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#fff 0,#ece4ff 45%,#bfaeff 100%);box-shadow:0 5px 0 #8a74d8,0 0 22px rgba(220,200,255,.55);touch-action:manipulation}
+#v3Link svg{width:40px;height:40px}
 
 /* Lumi */
 #stage.atstart #lumi,#stage.atstart #replay{visibility:hidden}
@@ -417,6 +421,7 @@ button{font:inherit;border:0;background:none;padding:0;cursor:pointer;-webkit-ap
   <div id="miniEgg" class="hidden"></div>
   <div id="tools" class="hidden"></div>
   <button id="moonBtn" aria-label="Moon"></button>
+  <a id="v3Link" href="../../games/moon-meadow-home/" aria-label="Moon Meadow Home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M26 5a15 15 0 1 0 9 26A13 13 0 0 1 26 5z" fill="#f5c242" stroke="#b98a14" stroke-width="2"/></svg></a>
   <div id="jar"></div>
 
   <div id="naming" class="overlay hidden">

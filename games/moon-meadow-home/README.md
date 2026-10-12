@@ -4,6 +4,46 @@ Unicorn Egg Nest v3. Spec: [docs/v3/spec.md](../../docs/v3/spec.md). Decisions: 
 
 Svelte 5 + Vite + TypeScript on the DOM, a fixed 1180 x 820 stage scaled to fit, built for Safari 15 and later. Speech is pre-generated ElevenLabs audio played through [shared/audio.js](../../shared/audio.js). One Node script in [server/](server/) serves the repo, the build and (from Wave C) the save API.
 
+## Play tonight
+
+Emma's server runs on the Mac on port 8765. It serves `dist-emma`, promoted from commit 3d1aecc after Gate A passed.
+
+- iPad: open http://MacBook-Pro-3.local:8765/ideas/opus-5-5-unicorn-egg-nest-v2/ in a Safari tab (not a home-screen icon) and tap the small moon button under the home button at the top right. That opens Moon Meadow Home on the same address as her v2 save, so her herd moves in.
+- If the `.local` name does not open, use http://192.168.88.171:8765/ideas/opus-5-5-unicorn-egg-nest-v2/. Her save is stored per address, so use the address she used for v2 until now. The other address shows an empty herd.
+- The LAN address can change after a router restart. `go-live.sh` prints the current one.
+- Restart after a reboot or a sleep: `bash games/moon-meadow-home/tools/go-live.sh` from the repo root (outside the Claude Code sandbox).
+- Log with each request's iPad version: `games/moon-meadow-home/.data/serve.log`.
+- Fallback: if her herd does not move in (another address, or storage cleared), open `ideas/opus-5-5-unicorn-egg-nest-v2/move.html` on the address she used for v2, download the file, and import it in the parent corner under Backup.
+
+## Watch Emma play
+
+Waves B and C wait for her feedback. Sit next to her and note:
+
+- Does she understand Lumi without help? Note each time she looks at you, and what Lumi had just said.
+- Does Moving Day bring her v2 herd? Check the number of babies and their names against v2.
+- Does she name babies without a refused name? Note each name she tries and how she reacts when the bell does not take it.
+- Where does she get stuck or bored? Note the scene and what she did just before.
+- Which plural and reading moments does she get right? The one-or-many baskets, the jar labels, the words she reads.
+- What does she ask for?
+- Anything that breaks: a frozen screen, a missing sound, a wrong picture. Note the time, so it can be found in `serve.log`.
+
+Afterwards, export the save:
+
+1. Hold the small lock button at the top right, next to the home button, for 3 seconds.
+2. Enter the PIN on the number-word keypad. The default PIN is 2468.
+3. Scroll down to Backup and tap "Export the save". Safari downloads the file to Files, Downloads.
+4. AirDrop it to the Mac and put it in `games/moon-meadow-home/.data/` (gitignored). `node tools/report.ts <file>` from this folder prints the report.
+
+## Checks for Tjitse
+
+Gate A passed all blocking checks: 1081 tests, `npm run check` clean, `check:audio` and `check:content` without errors, and every blocking flow at three iPad sizes. These checks need the iPad, odin or your ear, so this session could not run them:
+
+- Real iPad: open `http://MacBook-Pro-3.local:8765/games/moon-meadow-home/stress.html` and read the verdict. The WebKit stress run on the Mac was fine (about 60 fps, 26 MB decoded).
+- Real v2 save: watch Moving Day tonight. Only synthetic v2 saves were tested.
+- Home screen and offline: plain http has no service worker or `persist()`. Export after each evening until Wave C brings the server copy.
+- odin: nothing is deployed there yet. Emma plays from the Mac only.
+- Ear check: listen to new clips on `shared/review.html`. Clips that failed the speech check are never served. `check:content` lists 42 missing pictures or clips (the game shows a fallback).
+
 ## Commands
 
 Run from the repo root. `npm install` and `npm ci` run outside the Claude Code sandbox, because npm cannot write its cache inside it. In a lane worktree `node_modules` is a link to the main tree's: never install there.
