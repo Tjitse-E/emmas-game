@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw
 
 from . import regions
 from .derive import silhouette
-from .imageops import label_components, save_webp, trim
+from .imageops import dilate, label_components, save_webp, trim
 
 LG_H, SM_H = 720, 300
 FLAT_COLOURS = {'body': (230, 220, 255), 'mane': (255, 127, 191), 'mane2': (63, 214, 154)}   # palette.ts DEFAULT_COLOURS
@@ -50,7 +50,11 @@ def _gold(a: np.ndarray) -> np.ndarray:
 
 
 def _tail(classes: np.ndarray):
-    """Returns (tail mask or None, tail root or None, the other mane components)."""
+    """Returns (tail mask or None, tail root or None, the other mane components).
+
+    The tail is the leftmost mane component. Curly breeds can touch the mane with a strand along the back;
+    then the component is cut at its narrowest column between the rump and the body centre. Thin rims
+    (a pink edge down a hind leg) stay in the body part, so only the tail itself swishes."""
     comps = _comps((classes == regions.MANE) | (classes == regions.MANE2), 50)
     by, bx = np.nonzero(classes == regions.BODY)
     cx, cy = bx.mean(), by.mean()
@@ -59,10 +63,28 @@ def _tail(classes: np.ndarray):
     c = min(comps, key=lambda c: c[0].mean())
     if c[0].mean() >= cx:
         return None, None, comps
-    i = int(np.argmin((c[0] - cx) ** 2 + (c[1] - cy) ** 2))
-    m = np.zeros(classes.shape, bool)
-    m[c[1], c[0]] = True
-    return m, (int(c[0][i]), int(c[1][i])), [x for x in comps if x is not c]
+    whole = np.zeros(classes.shape, bool)
+    whole[c[1], c[0]] = True
+    m = whole.copy()
+    if c[0].max() > cx:
+        x0, x1 = int(bx.min()), int(cx)
+        if x1 > x0:
+            m[:, x0 + int(np.argmin(m[:, x0:x1].sum(0))):] = False
+    m &= dilate(~dilate(~m, 2), 2)
+    lab, n = label_components(m)
+    if n == 0:
+        return None, None, comps
+    areas = np.bincount(lab.ravel(), minlength=n + 1)
+    areas[0] = 0
+    m = lab == int(np.argmax(areas))
+    ys, xs = np.nonzero(m)
+    i = int(np.argmin((xs - cx) ** 2 + (ys - cy) ** 2))
+    others = [x for x in comps if x is not c]
+    rest = whole & ~m
+    if rest.sum() >= 50:
+        ry, rx = np.nonzero(rest)
+        others.append((rx, ry))
+    return m, (int(xs[i]), int(ys[i])), others
 
 
 def find_anchors(classes: np.ndarray, rgba: Image.Image) -> dict[str, tuple[int, int]]:
