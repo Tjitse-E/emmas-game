@@ -1,6 +1,6 @@
 // Place value types (Task A1a). Value types only: no import of core's events. Task A1 adds the
 // state, fold and action types on top of these. Shared shapes come from contracts (R41).
-import type { ErrorTag, ItemResult, LearnStrand, OutfitSlot, Result, StepId, Strand, WorldBaby } from '../../types/contracts.ts';
+import type { ErrorTag, ItemResult, LearnStrand, OutfitSlot, Pick as PlanPick, Result, StepId, Strand, WorldBaby } from '../../types/contracts.ts';
 
 export type { ErrorTag, ItemResult, Result, StepId, Strand };
 export type { Rng } from '../rng.ts';
@@ -16,6 +16,10 @@ export type ServedItem = {
   log?: string[];
   /** Things in the jar or heap when the planner chose the count (plural carriers). */
   count?: number;
+  /** The planner's pick, for `learnResultPayload` (R17). Absent in unit tests: nothing is logged then. */
+  pick?: PlanPick;
+  /** The place that asked, for the log. */
+  place?: string;
 };
 
 /** One word as places draw and check it. `picture` is the bare word (R13). */

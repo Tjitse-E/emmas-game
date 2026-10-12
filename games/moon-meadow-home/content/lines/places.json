@@ -1,0 +1,258 @@
+{
+  "scene": "places",
+  "pack": "places",
+  "lines": [
+    {
+      "id": "mw-bubbles-explain",
+      "speaker": "narrator",
+      "text": "When you see a bubble, someone is waiting for you."
+    },
+    {
+      "id": "mw-meadow-this-way",
+      "speaker": "narrator",
+      "text": "The meadow is this way."
+    },
+    {
+      "id": "mw-pond-ready",
+      "speaker": "narrator",
+      "text": "The pond is ready to build!"
+    },
+    {
+      "id": "lb-found",
+      "speaker": "narrator",
+      "text": "Look! Someone found something for the toy shelf."
+    },
+    {
+      "id": "lb-lets-write",
+      "speaker": "narrator",
+      "text": "Let's write!"
+    },
+    {
+      "id": "lb-listen",
+      "speaker": "narrator",
+      "text": "Listen!"
+    },
+    {
+      "id": "lb-on-the-jar",
+      "speaker": "narrator",
+      "text": "On the jar it goes!"
+    },
+    {
+      "id": "lb-label-says-one",
+      "speaker": "narrator",
+      "text": "The label only says one."
+    },
+    {
+      "id": "lb-shelf",
+      "speaker": "narrator",
+      "text": "Tap a jar to play. Tap a label to hear it."
+    },
+    {
+      "id": "pl-look-in-jar",
+      "speaker": "narrator",
+      "text": "Look in the jar!"
+    },
+    {
+      "id": "pl-mice",
+      "speaker": "narrator",
+      "text": "Mice. One mouse, lots of mice."
+    },
+    {
+      "id": "pd-welcome",
+      "speaker": "narrator",
+      "text": "Splash time at the Bath Pond!"
+    },
+    {
+      "id": "pd-wish-goal",
+      "speaker": "narrator",
+      "text": "A bath wish! Bring it to the baby."
+    },
+    {
+      "id": "pd-play",
+      "speaker": "narrator",
+      "text": "Drag a baby into the water."
+    },
+    {
+      "id": "foal-splash",
+      "speaker": "foal",
+      "text": "[giggles] Splash!",
+      "seed": 21
+    },
+    {
+      "id": "foal-pretty",
+      "speaker": "foal",
+      "text": "[happy] Pretty!",
+      "seed": 24
+    },
+    {
+      "id": "lumi-builders",
+      "speaker": "queen",
+      "text": "The builders are here!"
+    },
+    {
+      "id": "lumi-pond-open",
+      "speaker": "queen",
+      "text": "The Bath Pond is open!"
+    },
+    {
+      "id": "lumi-row-open",
+      "speaker": "queen",
+      "text": "A new row for my unicorns!"
+    },
+    {
+      "id": "bd-walls",
+      "speaker": "narrator",
+      "text": "First the wall."
+    },
+    {
+      "id": "bd-short",
+      "speaker": "narrator",
+      "text": "Fill the row with planks."
+    },
+    {
+      "id": "bd-needs-2",
+      "speaker": "narrator",
+      "text": "The wall needs two planks."
+    },
+    {
+      "id": "bd-needs-3",
+      "speaker": "narrator",
+      "text": "The wall needs three planks."
+    },
+    {
+      "id": "bd-needs-4",
+      "speaker": "narrator",
+      "text": "The wall needs four planks."
+    },
+    {
+      "id": "bd-needs-5",
+      "speaker": "narrator",
+      "text": "The wall needs five planks."
+    },
+    {
+      "id": "bd-needs-6",
+      "speaker": "narrator",
+      "text": "The wall needs six planks."
+    },
+    {
+      "id": "bd-needs-7",
+      "speaker": "narrator",
+      "text": "The wall needs seven planks."
+    },
+    {
+      "id": "bd-needs-8",
+      "speaker": "narrator",
+      "text": "The wall needs eight planks."
+    },
+    {
+      "id": "bd-needs-9",
+      "speaker": "narrator",
+      "text": "The wall needs nine planks."
+    },
+    {
+      "id": "bd-needs-10",
+      "speaker": "narrator",
+      "text": "The wall needs ten planks."
+    },
+    {
+      "id": "bd-wall-up",
+      "speaker": "narrator",
+      "text": "The wall is up!"
+    },
+    {
+      "id": "bd-trim",
+      "speaker": "narrator",
+      "text": "Finish the pattern on the trim."
+    },
+    {
+      "id": "bd-trim-free",
+      "speaker": "narrator",
+      "text": "Pick colours for the trim."
+    },
+    {
+      "id": "bd-sign",
+      "speaker": "narrator",
+      "text": "Now the sign."
+    },
+    {
+      "id": "bd-ribbon",
+      "speaker": "narrator",
+      "text": "Cut the ribbon!"
+    },
+    {
+      "id": "bd-circle",
+      "speaker": "narrator",
+      "text": "Everyone is here. Look at the egg!"
+    },
+    {
+      "id": "bd-row-name",
+      "speaker": "narrator",
+      "text": "Pick a name for the new row."
+    },
+    {
+      "id": "word-stalls",
+      "speaker": "narrator",
+      "text": "Stalls."
+    },
+    {
+      "id": "lumi-dressing-open",
+      "speaker": "queen",
+      "text": "Come and try my Dressing Corner!"
+    },
+    {
+      "id": "mw-post-ready",
+      "speaker": "narrator",
+      "text": "The post box is ready to build!"
+    },
+    {
+      "id": "mw-notes-open",
+      "speaker": "narrator",
+      "text": "Now you can write notes to Lumi!"
+    },
+    {
+      "id": "mw-letter-lane-open",
+      "speaker": "narrator",
+      "text": "Letter Lane is open!"
+    },
+    {
+      "id": "jw-new-jewel",
+      "speaker": "narrator",
+      "text": "You have a new jewel. Bring it here!"
+    },
+    {
+      "id": "vm-this-is-valley",
+      "speaker": "narrator",
+      "text": "This is your valley."
+    },
+    {
+      "id": "y1-open",
+      "speaker": "narrator",
+      "text": "Some babies are asking for things!"
+    },
+    {
+      "id": "ca-ribbon",
+      "speaker": "narrator",
+      "text": "Tie a ribbon, and that baby comes along!"
+    },
+    {
+      "id": "lumi-post-open",
+      "speaker": "queen",
+      "text": "The Post Box is open!"
+    },
+    {
+      "id": "lumi-salon-open",
+      "speaker": "queen",
+      "text": "The Sparkle Salon is open!"
+    },
+    {
+      "id": "word-post",
+      "speaker": "narrator",
+      "text": "Post."
+    },
+    {
+      "id": "word-salon",
+      "speaker": "narrator",
+      "text": "Salon."
+    }
+  ]
+}
