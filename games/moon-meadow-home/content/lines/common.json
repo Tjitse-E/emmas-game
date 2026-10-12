@@ -1,0 +1,22 @@
+{"scene": "common", "lines": [
+  {"id": "g-meadow-way", "speaker": "narrator", "text": "The meadow is this way."},
+  {"id": "g-look", "speaker": "narrator", "text": "Look, like this."},
+  {"id": "g-listen", "speaker": "narrator", "text": "Listen."},
+  {"id": "g-now-listen", "speaker": "narrator", "text": "Now listen."},
+  {"id": "fb-says", "speaker": "narrator", "text": "This is what it says."},
+  {"id": "fb-lovely", "speaker": "narrator", "text": "Lovely!", "also": ["moving-day"], "note": "Also the kind line after a name that has no clip (Moving Day, R55)."},
+  {"id": "fb-well-done", "speaker": "narrator", "text": "Well done!"},
+  {"id": "fb-yes", "speaker": "narrator", "text": "Yes!"},
+  {"id": "fb-letters", "speaker": "narrator", "text": "Look at the letters again."},
+  {"id": "fb-listen", "speaker": "narrator", "text": "Hmm. Listen again."},
+  {"id": "h-sounds", "speaker": "narrator", "text": "Listen to the sounds."},
+  {"id": "foal-hello", "speaker": "foal", "text": "[giggles] Hello!"},
+  {"id": "foal-yay", "speaker": "foal", "text": "[excited] Yay! Thank you!"},
+  {"id": "foal-silly", "speaker": "foal", "text": "[giggles] Silly!"},
+  {"id": "foal-notme", "speaker": "foal", "text": "[giggles] Not me!"},
+  {"id": "foal-wee", "speaker": "foal", "text": "Wheee!"},
+  {"id": "foal-yum", "speaker": "foal", "text": "Mmm! Yummy!"},
+  {"id": "foal-cuddle", "speaker": "foal", "text": "[happy sigh] Aww."},
+  {"id": "foal-yawn", "speaker": "foal", "text": "[yawns] Sleepy."},
+  {"id": "foal-look", "speaker": "foal", "text": "[giggles] Look!"}
+]}
