@@ -74,7 +74,15 @@
 
   let stage = $state<'wish' | 'rack' | 'free' | 'none'>(mctrl ? 'wish' : rctrl ? 'rack' : 'none');
   let tick = $state(0);
-  if (mctrl) mctrl.wish.onchange = () => { tick++; checkDone(); };
+  let munchShown = false;
+  if (mctrl) {
+    mctrl.wish.onchange = () => {
+      tick++;
+      // The right food: the baby eats it at its manger while the word is said.
+      if (mctrl.wish.fed && !munchShown && spot) { munchShown = true; showMunch(spot.order, mctrl.wish.task.word.picture); }
+      checkDone();
+    };
+  }
   if (rctrl) rctrl.onchange = () => { tick++; checkDone(); };
 
   const wv = $derived.by(() => {
@@ -110,7 +118,6 @@
     if (ended) return;
     ended = true;
     onhook(null);
-    if (mctrl && spot) showMunch(spot.order, mctrl.wish.task.word.picture);
     await sleep(700);
     if (destroyed) return;
     await startFree();

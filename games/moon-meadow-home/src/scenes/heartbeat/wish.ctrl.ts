@@ -35,6 +35,8 @@ export class WishCtrl {
   lastFunny: WishFunny | null = null;
   glow = false;
   done = false;
+  /** A hungry wish was answered: the baby is eating (set before the munch and the word are said). */
+  fed = false;
   onchange: () => void = () => {};
   /** The scene shows the ghost hand on the answer before the level 3 hint gives it. */
   onghost: (key: string) => Promise<void> = async () => {};
@@ -182,6 +184,7 @@ export class WishCtrl {
     const display = this.display;
     this.glow = false;
     this.lastFunny = null;
+    this.fed = this.hungry;
     this.onchange();
     if (this.hungry) await this.d.audio.sfx('munch');
     // Reading: the word is said only after she acts. Display words first, then the carrier: two sentences (R36, AD5).

@@ -30,6 +30,7 @@ describe('WishCtrl', () => {
     expect(await c.give(c.answerKey()!)).toBe('ok');
     expect(f.actions[0]).toMatchObject({ type: 'hb.learn', baby: 'b1', payload: { place: 'wish', result: 'first', error: null, moment: 'one-or-many' } });
     expect(f.said).toEqual(['g-wish', 'word-hats', 'fb-more-than-one', 'foal-yay']);
+    expect(c.fed).toBe(false);
   });
   it('makes one hat for hats funny once, then a second miss is plain', async () => {
     const f = fakeDeps();
@@ -99,6 +100,7 @@ describe('WishCtrl', () => {
       expect(f.said.at(-1)).toBe('g-hungry');
       expect(await c.give(c.answerKey()!)).toBe('ok');
       expect(f.said.slice(4)).toEqual(['sfx:munch', 'word-bun', 'foal-yum']);
+      expect(c.fed).toBe(true);
       expect(f.actions[0]).toMatchObject({ type: 'hb.learn', baby: 'b1', payload: { place: 'feed', result: 'first' } });
     });
     it('skips the name when it has no clip', async () => {

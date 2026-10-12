@@ -69,7 +69,7 @@
   if (ctrl) ctrl.onchange = () => { tick++; };
   const v = $derived.by(() => {
     void tick;
-    return ctrl ? { part: ctrl.part, funny: ctrl.lastFunny, glow: ctrl.glow, done: ctrl.done, units: ctrl.units, display: ctrl.display, babyId: ctrl.current.baby } : null;
+    return ctrl ? { part: ctrl.part, funny: ctrl.lastFunny, glow: ctrl.glow, done: ctrl.done, fed: ctrl.fed, units: ctrl.units, display: ctrl.display, babyId: ctrl.current.baby } : null;
   });
   const who = $derived(v ? game.world.byId[v.babyId] ?? baby : baby);
   const stations = STATIONS.filter((s) => s !== 'bath' || game.world.bathPond);
@@ -156,11 +156,11 @@
         <PrintWithDots units={v.units} dotsMs={ctrl.task.dotsMs} glow={v.glow} label="wish" onsound={playUnit} />
       {/key}
     </div>
-    <div class="baby {funnyClass}" class:hungry={hungry && !v.done} bind:this={babyEl} data-touch aria-label="wishing baby" use:dropTarget={{ id: 'baby' }}
+    <div class="baby {funnyClass}" class:hungry={hungry && !v.fed} bind:this={babyEl} data-touch aria-label="wishing baby" use:dropTarget={{ id: 'baby' }}
       use:drag={{ data: 'baby', disabled: ctrl.task.kind !== 'station' || v.done,
         onDrop: (d) => { if (d.targetId?.startsWith('station-')) void ctrl.toStation(d.targetId.slice(8) as StationId); } }}>
-      <Unicorn breed={who.breed} stage={who.stage} colours={who.colours} traits={who.traits} height={250} pose={v.done ? 'happy' : 'idle'} label="" />
-      {#if hungry && v.done}<Munch picture={ctrl.task.word.picture} size={84} left={228} top={82} />{/if}
+      <Unicorn breed={who.breed} stage={who.stage} colours={who.colours} traits={who.traits} height={250} pose={v.done || v.fed ? 'happy' : 'idle'} label="" />
+      {#if v.fed}<Munch picture={ctrl.task.word.picture} size={84} left={228} top={82} />{/if}
     </div>
     {#if ctrl.task.kind !== 'station'}
       <div class="basket basket-{ctrl.task.basket.length}" bind:this={basketEl}>
