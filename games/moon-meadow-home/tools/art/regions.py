@@ -113,15 +113,18 @@ def extract_layers(rgba: Image.Image, classes: np.ndarray) -> dict[str, Image.Im
     return out
 
 
+def tint_layer(shade: Image.Image, colour: tuple[int, int, int]) -> Image.Image:
+    """One grey shade layer multiplied by a colour, alpha kept (the browser's multiply plus mask)."""
+    s = np.asarray(shade.convert('RGBA')).astype(np.float32)
+    rgb = s[..., :3] / 255.0 * np.array(colour, np.float32)
+    return Image.fromarray(np.dstack([rgb, s[..., 3]]).astype(np.uint8), 'RGBA')
+
+
 def recolour(layers: dict[str, Image.Image], colours: dict[str, tuple[int, int, int]]) -> Image.Image:
     base = layers['fixed']
     out = Image.new('RGBA', base.size, (0, 0, 0, 0))
     for name in ('body', 'mane', 'mane2'):
-        s = np.asarray(layers[name]).astype(np.float32)
-        col = np.array(colours[name], np.float32)
-        rgb = s[..., :3] / 255.0 * col
-        tinted = np.dstack([rgb, s[..., 3]]).astype(np.uint8)
-        out.alpha_composite(Image.fromarray(tinted, 'RGBA'))
+        out.alpha_composite(tint_layer(layers[name], colours[name]))
     out.alpha_composite(base)
     return out
 

@@ -14,8 +14,9 @@ SECTIONS = ('pictures', 'backgrounds', 'unicorns')
 
 def _files_of(entry: dict) -> list[str]:
     out = [entry['src']] if 'src' in entry else []
-    if 'sil' in entry:
-        out.append(entry['sil'])
+    for k in ('sil', 'flat'):
+        if k in entry:
+            out.append(entry[k])
     for r in entry.get('renditions', {}).values():
         for part in r['parts']:
             out += [layer['src'] for layer in part['layers']]
