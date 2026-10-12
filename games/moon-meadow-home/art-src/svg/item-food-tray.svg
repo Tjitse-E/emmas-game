@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs><pattern id="check" width="28" height="28" patternUnits="userSpaceOnUse"><rect width="28" height="28" fill="#fff3e6"/><rect width="14" height="14" fill="#ffc4d8"/><rect x="14" y="14" width="14" height="14" fill="#ffc4d8"/></pattern></defs>
+  <ellipse cx="100" cy="112" rx="92" ry="62" fill="#c98f5a" stroke="#8a5a2e" stroke-width="6"/>
+  <ellipse cx="100" cy="104" rx="76" ry="48" fill="url(#check)" stroke="#e08aa8" stroke-width="5"/>
+  <ellipse cx="66" cy="78" rx="24" ry="8" fill="#fff" opacity="0.45" transform="rotate(-14 66 78)"/>
+</svg>
