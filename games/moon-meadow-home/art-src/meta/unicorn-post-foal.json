@@ -1,0 +1,308 @@
+{
+ "unicorns": {
+  "post.foal": {
+   "breed": "post",
+   "stage": "foal",
+   "mode": "sprite",
+   "w": 712,
+   "h": 720,
+   "anchors": {
+    "head": [
+     561,
+     114
+    ],
+    "hornBase": [
+     604,
+     114
+    ],
+    "eye": [
+     544,
+     191
+    ],
+    "neck": [
+     461,
+     313
+    ],
+    "back": [
+     314,
+     313
+    ],
+    "mane": [
+     484,
+     179
+    ],
+    "flank": [
+     339,
+     428
+    ],
+    "tailRoot": [
+     149,
+     521
+    ],
+    "feet": [
+     374,
+     706
+    ]
+   },
+   "headBox": [
+    316,
+    0,
+    396,
+    396
+   ],
+   "renditions": {
+    "sm": {
+     "scale": 0.4167,
+     "parts": [
+      {
+       "id": "tail",
+       "box": [
+        14,
+        493,
+        139,
+        112
+       ],
+       "pivot": [
+        149,
+        521
+       ],
+       "anim": "tail",
+       "layers": [
+        {
+         "src": "unicorns/post.foal.sm.tail-mane.webp",
+         "tint": "mane",
+         "box": [
+          14,
+          493,
+          139,
+          112
+         ]
+        },
+        {
+         "src": "unicorns/post.foal.sm.tail-mane2.webp",
+         "tint": "mane2",
+         "box": [
+          36,
+          498,
+          90,
+          107
+         ]
+        }
+       ]
+      },
+      {
+       "id": "body",
+       "box": [
+        36,
+        14,
+        662,
+        692
+       ],
+       "pivot": [
+        374,
+        706
+       ],
+       "anim": "none",
+       "layers": [
+        {
+         "src": "unicorns/post.foal.sm.body.webp",
+         "tint": "body",
+         "box": [
+          160,
+          18,
+          531,
+          657
+         ]
+        },
+        {
+         "src": "unicorns/post.foal.sm.mane.webp",
+         "tint": "mane",
+         "box": [
+          36,
+          16,
+          662,
+          518
+         ]
+        },
+        {
+         "src": "unicorns/post.foal.sm.mane2.webp",
+         "tint": "mane2",
+         "box": [
+          68,
+          68,
+          622,
+          415
+         ]
+        },
+        {
+         "src": "unicorns/post.foal.sm.fixed.webp",
+         "tint": "none",
+         "box": [
+          84,
+          14,
+          570,
+          692
+         ]
+        }
+       ]
+      },
+      {
+       "id": "lids",
+       "box": [
+        492,
+        158,
+        145,
+        80
+       ],
+       "pivot": [
+        544,
+        191
+       ],
+       "anim": "blink",
+       "layers": [
+        {
+         "src": "unicorns/post.foal.sm.lids.webp",
+         "tint": "body",
+         "box": [
+          492,
+          158,
+          145,
+          80
+         ]
+        }
+       ],
+       "hidden": true
+      }
+     ]
+    },
+    "lg": {
+     "scale": 1.0,
+     "parts": [
+      {
+       "id": "tail",
+       "box": [
+        14,
+        493,
+        139,
+        112
+       ],
+       "pivot": [
+        149,
+        521
+       ],
+       "anim": "tail",
+       "layers": [
+        {
+         "src": "unicorns/post.foal.lg.tail-mane.webp",
+         "tint": "mane",
+         "box": [
+          14,
+          493,
+          139,
+          112
+         ]
+        },
+        {
+         "src": "unicorns/post.foal.lg.tail-mane2.webp",
+         "tint": "mane2",
+         "box": [
+          36,
+          498,
+          90,
+          107
+         ]
+        }
+       ]
+      },
+      {
+       "id": "body",
+       "box": [
+        36,
+        14,
+        662,
+        692
+       ],
+       "pivot": [
+        374,
+        706
+       ],
+       "anim": "none",
+       "layers": [
+        {
+         "src": "unicorns/post.foal.lg.body.webp",
+         "tint": "body",
+         "box": [
+          160,
+          18,
+          531,
+          657
+         ]
+        },
+        {
+         "src": "unicorns/post.foal.lg.mane.webp",
+         "tint": "mane",
+         "box": [
+          36,
+          16,
+          662,
+          518
+         ]
+        },
+        {
+         "src": "unicorns/post.foal.lg.mane2.webp",
+         "tint": "mane2",
+         "box": [
+          68,
+          68,
+          622,
+          415
+         ]
+        },
+        {
+         "src": "unicorns/post.foal.lg.fixed.webp",
+         "tint": "none",
+         "box": [
+          84,
+          14,
+          570,
+          692
+         ]
+        }
+       ]
+      },
+      {
+       "id": "lids",
+       "box": [
+        492,
+        158,
+        145,
+        80
+       ],
+       "pivot": [
+        544,
+        191
+       ],
+       "anim": "blink",
+       "layers": [
+        {
+         "src": "unicorns/post.foal.lg.lids.webp",
+         "tint": "body",
+         "box": [
+          492,
+          158,
+          145,
+          80
+         ]
+        }
+       ],
+       "hidden": true
+      }
+     ]
+    }
+   },
+   "sil": "unicorns/post.foal.sil.webp",
+   "flat": "unicorns/post-foal-flat.webp",
+   "source": "codex"
+  }
+ }
+}

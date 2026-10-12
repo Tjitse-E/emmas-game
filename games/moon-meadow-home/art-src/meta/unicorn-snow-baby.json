@@ -1,0 +1,308 @@
+{
+ "unicorns": {
+  "snow.baby": {
+   "breed": "snow",
+   "stage": "baby",
+   "mode": "sprite",
+   "w": 754,
+   "h": 720,
+   "anchors": {
+    "head": [
+     582,
+     137
+    ],
+    "hornBase": [
+     627,
+     137
+    ],
+    "eye": [
+     558,
+     235
+    ],
+    "neck": [
+     479,
+     369
+    ],
+    "back": [
+     340,
+     369
+    ],
+    "mane": [
+     417,
+     304
+    ],
+    "flank": [
+     366,
+     484
+    ],
+    "tailRoot": [
+     296,
+     354
+    ],
+    "feet": [
+     403,
+     705
+    ]
+   },
+   "headBox": [
+    330,
+    37,
+    396,
+    396
+   ],
+   "renditions": {
+    "sm": {
+     "scale": 0.4167,
+     "parts": [
+      {
+       "id": "tail",
+       "box": [
+        14,
+        295,
+        282,
+        410
+       ],
+       "pivot": [
+        296,
+        354
+       ],
+       "anim": "tail",
+       "layers": [
+        {
+         "src": "unicorns/snow.baby.sm.tail-mane.webp",
+         "tint": "mane",
+         "box": [
+          14,
+          295,
+          282,
+          410
+         ]
+        },
+        {
+         "src": "unicorns/snow.baby.sm.tail-mane2.webp",
+         "tint": "mane2",
+         "box": [
+          67,
+          322,
+          198,
+          383
+         ]
+        }
+       ]
+      },
+      {
+       "id": "body",
+       "box": [
+        20,
+        14,
+        720,
+        691
+       ],
+       "pivot": [
+        403,
+        705
+       ],
+       "anim": "none",
+       "layers": [
+        {
+         "src": "unicorns/snow.baby.sm.body.webp",
+         "tint": "body",
+         "box": [
+          127,
+          18,
+          601,
+          683
+         ]
+        },
+        {
+         "src": "unicorns/snow.baby.sm.mane.webp",
+         "tint": "mane",
+         "box": [
+          20,
+          16,
+          720,
+          686
+         ]
+        },
+        {
+         "src": "unicorns/snow.baby.sm.mane2.webp",
+         "tint": "mane2",
+         "box": [
+          323,
+          79,
+          402,
+          457
+         ]
+        },
+        {
+         "src": "unicorns/snow.baby.sm.fixed.webp",
+         "tint": "none",
+         "box": [
+          171,
+          14,
+          519,
+          691
+         ]
+        }
+       ]
+      },
+      {
+       "id": "lids",
+       "box": [
+        490,
+        192,
+        178,
+        99
+       ],
+       "pivot": [
+        558,
+        235
+       ],
+       "anim": "blink",
+       "layers": [
+        {
+         "src": "unicorns/snow.baby.sm.lids.webp",
+         "tint": "body",
+         "box": [
+          490,
+          192,
+          178,
+          99
+         ]
+        }
+       ],
+       "hidden": true
+      }
+     ]
+    },
+    "lg": {
+     "scale": 1.0,
+     "parts": [
+      {
+       "id": "tail",
+       "box": [
+        14,
+        295,
+        282,
+        410
+       ],
+       "pivot": [
+        296,
+        354
+       ],
+       "anim": "tail",
+       "layers": [
+        {
+         "src": "unicorns/snow.baby.lg.tail-mane.webp",
+         "tint": "mane",
+         "box": [
+          14,
+          295,
+          282,
+          410
+         ]
+        },
+        {
+         "src": "unicorns/snow.baby.lg.tail-mane2.webp",
+         "tint": "mane2",
+         "box": [
+          67,
+          322,
+          198,
+          383
+         ]
+        }
+       ]
+      },
+      {
+       "id": "body",
+       "box": [
+        20,
+        14,
+        720,
+        691
+       ],
+       "pivot": [
+        403,
+        705
+       ],
+       "anim": "none",
+       "layers": [
+        {
+         "src": "unicorns/snow.baby.lg.body.webp",
+         "tint": "body",
+         "box": [
+          127,
+          18,
+          601,
+          683
+         ]
+        },
+        {
+         "src": "unicorns/snow.baby.lg.mane.webp",
+         "tint": "mane",
+         "box": [
+          20,
+          16,
+          720,
+          686
+         ]
+        },
+        {
+         "src": "unicorns/snow.baby.lg.mane2.webp",
+         "tint": "mane2",
+         "box": [
+          323,
+          79,
+          402,
+          457
+         ]
+        },
+        {
+         "src": "unicorns/snow.baby.lg.fixed.webp",
+         "tint": "none",
+         "box": [
+          171,
+          14,
+          519,
+          691
+         ]
+        }
+       ]
+      },
+      {
+       "id": "lids",
+       "box": [
+        490,
+        192,
+        178,
+        99
+       ],
+       "pivot": [
+        558,
+        235
+       ],
+       "anim": "blink",
+       "layers": [
+        {
+         "src": "unicorns/snow.baby.lg.lids.webp",
+         "tint": "body",
+         "box": [
+          490,
+          192,
+          178,
+          99
+         ]
+        }
+       ],
+       "hidden": true
+      }
+     ]
+    }
+   },
+   "sil": "unicorns/snow.baby.sil.webp",
+   "flat": "unicorns/snow-baby-flat.webp",
+   "source": "codex"
+  }
+ }
+}

@@ -136,7 +136,8 @@
    "h": 160,
    "kind": "pin",
    "pack": "core",
-   "source": "codex"
+   "source": "codex",
+   "sil": "pins/pin-founder-star-sil.webp"
   },
   "item-brush": {
    "src": "items/item-brush.webp",

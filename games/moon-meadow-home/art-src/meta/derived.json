@@ -1,0 +1,15 @@
+{
+ "pictures": {
+  "ui-sky-unicorn": {
+   "src": "ui/sky-unicorn.webp",
+   "w": 306,
+   "h": 300,
+   "kind": "ui",
+   "pack": "core",
+   "source": "derived"
+  }
+ },
+ "patterns": {
+  "speckle": "ui/speckle.webp"
+ }
+}

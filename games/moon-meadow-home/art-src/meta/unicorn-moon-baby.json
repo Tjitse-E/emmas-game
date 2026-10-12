@@ -57,9 +57,9 @@
       {
        "id": "tail",
        "box": [
-        14,
+        15,
         293,
-        251,
+        248,
         349
        ],
        "pivot": [
@@ -72,9 +72,9 @@
          "src": "unicorns/moon.baby.sm.tail-mane.webp",
          "tint": "mane",
          "box": [
-          14,
+          15,
           293,
-          251,
+          248,
           349
          ]
         },
@@ -93,9 +93,9 @@
       {
        "id": "body",
        "box": [
-        77,
         14,
-        643,
+        14,
+        706,
         691
        ],
        "pivot": [
@@ -118,19 +118,19 @@
          "src": "unicorns/moon.baby.sm.mane.webp",
          "tint": "mane",
          "box": [
-          278,
+          14,
           16,
-          442,
-          406
+          706,
+          596
          ]
         },
         {
          "src": "unicorns/moon.baby.sm.mane2.webp",
          "tint": "mane2",
          "box": [
-          262,
+          22,
           84,
-          449,
+          688,
           338
          ]
         },
@@ -181,9 +181,9 @@
       {
        "id": "tail",
        "box": [
-        14,
+        15,
         293,
-        251,
+        248,
         349
        ],
        "pivot": [
@@ -196,9 +196,9 @@
          "src": "unicorns/moon.baby.lg.tail-mane.webp",
          "tint": "mane",
          "box": [
-          14,
+          15,
           293,
-          251,
+          248,
           349
          ]
         },
@@ -217,9 +217,9 @@
       {
        "id": "body",
        "box": [
-        77,
         14,
-        643,
+        14,
+        706,
         691
        ],
        "pivot": [
@@ -242,19 +242,19 @@
          "src": "unicorns/moon.baby.lg.mane.webp",
          "tint": "mane",
          "box": [
-          278,
+          14,
           16,
-          442,
-          406
+          706,
+          596
          ]
         },
         {
          "src": "unicorns/moon.baby.lg.mane2.webp",
          "tint": "mane2",
          "box": [
-          262,
+          22,
           84,
-          449,
+          688,
           338
          ]
         },

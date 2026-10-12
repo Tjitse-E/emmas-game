@@ -1,0 +1,308 @@
+{
+ "unicorns": {
+  "bubble.foal": {
+   "breed": "bubble",
+   "stage": "foal",
+   "mode": "sprite",
+   "w": 750,
+   "h": 720,
+   "anchors": {
+    "head": [
+     589,
+     111
+    ],
+    "hornBase": [
+     634,
+     111
+    ],
+    "eye": [
+     569,
+     200
+    ],
+    "neck": [
+     498,
+     345
+    ],
+    "back": [
+     373,
+     345
+    ],
+    "mane": [
+     486,
+     201
+    ],
+    "flank": [
+     399,
+     460
+    ],
+    "tailRoot": [
+     334,
+     325
+    ],
+    "feet": [
+     411,
+     705
+    ]
+   },
+   "headBox": [
+    341,
+    2,
+    396,
+    396
+   ],
+   "renditions": {
+    "sm": {
+     "scale": 0.4167,
+     "parts": [
+      {
+       "id": "tail",
+       "box": [
+        14,
+        262,
+        321,
+        367
+       ],
+       "pivot": [
+        334,
+        325
+       ],
+       "anim": "tail",
+       "layers": [
+        {
+         "src": "unicorns/bubble.foal.sm.tail-mane.webp",
+         "tint": "mane",
+         "box": [
+          15,
+          262,
+          320,
+          367
+         ]
+        },
+        {
+         "src": "unicorns/bubble.foal.sm.tail-mane2.webp",
+         "tint": "mane2",
+         "box": [
+          14,
+          311,
+          241,
+          294
+         ]
+        }
+       ]
+      },
+      {
+       "id": "body",
+       "box": [
+        112,
+        14,
+        624,
+        692
+       ],
+       "pivot": [
+        411,
+        705
+       ],
+       "anim": "none",
+       "layers": [
+        {
+         "src": "unicorns/bubble.foal.sm.body.webp",
+         "tint": "body",
+         "box": [
+          174,
+          18,
+          554,
+          661
+         ]
+        },
+        {
+         "src": "unicorns/bubble.foal.sm.mane.webp",
+         "tint": "mane",
+         "box": [
+          112,
+          15,
+          593,
+          614
+         ]
+        },
+        {
+         "src": "unicorns/bubble.foal.sm.mane2.webp",
+         "tint": "mane2",
+         "box": [
+          336,
+          70,
+          400,
+          318
+         ]
+        },
+        {
+         "src": "unicorns/bubble.foal.sm.fixed.webp",
+         "tint": "none",
+         "box": [
+          177,
+          14,
+          501,
+          692
+         ]
+        }
+       ]
+      },
+      {
+       "id": "lids",
+       "box": [
+        515,
+        166,
+        147,
+        77
+       ],
+       "pivot": [
+        569,
+        200
+       ],
+       "anim": "blink",
+       "layers": [
+        {
+         "src": "unicorns/bubble.foal.sm.lids.webp",
+         "tint": "body",
+         "box": [
+          515,
+          166,
+          147,
+          77
+         ]
+        }
+       ],
+       "hidden": true
+      }
+     ]
+    },
+    "lg": {
+     "scale": 1.0,
+     "parts": [
+      {
+       "id": "tail",
+       "box": [
+        14,
+        262,
+        321,
+        367
+       ],
+       "pivot": [
+        334,
+        325
+       ],
+       "anim": "tail",
+       "layers": [
+        {
+         "src": "unicorns/bubble.foal.lg.tail-mane.webp",
+         "tint": "mane",
+         "box": [
+          15,
+          262,
+          320,
+          367
+         ]
+        },
+        {
+         "src": "unicorns/bubble.foal.lg.tail-mane2.webp",
+         "tint": "mane2",
+         "box": [
+          14,
+          311,
+          241,
+          294
+         ]
+        }
+       ]
+      },
+      {
+       "id": "body",
+       "box": [
+        112,
+        14,
+        624,
+        692
+       ],
+       "pivot": [
+        411,
+        705
+       ],
+       "anim": "none",
+       "layers": [
+        {
+         "src": "unicorns/bubble.foal.lg.body.webp",
+         "tint": "body",
+         "box": [
+          174,
+          18,
+          554,
+          661
+         ]
+        },
+        {
+         "src": "unicorns/bubble.foal.lg.mane.webp",
+         "tint": "mane",
+         "box": [
+          112,
+          15,
+          593,
+          614
+         ]
+        },
+        {
+         "src": "unicorns/bubble.foal.lg.mane2.webp",
+         "tint": "mane2",
+         "box": [
+          336,
+          70,
+          400,
+          318
+         ]
+        },
+        {
+         "src": "unicorns/bubble.foal.lg.fixed.webp",
+         "tint": "none",
+         "box": [
+          177,
+          14,
+          501,
+          692
+         ]
+        }
+       ]
+      },
+      {
+       "id": "lids",
+       "box": [
+        515,
+        166,
+        147,
+        77
+       ],
+       "pivot": [
+        569,
+        200
+       ],
+       "anim": "blink",
+       "layers": [
+        {
+         "src": "unicorns/bubble.foal.lg.lids.webp",
+         "tint": "body",
+         "box": [
+          515,
+          166,
+          147,
+          77
+         ]
+        }
+       ],
+       "hidden": true
+      }
+     ]
+    }
+   },
+   "sil": "unicorns/bubble.foal.sil.webp",
+   "flat": "unicorns/bubble-foal-flat.webp",
+   "source": "codex"
+  }
+ }
+}
