@@ -40,6 +40,8 @@ svg{display:block}
 .card.wand .name{color:#6a2bbf}
 .card.fluff{box-shadow:0 12px 0 #3f9c78,0 20px 40px rgba(0,0,0,.35)}
 .card.fluff .name{color:#2f7f60}
+.card.moon{box-shadow:0 12px 0 #5a3f9e,0 20px 40px rgba(0,0,0,.35)}
+.card.moon .name{color:#5a3f9e}
 .card.down{transform:scale(.95)}
 .card.chosen{animation:chosen .9s ease-in-out infinite;z-index:2}
 @keyframes chosen{0%,100%{transform:scale(1.04) rotate(-1.5deg)}50%{transform:scale(1.1) rotate(1.5deg)}}
@@ -47,6 +49,7 @@ svg{display:block}
 
 /* art details */
 .uni-art .u-eye{transform-box:fill-box;transform-origin:center;animation:eyeBlink 4.5s infinite}
+.moon-art .u-eye{transform-box:fill-box;transform-origin:center;animation:eyeBlink 4.5s infinite}
 @keyframes eyeBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
 .uni-art .shine,.twk{animation:twinkle 1.6s ease-in-out infinite}
 .wand-art .wand-glow{transform-box:fill-box;transform-origin:center;animation:glowpulse 1.6s ease-in-out infinite}
@@ -87,6 +90,42 @@ svg{display:block}
   <div id="title">Emma's Games</div>
 
   <div id="cards">
+    <div class="card moon" data-game="moon-meadow-home" data-href="games/moon-meadow-home/" role="button" aria-label="Moon Meadow Home">
+      <div class="art moon-art">
+        <svg viewBox="0 0 306 400" aria-hidden="true">
+          <defs>
+            <linearGradient id="mmhSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#11163d"/><stop offset=".6" stop-color="#3b2f7a"/><stop offset="1" stop-color="#5a3f9e"/></linearGradient>
+            <linearGradient id="mmhBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffad6" stop-opacity=".55"/><stop offset="1" stop-color="#fffad6" stop-opacity="0"/></linearGradient>
+          </defs>
+          <rect width="306" height="400" fill="url(#mmhSky)"/>
+          <circle cx="226" cy="76" r="44" fill="#fffef2"/>
+          <circle cx="250" cy="62" r="40" fill="#1f1d55"/>
+          <g fill="#fff"><circle class="twk" cx="44" cy="50" r="2.5"/><circle class="twk" cx="120" cy="90" r="2"/><circle class="twk" cx="170" cy="40" r="2.5"/><circle class="twk" cx="80" cy="150" r="2"/></g>
+          <path d="M208 112 L238 112 L250 300 L150 300 Z" fill="url(#mmhBeam)"/>
+          <path d="M0 270 C90 246 210 252 306 240 L306 400 L0 400 Z" fill="#3c8a5e"/>
+          <path d="M0 312 C110 292 220 300 306 288 L306 400 L0 400 Z" fill="#2f6b4f"/>
+          <g transform="translate(36 222)">
+            <rect x="0" y="34" width="120" height="70" rx="6" fill="#ffd9ec" stroke="#c2468a" stroke-width="4"/>
+            <path d="M-8 38 L60 0 L128 38 Z" fill="#ff8fc7" stroke="#c2468a" stroke-width="4" stroke-linejoin="round"/>
+            <rect x="14" y="56" width="26" height="48" rx="12" fill="#7a4a1e"/>
+            <rect x="47" y="56" width="26" height="48" rx="12" fill="#7a4a1e"/>
+            <rect x="80" y="56" width="26" height="48" rx="12" fill="#7a4a1e"/>
+          </g>
+          <g transform="translate(176 258) scale(1.3)"><g class="bob">
+            <path d="M0 34 C-22 30 -26 60 -12 74 C-10 58 -6 50 4 46 Z" fill="#ff7fbf"/>
+            <rect x="8" y="54" width="11" height="30" rx="5" fill="#ded3da"/><rect x="44" y="54" width="11" height="30" rx="5" fill="#ded3da"/>
+            <rect x="18" y="56" width="11" height="30" rx="5" fill="#fff3fb" stroke="#ded3da" stroke-width="2"/><rect x="54" y="56" width="11" height="30" rx="5" fill="#fff3fb" stroke="#ded3da" stroke-width="2"/>
+            <ellipse cx="34" cy="40" rx="36" ry="28" fill="#fff3fb" stroke="#ded3da" stroke-width="3"/>
+            <circle cx="62" cy="14" r="22" fill="#fff3fb" stroke="#ded3da" stroke-width="3"/>
+            <path d="M60 -6 L66 -34 L72 -6 Z" fill="#ffe58a" stroke="#eab243" stroke-width="2.5" stroke-linejoin="round"/>
+            <circle cx="40" cy="4" r="10" fill="#ff7fbf"/><circle cx="34" cy="20" r="9" fill="#9d7bff"/>
+            <ellipse class="u-eye" cx="68" cy="12" rx="5" ry="6" fill="#2a1b3d"/>
+          </g></g>
+        </svg>
+      </div>
+      <div class="name">Moon Meadow Home</div>
+    </div>
+
     <div class="card uni" data-game="unicorn-egg-nest" data-href="ideas/opus-5-5-unicorn-egg-nest-v2/index.html" role="button" aria-label="Unicorn Egg Nest">
       <div class="art uni-art">
         <svg viewBox="0 0 306 400" aria-hidden="true">
@@ -178,7 +217,7 @@ svg{display:block}
 const A = window.EmmaAudio;
 A.init({ base: 'menu-audio/', phonics: 'shared/audio/phonics/' });
 
-const CLIPS = ['menu-welcome', 'menu-unicorn-egg-nest', 'menu-pippas-word-wand', 'menu-fluffle-nursery'];
+const CLIPS = ['menu-welcome', 'menu-moon-meadow-home', 'menu-unicorn-egg-nest', 'menu-pippas-word-wand', 'menu-fluffle-nursery'];
 const stage = document.getElementById('stage');
 const start = document.getElementById('start');
 const play = document.getElementById('play');
@@ -194,6 +233,15 @@ function fit(){
   const cardsEl = document.getElementById('cards');
   cardsEl.style.top = portrait ? '118px' : '164px';
   cardsEl.style.rowGap = portrait ? '30px' : '40px';
+  // Four cards: one row at 80 percent in landscape, two rows of two in portrait.
+  const four = cards.length > 3 && !portrait;
+  cardsEl.style.flexWrap = four ? 'nowrap' : '';
+  cardsEl.style.gap = four ? '30px' : '';
+  cardsEl.style.left = four ? '50%' : '';
+  cardsEl.style.right = four ? 'auto' : '';
+  cardsEl.style.width = four ? '1460px' : '';
+  cardsEl.style.transformOrigin = four ? '0 0' : '';
+  cardsEl.style.transform = four ? 'translateX(-584px) scale(.8)' : '';
   document.getElementById('title').style.top = portrait ? '22px' : '34px';
   const s = Math.min(innerWidth / W, innerHeight / H);
   stage.style.transform = `translate(${(innerWidth - W * s) / 2}px,${(innerHeight - H * s) / 2}px) scale(${s})`;
