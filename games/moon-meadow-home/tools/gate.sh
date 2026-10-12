@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
-# Runs a wave gate (master plan section 5). Usage, from G, outside the sandbox: bash tools/gate.sh A|B|C
+# Runs a wave gate (master plan section 5). Usage, from G, outside the sandbox: bash tools/gate.sh A|1.0.1|B|C
+# 1.0.1 is the patch release after Emma's first play (docs/v3/next/plan.md G6): lenient like Gate A, on release 1.0.1.
 # Blocking checks stop the script. Warnings go to $TMPDIR/mmh-gate-<wave>-warnings.txt for the owning lanes.
 # The gate owns its server on port 8766 (never 8765, Emma's) and builds only dist-test-gate; flows/run.sh sees
 # the server up and reuses it. Emma's build changes only through tools/promote.sh after a gate passed (R47).
 set -euo pipefail
-WAVE=${1:?wave A, B or C}
-case "$WAVE" in A|B|C) ;; *) echo "usage: bash tools/gate.sh A|B|C" >&2; exit 2 ;; esac
+WAVE=${1:?wave A, 1.0.1, B or C}
+case "$WAVE" in A|1.0.1|B|C) ;; *) echo "usage: bash tools/gate.sh A|1.0.1|B|C" >&2; exit 2 ;; esac
+# Gate A and the 1.0.1 patch keep warnings as warnings; from Gate B on they block (master plan 5.2).
+LENIENT=; { [ "$WAVE" = A ] || [ "$WAVE" = 1.0.1 ]; } && LENIENT=1
 cd "$(dirname "$0")/.."
 REPO="$(git rev-parse --show-toplevel)"
 TMP="${TMPDIR:-/tmp}"
@@ -14,12 +17,12 @@ warn() { echo "WARNING: $*" | tee -a "$WARN"; }
 step() { echo; echo "== gate $WAVE: $*"; }
 flow_list() { grep -v '^[[:space:]]*#' "$1" | grep -v '^[[:space:]]*$' || true; }
 # Gate A warnings block from Gate B on, except the art frame verdict and the ASSET_* list (master plan 5.2).
-soft() { if [ "$WAVE" = A ]; then warn "$*"; else echo "FAILED: $*" >&2; exit 1; fi; }
+soft() { if [ -n "$LENIENT" ]; then warn "$*"; else echo "FAILED: $*" >&2; exit 1; fi; }
 
 [ -n "$(flow_list "flows/gate-$WAVE.txt" 2>/dev/null)" ] || { echo "flows/gate-$WAVE.txt is missing or empty" >&2; exit 1; }
 
-# Gates B and C run on their release (master plan 5.2, 5.3).
-case "$WAVE" in B) WANT=1.1 ;; C) WANT=1.3 ;; *) WANT= ;; esac
+# Gates 1.0.1, B and C run on their release (master plan 5.2, 5.3).
+case "$WAVE" in 1.0.1) WANT=1.0.1 ;; B) WANT=1.1 ;; C) WANT=1.3 ;; *) WANT= ;; esac
 if [ -n "$WANT" ]; then
   HAVE=$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync("content/release.json","utf8")).release))')
   [ "$HAVE" = "$WANT" ] || { echo "content/release.json is $HAVE, gate $WAVE needs $WANT" >&2; exit 1; }
@@ -30,8 +33,8 @@ step "types";           npm run check
 step "audio ids";       npm run check:audio
 step "content";         npm run check:content -- --assets=warn   # ASSET_PIC and ASSET_CLIP are warnings in every gate (R62)
 step "simulated learner"
-if [ "$WAVE" = A ]; then npm run simulate || warn "simulate pacing (learning)"; else npm run simulate; fi
-if [ "$WAVE" != A ]; then
+if [ -n "$LENIENT" ]; then npm run simulate || warn "simulate pacing (learning)"; else npm run simulate; fi
+if [ -z "$LENIENT" ]; then
   step "unknown names"
   npm run names:pull -- --file tests/fixtures/v2-save.json --dry-run
 fi

@@ -1,0 +1,14 @@
+# Gate 1.0.1 blocking flows (docs/v3/next/plan.md task G6). Gate A's list plus the four new flows of this version.
+platform-smoke
+heartbeat/heartbeat
+heartbeat/naming
+heartbeat/eggs
+heartbeat/feeding
+heartbeat/goodnight
+heartbeat/stable-feeding
+places/meadow
+integration/new-player
+integration/moving-day
+integration/visit-5min
+integration/reload-naming
+integration/upgrade
