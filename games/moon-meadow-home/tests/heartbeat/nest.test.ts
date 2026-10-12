@@ -1,6 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { NestCtrl, freeEgg } from '../../src/scenes/heartbeat/nest.ctrl.ts';
 import { fakeDeps, served } from './fakes.ts';
+import type { StoneSpec } from '../../src/core/maths/stones.ts';
+
+/** Replaces the planned tray with a hand-built one (values in order). */
+function tray(c: NestCtrl, values: number[]): StoneSpec[] {
+  const stones = values.map((value, i): StoneSpec => ({ id: `stone-${i + 1}`, value, face: 'dots', layout: 'dice', tint: 0 }));
+  (c as unknown as { stones: StoneSpec[] }).stones = stones;
+  return stones;
+}
+const pair = (a: number, b: number, step = 'M12E') =>
+  served({ step, moment: 'egg-two-stone', items: [`m:pair:${a}+${b}`], carrier: { kind: 'maths', task: { op: 'pair', a, b } } });
 
 const opts = { golden: false, speckled: false, firstEver: false };
 const m09 = () => served({ step: 'M09', moment: 'egg-moon', items: ['m:miss:10-3'] });
@@ -11,7 +21,7 @@ describe('NestCtrl', () => {
     const f = fakeDeps();
     const c = new NestCtrl(m09(), f.deps, opts);
     await c.begin();
-    expect(f.said).toEqual(['g-egg']);
+    expect(f.said).toEqual(['num-egg-10', 'num-warm-3', 'g-egg']);
     expect(await c.place(c.answerIds()[0])).toBe('solved');
     expect(f.actions).toHaveLength(1);
     const a = f.actions[0];
@@ -72,5 +82,58 @@ describe('NestCtrl', () => {
     await f.goal()!.answer();
     expect(ghosted).toHaveLength(1);
     expect(f.actions[0].learn.payload.result).toBe('helped');
+  });
+  it('hatches a free two-stone egg of eight, not ten (N28)', async () => {
+    const f = fakeDeps();
+    const c = new NestCtrl(freeEgg('two-stone'), f.deps, { ...opts, free: true });
+    expect(c.task).toMatchObject({ step: 'M12A', cups: 8, target: 8, stonesNeeded: 2 });
+    for (const id of c.answerIds()) await c.place(id);
+    expect(f.actions[0]).toMatchObject({ type: 'hb.hatched', learn: null });
+  });
+  it('keeps the first stone after a miss while its partner is still on the tray', async () => {
+    const f = fakeDeps();
+    const c = new NestCtrl(pair(7, 8), f.deps, opts);
+    const s = tray(c, [7, 8, 6, 9, 7, 8]);
+    await c.begin();
+    expect(await c.place(s[0].id)).toBe('need-more');
+    expect(await c.place(s[2].id)).toBe('miss');
+    expect(c.view().placed).toEqual([s[0].id]);
+    expect(c.answerIds()).toHaveLength(1);
+    expect(c.stones.find((x) => x.id === c.answerIds()[0])!.value).toBe(8);
+  });
+  it('returns both stones after a miss when the first stone has no partner left', async () => {
+    const f = fakeDeps();
+    const c = new NestCtrl(pair(7, 8), f.deps, opts);
+    const s = tray(c, [7, 6, 9, 6, 9, 3]);
+    await c.begin();
+    await c.place(s[0].id);
+    expect(await c.place(s[1].id)).toBe('miss');
+    expect(c.view().placed).toEqual([]);
+    expect(c.answerIds()).toHaveLength(2);
+    for (const id of c.answerIds()) await c.place(id);
+    expect(c.view().solved).toBe(true);
+  });
+  it('shows which stone warmed which cup', async () => {
+    const f = fakeDeps();
+    const c = new NestCtrl(pair(5, 8), f.deps, opts);
+    const s = tray(c, [5, 8, 6, 7, 6, 7]);
+    expect(c.view().fill).toEqual(Array(13).fill(-1));
+    await c.place(s[1].id);
+    expect(c.view().fill).toEqual([...Array(8).fill(1), ...Array(5).fill(-1)]);
+    await c.place(s[0].id);
+    expect(c.view().fill).toEqual([...Array(8).fill(1), ...Array(5).fill(2)]);
+    expect(c.view().solved).toBe(true);
+    expect(f.said).toContain('num-bond-8-5');
+  });
+  it('says the two-nest and two-stone goals only when not yet heard this visit', async () => {
+    const f = fakeDeps();
+    await new NestCtrl(pair(6, 7), f.deps, opts).begin();
+    expect(f.said).toEqual(['g-two-nests', 'num-egg-13', 'g-two-stones']);
+    const g = fakeDeps();
+    const c = new NestCtrl(pair(6, 7), g.deps, { ...opts, seen: { twoNests: true, twoStones: true } });
+    await c.begin();
+    expect(g.said).toEqual(['num-egg-13']);
+    await c.repeatGoal();
+    expect(g.said.slice(1)).toEqual(['g-two-nests', 'num-egg-13', 'g-two-stones']);
   });
 });

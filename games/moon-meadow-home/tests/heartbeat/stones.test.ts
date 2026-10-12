@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { planStones, stoneFace } from '../../src/core/maths/stones.ts';
-import { buildEggTask } from '../../src/core/maths/eggs.ts';
+import { buildEggTask, judgeStones } from '../../src/core/maths/eggs.ts';
+import { readContent } from '../../tools/lib/read-content.ts';
 import { makeRng } from '../../src/core/rng.ts';
 import type { Served } from '../../src/core/heartbeat/types.ts';
 
@@ -66,5 +67,36 @@ describe('planStones', () => {
   });
   it('is deterministic for a seed', () => {
     expect(planStones(task('M09', 'm:miss:10-4', 2), makeRng(5))).toEqual(planStones(task('M09', 'm:miss:10-4', 2), makeRng(5)));
+  });
+  it('gives every two-stone egg of the 1.0.1 steps three pairs of its total, so any first stone can be finished (N29)', () => {
+    const c = readContent('1.0.1');
+    for (const step of ['M12A', 'M12C', 'M12E']) {
+      for (const { id } of c.steps[step].items) {
+        const it = c.items[id].task!;
+        if (it.op !== 'pair') throw new Error(id);
+        const total = it.a + it.b;
+        for (let seed = 1; seed <= 20; seed++) {
+          const t = task(step, id);
+          const s = planStones(t, makeRng(seed));
+          const v = s.map((x) => x.value);
+          expect(v, `${id} seed ${seed}`).toHaveLength(6);
+          for (const x of v) {
+            expect(x).toBeGreaterThanOrEqual(1);
+            expect(x).toBeLessThanOrEqual(9);
+          }
+          const i = v.indexOf(it.a);
+          expect(i, id).toBeGreaterThanOrEqual(0);
+          expect(v.some((x, j) => j !== i && x === it.b), id).toBe(true);
+          for (let k = 0; k < v.length; k++) expect(v.some((x, j) => j !== k && x === total - v[k]), `${id} seed ${seed} stone ${v[k]}`).toBe(true);
+          expect(judgeStones(t, [it.a, it.b]).ok).toBe(true);
+        }
+      }
+    }
+  });
+  it('fills a short tray with a second copy of a pair (total 15 has only two pairs)', () => {
+    const v = planStones(task('M12E', 'm:pair:7+8'), makeRng(4)).map((x) => x.value).sort();
+    expect(v).toHaveLength(6);
+    const pairs = new Set(v.map((x) => Math.min(x, 15 - x)));
+    expect([...pairs].every((x) => x === 6 || x === 7)).toBe(true);
   });
 });
