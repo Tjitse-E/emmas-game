@@ -46,6 +46,8 @@ export class GoodnightCtrl {
   onchange: () => void = () => {};
   /** The scene shows the ghost hand on the moon or the window (idle level 3). It never presses it. */
   onghost: (label: string) => Promise<void> = async () => {};
+  /** The scene lights the moon or the window with the moonbeam when the goal is said again (idle level 1). */
+  onbeam: (label: string) => void = () => {};
   readonly walk: WalkCtrl | null;
   readonly stable: StableCtrl;
   readonly countText: string;
@@ -104,7 +106,7 @@ export class GoodnightCtrl {
     this.enter('free');
     const say = () => this.d.audio.say('g-moon');
     this.d.hints.begin({
-      step: null, repeat: say, focused: say,
+      step: null, repeat: () => { this.onbeam('moon'); return say(); }, focused: say,
       // Idle level 3 only shows the moon (N3): she may still be feeding, so the ghost never ends free feeding.
       answer: async () => { await this.onghost('moon'); },
       target: () => (this.stage === 'free' ? 'moon' : null),
@@ -139,7 +141,7 @@ export class GoodnightCtrl {
     this.onchange();
     const say = () => this.d.audio.say('g-window');
     this.d.hints.begin({
-      step: null, repeat: say, focused: say,
+      step: null, repeat: () => { this.onbeam('window'); return say(); }, focused: say,
       answer: async () => { await this.onghost('window'); },
       target: () => (this.stage === 'bed' && this.windowShown ? 'window' : null),
     });
