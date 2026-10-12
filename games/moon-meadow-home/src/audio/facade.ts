@@ -21,7 +21,8 @@ export const DYNAMIC_CLIP_LIMIT = 60;
 
 /**
  * A literal id must be one of `Id`; a computed string (numId(...), wordId(...)) passes, because only the clip index
- * knows at runtime whether it exists. So `audio.speak('g-eg')` is a type error, `audio.speak(numId('n', 3))` is not.
+ * knows at runtime whether it exists. So a misspelt literal such as 'g-eg' is a type error in speak, numId('n', 3) is not.
+ * (The example is not written as a call, because tools/lib/read-content.ts scans the source for literal speak calls.)
  */
 export type Checked<T extends string, Id extends string> = string extends T ? T : T extends Id ? T : never;
 type Arg<T extends string, Id extends string> = (T & Checked<T, Id>) | null | undefined;
