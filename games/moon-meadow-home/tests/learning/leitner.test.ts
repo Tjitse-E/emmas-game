@@ -6,7 +6,7 @@ import { MINI_BUDGET as b } from '../fixtures/mini.ts';
 import { T0, HOUR, DAY } from '../fixtures/events.ts';
 
 const visit = (seq: number, startT: number, box0: Record<string, number> = {}): VisitState =>
-  ({ seq, startT, tz: 120, counts: { r: 0, s: 0, m: 0, name: 0 }, ladder: 0, spell: 0, golden: false, box0, recent: [] });
+  ({ seq, startT, tz: 120, counts: { r: 0, s: 0, m: 0, name: 0 }, ladder: 0, spell: 0, golden: false, box0, recent: [], eggs: [] });
 const mem = (box: Box, lastT: number, lastVisit: number): ItemMemory =>
   ({ box, lastT, lastVisit, seen: 1, firsts: 0, seeded: false, placedInit: false });
 const ID = 'r:g:a';
