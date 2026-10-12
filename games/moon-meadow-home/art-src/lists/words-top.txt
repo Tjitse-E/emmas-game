@@ -1,0 +1,237 @@
+# Word picture top-up from learning content/pictures-needed.json (Task A13b). Plural words first.
+# Left out: hand, foot, toe, teeth, cheek, chin (parts of people; the art has no people).
+hairbrush | R19 | a hairbrush
+hatbox | R19 | a round hat box
+paintbrush | R19 | a paintbrush
+perch | R19 | a bird perch
+toothbrush | R19 | a toothbrush
+torch | R19 | a torch
+acorn | R19 | an acorn
+apron | R19 | an apron
+armchair | R19 | an armchair
+backpack | R19 | a backpack
+band | R19 | a hair band
+banquet | R19 | a banquet table with cakes
+barn | R19 | a red barn
+bathtub | R19 | a bathtub
+beanbag | R19 | a beanbag
+beetroot | R19 | a beetroot
+birdbath | R19 | a birdbath
+bluebell | R19 | a bluebell flower
+bluebird | R19 | a toy bluebird
+bobbin | R19 | a thread bobbin
+bone | R19 | a toy bone
+bonnet | R19 | a bonnet
+bottle | R19 | a bottle
+bowtie | R19 | a bow tie
+braid | R19 | a braided ribbon
+bubble | R19 | a bubble
+bucket | R19 | a seaside bucket
+bunk | R19 | a bunk bed
+burger | R19 | a burger
+cabin | R19 | a little wooden cabin
+candle | R19 | a candle
+carpet | R19 | a carpet
+case | R19 | a suitcase
+cashew | R19 | a cashew nut
+catkin | R19 | a fluffy catkin
+cave | R19 | a cave in a big grey rock
+chest | R19 | a treasure chest
+circle | R19 | a pink circle
+cloak | R19 | a cloak
+cob | R19 | a corn cob
+cog | R19 | a toy cog wheel
+comb | R19 | a comb
+comet | R19 | a comet with a sparkly tail
+comic | R19 | a comic book with colourful picture panels on its cover, no writing
+cookbook | R19 | a cookbook with a cake on its cover, no writing
+cookie | R19 | a cookie
+costume | R19 | a dressing-up costume
+crate | R19 | a wooden crate
+crib | R19 | a baby crib
+cuff | R19 | a shirt cuff
+cupcake | R19 | a cupcake
+curl | R19 | a curl of pink ribbon
+curtain | R19 | a curtain on a pole
+deckchair | R19 | a deckchair
+dewdrop | R19 | a dewdrop on a leaf
+doll | R19 | a soft rag doll toy with yarn hair and a dress
+dustbin | R19 | a dustbin
+duster | R19 | a feather duster
+dustpan | R19 | a dustpan
+ear | R19 | a soft lilac unicorn ear, standing up, with a pink inside
+earmuff | R19 | fluffy earmuffs
+earring | R19 | an earring
+egg | R19 | a cream egg
+eggcup | R19 | an egg cup
+envelope | R19 | an envelope
+feather | R19 | a feather
+fir | R19 | a little fir tree
+flannel | R19 | a face flannel
+flask | R19 | a drinks flask
+float | R19 | a swimming float
+fort | R19 | a toy fort
+frame | R19 | a picture frame
+frill | R19 | a lace frill
+game | R19 | a board game with a winding path of coloured squares, no writing
+gear | R19 | a toy gear
+gem | R19 | a pink gem
+goal | R19 | a football goal
+goblet | R19 | a golden goblet
+gong | R19 | a gong
+grape | R19 | a grape
+hammock | R19 | a hammock
+hamper | R19 | a picnic hamper
+handbag | R19 | a handbag
+helmet | R19 | a riding helmet
+herb | R19 | a pot of herbs
+highchair | R19 | a baby high chair
+hilltop | R19 | a hilltop
+hob | R19 | a kitchen hob
+hood | R19 | a coat hood
+igloo | R19 | a toy igloo
+jumper | R19 | a woolly jumper
+kennel | R19 | an empty wooden dog kennel
+kettle | R19 | a kettle
+kilt | R19 | a kilt
+kit | R19 | a craft kit in a box
+label | R19 | a blank jar label with a scalloped edge
+lake | R19 | a small round blue lake with reeds
+lantern | R19 | a glowing lantern
+leek | R19 | a leek
+lifebelt | R19 | a lifebelt ring
+locker | R19 | a locker
+locket | R19 | a heart locket on a chain
+marshmallow | R19 | a marshmallow
+maze | R19 | a toy maze puzzle
+medal | R19 | a gold medal
+mitten | R19 | a mitten
+mixer | R19 | a kitchen mixer
+moonbeam | R19 | a moonbeam shining down
+moonflower | R19 | a glowing white moon flower
+nib | R19 | a pen nib
+nightlight | R19 | a glowing night light
+noodle | R19 | a noodle
+note | R19 | a folded paper note
+nutmeg | R19 | a nutmeg
+packet | R19 | a paper packet of seeds with a flower on it, no writing
+paddle | R19 | a canoe paddle
+padlock | R19 | a padlock
+painting | R19 | a painting of a flower in a wooden frame
+pair | R19 | a pair of socks
+peanut | R19 | a peanut
+peapod | R19 | a peapod
+pebble | R19 | a pebble
+pencil | R19 | a pencil
+perfume | R19 | a perfume bottle
+petal | R19 | a pink flower petal
+photo | R19 | a photo of a little unicorn in a simple frame
+pinecone | R19 | a pine cone
+pipe | R19 | a water pipe
+planet | R19 | a planet
+plug | R19 | a bath plug
+pocket | R19 | a jeans pocket
+pole | R19 | a tall wooden pole
+portrait | R19 | a portrait painting of a smiling unicorn in a golden frame
+poster | R19 | a poster of a rainbow with rounded corners, no writing
+puffin | R19 | a toy puffin
+pump | R19 | a bicycle pump
+puppet | R19 | a puppet
+puzzle | R19 | a puzzle
+quill | R19 | a feather quill pen
+rack | R19 | a wooden coat rack
+racquet | R19 | a tennis racquet
+rag | R19 | a cleaning rag
+rake | R19 | a garden rake
+rattle | R19 | a baby rattle
+reed | R19 | a tall reed by a pond
+robe | R19 | a dressing gown on a hanger
+robot | R19 | a toy robot
+rocket | R19 | a toy rocket
+rooftop | R19 | a rooftop
+root | R19 | a tree root
+rosebud | R19 | a rosebud
+rubber | R19 | a pencil rubber
+saddle | R19 | a saddle
+salad | R19 | a bowl of salad
+sandal | R19 | a sandal
+seashell | R19 | a seashell
+seat | R19 | a garden seat
+seesaw | R19 | a seesaw
+shark | R19 | a friendly blue plush toy shark
+shed | R19 | a garden shed
+shower | R19 | a shower head with water
+snack | R19 | a snack box
+snake | R19 | a striped plush toy snake
+snowdrop | R19 | a snowdrop flower
+snowflake | R19 | a snowflake
+sofa | R19 | a sofa
+spray | R19 | a spray bottle
+spring | R19 | a coiled metal spring
+step | R19 | a stone step
+stick | R19 | a wooden stick
+sticker | R19 | a sticker
+stone | R19 | a smooth stone
+strap | R19 | a bag strap
+straw | R19 | a drinking straw
+string | R19 | a ball of string
+stripe | R19 | a pink stripe
+stump | R19 | a tree stump
+sunbeam | R19 | a sunbeam
+sunflower | R19 | a sunflower
+sunhat | R19 | a sunhat
+table | R19 | a table
+tail | R19 | a long fluffy unicorn tail
+tart | R19 | a jam tart
+teabag | R19 | a teabag
+teaspoon | R19 | a teaspoon
+telescope | R19 | a telescope
+ticket | R19 | a paper ticket with a star on it, no writing
+toaster | R19 | a toaster
+toffee | R19 | a wrapped toffee sweet
+treat | R19 | a treat in a little bowl
+trombone | R19 | a trombone
+trumpet | R19 | a trumpet
+tube | R19 | a tube of paint
+tulip | R19 | a pink tulip
+tunnel | R19 | a toy play tunnel
+unicorn | R19 | a toy unicorn
+vine | R19 | a grape vine
+wave | R19 | a sea wave
+whistle | R19 | a whistle
+willow | R19 | a willow tree
+wing | R19 | a white feathery wing
+wok | R19 | a cooking wok
+yak | R19 | a toy yak
+cheese | top | a wedge of cheese
+chess | top | a chess board with a few pieces on it
+clay | top | a lump of modelling clay
+cotton | top | a cotton reel
+daisy | top | a daisy flower
+dock | top | a little wooden dock by the water
+glitter | top | a pot of glitter
+hair | top | a lock of long golden hair tied with a ribbon
+hay | top | a hay rack with hay
+lace | top | a piece of white lace
+loaf | top | a loaf of bread
+peel | top | a banana peel
+shelf | top | a shelf
+strawberry | top | a strawberry
+tea | top | a cup of tea
+tinfoil | top | a roll of tin foil
+yarn | top | a ball of yarn
+berry | top | a berry
+cherry | top | a cherry
+dice | top | a pair of white dice with dots
+jelly | top | a jelly
+lolly | top | an ice lolly
+nap | top | a soft nap cushion
+paper | top | a sheet of paper
+rice | top | a bowl of rice
+satin | top | a piece of pink satin
+sea | top | a small patch of blue sea with gentle waves
+seaweed | top | a seaweed
+swing | top | a garden swing
+teddy | top | a teddy bear
+tinsel | top | a strand of shiny tinsel
+velvet | top | a piece of red velvet
