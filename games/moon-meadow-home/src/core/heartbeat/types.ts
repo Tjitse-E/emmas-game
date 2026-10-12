@@ -1,6 +1,6 @@
 // Shared types of the heartbeat workstream. Shapes that other streams share come from contracts (R41).
 import type {
-  BreedId as ContractBreedId, Colours as ContractColours, ErrorTag as ContractErrorTag, LearnStrand,
+  BreedId as ContractBreedId, Colours as ContractColours, ErrorTag as ContractErrorTag, LearnStrand, Pick,
   Result as ContractResult, StepStatus, Traits as ContractTraits,
 } from '../../types/contracts.ts';
 
@@ -31,14 +31,21 @@ export type LearnResultDraft = {
 export type Served = {
   strand: Strand; step: string; id: string; carrier: string; items: string[]; scaffold: Scaffold;
   probe: boolean; source: Source; twin?: string; moment?: string; slot?: string;
+  /** The planner's pick behind it. Only learning's learnResultPayload(pick, outcome) builds a result from it (R17). */
+  pick?: Pick;
+  /** R36: display-only tricky words printed before the carrier ('the'). Never items, never logged. */
+  display?: string[];
 };
 /** The heartbeat's own views of words and names. learn-bridge.ts builds them from learning's Content. */
 export type WordEntry = {
   word: string; gr: string[]; step: string; picture: string; clip: string; one?: string; plural?: string;
   ending?: '-s' | '-es'; pair?: string; pairTag?: 'aeu' | 'final' | 'vw' | 'jy' | 'th' | 'ch' | 'r20' | 'split-e' | 'vowel';
   station?: StationId; confuse?: string[]; basket: boolean;
+  /** R36: indexes into gr of heart-part graphemes (tricky words). */
+  heart?: number[];
 };
 export type NameEntry = {
-  name: string; key: string; split: { g: string; ph: string[] }[]; ph: string[]; first: string;
+  /** split[i].gpc: learning's GPC id of that grapheme, when the name comes from the name bank. */
+  name: string; key: string; split: { g: string; ph: string[]; gpc?: string }[]; ph: string[]; first: string;
   pic: 'flowers' | 'gems' | 'sky' | 'sweets' | null; tier: 1 | 2;
 };
