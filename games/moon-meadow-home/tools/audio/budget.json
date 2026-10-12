@@ -13,5 +13,17 @@
   "counterSettled": true,
   "session": "Across all of run 0 (34 characters of speech, 26 checks) the counter moved 8 credits, so one check of a short clip costs at most about 0.3 credits.",
   "note": "Credits per check, rounded up to a hundredth. Every later run reserves this per clip it checks (gen.sh passes it as --stt-cost) and the ledger records it."
+ },
+ "batchA3": {
+  "measured": "2026-10-12T13:30",
+  "ledgerAfter": 17301,
+  "counterAfter": 31656,
+  "runs": {
+   "3 words-phase3-4": 2915,
+   "4 words-year1": 2223,
+   "5 words-phase2": 1704,
+   "7 names-t1": 3637
+  },
+  "note": "Runs 3 to 7 booked 10,479 in the ledger against a plan of 6,600, because the word packs hold 917 words and every word was made (runs 0 to 7 are never cut). Names stop at 324 (305 with both clips usable). The ledger books 1 credit per character, but the account counter moved only about 13 percent of that across these runs (2,351 credits since the start of the session against 17,301 booked). The cap is unchanged; with the ledger as it is, the later runs fit 1b, 8, 9, 10 and 11, and run 12 and run 6 get about 1,500 between them."
  }
 }
