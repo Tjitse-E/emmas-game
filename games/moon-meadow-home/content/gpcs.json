@@ -1,0 +1,1098 @@
+{
+  "gpcs": [
+    {
+      "id": "s",
+      "text": "s",
+      "phonemes": [
+        "s"
+      ],
+      "vowel": false,
+      "sound": "s",
+      "fluency": true
+    },
+    {
+      "id": "a",
+      "text": "a",
+      "phonemes": [
+        "a"
+      ],
+      "vowel": true,
+      "sound": "a",
+      "fluency": true
+    },
+    {
+      "id": "t",
+      "text": "t",
+      "phonemes": [
+        "t"
+      ],
+      "vowel": false,
+      "sound": "t",
+      "fluency": true
+    },
+    {
+      "id": "p",
+      "text": "p",
+      "phonemes": [
+        "p"
+      ],
+      "vowel": false,
+      "sound": "p",
+      "fluency": true
+    },
+    {
+      "id": "i",
+      "text": "i",
+      "phonemes": [
+        "i"
+      ],
+      "vowel": true,
+      "sound": "i",
+      "fluency": true
+    },
+    {
+      "id": "n",
+      "text": "n",
+      "phonemes": [
+        "n"
+      ],
+      "vowel": false,
+      "sound": "n",
+      "fluency": true
+    },
+    {
+      "id": "m",
+      "text": "m",
+      "phonemes": [
+        "m"
+      ],
+      "vowel": false,
+      "sound": "m",
+      "fluency": true
+    },
+    {
+      "id": "d",
+      "text": "d",
+      "phonemes": [
+        "d"
+      ],
+      "vowel": false,
+      "sound": "d",
+      "fluency": true
+    },
+    {
+      "id": "g",
+      "text": "g",
+      "phonemes": [
+        "g"
+      ],
+      "vowel": false,
+      "sound": "g",
+      "fluency": true
+    },
+    {
+      "id": "o",
+      "text": "o",
+      "phonemes": [
+        "o"
+      ],
+      "vowel": true,
+      "sound": "o",
+      "fluency": true
+    },
+    {
+      "id": "c",
+      "text": "c",
+      "phonemes": [
+        "k"
+      ],
+      "vowel": false,
+      "sound": "c",
+      "fluency": true
+    },
+    {
+      "id": "k",
+      "text": "k",
+      "phonemes": [
+        "k"
+      ],
+      "vowel": false,
+      "sound": "k",
+      "fluency": true
+    },
+    {
+      "id": "ck",
+      "text": "ck",
+      "phonemes": [
+        "k"
+      ],
+      "vowel": false,
+      "sound": "ck",
+      "fluency": true
+    },
+    {
+      "id": "e",
+      "text": "e",
+      "phonemes": [
+        "e"
+      ],
+      "vowel": true,
+      "sound": "e",
+      "fluency": true
+    },
+    {
+      "id": "u",
+      "text": "u",
+      "phonemes": [
+        "u"
+      ],
+      "vowel": true,
+      "sound": "u",
+      "fluency": true
+    },
+    {
+      "id": "r",
+      "text": "r",
+      "phonemes": [
+        "r"
+      ],
+      "vowel": false,
+      "sound": "r",
+      "fluency": true
+    },
+    {
+      "id": "h",
+      "text": "h",
+      "phonemes": [
+        "h"
+      ],
+      "vowel": false,
+      "sound": "h",
+      "fluency": true
+    },
+    {
+      "id": "b",
+      "text": "b",
+      "phonemes": [
+        "b"
+      ],
+      "vowel": false,
+      "sound": "b",
+      "fluency": true
+    },
+    {
+      "id": "f",
+      "text": "f",
+      "phonemes": [
+        "f"
+      ],
+      "vowel": false,
+      "sound": "f",
+      "fluency": true
+    },
+    {
+      "id": "ff",
+      "text": "ff",
+      "phonemes": [
+        "f"
+      ],
+      "vowel": false,
+      "sound": "ff",
+      "fluency": true
+    },
+    {
+      "id": "l",
+      "text": "l",
+      "phonemes": [
+        "l"
+      ],
+      "vowel": false,
+      "sound": "l",
+      "fluency": true
+    },
+    {
+      "id": "ll",
+      "text": "ll",
+      "phonemes": [
+        "l"
+      ],
+      "vowel": false,
+      "sound": "ll",
+      "fluency": true
+    },
+    {
+      "id": "ss",
+      "text": "ss",
+      "phonemes": [
+        "s"
+      ],
+      "vowel": false,
+      "sound": "ss",
+      "fluency": true
+    },
+    {
+      "id": "j",
+      "text": "j",
+      "phonemes": [
+        "j"
+      ],
+      "vowel": false,
+      "sound": "j",
+      "fluency": true
+    },
+    {
+      "id": "v",
+      "text": "v",
+      "phonemes": [
+        "v"
+      ],
+      "vowel": false,
+      "sound": "v",
+      "fluency": true
+    },
+    {
+      "id": "w",
+      "text": "w",
+      "phonemes": [
+        "w"
+      ],
+      "vowel": false,
+      "sound": "w",
+      "fluency": true
+    },
+    {
+      "id": "x",
+      "text": "x",
+      "phonemes": [
+        "k",
+        "s"
+      ],
+      "vowel": false,
+      "sound": "x",
+      "fluency": true
+    },
+    {
+      "id": "y",
+      "text": "y",
+      "phonemes": [
+        "y"
+      ],
+      "vowel": false,
+      "sound": "y",
+      "fluency": true
+    },
+    {
+      "id": "z",
+      "text": "z",
+      "phonemes": [
+        "z"
+      ],
+      "vowel": false,
+      "sound": "z",
+      "fluency": true
+    },
+    {
+      "id": "zz",
+      "text": "zz",
+      "phonemes": [
+        "z"
+      ],
+      "vowel": false,
+      "sound": "zz",
+      "fluency": true
+    },
+    {
+      "id": "qu",
+      "text": "qu",
+      "phonemes": [
+        "k",
+        "w"
+      ],
+      "vowel": false,
+      "sound": "qu",
+      "fluency": true
+    },
+    {
+      "id": "ch",
+      "text": "ch",
+      "phonemes": [
+        "ch"
+      ],
+      "vowel": false,
+      "sound": "ch",
+      "fluency": true
+    },
+    {
+      "id": "sh",
+      "text": "sh",
+      "phonemes": [
+        "sh"
+      ],
+      "vowel": false,
+      "sound": "sh",
+      "fluency": true
+    },
+    {
+      "id": "th",
+      "text": "th",
+      "phonemes": [
+        "th"
+      ],
+      "vowel": false,
+      "sound": "th",
+      "fluency": true
+    },
+    {
+      "id": "ng",
+      "text": "ng",
+      "phonemes": [
+        "ng"
+      ],
+      "vowel": false,
+      "sound": "ng",
+      "fluency": true
+    },
+    {
+      "id": "nk",
+      "text": "nk",
+      "phonemes": [
+        "ng",
+        "k"
+      ],
+      "vowel": false,
+      "sound": "nk",
+      "fluency": true
+    },
+    {
+      "id": "ai",
+      "text": "ai",
+      "phonemes": [
+        "ai"
+      ],
+      "vowel": true,
+      "sound": "ai",
+      "fluency": true
+    },
+    {
+      "id": "ee",
+      "text": "ee",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": true
+    },
+    {
+      "id": "igh",
+      "text": "igh",
+      "phonemes": [
+        "igh"
+      ],
+      "vowel": true,
+      "sound": "igh",
+      "fluency": true
+    },
+    {
+      "id": "oa",
+      "text": "oa",
+      "phonemes": [
+        "oa"
+      ],
+      "vowel": true,
+      "sound": "oa",
+      "fluency": true
+    },
+    {
+      "id": "oo",
+      "text": "oo",
+      "phonemes": [
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "oo",
+      "fluency": true
+    },
+    {
+      "id": "oo.uu",
+      "text": "oo",
+      "phonemes": [
+        "uu"
+      ],
+      "vowel": true,
+      "sound": "oo-short",
+      "fluency": true
+    },
+    {
+      "id": "ar",
+      "text": "ar",
+      "phonemes": [
+        "ar"
+      ],
+      "vowel": true,
+      "sound": "ar",
+      "fluency": true
+    },
+    {
+      "id": "or",
+      "text": "or",
+      "phonemes": [
+        "or"
+      ],
+      "vowel": true,
+      "sound": "or",
+      "fluency": true
+    },
+    {
+      "id": "ur",
+      "text": "ur",
+      "phonemes": [
+        "ur"
+      ],
+      "vowel": true,
+      "sound": "ur",
+      "fluency": true
+    },
+    {
+      "id": "ow",
+      "text": "ow",
+      "phonemes": [
+        "ow"
+      ],
+      "vowel": true,
+      "sound": "ow",
+      "fluency": true
+    },
+    {
+      "id": "oi",
+      "text": "oi",
+      "phonemes": [
+        "oi"
+      ],
+      "vowel": true,
+      "sound": "oi",
+      "fluency": true
+    },
+    {
+      "id": "ear",
+      "text": "ear",
+      "phonemes": [
+        "ear"
+      ],
+      "vowel": true,
+      "sound": "ear",
+      "fluency": true
+    },
+    {
+      "id": "air",
+      "text": "air",
+      "phonemes": [
+        "air"
+      ],
+      "vowel": true,
+      "sound": "air",
+      "fluency": true
+    },
+    {
+      "id": "er",
+      "text": "er",
+      "phonemes": [
+        "@"
+      ],
+      "vowel": true,
+      "sound": "er",
+      "fluency": true
+    },
+    {
+      "id": "s.z",
+      "text": "s",
+      "phonemes": [
+        "z"
+      ],
+      "vowel": false,
+      "sound": "z",
+      "fluency": false
+    },
+    {
+      "id": "ay",
+      "text": "ay",
+      "phonemes": [
+        "ai"
+      ],
+      "vowel": true,
+      "sound": "ai",
+      "fluency": false
+    },
+    {
+      "id": "a-e",
+      "text": "a-e",
+      "phonemes": [
+        "ai"
+      ],
+      "vowel": true,
+      "sound": "ai",
+      "fluency": false,
+      "split": true
+    },
+    {
+      "id": "ea",
+      "text": "ea",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "ie",
+      "text": "ie",
+      "phonemes": [
+        "igh"
+      ],
+      "vowel": true,
+      "sound": "igh",
+      "fluency": false
+    },
+    {
+      "id": "i-e",
+      "text": "i-e",
+      "phonemes": [
+        "igh"
+      ],
+      "vowel": true,
+      "sound": "igh",
+      "fluency": false,
+      "split": true
+    },
+    {
+      "id": "y.igh",
+      "text": "y",
+      "phonemes": [
+        "igh"
+      ],
+      "vowel": true,
+      "sound": "igh",
+      "fluency": false
+    },
+    {
+      "id": "ir",
+      "text": "ir",
+      "phonemes": [
+        "ur"
+      ],
+      "vowel": true,
+      "sound": "ur",
+      "fluency": false
+    },
+    {
+      "id": "er.ur",
+      "text": "er",
+      "phonemes": [
+        "ur"
+      ],
+      "vowel": true,
+      "sound": "ur",
+      "fluency": false
+    },
+    {
+      "id": "o-e",
+      "text": "o-e",
+      "phonemes": [
+        "oa"
+      ],
+      "vowel": true,
+      "sound": "oa",
+      "fluency": false,
+      "split": true
+    },
+    {
+      "id": "ow.oa",
+      "text": "ow",
+      "phonemes": [
+        "oa"
+      ],
+      "vowel": true,
+      "sound": "oa",
+      "fluency": false
+    },
+    {
+      "id": "oe",
+      "text": "oe",
+      "phonemes": [
+        "oa"
+      ],
+      "vowel": true,
+      "sound": "oa",
+      "fluency": false
+    },
+    {
+      "id": "ew",
+      "text": "ew",
+      "phonemes": [
+        "y",
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "yoo",
+      "fluency": false
+    },
+    {
+      "id": "ew.oo",
+      "text": "ew",
+      "phonemes": [
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "oo",
+      "fluency": false
+    },
+    {
+      "id": "ue",
+      "text": "ue",
+      "phonemes": [
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "oo",
+      "fluency": false
+    },
+    {
+      "id": "ue.yoo",
+      "text": "ue",
+      "phonemes": [
+        "y",
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "yoo",
+      "fluency": false
+    },
+    {
+      "id": "u-e",
+      "text": "u-e",
+      "phonemes": [
+        "y",
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "yoo",
+      "fluency": false,
+      "split": true
+    },
+    {
+      "id": "e-e",
+      "text": "e-e",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false,
+      "split": true
+    },
+    {
+      "id": "y.ee",
+      "text": "y",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "ie.ee",
+      "text": "ie",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "ea.e",
+      "text": "ea",
+      "phonemes": [
+        "e"
+      ],
+      "vowel": true,
+      "sound": "e",
+      "fluency": false
+    },
+    {
+      "id": "ou",
+      "text": "ou",
+      "phonemes": [
+        "ow"
+      ],
+      "vowel": true,
+      "sound": "ow",
+      "fluency": false
+    },
+    {
+      "id": "oy",
+      "text": "oy",
+      "phonemes": [
+        "oi"
+      ],
+      "vowel": true,
+      "sound": "oi",
+      "fluency": false
+    },
+    {
+      "id": "aw",
+      "text": "aw",
+      "phonemes": [
+        "or"
+      ],
+      "vowel": true,
+      "sound": "or",
+      "fluency": false
+    },
+    {
+      "id": "ph",
+      "text": "ph",
+      "phonemes": [
+        "f"
+      ],
+      "vowel": false,
+      "sound": "f",
+      "fluency": false
+    },
+    {
+      "id": "wh",
+      "text": "wh",
+      "phonemes": [
+        "w"
+      ],
+      "vowel": false,
+      "sound": "w",
+      "fluency": false
+    },
+    {
+      "id": "c.s",
+      "text": "c",
+      "phonemes": [
+        "s"
+      ],
+      "vowel": false,
+      "sound": "s",
+      "fluency": false
+    },
+    {
+      "id": "g.j",
+      "text": "g",
+      "phonemes": [
+        "j"
+      ],
+      "vowel": false,
+      "sound": "j",
+      "fluency": false
+    },
+    {
+      "id": "ch.k",
+      "text": "ch",
+      "phonemes": [
+        "k"
+      ],
+      "vowel": false,
+      "sound": "k",
+      "fluency": false
+    },
+    {
+      "id": "ch.sh",
+      "text": "ch",
+      "phonemes": [
+        "sh"
+      ],
+      "vowel": false,
+      "sound": "sh",
+      "fluency": false
+    },
+    {
+      "id": "se",
+      "text": "se",
+      "phonemes": [
+        "s"
+      ],
+      "vowel": false,
+      "sound": "s",
+      "fluency": false
+    },
+    {
+      "id": "le",
+      "text": "le",
+      "phonemes": [
+        "@",
+        "l"
+      ],
+      "vowel": false,
+      "sound": null,
+      "fluency": false
+    },
+    {
+      "id": "tle",
+      "text": "tle",
+      "phonemes": [
+        "@",
+        "l"
+      ],
+      "vowel": false,
+      "sound": null,
+      "fluency": false
+    },
+    {
+      "id": "mb",
+      "text": "mb",
+      "phonemes": [
+        "m"
+      ],
+      "vowel": false,
+      "sound": "m",
+      "fluency": false
+    },
+    {
+      "id": "u.uu",
+      "text": "u",
+      "phonemes": [
+        "uu"
+      ],
+      "vowel": true,
+      "sound": "oo-short",
+      "fluency": false
+    },
+    {
+      "id": "a.@",
+      "text": "a",
+      "phonemes": [
+        "@"
+      ],
+      "vowel": true,
+      "sound": null,
+      "fluency": false
+    },
+    {
+      "id": "o.oa",
+      "text": "o",
+      "phonemes": [
+        "oa"
+      ],
+      "vowel": true,
+      "sound": "oa",
+      "fluency": false
+    },
+    {
+      "id": "e.ee",
+      "text": "e",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "i.igh",
+      "text": "i",
+      "phonemes": [
+        "igh"
+      ],
+      "vowel": true,
+      "sound": "igh",
+      "fluency": false
+    },
+    {
+      "id": "u.yoo",
+      "text": "u",
+      "phonemes": [
+        "y",
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "yoo",
+      "fluency": false
+    },
+    {
+      "id": "a.ai",
+      "text": "a",
+      "phonemes": [
+        "ai"
+      ],
+      "vowel": true,
+      "sound": "ai",
+      "fluency": false
+    },
+    {
+      "id": "y.i",
+      "text": "y",
+      "phonemes": [
+        "i"
+      ],
+      "vowel": true,
+      "sound": "i",
+      "fluency": false
+    },
+    {
+      "id": "ey.ee",
+      "text": "ey",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "ey.ai",
+      "text": "ey",
+      "phonemes": [
+        "ai"
+      ],
+      "vowel": true,
+      "sound": "ai",
+      "fluency": false
+    },
+    {
+      "id": "i.ee",
+      "text": "i",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "u.oo",
+      "text": "u",
+      "phonemes": [
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "oo",
+      "fluency": false
+    },
+    {
+      "id": "au",
+      "text": "au",
+      "phonemes": [
+        "or"
+      ],
+      "vowel": true,
+      "sound": "au",
+      "fluency": false
+    },
+    {
+      "id": "ah.@",
+      "text": "ah",
+      "phonemes": [
+        "@"
+      ],
+      "vowel": true,
+      "sound": null,
+      "fluency": false
+    },
+    {
+      "id": "a.ar",
+      "text": "a",
+      "phonemes": [
+        "ar"
+      ],
+      "vowel": true,
+      "sound": "ar",
+      "fluency": false
+    },
+    {
+      "id": "a.air",
+      "text": "a",
+      "phonemes": [
+        "air"
+      ],
+      "vowel": true,
+      "sound": "air",
+      "fluency": false
+    },
+    {
+      "id": "ou.oo",
+      "text": "ou",
+      "phonemes": [
+        "oo"
+      ],
+      "vowel": true,
+      "sound": "oo",
+      "fluency": false
+    },
+    {
+      "id": "oe.ee",
+      "text": "oe",
+      "phonemes": [
+        "ee"
+      ],
+      "vowel": true,
+      "sound": "ee",
+      "fluency": false
+    },
+    {
+      "id": "is.igh",
+      "text": "is",
+      "phonemes": [
+        "igh"
+      ],
+      "vowel": true,
+      "sound": "igh",
+      "fluency": false
+    },
+    {
+      "id": "o.u",
+      "text": "o",
+      "phonemes": [
+        "u"
+      ],
+      "vowel": true,
+      "sound": "u",
+      "fluency": false
+    },
+    {
+      "id": "ce.s",
+      "text": "ce",
+      "phonemes": [
+        "s"
+      ],
+      "vowel": false,
+      "sound": "s",
+      "fluency": false
+    },
+    {
+      "id": "ge.j",
+      "text": "ge",
+      "phonemes": [
+        "j"
+      ],
+      "vowel": false,
+      "sound": "j",
+      "fluency": false
+    },
+    {
+      "id": "th.t",
+      "text": "th",
+      "phonemes": [
+        "t"
+      ],
+      "vowel": false,
+      "sound": "t",
+      "fluency": false
+    },
+    {
+      "id": "te.t",
+      "text": "te",
+      "phonemes": [
+        "t"
+      ],
+      "vowel": false,
+      "sound": "t",
+      "fluency": false
+    }
+  ]
+}

@@ -33,6 +33,13 @@ describe('validate', () => {
     expect(errors(f)).toEqual(['BUILD']);
   });
 
+  it('accepts a GPC id suffix that joins its phonemes (ue.yoo) and refuses an unknown one', () => {
+    const add = (id: string, phonemes: string[]) => (raw: RawContent) =>
+      raw.gpcs.push({ id, text: id.split('.')[0], phonemes, vowel: true, sound: null, fluency: false });
+    expect(errors(validate(input(add('ue.yoo', ['y', 'oo'])), LOW))).toEqual([]);
+    expect(errors(validate(input(add('ue.yo', ['y', 'oo'])), LOW))).toContain('GPC_ID');
+  });
+
   it('catches a word whose GPCs do not spell it', () => {
     expect(errors(validate(input(raw => raw.words[0].words.push({ w: 'cat', gpcs: ['c', 'a', 'p'], pic: 'cat', kind: 'thing' })), LOW)))
       .toContain('WORD_SPELL');

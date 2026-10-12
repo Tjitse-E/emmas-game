@@ -1,6 +1,6 @@
 // G/tools/lib/validate.ts
 // Pure content validation. Every check returns findings; nothing throws.
-import { buildContent, wordItems } from '../../src/core/content/build.ts';
+import { buildContent, consonantRuns, wordItems } from '../../src/core/content/build.ts';
 import { buildBlocklist, checkBlocked, type RawBlocklist } from '../../src/core/content/blocklist.ts';
 import { PHONEMES, phonemesOf, slugName, spell } from '../../src/core/content/gpc.ts';
 import { KEY_RE, NARRATOR_ONLY_PREFIXES, nameId } from '../../src/core/keys.ts';
@@ -78,8 +78,10 @@ function checkGpcs({ raw, input, c }: Ctx): Finding[] {
   for (const g of raw.gpcs) {
     for (const p of g.phonemes) if (!PHONEME_SET.has(p)) out.push(err('GPC_PHONEME', `${g.id}: phoneme ${p} is not in PHONEMES`));
     const dot = g.id.indexOf('.');
+    // The suffix names one phoneme (`ow.oa`), or the row's phonemes joined (`ue.yoo` is y + oo).
+    const suffix = g.id.slice(dot + 1);
     const ok = /^[a-z]+$/.test(g.id) || /^[a-z]+-e$/.test(g.id)
-      || (dot > 0 && /^[a-z]+$/.test(g.id.slice(0, dot)) && PHONEME_SET.has(g.id.slice(dot + 1)));
+      || (dot > 0 && /^[a-z]+$/.test(g.id.slice(0, dot)) && (PHONEME_SET.has(suffix) || suffix === g.phonemes.join('')));
     if (!ok) out.push(err('GPC_ID', `${g.id}: not <letters>, <letters>-e or <letters>.<phoneme>`));
   }
   if (c) {
@@ -209,20 +211,9 @@ function checkWords({ raw, c, t, table }: Ctx): Finding[] {
 
 function clusterFindings(w: RawWord, c: Content, table: Record<string, RawGpc>): Finding[] {
   const out: Finding[] = [];
-  const gs = w.gpcs;
-  const cons = (g: string) => !table[g].vowel;
-  let lead = 0;
-  while (lead < gs.length && cons(gs[lead])) lead++;
-  let trail = 0;
-  while (trail < gs.length - lead && cons(gs[gs.length - 1 - trail])) trail++;
-  const base = (g: string) => g.split('.')[0];
-  if (lead >= 2) {
-    const id = `r:cl:${gs.slice(0, lead).map(base).join('')}-`;
-    if (!c.items[id]) out.push(err('WORD_CLUSTER', `${w.w}: cluster item ${id} does not exist`));
-  }
-  if (trail >= 2) {
-    const id = `r:cl:-${gs.slice(gs.length - trail).map(base).join('')}`;
-    if (!c.items[id]) out.push(err('WORD_CLUSTER', `${w.w}: cluster item ${id} does not exist`));
+  const runs = consonantRuns(w.gpcs, table);
+  for (const run of [runs.lead, runs.trail]) {
+    if (run && !c.items[`r:cl:${run}`]) out.push(err('WORD_CLUSTER', `${w.w}: cluster item r:cl:${run} does not exist`));
   }
   return out;
 }

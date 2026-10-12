@@ -1,0 +1,1414 @@
+{
+  "lines": [
+    {
+      "id": "word-tap",
+      "speaker": "narrator",
+      "text": "Tap.",
+      "note": "t a p"
+    },
+    {
+      "id": "word-map",
+      "speaker": "narrator",
+      "text": "Map.",
+      "note": "m a p"
+    },
+    {
+      "id": "word-pan",
+      "speaker": "narrator",
+      "text": "Pan.",
+      "note": "p a n"
+    },
+    {
+      "id": "word-pans",
+      "speaker": "narrator",
+      "text": "Pans.",
+      "note": "p a n s"
+    },
+    {
+      "id": "word-pin",
+      "speaker": "narrator",
+      "text": "Pin.",
+      "note": "p i n"
+    },
+    {
+      "id": "word-pins",
+      "speaker": "narrator",
+      "text": "Pins.",
+      "note": "p i n s"
+    },
+    {
+      "id": "word-tin",
+      "speaker": "narrator",
+      "text": "Tin.",
+      "note": "t i n"
+    },
+    {
+      "id": "word-tins",
+      "speaker": "narrator",
+      "text": "Tins.",
+      "note": "t i n s"
+    },
+    {
+      "id": "word-mat",
+      "speaker": "narrator",
+      "text": "Mat.",
+      "note": "m a t"
+    },
+    {
+      "id": "word-mats",
+      "speaker": "narrator",
+      "text": "Mats.",
+      "note": "m a t s"
+    },
+    {
+      "id": "word-pad",
+      "speaker": "narrator",
+      "text": "Pad.",
+      "note": "p a d"
+    },
+    {
+      "id": "word-dog",
+      "speaker": "narrator",
+      "text": "Dog.",
+      "note": "d o g"
+    },
+    {
+      "id": "word-cot",
+      "speaker": "narrator",
+      "text": "Cot.",
+      "note": "c o t"
+    },
+    {
+      "id": "word-cots",
+      "speaker": "narrator",
+      "text": "Cots.",
+      "note": "c o t s"
+    },
+    {
+      "id": "word-pot",
+      "speaker": "narrator",
+      "text": "Pot.",
+      "note": "p o t"
+    },
+    {
+      "id": "word-pots",
+      "speaker": "narrator",
+      "text": "Pots.",
+      "note": "p o t s"
+    },
+    {
+      "id": "word-pod",
+      "speaker": "narrator",
+      "text": "Pod.",
+      "note": "p o d"
+    },
+    {
+      "id": "word-pods",
+      "speaker": "narrator",
+      "text": "Pods.",
+      "note": "p o d s"
+    },
+    {
+      "id": "word-cog",
+      "speaker": "narrator",
+      "text": "Cog.",
+      "note": "c o g"
+    },
+    {
+      "id": "word-cogs",
+      "speaker": "narrator",
+      "text": "Cogs.",
+      "note": "c o g s"
+    },
+    {
+      "id": "word-top",
+      "speaker": "narrator",
+      "text": "Top.",
+      "note": "t o p"
+    },
+    {
+      "id": "word-tops",
+      "speaker": "narrator",
+      "text": "Tops.",
+      "note": "t o p s"
+    },
+    {
+      "id": "word-mop",
+      "speaker": "narrator",
+      "text": "Mop.",
+      "note": "m o p"
+    },
+    {
+      "id": "word-mops",
+      "speaker": "narrator",
+      "text": "Mops.",
+      "note": "m o p s"
+    },
+    {
+      "id": "word-pig",
+      "speaker": "narrator",
+      "text": "Pig.",
+      "note": "p i g"
+    },
+    {
+      "id": "word-pigs",
+      "speaker": "narrator",
+      "text": "Pigs.",
+      "note": "p i g s"
+    },
+    {
+      "id": "word-cat",
+      "speaker": "narrator",
+      "text": "Cat.",
+      "note": "c a t"
+    },
+    {
+      "id": "word-cats",
+      "speaker": "narrator",
+      "text": "Cats.",
+      "note": "c a t s"
+    },
+    {
+      "id": "word-cap",
+      "speaker": "narrator",
+      "text": "Cap.",
+      "note": "c a p"
+    },
+    {
+      "id": "word-caps",
+      "speaker": "narrator",
+      "text": "Caps.",
+      "note": "c a p s"
+    },
+    {
+      "id": "word-can",
+      "speaker": "narrator",
+      "text": "Can.",
+      "note": "c a n"
+    },
+    {
+      "id": "word-cans",
+      "speaker": "narrator",
+      "text": "Cans.",
+      "note": "c a n s"
+    },
+    {
+      "id": "word-tag",
+      "speaker": "narrator",
+      "text": "Tag.",
+      "note": "t a g"
+    },
+    {
+      "id": "word-tags",
+      "speaker": "narrator",
+      "text": "Tags.",
+      "note": "t a g s"
+    },
+    {
+      "id": "word-kit",
+      "speaker": "narrator",
+      "text": "Kit.",
+      "note": "k i t"
+    },
+    {
+      "id": "word-kits",
+      "speaker": "narrator",
+      "text": "Kits.",
+      "note": "k i t s"
+    },
+    {
+      "id": "word-sock",
+      "speaker": "narrator",
+      "text": "Sock.",
+      "note": "s o ck"
+    },
+    {
+      "id": "word-socks",
+      "speaker": "narrator",
+      "text": "Socks.",
+      "note": "s o ck s"
+    },
+    {
+      "id": "word-duck",
+      "speaker": "narrator",
+      "text": "Duck.",
+      "note": "d u ck"
+    },
+    {
+      "id": "word-ducks",
+      "speaker": "narrator",
+      "text": "Ducks.",
+      "note": "d u ck s"
+    },
+    {
+      "id": "word-peg",
+      "speaker": "narrator",
+      "text": "Peg.",
+      "note": "p e g"
+    },
+    {
+      "id": "word-pegs",
+      "speaker": "narrator",
+      "text": "Pegs.",
+      "note": "p e g s"
+    },
+    {
+      "id": "word-pen",
+      "speaker": "narrator",
+      "text": "Pen.",
+      "note": "p e n"
+    },
+    {
+      "id": "word-pens",
+      "speaker": "narrator",
+      "text": "Pens.",
+      "note": "p e n s"
+    },
+    {
+      "id": "word-net",
+      "speaker": "narrator",
+      "text": "Net.",
+      "note": "n e t"
+    },
+    {
+      "id": "word-nets",
+      "speaker": "narrator",
+      "text": "Nets.",
+      "note": "n e t s"
+    },
+    {
+      "id": "word-nut",
+      "speaker": "narrator",
+      "text": "Nut.",
+      "note": "n u t"
+    },
+    {
+      "id": "word-nuts",
+      "speaker": "narrator",
+      "text": "Nuts.",
+      "note": "n u t s"
+    },
+    {
+      "id": "word-cup",
+      "speaker": "narrator",
+      "text": "Cup.",
+      "note": "c u p"
+    },
+    {
+      "id": "word-cups",
+      "speaker": "narrator",
+      "text": "Cups.",
+      "note": "c u p s"
+    },
+    {
+      "id": "word-mug",
+      "speaker": "narrator",
+      "text": "Mug.",
+      "note": "m u g"
+    },
+    {
+      "id": "word-mugs",
+      "speaker": "narrator",
+      "text": "Mugs.",
+      "note": "m u g s"
+    },
+    {
+      "id": "word-rug",
+      "speaker": "narrator",
+      "text": "Rug.",
+      "note": "r u g"
+    },
+    {
+      "id": "word-rugs",
+      "speaker": "narrator",
+      "text": "Rugs.",
+      "note": "r u g s"
+    },
+    {
+      "id": "word-sun",
+      "speaker": "narrator",
+      "text": "Sun.",
+      "note": "s u n"
+    },
+    {
+      "id": "word-rock",
+      "speaker": "narrator",
+      "text": "Rock.",
+      "note": "r o ck"
+    },
+    {
+      "id": "word-rocks",
+      "speaker": "narrator",
+      "text": "Rocks.",
+      "note": "r o ck s"
+    },
+    {
+      "id": "word-rack",
+      "speaker": "narrator",
+      "text": "Rack.",
+      "note": "r a ck"
+    },
+    {
+      "id": "word-racks",
+      "speaker": "narrator",
+      "text": "Racks.",
+      "note": "r a ck s"
+    },
+    {
+      "id": "word-rag",
+      "speaker": "narrator",
+      "text": "Rag.",
+      "note": "r a g"
+    },
+    {
+      "id": "word-rags",
+      "speaker": "narrator",
+      "text": "Rags.",
+      "note": "r a g s"
+    },
+    {
+      "id": "word-sack",
+      "speaker": "narrator",
+      "text": "Sack.",
+      "note": "s a ck"
+    },
+    {
+      "id": "word-sacks",
+      "speaker": "narrator",
+      "text": "Sacks.",
+      "note": "s a ck s"
+    },
+    {
+      "id": "word-dock",
+      "speaker": "narrator",
+      "text": "Dock.",
+      "note": "d o ck"
+    },
+    {
+      "id": "word-hat",
+      "speaker": "narrator",
+      "text": "Hat.",
+      "note": "h a t"
+    },
+    {
+      "id": "word-hats",
+      "speaker": "narrator",
+      "text": "Hats.",
+      "note": "h a t s"
+    },
+    {
+      "id": "word-hut",
+      "speaker": "narrator",
+      "text": "Hut.",
+      "note": "h u t"
+    },
+    {
+      "id": "word-huts",
+      "speaker": "narrator",
+      "text": "Huts.",
+      "note": "h u t s"
+    },
+    {
+      "id": "word-bun",
+      "speaker": "narrator",
+      "text": "Bun.",
+      "note": "b u n"
+    },
+    {
+      "id": "word-buns",
+      "speaker": "narrator",
+      "text": "Buns.",
+      "note": "b u n s"
+    },
+    {
+      "id": "word-bed",
+      "speaker": "narrator",
+      "text": "Bed.",
+      "note": "b e d"
+    },
+    {
+      "id": "word-beds",
+      "speaker": "narrator",
+      "text": "Beds.",
+      "note": "b e d s"
+    },
+    {
+      "id": "word-bib",
+      "speaker": "narrator",
+      "text": "Bib.",
+      "note": "b i b"
+    },
+    {
+      "id": "word-bibs",
+      "speaker": "narrator",
+      "text": "Bibs.",
+      "note": "b i b s"
+    },
+    {
+      "id": "word-tub",
+      "speaker": "narrator",
+      "text": "Tub.",
+      "note": "t u b"
+    },
+    {
+      "id": "word-tubs",
+      "speaker": "narrator",
+      "text": "Tubs.",
+      "note": "t u b s"
+    },
+    {
+      "id": "word-bag",
+      "speaker": "narrator",
+      "text": "Bag.",
+      "note": "b a g"
+    },
+    {
+      "id": "word-bags",
+      "speaker": "narrator",
+      "text": "Bags.",
+      "note": "b a g s"
+    },
+    {
+      "id": "word-bat",
+      "speaker": "narrator",
+      "text": "Bat.",
+      "note": "b a t"
+    },
+    {
+      "id": "word-bats",
+      "speaker": "narrator",
+      "text": "Bats.",
+      "note": "b a t s"
+    },
+    {
+      "id": "word-log",
+      "speaker": "narrator",
+      "text": "Log.",
+      "note": "l o g"
+    },
+    {
+      "id": "word-logs",
+      "speaker": "narrator",
+      "text": "Logs.",
+      "note": "l o g s"
+    },
+    {
+      "id": "word-lock",
+      "speaker": "narrator",
+      "text": "Lock.",
+      "note": "l o ck"
+    },
+    {
+      "id": "word-locks",
+      "speaker": "narrator",
+      "text": "Locks.",
+      "note": "l o ck s"
+    },
+    {
+      "id": "word-fan",
+      "speaker": "narrator",
+      "text": "Fan.",
+      "note": "f a n"
+    },
+    {
+      "id": "word-fans",
+      "speaker": "narrator",
+      "text": "Fans.",
+      "note": "f a n s"
+    },
+    {
+      "id": "word-fig",
+      "speaker": "narrator",
+      "text": "Fig.",
+      "note": "f i g"
+    },
+    {
+      "id": "word-figs",
+      "speaker": "narrator",
+      "text": "Figs.",
+      "note": "f i g s"
+    },
+    {
+      "id": "word-lid",
+      "speaker": "narrator",
+      "text": "Lid.",
+      "note": "l i d"
+    },
+    {
+      "id": "word-lids",
+      "speaker": "narrator",
+      "text": "Lids.",
+      "note": "l i d s"
+    },
+    {
+      "id": "word-bin",
+      "speaker": "narrator",
+      "text": "Bin.",
+      "note": "b i n"
+    },
+    {
+      "id": "word-bins",
+      "speaker": "narrator",
+      "text": "Bins.",
+      "note": "b i n s"
+    },
+    {
+      "id": "word-bud",
+      "speaker": "narrator",
+      "text": "Bud.",
+      "note": "b u d"
+    },
+    {
+      "id": "word-buds",
+      "speaker": "narrator",
+      "text": "Buds.",
+      "note": "b u d s"
+    },
+    {
+      "id": "word-cob",
+      "speaker": "narrator",
+      "text": "Cob.",
+      "note": "c o b"
+    },
+    {
+      "id": "word-cobs",
+      "speaker": "narrator",
+      "text": "Cobs.",
+      "note": "c o b s"
+    },
+    {
+      "id": "word-lemon",
+      "speaker": "narrator",
+      "text": "Lemon.",
+      "note": "l e m o n"
+    },
+    {
+      "id": "word-lemons",
+      "speaker": "narrator",
+      "text": "Lemons.",
+      "note": "l e m o n s"
+    },
+    {
+      "id": "word-melon",
+      "speaker": "narrator",
+      "text": "Melon.",
+      "note": "m e l o n"
+    },
+    {
+      "id": "word-melons",
+      "speaker": "narrator",
+      "text": "Melons.",
+      "note": "m e l o n s"
+    },
+    {
+      "id": "word-magnet",
+      "speaker": "narrator",
+      "text": "Magnet.",
+      "note": "m a g n e t"
+    },
+    {
+      "id": "word-magnets",
+      "speaker": "narrator",
+      "text": "Magnets.",
+      "note": "m a g n e t s"
+    },
+    {
+      "id": "word-rocket",
+      "speaker": "narrator",
+      "text": "Rocket.",
+      "note": "r o ck e t"
+    },
+    {
+      "id": "word-rockets",
+      "speaker": "narrator",
+      "text": "Rockets.",
+      "note": "r o ck e t s"
+    },
+    {
+      "id": "word-jacket",
+      "speaker": "narrator",
+      "text": "Jacket.",
+      "note": "j a ck e t"
+    },
+    {
+      "id": "word-jackets",
+      "speaker": "narrator",
+      "text": "Jackets.",
+      "note": "j a ck e t s"
+    },
+    {
+      "id": "word-pocket",
+      "speaker": "narrator",
+      "text": "Pocket.",
+      "note": "p o ck e t"
+    },
+    {
+      "id": "word-pockets",
+      "speaker": "narrator",
+      "text": "Pockets.",
+      "note": "p o ck e t s"
+    },
+    {
+      "id": "word-bucket",
+      "speaker": "narrator",
+      "text": "Bucket.",
+      "note": "b u ck e t"
+    },
+    {
+      "id": "word-buckets",
+      "speaker": "narrator",
+      "text": "Buckets.",
+      "note": "b u ck e t s"
+    },
+    {
+      "id": "word-basket",
+      "speaker": "narrator",
+      "text": "Basket.",
+      "note": "b a s k e t"
+    },
+    {
+      "id": "word-baskets",
+      "speaker": "narrator",
+      "text": "Baskets.",
+      "note": "b a s k e t s"
+    },
+    {
+      "id": "word-picnic",
+      "speaker": "narrator",
+      "text": "Picnic.",
+      "note": "p i c n i c"
+    },
+    {
+      "id": "word-napkin",
+      "speaker": "narrator",
+      "text": "Napkin.",
+      "note": "n a p k i n"
+    },
+    {
+      "id": "word-napkins",
+      "speaker": "narrator",
+      "text": "Napkins.",
+      "note": "n a p k i n s"
+    },
+    {
+      "id": "word-pumpkin",
+      "speaker": "narrator",
+      "text": "Pumpkin.",
+      "note": "p u m p k i n"
+    },
+    {
+      "id": "word-pumpkins",
+      "speaker": "narrator",
+      "text": "Pumpkins.",
+      "note": "p u m p k i n s"
+    },
+    {
+      "id": "word-goblet",
+      "speaker": "narrator",
+      "text": "Goblet.",
+      "note": "g o b l e t"
+    },
+    {
+      "id": "word-goblets",
+      "speaker": "narrator",
+      "text": "Goblets.",
+      "note": "g o b l e t s"
+    },
+    {
+      "id": "word-helmet",
+      "speaker": "narrator",
+      "text": "Helmet.",
+      "note": "h e l m e t"
+    },
+    {
+      "id": "word-helmets",
+      "speaker": "narrator",
+      "text": "Helmets.",
+      "note": "h e l m e t s"
+    },
+    {
+      "id": "word-sandal",
+      "speaker": "narrator",
+      "text": "Sandal.",
+      "note": "s a n d a l"
+    },
+    {
+      "id": "word-sandals",
+      "speaker": "narrator",
+      "text": "Sandals.",
+      "note": "s a n d a l s"
+    },
+    {
+      "id": "word-cabin",
+      "speaker": "narrator",
+      "text": "Cabin.",
+      "note": "c a b i n"
+    },
+    {
+      "id": "word-cabins",
+      "speaker": "narrator",
+      "text": "Cabins.",
+      "note": "c a b i n s"
+    },
+    {
+      "id": "word-ticket",
+      "speaker": "narrator",
+      "text": "Ticket.",
+      "note": "t i ck e t"
+    },
+    {
+      "id": "word-tickets",
+      "speaker": "narrator",
+      "text": "Tickets.",
+      "note": "t i ck e t s"
+    },
+    {
+      "id": "word-locket",
+      "speaker": "narrator",
+      "text": "Locket.",
+      "note": "l o ck e t"
+    },
+    {
+      "id": "word-lockets",
+      "speaker": "narrator",
+      "text": "Lockets.",
+      "note": "l o ck e t s"
+    },
+    {
+      "id": "word-packet",
+      "speaker": "narrator",
+      "text": "Packet.",
+      "note": "p a ck e t"
+    },
+    {
+      "id": "word-packets",
+      "speaker": "narrator",
+      "text": "Packets.",
+      "note": "p a ck e t s"
+    },
+    {
+      "id": "word-comet",
+      "speaker": "narrator",
+      "text": "Comet.",
+      "note": "c o m e t"
+    },
+    {
+      "id": "word-comets",
+      "speaker": "narrator",
+      "text": "Comets.",
+      "note": "c o m e t s"
+    },
+    {
+      "id": "word-bell",
+      "speaker": "narrator",
+      "text": "Bell.",
+      "note": "b e ll"
+    },
+    {
+      "id": "word-bells",
+      "speaker": "narrator",
+      "text": "Bells.",
+      "note": "b e ll s"
+    },
+    {
+      "id": "word-doll",
+      "speaker": "narrator",
+      "text": "Doll.",
+      "note": "d o ll"
+    },
+    {
+      "id": "word-dolls",
+      "speaker": "narrator",
+      "text": "Dolls.",
+      "note": "d o ll s"
+    },
+    {
+      "id": "word-cuff",
+      "speaker": "narrator",
+      "text": "Cuff.",
+      "note": "c u ff"
+    },
+    {
+      "id": "word-cuffs",
+      "speaker": "narrator",
+      "text": "Cuffs.",
+      "note": "c u ff s"
+    },
+    {
+      "id": "word-hill",
+      "speaker": "narrator",
+      "text": "Hill.",
+      "note": "h i ll"
+    },
+    {
+      "id": "word-hills",
+      "speaker": "narrator",
+      "text": "Hills.",
+      "note": "h i ll s"
+    },
+    {
+      "id": "word-muffin",
+      "speaker": "narrator",
+      "text": "Muffin.",
+      "note": "m u ff i n"
+    },
+    {
+      "id": "word-muffins",
+      "speaker": "narrator",
+      "text": "Muffins.",
+      "note": "m u ff i n s"
+    },
+    {
+      "id": "word-puff",
+      "speaker": "narrator",
+      "text": "Puff.",
+      "note": "p u ff"
+    },
+    {
+      "id": "word-puffs",
+      "speaker": "narrator",
+      "text": "Puffs.",
+      "note": "p u ff s"
+    },
+    {
+      "id": "word-puffin",
+      "speaker": "narrator",
+      "text": "Puffin.",
+      "note": "p u ff i n"
+    },
+    {
+      "id": "word-puffins",
+      "speaker": "narrator",
+      "text": "Puffins.",
+      "note": "p u ff i n s"
+    },
+    {
+      "id": "word-moss",
+      "speaker": "narrator",
+      "text": "Moss.",
+      "note": "m o ss"
+    },
+    {
+      "id": "word-jam",
+      "speaker": "narrator",
+      "text": "Jam.",
+      "note": "j a m"
+    },
+    {
+      "id": "word-jug",
+      "speaker": "narrator",
+      "text": "Jug.",
+      "note": "j u g"
+    },
+    {
+      "id": "word-jugs",
+      "speaker": "narrator",
+      "text": "Jugs.",
+      "note": "j u g s"
+    },
+    {
+      "id": "word-web",
+      "speaker": "narrator",
+      "text": "Web.",
+      "note": "w e b"
+    },
+    {
+      "id": "word-webs",
+      "speaker": "narrator",
+      "text": "Webs.",
+      "note": "w e b s"
+    },
+    {
+      "id": "word-wig",
+      "speaker": "narrator",
+      "text": "Wig.",
+      "note": "w i g"
+    },
+    {
+      "id": "word-wigs",
+      "speaker": "narrator",
+      "text": "Wigs.",
+      "note": "w i g s"
+    },
+    {
+      "id": "word-wok",
+      "speaker": "narrator",
+      "text": "Wok.",
+      "note": "w o k"
+    },
+    {
+      "id": "word-woks",
+      "speaker": "narrator",
+      "text": "Woks.",
+      "note": "w o k s"
+    },
+    {
+      "id": "word-well",
+      "speaker": "narrator",
+      "text": "Well.",
+      "note": "w e ll"
+    },
+    {
+      "id": "word-wells",
+      "speaker": "narrator",
+      "text": "Wells.",
+      "note": "w e ll s"
+    },
+    {
+      "id": "word-box",
+      "speaker": "narrator",
+      "text": "Box.",
+      "note": "b o x"
+    },
+    {
+      "id": "word-boxes",
+      "speaker": "narrator",
+      "text": "Boxes.",
+      "note": "b o x es"
+    },
+    {
+      "id": "word-fox",
+      "speaker": "narrator",
+      "text": "Fox.",
+      "note": "f o x"
+    },
+    {
+      "id": "word-foxes",
+      "speaker": "narrator",
+      "text": "Foxes.",
+      "note": "f o x es"
+    },
+    {
+      "id": "word-yam",
+      "speaker": "narrator",
+      "text": "Yam.",
+      "note": "y a m"
+    },
+    {
+      "id": "word-yams",
+      "speaker": "narrator",
+      "text": "Yams.",
+      "note": "y a m s"
+    },
+    {
+      "id": "word-yak",
+      "speaker": "narrator",
+      "text": "Yak.",
+      "note": "y a k"
+    },
+    {
+      "id": "word-yaks",
+      "speaker": "narrator",
+      "text": "Yaks.",
+      "note": "y a k s"
+    },
+    {
+      "id": "word-zip",
+      "speaker": "narrator",
+      "text": "Zip.",
+      "note": "z i p"
+    },
+    {
+      "id": "word-zips",
+      "speaker": "narrator",
+      "text": "Zips.",
+      "note": "z i p s"
+    },
+    {
+      "id": "word-chip",
+      "speaker": "narrator",
+      "text": "Chip.",
+      "note": "ch i p"
+    },
+    {
+      "id": "word-chips",
+      "speaker": "narrator",
+      "text": "Chips.",
+      "note": "ch i p s"
+    },
+    {
+      "id": "word-chin",
+      "speaker": "narrator",
+      "text": "Chin.",
+      "note": "ch i n"
+    },
+    {
+      "id": "word-ship",
+      "speaker": "narrator",
+      "text": "Ship.",
+      "note": "sh i p"
+    },
+    {
+      "id": "word-ships",
+      "speaker": "narrator",
+      "text": "Ships.",
+      "note": "sh i p s"
+    },
+    {
+      "id": "word-fish",
+      "speaker": "narrator",
+      "text": "Fish.",
+      "note": "f i sh"
+    },
+    {
+      "id": "word-dish",
+      "speaker": "narrator",
+      "text": "Dish.",
+      "note": "d i sh"
+    },
+    {
+      "id": "word-dishes",
+      "speaker": "narrator",
+      "text": "Dishes.",
+      "note": "d i sh es"
+    },
+    {
+      "id": "word-sash",
+      "speaker": "narrator",
+      "text": "Sash.",
+      "note": "s a sh"
+    },
+    {
+      "id": "word-sashes",
+      "speaker": "narrator",
+      "text": "Sashes.",
+      "note": "s a sh es"
+    },
+    {
+      "id": "word-bath",
+      "speaker": "narrator",
+      "text": "Bath.",
+      "note": "b a th"
+    },
+    {
+      "id": "word-path",
+      "speaker": "narrator",
+      "text": "Path.",
+      "note": "p a th"
+    },
+    {
+      "id": "word-paths",
+      "speaker": "narrator",
+      "text": "Paths.",
+      "note": "p a th s"
+    },
+    {
+      "id": "word-ring",
+      "speaker": "narrator",
+      "text": "Ring.",
+      "note": "r i ng"
+    },
+    {
+      "id": "word-rings",
+      "speaker": "narrator",
+      "text": "Rings.",
+      "note": "r i ng s"
+    },
+    {
+      "id": "word-wing",
+      "speaker": "narrator",
+      "text": "Wing.",
+      "note": "w i ng"
+    },
+    {
+      "id": "word-wings",
+      "speaker": "narrator",
+      "text": "Wings.",
+      "note": "w i ng s"
+    },
+    {
+      "id": "word-ink",
+      "speaker": "narrator",
+      "text": "Ink.",
+      "note": "i nk"
+    },
+    {
+      "id": "word-sink",
+      "speaker": "narrator",
+      "text": "Sink.",
+      "note": "s i nk"
+    },
+    {
+      "id": "word-sinks",
+      "speaker": "narrator",
+      "text": "Sinks.",
+      "note": "s i nk s"
+    },
+    {
+      "id": "word-gong",
+      "speaker": "narrator",
+      "text": "Gong.",
+      "note": "g o ng"
+    },
+    {
+      "id": "word-gongs",
+      "speaker": "narrator",
+      "text": "Gongs.",
+      "note": "g o ng s"
+    },
+    {
+      "id": "word-shed",
+      "speaker": "narrator",
+      "text": "Shed.",
+      "note": "sh e d"
+    },
+    {
+      "id": "word-sheds",
+      "speaker": "narrator",
+      "text": "Sheds.",
+      "note": "sh e d s"
+    },
+    {
+      "id": "word-bunk",
+      "speaker": "narrator",
+      "text": "Bunk.",
+      "note": "b u nk"
+    },
+    {
+      "id": "word-bunks",
+      "speaker": "narrator",
+      "text": "Bunks.",
+      "note": "b u nk s"
+    },
+    {
+      "id": "word-nap",
+      "speaker": "narrator",
+      "text": "Nap.",
+      "note": "n a p"
+    },
+    {
+      "id": "word-swing",
+      "speaker": "narrator",
+      "text": "Swing.",
+      "note": "s w i ng"
+    },
+    {
+      "id": "word-the",
+      "speaker": "narrator",
+      "text": "The.",
+      "note": "th e"
+    },
+    {
+      "id": "word-was",
+      "speaker": "narrator",
+      "text": "Was.",
+      "note": "w a s"
+    },
+    {
+      "id": "word-racquet",
+      "speaker": "narrator",
+      "text": "Racquet.",
+      "note": "r a c qu e t"
+    },
+    {
+      "id": "word-racquets",
+      "speaker": "narrator",
+      "text": "Racquets.",
+      "note": "r a c qu e t s"
+    },
+    {
+      "id": "word-banquet",
+      "speaker": "narrator",
+      "text": "Banquet.",
+      "note": "b a n qu e t"
+    },
+    {
+      "id": "word-banquets",
+      "speaker": "narrator",
+      "text": "Banquets.",
+      "note": "b a n qu e t s"
+    },
+    {
+      "id": "word-velvet",
+      "speaker": "narrator",
+      "text": "Velvet.",
+      "note": "v e l v e t"
+    },
+    {
+      "id": "word-nib",
+      "speaker": "narrator",
+      "text": "Nib.",
+      "note": "n i b"
+    },
+    {
+      "id": "word-nibs",
+      "speaker": "narrator",
+      "text": "Nibs.",
+      "note": "n i b s"
+    },
+    {
+      "id": "word-hob",
+      "speaker": "narrator",
+      "text": "Hob.",
+      "note": "h o b"
+    },
+    {
+      "id": "word-hobs",
+      "speaker": "narrator",
+      "text": "Hobs.",
+      "note": "h o b s"
+    },
+    {
+      "id": "word-tinsel",
+      "speaker": "narrator",
+      "text": "Tinsel.",
+      "note": "t i n s e l"
+    },
+    {
+      "id": "word-satin",
+      "speaker": "narrator",
+      "text": "Satin.",
+      "note": "s a t i n"
+    },
+    {
+      "id": "word-salad",
+      "speaker": "narrator",
+      "text": "Salad.",
+      "note": "s a l a d"
+    },
+    {
+      "id": "word-salads",
+      "speaker": "narrator",
+      "text": "Salads.",
+      "note": "s a l a d s"
+    },
+    {
+      "id": "word-comic",
+      "speaker": "narrator",
+      "text": "Comic.",
+      "note": "c o m i c"
+    },
+    {
+      "id": "word-comics",
+      "speaker": "narrator",
+      "text": "Comics.",
+      "note": "c o m i c s"
+    },
+    {
+      "id": "word-medal",
+      "speaker": "narrator",
+      "text": "Medal.",
+      "note": "m e d a l"
+    },
+    {
+      "id": "word-medals",
+      "speaker": "narrator",
+      "text": "Medals.",
+      "note": "m e d a l s"
+    },
+    {
+      "id": "word-petal",
+      "speaker": "narrator",
+      "text": "Petal.",
+      "note": "p e t a l"
+    },
+    {
+      "id": "word-petals",
+      "speaker": "narrator",
+      "text": "Petals.",
+      "note": "p e t a l s"
+    },
+    {
+      "id": "word-catkin",
+      "speaker": "narrator",
+      "text": "Catkin.",
+      "note": "c a t k i n"
+    },
+    {
+      "id": "word-catkins",
+      "speaker": "narrator",
+      "text": "Catkins.",
+      "note": "c a t k i n s"
+    },
+    {
+      "id": "model-pan",
+      "speaker": "narrator",
+      "text": "Pan has an a in the middle."
+    },
+    {
+      "id": "model-pen",
+      "speaker": "narrator",
+      "text": "Pen has an e in the middle."
+    },
+    {
+      "id": "model-hat",
+      "speaker": "narrator",
+      "text": "Hat has an a in the middle."
+    },
+    {
+      "id": "model-hut",
+      "speaker": "narrator",
+      "text": "Hut has a u in the middle."
+    },
+    {
+      "id": "model-cap",
+      "speaker": "narrator",
+      "text": "Cap has an a in the middle."
+    },
+    {
+      "id": "model-cup",
+      "speaker": "narrator",
+      "text": "Cup has a u in the middle."
+    },
+    {
+      "id": "model-net",
+      "speaker": "narrator",
+      "text": "Net has an e in the middle."
+    },
+    {
+      "id": "model-nut",
+      "speaker": "narrator",
+      "text": "Nut has a u in the middle."
+    },
+    {
+      "id": "model-pod",
+      "speaker": "narrator",
+      "text": "Pod has a d at the end."
+    },
+    {
+      "id": "model-pot",
+      "speaker": "narrator",
+      "text": "Pot has a t at the end."
+    },
+    {
+      "id": "model-log",
+      "speaker": "narrator",
+      "text": "Log has a g at the end."
+    },
+    {
+      "id": "model-lock",
+      "speaker": "narrator",
+      "text": "Lock has a k sound at the end."
+    },
+    {
+      "id": "model-rag",
+      "speaker": "narrator",
+      "text": "Rag has a g at the end."
+    },
+    {
+      "id": "model-rack",
+      "speaker": "narrator",
+      "text": "Rack has a k sound at the end."
+    },
+    {
+      "id": "model-jam",
+      "speaker": "narrator",
+      "text": "Jam starts with a j."
+    },
+    {
+      "id": "model-yam",
+      "speaker": "narrator",
+      "text": "Yam starts with a y."
+    },
+    {
+      "id": "model-bath",
+      "speaker": "narrator",
+      "text": "Bath has th at the end."
+    },
+    {
+      "id": "model-bat",
+      "speaker": "narrator",
+      "text": "Bat has a t at the end."
+    }
+  ]
+}

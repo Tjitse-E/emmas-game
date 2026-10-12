@@ -1,0 +1,1523 @@
+{
+  "strand": "r",
+  "steps": [
+    {
+      "id": "R01",
+      "title": "s a t p",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "s",
+        "a",
+        "t",
+        "p"
+      ],
+      "items": [
+        {
+          "id": "r:g:s",
+          "kind": "grapheme",
+          "gpc": "s",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:a",
+          "kind": "grapheme",
+          "gpc": "a",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:t",
+          "kind": "grapheme",
+          "gpc": "t",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:p",
+          "kind": "grapheme",
+          "gpc": "p",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R02",
+      "title": "i n m d",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "i",
+        "n",
+        "m",
+        "d"
+      ],
+      "items": [
+        {
+          "id": "r:g:i",
+          "kind": "grapheme",
+          "gpc": "i",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:n",
+          "kind": "grapheme",
+          "gpc": "n",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:m",
+          "kind": "grapheme",
+          "gpc": "m",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:d",
+          "kind": "grapheme",
+          "gpc": "d",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "g o c k",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "g",
+        "o",
+        "c",
+        "k"
+      ],
+      "items": [
+        {
+          "id": "r:g:g",
+          "kind": "grapheme",
+          "gpc": "g",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:o",
+          "kind": "grapheme",
+          "gpc": "o",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:c",
+          "kind": "grapheme",
+          "gpc": "c",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:k",
+          "kind": "grapheme",
+          "gpc": "k",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R04",
+      "title": "ck e u r",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ck",
+        "e",
+        "u",
+        "r"
+      ],
+      "items": [
+        {
+          "id": "r:g:ck",
+          "kind": "grapheme",
+          "gpc": "ck",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:e",
+          "kind": "grapheme",
+          "gpc": "e",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:u",
+          "kind": "grapheme",
+          "gpc": "u",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:r",
+          "kind": "grapheme",
+          "gpc": "r",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R04D",
+      "title": "Twin wishes: a, e and u",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "twin-wish"
+      ],
+      "face": [
+        "a",
+        "e",
+        "u"
+      ],
+      "contrast": true,
+      "items": [
+        {
+          "id": "r:pair:a-e-u",
+          "kind": "pair",
+          "pair": "a-e-u"
+        }
+      ]
+    },
+    {
+      "id": "R05",
+      "title": "h b f l",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "h",
+        "b",
+        "f",
+        "l"
+      ],
+      "items": [
+        {
+          "id": "r:g:h",
+          "kind": "grapheme",
+          "gpc": "h",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:b",
+          "kind": "grapheme",
+          "gpc": "b",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:f",
+          "kind": "grapheme",
+          "gpc": "f",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:l",
+          "kind": "grapheme",
+          "gpc": "l",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "First tricky word: the",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish"
+      ],
+      "face": [
+        "the"
+      ],
+      "display": true,
+      "items": []
+    },
+    {
+      "id": "R07",
+      "title": "ff ll ss",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ff",
+        "ll",
+        "ss"
+      ],
+      "items": [
+        {
+          "id": "r:g:ff",
+          "kind": "grapheme",
+          "gpc": "ff",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:ll",
+          "kind": "grapheme",
+          "gpc": "ll",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:ss",
+          "kind": "grapheme",
+          "gpc": "ss",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R08",
+      "title": "j v w x",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "j",
+        "v",
+        "w",
+        "x"
+      ],
+      "items": [
+        {
+          "id": "r:g:j",
+          "kind": "grapheme",
+          "gpc": "j",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:v",
+          "kind": "grapheme",
+          "gpc": "v",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:w",
+          "kind": "grapheme",
+          "gpc": "w",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:x",
+          "kind": "grapheme",
+          "gpc": "x",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R09",
+      "title": "y z zz qu",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "y",
+        "z",
+        "qu"
+      ],
+      "items": [
+        {
+          "id": "r:g:y",
+          "kind": "grapheme",
+          "gpc": "y",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:z",
+          "kind": "grapheme",
+          "gpc": "z",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:zz",
+          "kind": "grapheme",
+          "gpc": "zz",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:qu",
+          "kind": "grapheme",
+          "gpc": "qu",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R10",
+      "title": "ch sh th ng nk",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ch",
+        "sh",
+        "th"
+      ],
+      "items": [
+        {
+          "id": "r:g:ch",
+          "kind": "grapheme",
+          "gpc": "ch",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:sh",
+          "kind": "grapheme",
+          "gpc": "sh",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:th",
+          "kind": "grapheme",
+          "gpc": "th",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:ng",
+          "kind": "grapheme",
+          "gpc": "ng",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:nk",
+          "kind": "grapheme",
+          "gpc": "nk",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R11",
+      "title": "Twin wishes: final d and t, g and k, j and y, th",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "twin-wish"
+      ],
+      "face": [
+        "d",
+        "t"
+      ],
+      "contrast": true,
+      "items": [
+        {
+          "id": "r:pair:final-d-t",
+          "kind": "pair",
+          "pair": "final-d-t"
+        },
+        {
+          "id": "r:pair:final-g-k",
+          "kind": "pair",
+          "pair": "final-g-k"
+        },
+        {
+          "id": "r:pair:j-y",
+          "kind": "pair",
+          "pair": "j-y"
+        },
+        {
+          "id": "r:pair:th",
+          "kind": "pair",
+          "pair": "th"
+        }
+      ]
+    },
+    {
+      "id": "R12",
+      "title": "Phase 2 tricky words",
+      "release": "1.2",
+      "levels": 3,
+      "moments": [
+        "tricky-act"
+      ],
+      "face": [
+        "push",
+        "pull"
+      ],
+      "items": [
+        {
+          "id": "r:t:push",
+          "kind": "tricky",
+          "word": "push",
+          "fluency": "tricky"
+        },
+        {
+          "id": "r:t:pull",
+          "kind": "tricky",
+          "word": "pull",
+          "fluency": "tricky"
+        },
+        {
+          "id": "r:t:his",
+          "kind": "tricky",
+          "word": "his",
+          "fluency": "tricky"
+        },
+        {
+          "id": "r:t:her",
+          "kind": "tricky",
+          "word": "her",
+          "fluency": "tricky"
+        },
+        {
+          "id": "r:t:go",
+          "kind": "tricky",
+          "word": "go",
+          "fluency": "tricky"
+        },
+        {
+          "id": "r:t:no",
+          "kind": "tricky",
+          "word": "no",
+          "fluency": "tricky"
+        }
+      ]
+    },
+    {
+      "id": "R13",
+      "title": "ai ee igh",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ai",
+        "ee",
+        "igh"
+      ],
+      "items": [
+        {
+          "id": "r:g:ai",
+          "kind": "grapheme",
+          "gpc": "ai",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:ee",
+          "kind": "grapheme",
+          "gpc": "ee",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:igh",
+          "kind": "grapheme",
+          "gpc": "igh",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R14",
+      "title": "oa oo oo",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "oa",
+        "oo"
+      ],
+      "items": [
+        {
+          "id": "r:g:oa",
+          "kind": "grapheme",
+          "gpc": "oa",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:oo",
+          "kind": "grapheme",
+          "gpc": "oo",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:oo.uu",
+          "kind": "grapheme",
+          "gpc": "oo.uu",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R15",
+      "title": "ar or ur",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ar",
+        "or",
+        "ur"
+      ],
+      "items": [
+        {
+          "id": "r:g:ar",
+          "kind": "grapheme",
+          "gpc": "ar",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:or",
+          "kind": "grapheme",
+          "gpc": "or",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:ur",
+          "kind": "grapheme",
+          "gpc": "ur",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R16",
+      "title": "ow oi ear",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ow",
+        "oi",
+        "ear"
+      ],
+      "items": [
+        {
+          "id": "r:g:ow",
+          "kind": "grapheme",
+          "gpc": "ow",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:oi",
+          "kind": "grapheme",
+          "gpc": "oi",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:ear",
+          "kind": "grapheme",
+          "gpc": "ear",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R17",
+      "title": "air er",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "air",
+        "er"
+      ],
+      "items": [
+        {
+          "id": "r:g:air",
+          "kind": "grapheme",
+          "gpc": "air",
+          "fluency": "grapheme"
+        },
+        {
+          "id": "r:g:er",
+          "kind": "grapheme",
+          "gpc": "er",
+          "fluency": "grapheme"
+        }
+      ]
+    },
+    {
+      "id": "R18",
+      "title": "Two digraphs, double letters and compound words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "sh",
+        "ee"
+      ],
+      "items": [
+        {
+          "id": "r:pat:two-digraphs",
+          "kind": "pattern",
+          "pattern": "two-digraphs"
+        },
+        {
+          "id": "r:pat:double",
+          "kind": "pattern",
+          "pattern": "double"
+        },
+        {
+          "id": "r:pat:compound",
+          "kind": "pattern",
+          "pattern": "compound"
+        }
+      ]
+    },
+    {
+      "id": "R19",
+      "title": "One or many: s and es",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "one-or-many"
+      ],
+      "face": [
+        "s",
+        "es"
+      ],
+      "school": true,
+      "items": [
+        {
+          "id": "r:end:s",
+          "kind": "ending",
+          "ending": "s"
+        },
+        {
+          "id": "r:end:es",
+          "kind": "ending",
+          "ending": "es"
+        },
+        {
+          "id": "r:end:none",
+          "kind": "ending",
+          "ending": "none"
+        }
+      ]
+    },
+    {
+      "id": "R20",
+      "title": "Twin wishes: English vowel letters",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "twin-wish"
+      ],
+      "face": [
+        "ee",
+        "oo"
+      ],
+      "contrast": true,
+      "items": [
+        {
+          "id": "r:pair:ee",
+          "kind": "pair",
+          "pair": "ee"
+        },
+        {
+          "id": "r:pair:oo",
+          "kind": "pair",
+          "pair": "oo"
+        },
+        {
+          "id": "r:pair:u",
+          "kind": "pair",
+          "pair": "u"
+        },
+        {
+          "id": "r:pair:i-ee",
+          "kind": "pair",
+          "pair": "i-ee"
+        },
+        {
+          "id": "r:pair:ch-h",
+          "kind": "pair",
+          "pair": "ch-h"
+        }
+      ]
+    },
+    {
+      "id": "R21",
+      "title": "CVCC words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "s",
+        "t"
+      ],
+      "items": [
+        {
+          "id": "r:cl:-st",
+          "kind": "cluster",
+          "cluster": "-st"
+        },
+        {
+          "id": "r:cl:-nd",
+          "kind": "cluster",
+          "cluster": "-nd"
+        },
+        {
+          "id": "r:cl:-mp",
+          "kind": "cluster",
+          "cluster": "-mp"
+        },
+        {
+          "id": "r:cl:-nt",
+          "kind": "cluster",
+          "cluster": "-nt"
+        },
+        {
+          "id": "r:cl:-lk",
+          "kind": "cluster",
+          "cluster": "-lk"
+        },
+        {
+          "id": "r:cl:-sk",
+          "kind": "cluster",
+          "cluster": "-sk"
+        },
+        {
+          "id": "r:cl:-ft",
+          "kind": "cluster",
+          "cluster": "-ft"
+        },
+        {
+          "id": "r:cl:-lt",
+          "kind": "cluster",
+          "cluster": "-lt"
+        },
+        {
+          "id": "r:cl:-nch",
+          "kind": "cluster",
+          "cluster": "-nch"
+        },
+        {
+          "id": "r:cl:-lf",
+          "kind": "cluster",
+          "cluster": "-lf"
+        }
+      ]
+    },
+    {
+      "id": "R22",
+      "title": "CCVC words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "f",
+        "r"
+      ],
+      "items": [
+        {
+          "id": "r:cl:fr-",
+          "kind": "cluster",
+          "cluster": "fr-"
+        },
+        {
+          "id": "r:cl:cr-",
+          "kind": "cluster",
+          "cluster": "cr-"
+        },
+        {
+          "id": "r:cl:st-",
+          "kind": "cluster",
+          "cluster": "st-"
+        },
+        {
+          "id": "r:cl:tr-",
+          "kind": "cluster",
+          "cluster": "tr-"
+        },
+        {
+          "id": "r:cl:sl-",
+          "kind": "cluster",
+          "cluster": "sl-"
+        },
+        {
+          "id": "r:cl:bl-",
+          "kind": "cluster",
+          "cluster": "bl-"
+        },
+        {
+          "id": "r:cl:gr-",
+          "kind": "cluster",
+          "cluster": "gr-"
+        },
+        {
+          "id": "r:cl:sp-",
+          "kind": "cluster",
+          "cluster": "sp-"
+        },
+        {
+          "id": "r:cl:dr-",
+          "kind": "cluster",
+          "cluster": "dr-"
+        },
+        {
+          "id": "r:cl:pl-",
+          "kind": "cluster",
+          "cluster": "pl-"
+        },
+        {
+          "id": "r:cl:br-",
+          "kind": "cluster",
+          "cluster": "br-"
+        },
+        {
+          "id": "r:cl:gl-",
+          "kind": "cluster",
+          "cluster": "gl-"
+        },
+        {
+          "id": "r:cl:cl-",
+          "kind": "cluster",
+          "cluster": "cl-"
+        },
+        {
+          "id": "r:cl:fl-",
+          "kind": "cluster",
+          "cluster": "fl-"
+        },
+        {
+          "id": "r:cl:sn-",
+          "kind": "cluster",
+          "cluster": "sn-"
+        }
+      ]
+    },
+    {
+      "id": "R23",
+      "title": "CCVCC and CCCVC words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "s",
+        "t",
+        "r"
+      ],
+      "items": [
+        {
+          "id": "r:cl:str-",
+          "kind": "cluster",
+          "cluster": "str-"
+        },
+        {
+          "id": "r:cl:scr-",
+          "kind": "cluster",
+          "cluster": "scr-"
+        },
+        {
+          "id": "r:cl:spr-",
+          "kind": "cluster",
+          "cluster": "spr-"
+        },
+        {
+          "id": "r:pat:ccvcc",
+          "kind": "pattern",
+          "pattern": "ccvcc"
+        }
+      ]
+    },
+    {
+      "id": "R24",
+      "title": "-ing, -ed and -est",
+      "release": "1.2",
+      "levels": 3,
+      "moments": [
+        "salon-card"
+      ],
+      "face": [
+        "i",
+        "n",
+        "g"
+      ],
+      "items": [
+        {
+          "id": "r:sfx:ing",
+          "kind": "suffix",
+          "affix": "ing"
+        },
+        {
+          "id": "r:sfx:ed",
+          "kind": "suffix",
+          "affix": "ed"
+        },
+        {
+          "id": "r:sfx:est",
+          "kind": "suffix",
+          "affix": "est"
+        }
+      ]
+    },
+    {
+      "id": "R25",
+      "title": "Phase 4 tricky word: said",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish"
+      ],
+      "face": [
+        "said"
+      ],
+      "display": true,
+      "items": []
+    },
+    {
+      "id": "R26",
+      "title": "Long vowels with clusters and two-syllable words",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ai"
+      ],
+      "items": [
+        {
+          "id": "r:pat:long-cluster",
+          "kind": "pattern",
+          "pattern": "long-cluster"
+        }
+      ]
+    },
+    {
+      "id": "R27",
+      "title": "Adjective and noun phrases",
+      "release": "1.2",
+      "levels": 3,
+      "moments": [
+        "basket-adj",
+        "salon-card"
+      ],
+      "face": [
+        "big"
+      ],
+      "items": [
+        {
+          "id": "r:adj:colour",
+          "kind": "adjective",
+          "pattern": "colour"
+        },
+        {
+          "id": "r:adj:size",
+          "kind": "adjective",
+          "pattern": "size"
+        },
+        {
+          "id": "r:adj:feel",
+          "kind": "adjective",
+          "pattern": "feel"
+        }
+      ]
+    },
+    {
+      "id": "R28",
+      "title": "One sentence, and joins two things",
+      "release": "1.2",
+      "levels": 3,
+      "moments": [
+        "basket-and",
+        "salon-card"
+      ],
+      "face": [
+        "and"
+      ],
+      "items": [
+        {
+          "id": "r:and",
+          "kind": "and"
+        },
+        {
+          "id": "r:sent:act",
+          "kind": "sentence",
+          "pattern": "act"
+        }
+      ]
+    },
+    {
+      "id": "R29",
+      "title": "Two sentences, two actions",
+      "release": "1.2",
+      "levels": 3,
+      "moments": [
+        "salon-card"
+      ],
+      "face": [
+        "."
+      ],
+      "items": [
+        {
+          "id": "r:sent:two",
+          "kind": "sentence",
+          "pattern": "two"
+        }
+      ]
+    },
+    {
+      "id": "R30",
+      "title": "ai ay a-e",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ai",
+        "ay",
+        "a-e"
+      ],
+      "items": [
+        {
+          "id": "r:g:ay",
+          "kind": "grapheme",
+          "gpc": "ay"
+        },
+        {
+          "id": "r:g:a-e",
+          "kind": "grapheme",
+          "gpc": "a-e"
+        }
+      ]
+    },
+    {
+      "id": "R31",
+      "title": "Question words who, what, where, which",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R32",
+      "title": "ee ea",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ee",
+        "ea"
+      ],
+      "items": [
+        {
+          "id": "r:g:ea",
+          "kind": "grapheme",
+          "gpc": "ea"
+        }
+      ]
+    },
+    {
+      "id": "R33",
+      "title": "Asking or telling: ? . !",
+      "release": "1.2",
+      "levels": 3,
+      "moments": [
+        "asking-bubble"
+      ],
+      "face": [
+        "?",
+        ".",
+        "!"
+      ],
+      "items": [
+        {
+          "id": "r:mark:q",
+          "kind": "mark",
+          "pattern": "q"
+        },
+        {
+          "id": "r:mark:stop",
+          "kind": "mark",
+          "pattern": "stop"
+        },
+        {
+          "id": "r:mark:bang",
+          "kind": "mark",
+          "pattern": "bang"
+        }
+      ]
+    },
+    {
+      "id": "R34",
+      "title": "Long i: igh ie y i-e",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "twin-wish",
+        "station-wish"
+      ],
+      "face": [
+        "igh",
+        "ie"
+      ],
+      "items": [
+        {
+          "id": "r:g:ie",
+          "kind": "grapheme",
+          "gpc": "ie"
+        },
+        {
+          "id": "r:g:i-e",
+          "kind": "grapheme",
+          "gpc": "i-e"
+        },
+        {
+          "id": "r:g:y.igh",
+          "kind": "grapheme",
+          "gpc": "y.igh"
+        },
+        {
+          "id": "r:pair:ie",
+          "kind": "pair",
+          "pair": "ie"
+        }
+      ]
+    },
+    {
+      "id": "R35",
+      "title": "Days of the week and when",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R36",
+      "title": "ur er ir",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ur",
+        "ir",
+        "er"
+      ],
+      "items": [
+        {
+          "id": "r:g:ir",
+          "kind": "grapheme",
+          "gpc": "ir"
+        },
+        {
+          "id": "r:g:er.ur",
+          "kind": "grapheme",
+          "gpc": "er.ur"
+        }
+      ]
+    },
+    {
+      "id": "R37",
+      "title": "un- turns an act around",
+      "release": "1.2",
+      "levels": 3,
+      "moments": [
+        "two-state-wish"
+      ],
+      "face": [
+        "un"
+      ],
+      "items": [
+        {
+          "id": "r:pre:un",
+          "kind": "prefix",
+          "affix": "un"
+        }
+      ]
+    },
+    {
+      "id": "R38",
+      "title": "Split digraphs and the e that changes a word",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "twin-wish",
+        "station-wish"
+      ],
+      "face": [
+        "a-e"
+      ],
+      "items": [
+        {
+          "id": "r:pair:magic-e",
+          "kind": "pair",
+          "pair": "magic-e"
+        },
+        {
+          "id": "r:g:u-e",
+          "kind": "grapheme",
+          "gpc": "u-e"
+        }
+      ]
+    },
+    {
+      "id": "R39",
+      "title": "o-e oa ow oe",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "oa"
+      ],
+      "items": [
+        {
+          "id": "r:g:o-e",
+          "kind": "grapheme",
+          "gpc": "o-e"
+        },
+        {
+          "id": "r:g:ow.oa",
+          "kind": "grapheme",
+          "gpc": "ow.oa"
+        },
+        {
+          "id": "r:g:oe",
+          "kind": "grapheme",
+          "gpc": "oe"
+        }
+      ]
+    },
+    {
+      "id": "R40",
+      "title": "-er makes a doer, -ed tells what happened",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R41",
+      "title": "ew ue, both sounds",
+      "release": "1.0",
+      "levels": 3,
+      "moments": [
+        "wish",
+        "bath-wish",
+        "station-wish"
+      ],
+      "face": [
+        "ew",
+        "ue"
+      ],
+      "items": [
+        {
+          "id": "r:g:ew",
+          "kind": "grapheme",
+          "gpc": "ew"
+        },
+        {
+          "id": "r:g:ew.oo",
+          "kind": "grapheme",
+          "gpc": "ew.oo"
+        },
+        {
+          "id": "r:g:ue",
+          "kind": "grapheme",
+          "gpc": "ue"
+        }
+      ]
+    },
+    {
+      "id": "R42",
+      "title": "ou oy aw, ie as ee, single long vowels",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R43",
+      "title": "y, ea, wh, ph, ow, ou alternatives",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R44",
+      "title": "Soft c and g, le, al, ve, se, ce, ey, ui",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R45",
+      "title": "Which sound? Two readings of one grapheme",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R46",
+      "title": "Year 1 Spring 2 graphemes",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R47",
+      "title": "Pseudo-words with all Phase 5 graphemes",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R48",
+      "title": "Year 1 Summer 2 graphemes",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R49",
+      "title": "Multi-syllable words with schwa and suffixes",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R50",
+      "title": "Short text: find who and where",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R51",
+      "title": "Sequence a short story",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R52",
+      "title": "Inference: why and how",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R53",
+      "title": "Word meaning in context",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    },
+    {
+      "id": "R54",
+      "title": "Fluent page reading",
+      "release": "later",
+      "levels": 1,
+      "moments": [],
+      "face": [],
+      "items": []
+    }
+  ]
+}
