@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The lantern walk and bedtime (docs/v3/next/plan.md N4): dusk lines, no name tags on the babies, taps on walk
-# babies, a wrong baby, real drags to the stable gate, the stable with the mangers (the stub in this lane), the moon,
+# babies, a wrong baby, real drags to the stable gate, the stable with the mangers (answered by the hook), the moon,
 # bed with the door pick as one stall target, tucking in, the window, the sky and the rest scene. Then a free walk
 # with a herd of two, and a long visit that skips the mangers.
 . "$(dirname "$0")/../lib.sh"
@@ -48,7 +48,12 @@ for _ in $(seq 1 4); do
   sleep 0.3
 done
 
-# The stub mangers pass at once: free feeding until the moon.
+# The mangers' checked moment (a wish or the hay rack, the stable-feeding flow tests it) is answered; then free
+# feeding until the moon.
+for _ in $(seq 1 40); do
+  case "$(gn_stage)" in free) break ;; manger) soft_answer ;; esac
+  sleep 0.3
+done
 wait_stage free
 expect_eq "$(gn_target)" moon 'the moon is the target in free feeding'
 small_targets

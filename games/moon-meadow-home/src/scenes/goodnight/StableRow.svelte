@@ -94,7 +94,8 @@
 </div>
 
 <style>
-  .stable { position: absolute; inset: 0; overflow: hidden; }
+  /* isolation keeps the stalls' z-index inside the stable, so lane feed's layer (mounted after it) lies on top. */
+  .stable { position: absolute; inset: 0; overflow: hidden; isolation: isolate; }
   .dark { position: absolute; inset: 0; background: #0b0614; opacity: 0; pointer-events: none; transition: opacity calc(1200ms * var(--speed, 1)); z-index: 1; }
   .bed .dark { opacity: 0.42; }
   .stall { position: absolute; width: 210px; height: 320px; z-index: 2; }
