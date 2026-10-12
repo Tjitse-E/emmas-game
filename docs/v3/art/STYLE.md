@@ -22,4 +22,6 @@ codex exec --skip-git-repo-check --sandbox workspace-write \
   -i style-reference.png
 ```
 
+Close stdin with `< /dev/null`, or a job can hang on "Reading additional input from stdin". The tool picks the aspect ratio itself: backgrounds come out at about 1536 x 1024, so they are scaled up for the 2360 x 1640 stage. Cut-outs use Apple Vision through `games/moon-meadow-home/art-src/tools/cutout.swift` (run outside the sandbox).
+
 Codex needs the network, so run it outside the sandbox. Each picture costs subscription tokens: about 31,000 from scratch and about 14,000 for a redraw from a reference.
