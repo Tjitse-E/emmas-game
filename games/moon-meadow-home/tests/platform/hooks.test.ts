@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import {
   registerHook, callHook, registerState, hookStates, registerHookExtension, hookExtensions,
-  registerSceneHook, sceneHook, testSeed, setTestSeed, isFast,
+  registerSceneHook, sceneHook, testSeed, setTestSeed, isFast, hasHook,
 } from '../../src/platform/hooks.ts';
 import { setFast } from '../../src/platform/timing.ts';
 
@@ -12,6 +12,13 @@ describe('hook registry', () => {
     const off = registerHook('answer', (x: number) => x + 1);
     expect(await callHook('answer', [41])).toBe(42);
     off();
+  });
+  it('says whether a handler is registered', () => {
+    expect(hasHook('herd')).toBe(false);
+    const off = registerHook('herd', () => 1);
+    expect(hasHook('herd')).toBe(true);
+    off();
+    expect(hasHook('herd')).toBe(false);
   });
   it('throws a clear error when nothing is registered', async () => {
     await expect(callHook('wrong', [])).rejects.toThrow('[hook] no handler for wrong');

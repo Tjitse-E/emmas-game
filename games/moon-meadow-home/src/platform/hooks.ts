@@ -16,6 +16,9 @@ export function registerHook(name: string, fn: HookFn): () => void {
   return () => { if (handlers.get(name) === fn) handlers.delete(name); };
 }
 
+/** True when a handler with this name is registered. */
+export const hasHook = (name: string): boolean => handlers.has(name);
+
 export async function callHook(name: string, args: unknown[]): Promise<unknown> {
   const fn = handlers.get(name);
   if (!fn) throw new Error(`[hook] no handler for ${name}`);
