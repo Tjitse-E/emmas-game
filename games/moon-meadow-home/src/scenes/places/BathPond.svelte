@@ -129,14 +129,24 @@
     if (from && wishEl) await ghost.drag(from, wishEl);
   }
 
+  /**
+   * The test hook's wrong give. 'one-for-many' and 'many-for-one' give the target as one or as a heap.
+   * At level 3 the count decides, so 'count-low' gives a single thing and 'count-high' a heap that is not
+   * the answer (the target's own when it fits, else another word's). Anything else gives another word.
+   */
   function hookWrong(kind = 'other'): void {
     if (!task) return;
     const t = task.target.id;
-    const pickId =
+    const notAnswer = task.options.filter((o) => o.id !== task.answer);
+    const own = (many: boolean) => notAnswer.find((o) => o.many === many && o.word === task.target.word);
+    const any = (many: boolean) => own(many) ?? notAnswer.find((o) => o.many === many);
+    const pick =
       kind === 'one-for-many' && task.plural ? `${t}:1`
       : kind === 'many-for-one' && !task.plural ? `${t}:n`
-      : task.options.find((o) => o.word !== task.target.word)?.id ?? (task.plural ? `${t}:1` : `${t}:n`);
-    void give(pickId);
+      : kind === 'count-low' ? any(false)?.id
+      : kind === 'count-high' ? any(true)?.id
+      : undefined;
+    void give(pick ?? notAnswer.find((o) => o.word !== task.target.word)?.id ?? (task.plural ? `${t}:1` : `${t}:n`));
   }
 
   async function playIntro(): Promise<void> {
