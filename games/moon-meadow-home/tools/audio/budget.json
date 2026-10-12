@@ -1,0 +1,7 @@
+{
+ "cap": 24000,
+ "startCredits": 34007,
+ "floor": 10007,
+ "measured": "2026-10-12",
+ "note": "Build budget for the v3 session. Every generator run passes the floor, the ledger, the cap and the speech-to-text cost per check (tools/audio/gen.sh)."
+}
