@@ -1,15 +1,19 @@
 <script lang="ts">
   // The nest (spec 2.6): an egg on the nest, cups to warm, and answer stones to drag onto the nest.
+  // Above ten cups the egg has two nests of cups side by side, so crossing ten is visible (docs/v3/next/plan.md E5).
   import { onDestroy, onMount, untrack } from 'svelte';
   import { game } from '../game.svelte.ts';
   import { dropTarget, press } from '../platform/input.ts';
-  import { registerSceneHook } from '../platform/hooks.ts';
+  import { registerHook, registerSceneHook } from '../platform/hooks.ts';
   import { setBands } from '../platform/stage.svelte.ts';
   import { sleep } from '../platform/timing.ts';
   import Egg from '../art/Egg.svelte';
   import StoneTray from '../ui/StoneTray.svelte';
   import { BREED_OF } from '../core/heartbeat/hatch.ts';
   import { stoneFace } from '../core/maths/stones.ts';
+  import { nestsOf } from '../core/maths/eggs.ts';
+  import { visitEggSeen } from '../core/learning/egg-visit.ts';
+  import { hasPicture } from '../art/manifest.ts';
   import type { Served } from '../core/heartbeat/types.ts';
   import { NestCtrl, freeEgg } from './heartbeat/nest.ctrl.ts';
   import { bridge, liveDeps } from './heartbeat/deps.ts';
@@ -28,8 +32,14 @@
   const served = p.served ?? offer?.served ?? freeEgg(offer?.kind ?? 'moon');
   const ctrl = new NestCtrl(served, deps, {
     golden: !!p.golden, speckled: !!p.speckled, firstEver: game.world.flowers === 0, free: !p.served && !offer?.served,
+    seen: visitEggSeen(game.learner),
   });
   const t = ctrl.task;
+  const nests = nestsOf(t);
+  const twoNests = nests.length === 2;
+  const nestArt = hasPicture('item-cup-nest');
+  /** The cups of each frame of ten, as indexes into the fill list. */
+  const frames = nests.map((n, f) => Array.from({ length: n }, (_, i) => f * 10 + i));
   const breed = BREED_OF[t.kind];
   const skin = p.golden ? 'golden' : p.speckled ? 'speckled' : null;
 
@@ -42,6 +52,9 @@
   let leaving = false;
   let nestEl: HTMLElement | undefined = $state();
   let trayEl: HTMLElement | undefined = $state();
+
+  /** Warm already, warmed by the first or the second stone, or cold. */
+  const fillClass = (f: number | undefined): string => (f === 0 ? 'warm' : f === 1 ? 'first' : f === 2 ? 'second' : '');
 
   const stoneEl = (id: string): Element | null => {
     const s = ctrl.stones.find((x) => x.id === id);
@@ -102,6 +115,12 @@
       target: () => { const id = ctrl.answerIds()[0]; const s = ctrl.stones.find((x) => x.id === id); return s ? `stone ${s.value}` : null; },
     });
   });
+  onMount(() => {
+    if (!here) return;
+    return registerHook('nest.task', () => ({
+      step: t.step, item: t.itemId, mode: t.mode, total: t.cups, warm: t.warm, target: t.target, nests: nestsOf(t),
+    }));
+  });
   onDestroy(() => { goal.clear(); deps.hints.end(); });
 </script>
 
@@ -120,9 +139,18 @@
   </button>
   {#if view.mood === 'hot'}<span class="steam" aria-hidden="true"></span>{/if}
   {#if view.mood === 'cold'}<span class="frost" aria-hidden="true"></span>{/if}
-  {#if t.cups > 0}
+  {#if twoNests}
+    {#each frames as cups, f (f)}
+      <div class="frame" class:full={cups.every((i) => view.fill[i] !== -1)} style:left="{f === 0 ? 60 : 410}px" aria-hidden="true">
+        {#if nestArt}<span class="frame-pic"><ArtImg id="item-cup-nest" size={330} /></span>{:else}<span class="frame-twigs"></span>{/if}
+        <div class="grid">
+          {#each cups as i (i)}<span class="cup small {fillClass(view.fill[i])}"></span>{/each}
+        </div>
+      </div>
+    {/each}
+  {:else if t.cups > 0}
     <div class="cups" class:blanket={t.mode === 'blanket'} style:--n={Math.min(t.cups, 10)} aria-hidden="true">
-      {#each Array(t.cups) as _, i (i)}<span class="cup" class:warm={i < view.warmNow}></span>{/each}
+      {#each Array(t.cups) as _, i (i)}<span class="cup {fillClass(view.fill[i])}"></span>{/each}
       {#if t.mode === 'blanket' && !view.solved}<span class="cover"><ArtImg id="item-blanket-cover" size={440} /></span>{/if}
     </div>
   {/if}
@@ -131,7 +159,7 @@
       {#each placed as s (s.id)}<span class="small-stone">{s.value}</span>{/each}
     </div>
   {/if}
-  <div class="tray" bind:this={trayEl}>
+  <div class="tray" class:wide-nest={twoNests} bind:this={trayEl}>
     <StoneTray stones={free} scaffold={t.scaffold} targets={['nest']} disabled={view.solved}
       ondrop={(value) => { const id = ctrl.stoneOf(value); if (id) void drop(id); }}
       ontap={() => ctrl.touch()} size={stoneFace(t) === 'dots' ? 116 : 108} />
@@ -151,6 +179,16 @@
   .cups { position: absolute; left: 110px; top: 632px; width: 560px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
   .cup { width: 84px; height: 58px; border-radius: 10px 10px 40px 40px; background: #d6e4f2; border: 4px solid #8aa4c4; }
   .cup.warm { background: #ffc061; border-color: #c9772a; }
+  .cup.first { background: #ff9fc6; border-color: #c0577f; }
+  .cup.second { background: #c9a8ff; border-color: #7f5cc0; }
+  .cup.small { width: 56px; height: 40px; border-width: 3px; border-radius: 8px 8px 28px 28px; }
+  .frame { position: absolute; top: 640px; width: 330px; height: 110px; display: grid; place-items: center; border-radius: 40px; }
+  .frame-pic { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+  .frame-twigs { position: absolute; inset: 0; border-radius: 40px; pointer-events: none;
+    background: repeating-linear-gradient(115deg, #b98a55 0 6px, #9c6f3f 6px 11px); border: 4px solid #7a5530; }
+  .grid { position: relative; display: grid; grid-template-columns: repeat(5, 56px); grid-auto-rows: 40px; gap: 8px; }
+  .frame.full { animation: glow calc(1400ms * var(--speed, 1)) ease-in-out infinite alternate; }
+  .tray.wide-nest { left: 760px; width: 400px; }
   .cover { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
   .steam, .frost { position: absolute; left: 260px; top: 60px; width: 260px; height: 140px; pointer-events: none; border-radius: 70px;
     animation: fade calc(1600ms * var(--speed, 1)) forwards; }
@@ -163,4 +201,5 @@
   @keyframes shake { 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
   @keyframes shiver { 50% { transform: translateX(4px); } }
   @keyframes fade { to { opacity: 0; transform: translateY(-40px); } }
+  @keyframes glow { from { box-shadow: 0 0 6px 2px #fff6c8aa; } to { box-shadow: 0 0 26px 10px #fff3b0; } }
 </style>
