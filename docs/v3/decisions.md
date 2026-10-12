@@ -51,11 +51,16 @@ Emma's feedback: she wants to feed the baby unicorns; she wants to guide them in
 - **Art:** Codex image generation through the subscription, in the style of `art/STYLE.md`, or SVG. No paid API.
 - **Release:** `content/release.json` is set for this version (1.0.1) without loading Wave B content.
 
-The lead's decisions that fill the gaps (N1 to N24 in `next/plan.md` section 2), in short:
+The lead's decisions that fill the gaps (N1 to N30 in `next/plan.md` section 2, revised after validation the same day), in short:
 
-- **Placement change, not a re-probe:** a `year1` save whose maths placement ended in M09 to M12 gets one `learn.override` `set-current` to the new first step (M12A). A parent or test override blocks it. A placement still running simply probes into the new steps.
-- **New steps:** M12A to M12F after M12 (pairs then missing parts for 7 to 9, 11 and 12, 13 to 15), new item kind `m:gap:<whole>-<part>`, existing steps and ids unchanged. No new egg kind or breed.
-- **No new event type:** feeding, the walk, tucking in and the hay rack use `learn.result`, `care.done` (`treat`, `rollcall`, `nap`) and `learn.override`. One new moment kind, `hay-rack`.
+- **Placement change, not a re-probe:** a `year1` save whose maths placement ended in M09 to M12, and that never measured the new steps, gets one `learn.override` `set-current` to the new first step (M12A). A parent or test override blocks it. The store's reconcile commits this one non-fact draft; facts still go through `missingFacts`. Emma's real save is checked before release; if she is not lifted, Tjitse sets M12A in the parent corner.
+- **New steps:** M12A to M12F after M12 (pairs then missing parts for 7 to 9, 11 and 12, 13 to 15), new item kind `m:gap:<whole>-<part>`, items listed round-robin by total, existing steps and ids unchanged. M12B overlaps M12; that is accepted, and M12 becomes review after the lift. No new egg kind or breed.
+- **Totals:** no two eggs in a row with the same total, tracked per visit in the learner fold. After the lift, review and mixed maths come from M09 on, with at most one total of 10 a visit and no one-steps. The veto never moves a learner off her current step or a placement probe.
+- **Stone trays:** a two-stone tray is three pairs of the total, so every stone has a partner and no egg can dead-end.
+- **No new event type:** feeding, the walk, tucking in and the hay rack use `learn.result`, `care.done` (`treat`, `rollcall`, `nap`) and `learn.override`. One new moment kind, `hay-rack`, on M12, M12B, M12D and M12F.
 - **S10 in feeding:** feeding is reading, so it serves R19; S10 stays at the Bath Pond labels.
-- **Goodnight stays short:** one checked manger moment per evening (a manger wish, or the hay rack on about 4 evenings in 10), skipped from 30 checked moments or 20 minutes in a visit.
-- **Art:** eight new pictures (stable at night, stall bed, straw pile, sleep blanket, manger, hay bundle, food tray, nest of cups). Dusk is a tint over the meadow; sleeping and eating are overlays on the existing unicorns.
+- **Unicorn foods:** feeding uses an allow-list of foods a baby unicorn eats, with look-alike groups so a basket or tray never holds two pictures that look the same.
+- **Goodnight order:** the lantern walk at dusk (a free walk with no name when no name can be asked), the herd walks in, the babies eat awake at their mangers, she taps the moon for bedtime, they lie down in the straw, the door pick, tucking in, then the window and the sky.
+- **Goodnight stays short:** one checked manger moment per evening (a manger wish, or the hay rack on about 4 evenings in 10), then free feeding where every baby wants one tray food; skipped from 30 checked moments or 20 minutes in a visit.
+- **Hay rack:** she drags a pile of hay (small bundles, or a cart with a numeral), so "bundle" always means one bundle.
+- **Art:** eight new pictures (stable at night, stall bed, straw pile, sleep blanket, manger, hay bundle, food tray, nest of cups). Dusk is a tint over the meadow; lying down, sleeping and eating are CSS on the existing unicorns.
