@@ -33,11 +33,16 @@ export type AutoplayDeps = {
   onScene?(fn: (id: string) => void): () => void;
 };
 
+/**
+ * The longest one settle may take. 1.0.1 goodnight has seven stages (the lantern walk, the herd trotting in, the
+ * mangers, free feeding, bed, the sky and goodbye) in one settle, so it gets 30 s (docs/v3/next/plan.md G4).
+ */
+export const SETTLE_MAX_MS = 30_000;
 export type AutoplayOptions = { heartbeats: number; goodnight: boolean; maxMs?: number };
 
 export async function autoplay(d: AutoplayDeps, o: AutoplayOptions): Promise<AutoplayLog> {
   const log: AutoplayLog = { scenes: [], stuck: null };
-  const limit = o.maxMs ?? 20_000;
+  const limit = o.maxMs ?? SETTLE_MAX_MS;
   let lastScene = '';
   let saidAt = 0;
   let enteredAt = d.now();

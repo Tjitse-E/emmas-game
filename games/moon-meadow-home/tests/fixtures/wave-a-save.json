@@ -1,0 +1,459 @@
+{
+ "format": "moon-meadow-save",
+ "v": 1,
+ "exportedAt": 1791727280000,
+ "events": [
+  {
+   "type": "visit.start",
+   "visit": "v-wavea0",
+   "tz": 180,
+   "id": "emmawave:1",
+   "hlc": "1791554400000-0000",
+   "t": 1791554400000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "placement.done",
+   "strand": "r",
+   "current": "R21",
+   "placed": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05",
+    "R07",
+    "R08",
+    "R09",
+    "R10",
+    "R13",
+    "R14",
+    "R15",
+    "R16",
+    "R17",
+    "R18"
+   ],
+   "side": [
+    "R04D",
+    "R11",
+    "R20"
+   ],
+   "id": "emmawave:2",
+   "hlc": "1791554420000-0000",
+   "t": 1791554420000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "placement.done",
+   "strand": "s",
+   "current": "S12",
+   "placed": [
+    "S01",
+    "S02",
+    "S03",
+    "S04",
+    "S05",
+    "S07",
+    "S09",
+    "S11"
+   ],
+   "side": [
+    "S03D",
+    "S06"
+   ],
+   "id": "emmawave:3",
+   "hlc": "1791554440000-0000",
+   "t": 1791554440000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "placement.done",
+   "strand": "m",
+   "current": "M10",
+   "placed": [
+    "M01",
+    "M02",
+    "M05",
+    "M07",
+    "M08",
+    "M09"
+   ],
+   "side": [],
+   "id": "emmawave:4",
+   "hlc": "1791554460000-0000",
+   "t": 1791554460000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "egg.hatched",
+   "baby": "2e5eb213-1bd2-57e9-91be-ba97c7234fd2",
+   "egg": "plain",
+   "kind": "moon",
+   "breed": "moon",
+   "colours": {
+    "body": "#ffe0ef",
+    "mane": "#ff7fbf",
+    "mane2": "#9d7bff"
+   },
+   "traits": {
+    "shiny": false,
+    "speckled": false,
+    "golden": false,
+    "founder": true
+   },
+   "source": "nest",
+   "id": "emmawave:5",
+   "hlc": "1791554480000-0000",
+   "t": 1791554480000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "baby.named",
+   "baby": "2e5eb213-1bd2-57e9-91be-ba97c7234fd2",
+   "name": "Tam",
+   "gems": [
+    "t",
+    "a",
+    "m"
+   ],
+   "route": "gold",
+   "listName": "Tam",
+   "id": "emmawave:6",
+   "hlc": "1791554500000-0000",
+   "t": 1791554500000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "learn.result",
+   "strand": "m",
+   "step": "M10",
+   "carrier": "m:pair:3,7",
+   "items": [
+    {
+     "id": "m:pair:3+7",
+     "r": "first"
+    }
+   ],
+   "result": "first",
+   "ms": 4200,
+   "scaffold": 1,
+   "error": null,
+   "place": "nest",
+   "moment": "egg-two-stone",
+   "slot": "current",
+   "probe": false,
+   "baby": "a02b490b-f4df-5088-9522-9d715c94ba87",
+   "visit": "v-wavea0",
+   "heart": false,
+   "id": "emmawave:7",
+   "hlc": "1791554520000-0000",
+   "t": 1791554520000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "egg.hatched",
+   "baby": "a02b490b-f4df-5088-9522-9d715c94ba87",
+   "egg": "plain",
+   "kind": "two-stone",
+   "breed": "pebble",
+   "colours": {
+    "body": "#ffe0ef",
+    "mane": "#ff7fbf",
+    "mane2": "#9d7bff"
+   },
+   "traits": {
+    "shiny": false,
+    "speckled": false,
+    "golden": false,
+    "founder": false
+   },
+   "source": "nest",
+   "id": "emmawave:8",
+   "hlc": "1791554520000-0001",
+   "t": 1791554520000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "baby.named",
+   "baby": "a02b490b-f4df-5088-9522-9d715c94ba87",
+   "name": "Pip",
+   "gems": [
+    "p",
+    "i",
+    "p"
+   ],
+   "route": "gold",
+   "listName": "Pip",
+   "id": "emmawave:9",
+   "hlc": "1791554540000-0000",
+   "t": 1791554540000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "visit.end",
+   "visit": "v-wavea0",
+   "reason": "goodnight",
+   "id": "emmawave:10",
+   "hlc": "1791554560000-0000",
+   "t": 1791554560000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "visit.start",
+   "visit": "v-wavea1",
+   "tz": 180,
+   "id": "emmawave:11",
+   "hlc": "1791640800000-0000",
+   "t": 1791640800000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "learn.result",
+   "strand": "m",
+   "step": "M10",
+   "carrier": "m:pair:4,6",
+   "items": [
+    {
+     "id": "m:pair:4+6",
+     "r": "first"
+    }
+   ],
+   "result": "first",
+   "ms": 4200,
+   "scaffold": 1,
+   "error": null,
+   "place": "nest",
+   "moment": "egg-two-stone",
+   "slot": "current",
+   "probe": false,
+   "baby": "02a91eda-ef8e-56c5-8a05-af102324e049",
+   "visit": "v-wavea1",
+   "heart": false,
+   "id": "emmawave:12",
+   "hlc": "1791640820000-0000",
+   "t": 1791640820000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "egg.hatched",
+   "baby": "02a91eda-ef8e-56c5-8a05-af102324e049",
+   "egg": "plain",
+   "kind": "two-stone",
+   "breed": "pebble",
+   "colours": {
+    "body": "#ffe0ef",
+    "mane": "#ff7fbf",
+    "mane2": "#9d7bff"
+   },
+   "traits": {
+    "shiny": false,
+    "speckled": false,
+    "golden": false,
+    "founder": false
+   },
+   "source": "nest",
+   "id": "emmawave:13",
+   "hlc": "1791640820000-0001",
+   "t": 1791640820000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "baby.named",
+   "baby": "02a91eda-ef8e-56c5-8a05-af102324e049",
+   "name": "Dot",
+   "gems": [
+    "d",
+    "o",
+    "t"
+   ],
+   "route": "gold",
+   "listName": "Dot",
+   "id": "emmawave:14",
+   "hlc": "1791640840000-0000",
+   "t": 1791640840000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "learn.result",
+   "strand": "m",
+   "step": "M10",
+   "carrier": "m:pair:3,7",
+   "items": [
+    {
+     "id": "m:pair:3+7",
+     "r": "first"
+    }
+   ],
+   "result": "first",
+   "ms": 4200,
+   "scaffold": 1,
+   "error": null,
+   "place": "nest",
+   "moment": "egg-two-stone",
+   "slot": "current",
+   "probe": false,
+   "baby": "545c7cfe-8ccc-59d5-ad5a-cf0f950ca818",
+   "visit": "v-wavea1",
+   "heart": false,
+   "id": "emmawave:15",
+   "hlc": "1791640860000-0000",
+   "t": 1791640860000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "egg.hatched",
+   "baby": "545c7cfe-8ccc-59d5-ad5a-cf0f950ca818",
+   "egg": "plain",
+   "kind": "two-stone",
+   "breed": "pebble",
+   "colours": {
+    "body": "#ffe0ef",
+    "mane": "#ff7fbf",
+    "mane2": "#9d7bff"
+   },
+   "traits": {
+    "shiny": false,
+    "speckled": false,
+    "golden": false,
+    "founder": false
+   },
+   "source": "nest",
+   "id": "emmawave:16",
+   "hlc": "1791640860000-0001",
+   "t": 1791640860000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "baby.named",
+   "baby": "545c7cfe-8ccc-59d5-ad5a-cf0f950ca818",
+   "name": "Fen",
+   "gems": [
+    "f",
+    "e",
+    "n"
+   ],
+   "route": "gold",
+   "listName": "Fen",
+   "id": "emmawave:17",
+   "hlc": "1791640880000-0000",
+   "t": 1791640880000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "visit.end",
+   "visit": "v-wavea1",
+   "reason": "goodnight",
+   "id": "emmawave:18",
+   "hlc": "1791640900000-0000",
+   "t": 1791640900000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "visit.start",
+   "visit": "v-wavea2",
+   "tz": 180,
+   "id": "emmawave:19",
+   "hlc": "1791727200000-0000",
+   "t": 1791727200000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "learn.result",
+   "strand": "m",
+   "step": "M10",
+   "carrier": "m:pair:4,6",
+   "items": [
+    {
+     "id": "m:pair:4+6",
+     "r": "first"
+    }
+   ],
+   "result": "first",
+   "ms": 4200,
+   "scaffold": 1,
+   "error": null,
+   "place": "nest",
+   "moment": "egg-two-stone",
+   "slot": "current",
+   "probe": false,
+   "baby": "c0abfc1f-d0d9-5315-8e75-f1485baca890",
+   "visit": "v-wavea2",
+   "heart": false,
+   "id": "emmawave:20",
+   "hlc": "1791727220000-0000",
+   "t": 1791727220000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "egg.hatched",
+   "baby": "c0abfc1f-d0d9-5315-8e75-f1485baca890",
+   "egg": "plain",
+   "kind": "two-stone",
+   "breed": "pebble",
+   "colours": {
+    "body": "#ffe0ef",
+    "mane": "#ff7fbf",
+    "mane2": "#9d7bff"
+   },
+   "traits": {
+    "shiny": false,
+    "speckled": false,
+    "golden": false,
+    "founder": false
+   },
+   "source": "nest",
+   "id": "emmawave:21",
+   "hlc": "1791727220000-0001",
+   "t": 1791727220000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "baby.named",
+   "baby": "c0abfc1f-d0d9-5315-8e75-f1485baca890",
+   "name": "Bex",
+   "gems": [
+    "b",
+    "e",
+    "x"
+   ],
+   "route": "gold",
+   "listName": "Bex",
+   "id": "emmawave:22",
+   "hlc": "1791727240000-0000",
+   "t": 1791727240000,
+   "dev": "emmawave",
+   "v": 1
+  },
+  {
+   "type": "visit.end",
+   "visit": "v-wavea2",
+   "reason": "goodnight",
+   "id": "emmawave:23",
+   "hlc": "1791727260000-0000",
+   "t": 1791727260000,
+   "dev": "emmawave",
+   "v": 1
+  }
+ ]
+}

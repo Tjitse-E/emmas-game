@@ -1,0 +1,10 @@
+# Gate 1.0.1 warning flows: the lines of gate-A-warn.txt (docs/v3/next/plan.md task G6).
+platform-input
+integration/returning
+integration/rest
+integration/no-art-manifest
+places/label
+places/pond
+places/building
+places/parent
+integration/placement

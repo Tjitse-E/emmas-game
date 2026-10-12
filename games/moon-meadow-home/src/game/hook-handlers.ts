@@ -2,7 +2,7 @@
 // said() and audioMissing() are platform's synchronous methods (P-A10); they are not registered here.
 import { callHook, hasHook, registerHook, registerState, sceneHook } from '../platform/hooks.ts';
 import { clock } from '../platform/clock.ts';
-import { isPlacing, setCurrentOverride } from '../core/learning/index.ts';
+import { currentStep, isPlacing, setCurrentOverride } from '../core/learning/index.ts';
 import type { Learner } from '../core/learning/index.ts';
 import type { Content as LearnContent } from '../core/content/types.ts';
 import type { game as Game } from '../game.svelte.ts';
@@ -37,6 +37,15 @@ export function registerGameHooks(game: G, o: HookOpts): void {
   registerState('placement', () => (game.world
     ? { r: isPlacing(learner(), 'r'), s: isPlacing(learner(), 's'), m: isPlacing(learner(), 'm') }
     : null));
+
+  /** 1.0.1 (docs/v3/next/plan.md 3.8): the current maths step, so the upgrade flow can see the lift to M12A. */
+  registerState('mathsStep', () => (game.world ? currentStep(learner(), content(), 'm') : null));
+  /** Events refused into quarantine. The store keeps this count in step with quarantine() on every ingest and retry. */
+  registerState('quarantined', () => game.data?.status().quarantined ?? 0);
+
+  /** Events in the log, oldest first, optionally of one type (flows count learn.override, care.done and so on). */
+  registerHook('events', after((type?: string) => ((game.data?.allEvents() ?? []) as readonly { type: string }[])
+    .filter((e) => type === undefined || type === null || e.type === type)));
 
   registerHook('seed', (n: number) => o.seed(n));
   registerHook('setStep', after((strand: StrandId, step: string) =>

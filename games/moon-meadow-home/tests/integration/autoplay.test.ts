@@ -21,9 +21,12 @@ describe('judgeLog', () => {
  * that scene's goal; goodnight is its own scene and its answer ends the visit in the rest scene.
  * Like the router, it tells onScene listeners about a change before the new scene speaks.
  */
-function fakeGame(path: string[], o: { stuckAt?: string; hangAt?: string } = {}) {
+function fakeGame(path: string[], o: { stuckAt?: string; hangAt?: string; nightStages?: string[]; stageMs?: number } = {}) {
   let i = 0;
   let t = 0;
+  let stage = 0;
+  let stageAt = 0;
+  const stages: string[] = [];
   let open = true;
   let scene = 'meadow';
   const said: string[] = [];
@@ -39,7 +42,17 @@ function fakeGame(path: string[], o: { stuckAt?: string; hangAt?: string } = {})
     answer: async () => {
       if (scene === o.hangAt) return new Promise<void>(() => {});
       if (scene === o.stuckAt) return;
-      if (scene === 'goodnight') { go('rest'); open = false; return; }
+      if (scene === 'goodnight') {
+        // 1.0.1 goodnight: each stage takes stageMs (the herd trots in, the moon waits) before an answer moves on.
+        const night = o.nightStages ?? [];
+        if (stage < night.length) {
+          if (stages.length === stage) { stages.push(night[stage]); stageAt = t; }
+          if (t - stageAt < (o.stageMs ?? 0)) return;
+          stage++;
+          if (stage < night.length) return;
+        }
+        go('rest'); open = false; return;
+      }
       if (scene === 'meadow' || scene === 'rest' || i >= path.length) throw new Error('no moment open');
       go(path[i++]);
     },
@@ -50,6 +63,7 @@ function fakeGame(path: string[], o: { stuckAt?: string; hangAt?: string } = {})
     now: () => t,
     onScene: (fn: (id: string) => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; },
     listeners,
+    stages,
   };
 }
 
@@ -94,5 +108,21 @@ describe('autoplay', () => {
   it('does not hang when an answer never settles', async () => {
     const log = await autoplay(fakeGame(['nest', 'wish', 'meadow'], { hangAt: 'wish' }), { heartbeats: 1, goodnight: false, maxMs: 1000 });
     expect(log.stuck).toBe('wish');
+  });
+
+  it('waits up to 30 s by default, so a goodnight of seven stages is not stuck (docs/v3/next/plan.md G4)', async () => {
+    const night = ['walk', 'herd-in', 'manger', 'free', 'bed', 'sky', 'bye'];
+    const g = fakeGame(['nest', 'meadow'], { nightStages: night, stageMs: 3_500 }); // about 25 s of goodnight
+    const log = await autoplay(g, { heartbeats: 1, goodnight: true });
+    expect(log.stuck).toBeNull();
+    expect(g.stages).toEqual(night);
+    expect(log.scenes.map((s) => s.id)).toEqual(['meadow', 'nest', 'meadow', 'goodnight', 'rest']);
+    expect(log.scenes.find((s) => s.id === 'goodnight')!.ms).toBeGreaterThan(20_000);
+  });
+
+  it('the old 20 s limit would have called that goodnight stuck', async () => {
+    const g = fakeGame(['nest', 'meadow'], { nightStages: ['walk', 'herd-in', 'manger', 'free', 'bed', 'sky', 'bye'], stageMs: 3_500 });
+    const log = await autoplay(g, { heartbeats: 1, goodnight: true, maxMs: 20_000 });
+    expect(log.stuck).toBe('goodnight');
   });
 });
