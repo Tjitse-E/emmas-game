@@ -17,6 +17,8 @@
   } = $props();
 
   let returning = $state<string | null>(null);
+  /** The printed word fits its button: long words ('marshmallow') print smaller. */
+  const wordSize = (w: string): number => Math.min(Math.round(size * 0.24), Math.floor((size - 10) / (w.length * 0.56)));
 
   const say = (id: string): Promise<void> => (audio as unknown as { say(id: string): Promise<void> }).say(id);
   const sayTrayOnce = (): void => {
@@ -52,7 +54,7 @@
     <button class="food" class:back-in={returning === f} data-touch aria-label="tray food {f}"
       use:drag={{ data: f, disabled, onTap: () => void tap(f), onStart: () => onstart?.(f), onDrop: (d) => dropped(f, d.targetId) }}>
       <ArtImg id={w?.picture || f} size={Math.round(size * 0.66)} />
-      <PrintWithDots text={f} dots={false} size={Math.round(size * 0.24)} label="" />
+      <PrintWithDots text={f} dots={false} size={wordSize(f)} label="" />
     </button>
   {/each}
 </div>

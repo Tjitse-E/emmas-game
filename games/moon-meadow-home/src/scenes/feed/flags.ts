@@ -2,6 +2,7 @@
 // at boot. Outside production builds it registers feed.hungry, feed.manger and feed.state.
 import { registerHook } from '../../platform/hooks.ts';
 import { game } from '../../game.svelte.ts';
+import { LOOK_ALIKE, UNICORN_FOODS } from '../../core/heartbeat/feed.ts';
 
 /** Test flags: force (true) or forbid (false) the hungry first wish, force tonight's manger moment; null is free. */
 export const feedFlags = { hungry: null as boolean | null, manger: null as 'wish' | 'rack' | null };
@@ -73,6 +74,7 @@ function install(): void {
   registerHook('feed.manger', (mode: 'wish' | 'rack' | null) => { feedFlags.manger = mode ?? null; return feedFlags.manger; });
   // Beyond 3.8's shape: `cares`, every care.done in the log ({ baby, station }), so flows can see a feed or a tuck land.
   registerHook('feed.state', () => ({ ...feedState, tray: [...feedState.tray], wants: { ...feedState.wants }, cares: cares() }));
+  registerHook('feed.rules', () => ({ foods: [...UNICORN_FOODS], lookAlike: LOOK_ALIKE.map((g) => [...g]) }));
   registerHook('feed.preview', (spots: Spot[] | number | null) => mountPreview(spots ?? null));
   registerHook('feed.previewHook', async (method: string, ...args: unknown[]) => {
     const fn = preview.hook?.[method];
