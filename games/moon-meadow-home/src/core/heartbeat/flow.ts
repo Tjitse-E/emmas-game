@@ -43,3 +43,11 @@ export function step(st: HbState, sig: HbSignal, opts: FlowOpts): HbState {
       return { ...st, eggsInRow: 0 };
   }
 }
+
+/**
+ * R54: in visit 1, after the third hatch of the visit, the ghost hand points at the moon and Elizabeth says
+ * g-moon, once ever (recorded as opening.announced 'moon-hint').
+ */
+export function moonHintDue(input: { visitIndex: number; hatchesThisVisit: number; announced: ReadonlySet<string> }): boolean {
+  return input.visitIndex === 1 && input.hatchesThisVisit >= 3 && !input.announced.has('moon-hint');
+}
