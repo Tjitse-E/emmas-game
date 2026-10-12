@@ -4,3 +4,4 @@
 {"t": "2026-10-12T13:08:42", "lines": "games/moon-meadow-home/public/audio/numbers/lines.json", "made": 365, "chars": 5621, "credits": 5745.1, "credits_before": 33935, "stt_calls": 365, "stt_credits": 124.1}
 {"t": "2026-10-12T13:14:53", "lines": "games/moon-meadow-home/public/audio/words-phase3-4/lines.json", "made": 408, "chars": 2776, "credits": 2914.72, "credits_before": 32970, "stt_calls": 408, "stt_credits": 138.72}
 {"t": "2026-10-12T13:17:36", "lines": "games/moon-meadow-home/public/audio/words-year1/lines.json", "made": 320, "chars": 2114, "credits": 2222.8, "credits_before": 32589, "stt_calls": 320, "stt_credits": 108.8}
+{"t": "2026-10-12T13:20:39", "lines": "games/moon-meadow-home/public/audio/words-phase2/lines.json", "made": 262, "chars": 1615, "credits": 1704.08, "credits_before": 32272, "stt_calls": 262, "stt_credits": 89.08}

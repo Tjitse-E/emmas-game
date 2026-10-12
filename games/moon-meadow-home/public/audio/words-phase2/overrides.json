@@ -1,0 +1,41 @@
+{
+ "model-pan": {
+  "seed": 1011
+ },
+ "word-comic": {
+  "seed": 1011
+ },
+ "word-fig": {
+  "seed": 2011
+ },
+ "word-figs": {
+  "seed": 2011
+ },
+ "word-hobs": {
+  "seed": 2011
+ },
+ "word-locket": {
+  "seed": 2011
+ },
+ "word-nut": {
+  "seed": 2011
+ },
+ "word-racquet": {
+  "seed": 2011
+ },
+ "word-racquets": {
+  "seed": 2011
+ },
+ "word-sun": {
+  "seed": 2011
+ },
+ "word-wok": {
+  "seed": 2011
+ },
+ "word-woks": {
+  "seed": 2011
+ },
+ "word-yam": {
+  "seed": 2011
+ }
+}
