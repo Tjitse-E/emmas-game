@@ -2,6 +2,25 @@
 export const SCENES = ['common', 'start', 'moving-day', 'heartbeat', 'places'] as const;
 export type SceneId = (typeof SCENES)[number];
 export type ClipId =
+  | 'bd-circle'
+  | 'bd-needs-10'
+  | 'bd-needs-2'
+  | 'bd-needs-3'
+  | 'bd-needs-4'
+  | 'bd-needs-5'
+  | 'bd-needs-6'
+  | 'bd-needs-7'
+  | 'bd-needs-8'
+  | 'bd-needs-9'
+  | 'bd-ribbon'
+  | 'bd-row-name'
+  | 'bd-short'
+  | 'bd-sign'
+  | 'bd-trim'
+  | 'bd-trim-free'
+  | 'bd-wall-up'
+  | 'bd-walls'
+  | 'ca-ribbon'
   | 'fb-brr'
   | 'fb-gold-yes'
   | 'fb-hot'
@@ -24,7 +43,9 @@ export type ClipId =
   | 'foal-hello'
   | 'foal-look'
   | 'foal-notme'
+  | 'foal-pretty'
   | 'foal-silly'
+  | 'foal-splash'
   | 'foal-wee'
   | 'foal-yawn'
   | 'foal-yay'
@@ -61,8 +82,17 @@ export type ClipId =
   | 'h-peek'
   | 'h-sounds'
   | 'h-stars'
+  | 'jw-new-jewel'
+  | 'lb-found'
+  | 'lb-label-says-one'
+  | 'lb-lets-write'
+  | 'lb-listen'
+  | 'lb-on-the-jar'
+  | 'lb-shelf'
   | 'lumi-baby'
+  | 'lumi-builders'
   | 'lumi-crown'
+  | 'lumi-dressing-open'
   | 'lumi-goodnight-emma'
   | 'lumi-hatching'
   | 'lumi-hello'
@@ -71,12 +101,32 @@ export type ClipId =
   | 'lumi-moon-name'
   | 'lumi-moving'
   | 'lumi-night'
+  | 'lumi-pond-open'
+  | 'lumi-post-open'
+  | 'lumi-row-open'
+  | 'lumi-salon-open'
   | 'lumi-sparkly'
-  | 'platform-turn';
+  | 'mw-bubbles-explain'
+  | 'mw-letter-lane-open'
+  | 'mw-meadow-this-way'
+  | 'mw-notes-open'
+  | 'mw-pond-ready'
+  | 'mw-post-ready'
+  | 'pd-play'
+  | 'pd-welcome'
+  | 'pd-wish-goal'
+  | 'pl-look-in-jar'
+  | 'pl-mice'
+  | 'platform-turn'
+  | 'vm-this-is-valley'
+  | 'word-post'
+  | 'word-salon'
+  | 'word-stalls'
+  | 'y1-open';
 export const SCENE_CLIPS: Readonly<Record<SceneId, readonly ClipId[]>> = {
   'common': ['g-meadow-way', 'g-look', 'g-listen', 'g-now-listen', 'fb-says', 'fb-lovely', 'fb-well-done', 'fb-yes', 'fb-letters', 'fb-listen', 'h-sounds', 'platform-turn', 'foal-hello', 'foal-yay', 'foal-silly', 'foal-notme', 'foal-wee', 'foal-yum', 'foal-cuddle', 'foal-yawn', 'foal-look'],
   'start': ['lumi-hello', 'lumi-hello-back', 'lumi-meadow-yours', 'lumi-crown', 'g-egg-waiting'],
   'moving-day': ['fb-lovely', 'lumi-moving', 'g-here-they-come', 'g-pins-came'],
   'heartbeat': ['g-egg', 'g-stone', 'g-two-stones', 'g-one-more', 'g-blanket', 'g-stars', 'g-count-stars', 'fb-warm', 'fb-hot', 'fb-brr', 'fb-too-many', 'h-count', 'h-peek', 'h-stars', 'lumi-hatching', 'lumi-baby', 'lumi-sparkly', 'g-bells', 'g-bell-drag', 'g-spell', 'g-gems', 'g-slide', 'fb-spelled', 'g-gold', 'fb-gold-yes', 'fb-tricky', 'fb-no-vowel', 'fb-silly', 'fb-that-says', 'g-garden', 'g-first-sound', 'g-plus', 'g-sky-name', 'lumi-moon-name', 'g-wish', 'fb-more-than-one', 'fb-just-one', 'g-tent', 'g-rollcall', 'g-moon', 'lumi-night', 'lumi-goodnight-emma'],
-  'places': ['lumi-hello-back', 'g-egg-waiting'],
+  'places': ['mw-bubbles-explain', 'mw-meadow-this-way', 'mw-pond-ready', 'lb-found', 'lb-lets-write', 'lb-listen', 'lb-on-the-jar', 'lb-label-says-one', 'lb-shelf', 'pl-look-in-jar', 'pl-mice', 'pd-welcome', 'pd-wish-goal', 'pd-play', 'foal-splash', 'foal-pretty', 'lumi-builders', 'lumi-pond-open', 'lumi-row-open', 'bd-walls', 'bd-short', 'bd-needs-2', 'bd-needs-3', 'bd-needs-4', 'bd-needs-5', 'bd-needs-6', 'bd-needs-7', 'bd-needs-8', 'bd-needs-9', 'bd-needs-10', 'bd-wall-up', 'bd-trim', 'bd-trim-free', 'bd-sign', 'bd-ribbon', 'bd-circle', 'bd-row-name', 'word-stalls', 'lumi-dressing-open', 'mw-post-ready', 'mw-notes-open', 'mw-letter-lane-open', 'jw-new-jewel', 'vm-this-is-valley', 'y1-open', 'ca-ribbon', 'lumi-post-open', 'lumi-salon-open', 'word-post', 'word-salon', 'lumi-hello-back', 'g-egg-waiting'],
 };

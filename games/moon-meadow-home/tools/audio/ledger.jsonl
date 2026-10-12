@@ -8,3 +8,4 @@
 {"t": "2026-10-12T13:25:40", "lines": "games/moon-meadow-home/public/audio/names-t1/lines.json", "made": 620, "chars": 2962, "credits": 3172.8, "credits_before": 32070, "stt_calls": 620, "stt_credits": 210.8}
 {"t": "2026-10-12T13:26:25", "lines": "games/moon-meadow-home/public/audio/names-t1/lines.json", "made": 55, "chars": 240, "credits": 258.7, "credits_before": 31668, "stt_calls": 55, "stt_credits": 18.7}
 {"t": "2026-10-12T13:27:00", "lines": "games/moon-meadow-home/public/audio/names-t1/lines.json", "made": 28, "chars": 196, "credits": 205.52, "credits_before": 31656, "stt_calls": 28, "stt_credits": 9.52}
+{"t": "2026-10-12T13:29:12", "lines": "menu-audio/lines.json", "made": 1, "chars": 17, "credits": 17.34, "credits_before": 31628, "stt_calls": 1, "stt_credits": 0.34}

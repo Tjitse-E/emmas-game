@@ -1,0 +1,4 @@
+# Picture requests from scenes: id | step-or-kind | description (contracts C9). art-gen generates these.
+item-plank | item | a single smooth wooden plank of light honey-coloured wood with rounded ends, seen from the side
+item-hammer | item | a small friendly wooden mallet with a soft rounded head and a short handle
+place-dressing | place | a small pretty open gazebo with a tall oval mirror and a little wardrobe, seen from the front
