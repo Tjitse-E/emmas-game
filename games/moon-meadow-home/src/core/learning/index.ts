@@ -12,3 +12,10 @@ export { searchList, initPlacement, recordProbe, nextProbe, placementEnd } from 
 export type { IsSchool } from './placement.ts';
 export * from './status.ts';
 export { LEARNER_FOLD_VERSION, createLearner, applyLearnEvent, foldLearner, createLearnerSlice } from './fold.ts';
+export { tagError } from './errors.ts';
+export type { ErrorInput } from './errors.ts';
+// Places' plan imports the visit signals from here; the planner owns them.
+export { visitStats, isTired, spellingShareLow, wantsLabelBubble, leastPractisedStrand, visitRange, shouldVisitDoor } from '../planner/visit.ts';
+export type { VisitStats } from '../planner/visit.ts';
+export { learnerReport, isSecure } from './report.ts';
+export type { StrandReport } from './report.ts';

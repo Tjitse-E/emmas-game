@@ -16,7 +16,7 @@ import { isPlacedStep, isPassedStep, placedByRelease, profileOf, schoolFn, STRAN
 import { localDay } from './time.ts';
 
 /** Part of the snapshot key: change it whenever the fold logic changes. */
-export const LEARNER_FOLD_VERSION = 1;
+export const LEARNER_FOLD_VERSION = 2;   // 2: recent results keep the pair of a Dutch-tagged error
 
 const RECENT_MAX = 300;
 const FLUENCY_TYPES: readonly FluencyType[] = ['grapheme', 'tricky', 'bond', 'fact', 'table'];
@@ -70,6 +70,21 @@ function onVisitStart(l: Learner, e: VisitStartEvent): void {
   l.visit = emptyVisit(l.visit.seq + 1, e.t, Number.isFinite(e.tz) ? e.tz : 0);
 }
 
+/** The contrast pair a Dutch-tagged result is about: a pair item, or the twin pair of a twin carrier ('pan|pen'). */
+function dutchPair(e: LearnResultEvent, c: Content): string | null {
+  for (const { id } of Array.isArray(e.items) ? e.items : []) {
+    const it = c.items[id];
+    if (it?.kind === 'pair' && it.pair) return it.pair;
+  }
+  const words = String(e.carrier).split('|');
+  if (words.length === 2) {
+    for (const [pair, ts] of Object.entries(c.twins)) {
+      if (ts.some(t => (t.a === words[0] && t.b === words[1]) || (t.a === words[1] && t.b === words[0]))) return pair;
+    }
+  }
+  return null;
+}
+
 function onResult(l: Learner, e: LearnResultEvent, c: Content): void {
   const b = c.budget;
   const strand = e.strand;
@@ -119,7 +134,9 @@ function onResult(l: Learner, e: LearnResultEvent, c: Content): void {
   v.recent.push(String(e.carrier));
   if (v.recent.length > b.recentCarriers) v.recent.splice(0, v.recent.length - b.recentCarriers);
   const rec = l.recent[strand];
-  rec.push({ t: e.t, r: e.result, err: e.error ?? null, slot: e.slot });
+  const err = e.error ?? null;
+  const pair = err === 'dutch' ? dutchPair(e, c) : null;
+  rec.push(pair ? { t: e.t, r: e.result, err, slot: e.slot, pair } : { t: e.t, r: e.result, err, slot: e.slot });
   if (rec.length > RECENT_MAX) rec.splice(0, rec.length - RECENT_MAX);
   if (e.slot === 'golden') v.golden = true;
 
