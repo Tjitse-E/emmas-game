@@ -1,4 +1,5 @@
 import './polyfills.ts';   // first: Safari 15.0 to 15.3 lack Object.hasOwn, Array.prototype.at and structuredClone (R50)
+import './game.svelte.ts';   // the game store: opens the save, registers the start handler and the test hook handlers (R44, R60)
 import '@fontsource/andika/latin-400.css';
 import '@fontsource/andika/latin-700.css';
 import './app.css';
@@ -9,10 +10,6 @@ import { installTouchSource } from './platform/touch.ts';
 import { boot } from './platform/boot.svelte.ts';
 import { audio } from './audio/index.ts';
 import { loadArtManifest } from './art/manifest.ts';
-
-// The game store (src/game.svelte.ts, integration Task I-1) registers its start handler and hooks on import.
-// An eager glob, so the app builds before the store exists. The integrator switches it to a static import (R60).
-import.meta.glob('./game.svelte.ts', { eager: true });
 
 declare global {
   interface Window { __mmhBooted?: boolean }
