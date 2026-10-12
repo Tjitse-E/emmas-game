@@ -28,7 +28,8 @@ describe('simulated learner', () => {
 
   it("from Emma's start the plurals pass within 4 play weeks", { timeout: 180_000 }, () => {
     for (const seed of [1, 2, 3]) {
-      const r = simulate({ ...base, seed, accuracy: 0.85, weeks: 6, profile: 'year1', trueLevel: EMMA });
+      // The pacing measured before 1.0.1, without the maths lift (docs/v3/next/plan.md E6).
+      const r = simulate({ ...base, seed, accuracy: 0.85, weeks: 6, profile: 'year1', trueLevel: EMMA, lift: false });
       console.log(formatReport(r));
       for (const step of ['R19', 'S10']) {
         const rec = r.steps.find(s => s.step === step);
@@ -66,5 +67,13 @@ describe('simulated learner', () => {
   it('is deterministic for a seed', { timeout: 120_000 }, () => {
     const o = { ...base, seed: 7, accuracy: 0.85, weeks: 2, profile: 'year1', trueLevel: EMMA };
     expect(simulate(o)).toEqual(simulate(o));
+  });
+
+  it("with the maths lift, Emma's maths starts at M12A and moves on through the new steps", { timeout: 180_000 }, () => {
+    const r = simulate({ ...base, seed: 1, accuracy: 0.85, weeks: 6, profile: 'year1', trueLevel: EMMA });
+    const m = r.steps.filter((s) => s.strand === 'm' && s.startT !== null).map((s) => s.step);
+    expect(m[0]).toBe('M12A');
+    expect(m).not.toContain('M10');
+    expect(r.steps.find((s) => s.step === 'M12A')?.passT ?? null).not.toBeNull();
   });
 });
