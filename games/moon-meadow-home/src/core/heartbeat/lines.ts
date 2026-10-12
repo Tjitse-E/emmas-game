@@ -16,6 +16,7 @@ export const COUNT_MAX = 100;
 /** Ids that content/lines/common.json (audio) defines. The heartbeat uses them but never writes them. */
 export const COMMON_LINE_IDS = [
   'foal-hello', 'foal-yay', 'foal-silly', 'foal-notme', 'foal-wee', 'foal-yum', 'foal-cuddle', 'foal-yawn',
+  'foal-hungry',
   'fb-lovely', 'fb-letters', 'h-sounds', 'g-listen',
 ] as const;
 
@@ -36,6 +37,7 @@ const FIXED: LineDef[] = [
   { id: 'h-count', speaker: 'narrator', text: "Let's count the cold cups." },
   { id: 'h-peek', speaker: 'narrator', text: "Let's peek under the blanket." },
   { id: 'h-stars', speaker: 'narrator', text: "Let's count the stars." }, // new
+  { id: 'g-two-nests', speaker: 'narrator', text: 'A big egg! It has two nests of cups.' }, // 1.0.1
   // Hatch (v2)
   { id: 'lumi-hatching', speaker: 'queen', text: "It's hatching!" },
   { id: 'lumi-baby', speaker: 'queen', text: 'A baby unicorn! Hello, little one.' },
@@ -65,12 +67,27 @@ const FIXED: LineDef[] = [
   { id: 'fb-letters', speaker: 'narrator', text: 'Look at the letters again.' },
   { id: 'fb-more-than-one', speaker: 'narrator', text: 'More than one.' }, // new
   { id: 'fb-just-one', speaker: 'narrator', text: 'Just one.' }, // new
+  // Feeding, the food tray and the hay rack (1.0.1, docs/v3/next/plan.md 11.1)
+  { id: 'g-hungry', speaker: 'narrator', text: 'Read the wish, and feed your baby.' },
+  { id: 'g-tray', speaker: 'narrator', text: 'Tap a food to hear its name. Then give it to a baby.' },
+  { id: 'g-feed-free', speaker: 'narrator', text: 'Give the babies a bedtime snack.' },
+  { id: 'g-hay-rack', speaker: 'narrator', text: 'Drag the hay that fills it up.' },
+  { id: 'fb-rack-full', speaker: 'narrator', text: 'The hay rack is full!' },
+  { id: 'h-count-gaps', speaker: 'narrator', text: "Let's count the empty spaces." },
   // Stalls, goodnight and the moon (R54)
   { id: 'g-tent', speaker: 'narrator', text: 'A cosy tent for now! Your new stable row is coming.' }, // new
   { id: 'g-rollcall', speaker: 'narrator', text: "Bedtime! Look at the lantern, and tap that baby's door." }, // new
   { id: 'g-moon', speaker: 'narrator', text: "Tap the moon when it's bedtime." }, // v2, the visit-1 moon hint (Task 23)
   { id: 'lumi-night', speaker: 'queen', text: 'Night night, little one.' },
   { id: 'lumi-goodnight-emma', speaker: 'queen', text: 'Goodnight, Emma.' }, // new
+  // The lantern walk and bedtime in the stable (1.0.1, docs/v3/next/plan.md 11.1)
+  { id: 'g-dusk', speaker: 'narrator', text: 'The sun is going down. Time for bed!' },
+  { id: 'g-lantern-walk', speaker: 'narrator', text: 'Read the name on the lantern. Then lead that baby to the stable.' },
+  { id: 'g-lead-free', speaker: 'narrator', text: 'Lead your babies to the stable.' },
+  { id: 'h-path', speaker: 'narrator', text: 'Drag the baby along the glowing path, all the way to the stable.' },
+  { id: 'g-herd-in', speaker: 'narrator', text: 'Here comes everyone else!' },
+  { id: 'g-tuck', speaker: 'narrator', text: 'Tap a sleepy baby to tuck it in.' },
+  { id: 'g-window', speaker: 'narrator', text: 'Tap the window to see the stars.' },
   // Babies (v2, common.json)
   { id: 'foal-hello', speaker: 'foal', text: '[giggles] Hello!' },
   { id: 'foal-yay', speaker: 'foal', text: '[excited] Yay! Thank you!' },
@@ -80,6 +97,7 @@ const FIXED: LineDef[] = [
   { id: 'foal-yum', speaker: 'foal', text: 'Mmm! Yummy!' },
   { id: 'foal-cuddle', speaker: 'foal', text: '[happy sigh] Aww.' },
   { id: 'foal-yawn', speaker: 'foal', text: '[yawns] Sleepy.' },
+  { id: 'foal-hungry', speaker: 'foal', text: "[giggles] I'm hungry!" }, // 1.0.1, feed
 ];
 
 /** Every fixed line the heartbeat code may speak, including the common ones. */

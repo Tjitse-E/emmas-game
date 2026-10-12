@@ -30,6 +30,7 @@ export type ClipId =
   | 'fb-lovely'
   | 'fb-more-than-one'
   | 'fb-no-vowel'
+  | 'fb-rack-full'
   | 'fb-says'
   | 'fb-silly'
   | 'fb-spelled'
@@ -41,6 +42,7 @@ export type ClipId =
   | 'fb-yes'
   | 'foal-cuddle'
   | 'foal-hello'
+  | 'foal-hungry'
   | 'foal-look'
   | 'foal-notme'
   | 'foal-pretty'
@@ -54,13 +56,20 @@ export type ClipId =
   | 'g-bells'
   | 'g-blanket'
   | 'g-count-stars'
+  | 'g-dusk'
   | 'g-egg'
   | 'g-egg-waiting'
+  | 'g-feed-free'
   | 'g-first-sound'
   | 'g-garden'
   | 'g-gems'
   | 'g-gold'
+  | 'g-hay-rack'
+  | 'g-herd-in'
   | 'g-here-they-come'
+  | 'g-hungry'
+  | 'g-lantern-walk'
+  | 'g-lead-free'
   | 'g-listen'
   | 'g-look'
   | 'g-meadow-way'
@@ -76,9 +85,15 @@ export type ClipId =
   | 'g-stars'
   | 'g-stone'
   | 'g-tent'
+  | 'g-tray'
+  | 'g-tuck'
+  | 'g-two-nests'
   | 'g-two-stones'
+  | 'g-window'
   | 'g-wish'
   | 'h-count'
+  | 'h-count-gaps'
+  | 'h-path'
   | 'h-peek'
   | 'h-sounds'
   | 'h-stars'
@@ -124,9 +139,9 @@ export type ClipId =
   | 'word-stalls'
   | 'y1-open';
 export const SCENE_CLIPS: Readonly<Record<SceneId, readonly ClipId[]>> = {
-  'common': ['g-meadow-way', 'g-look', 'g-listen', 'g-now-listen', 'fb-says', 'fb-lovely', 'fb-well-done', 'fb-yes', 'fb-letters', 'fb-listen', 'h-sounds', 'platform-turn', 'foal-hello', 'foal-yay', 'foal-silly', 'foal-notme', 'foal-wee', 'foal-yum', 'foal-cuddle', 'foal-yawn', 'foal-look'],
+  'common': ['g-meadow-way', 'g-look', 'g-listen', 'g-now-listen', 'fb-says', 'fb-lovely', 'fb-well-done', 'fb-yes', 'fb-letters', 'fb-listen', 'h-sounds', 'platform-turn', 'foal-hello', 'foal-yay', 'foal-silly', 'foal-notme', 'foal-wee', 'foal-yum', 'foal-cuddle', 'foal-yawn', 'foal-look', 'foal-hungry'],
   'start': ['lumi-hello', 'lumi-hello-back', 'lumi-meadow-yours', 'lumi-crown', 'g-egg-waiting'],
   'moving-day': ['fb-lovely', 'lumi-moving', 'g-here-they-come', 'g-pins-came'],
-  'heartbeat': ['g-egg', 'g-stone', 'g-two-stones', 'g-one-more', 'g-blanket', 'g-stars', 'g-count-stars', 'fb-warm', 'fb-hot', 'fb-brr', 'fb-too-many', 'h-count', 'h-peek', 'h-stars', 'lumi-hatching', 'lumi-baby', 'lumi-sparkly', 'g-bells', 'g-bell-drag', 'g-spell', 'g-gems', 'g-slide', 'fb-spelled', 'g-gold', 'fb-gold-yes', 'fb-tricky', 'fb-no-vowel', 'fb-silly', 'fb-that-says', 'g-garden', 'g-first-sound', 'g-plus', 'g-sky-name', 'lumi-moon-name', 'g-wish', 'fb-more-than-one', 'fb-just-one', 'g-tent', 'g-rollcall', 'g-moon', 'lumi-night', 'lumi-goodnight-emma'],
+  'heartbeat': ['g-egg', 'g-stone', 'g-two-stones', 'g-one-more', 'g-blanket', 'g-stars', 'g-count-stars', 'fb-warm', 'fb-hot', 'fb-brr', 'fb-too-many', 'h-count', 'h-peek', 'h-stars', 'g-two-nests', 'lumi-hatching', 'lumi-baby', 'lumi-sparkly', 'g-bells', 'g-bell-drag', 'g-spell', 'g-gems', 'g-slide', 'fb-spelled', 'g-gold', 'fb-gold-yes', 'fb-tricky', 'fb-no-vowel', 'fb-silly', 'fb-that-says', 'g-garden', 'g-first-sound', 'g-plus', 'g-sky-name', 'lumi-moon-name', 'g-wish', 'fb-more-than-one', 'fb-just-one', 'g-hungry', 'g-tray', 'g-feed-free', 'g-hay-rack', 'fb-rack-full', 'h-count-gaps', 'g-tent', 'g-rollcall', 'g-moon', 'lumi-night', 'lumi-goodnight-emma', 'g-dusk', 'g-lantern-walk', 'g-lead-free', 'h-path', 'g-herd-in', 'g-tuck', 'g-window'],
   'places': ['mw-bubbles-explain', 'mw-meadow-this-way', 'mw-pond-ready', 'lb-found', 'lb-lets-write', 'lb-listen', 'lb-on-the-jar', 'lb-label-says-one', 'lb-shelf', 'pl-look-in-jar', 'pl-mice', 'pd-welcome', 'pd-wish-goal', 'pd-play', 'foal-splash', 'foal-pretty', 'lumi-builders', 'lumi-pond-open', 'lumi-row-open', 'bd-walls', 'bd-short', 'bd-needs-2', 'bd-needs-3', 'bd-needs-4', 'bd-needs-5', 'bd-needs-6', 'bd-needs-7', 'bd-needs-8', 'bd-needs-9', 'bd-needs-10', 'bd-wall-up', 'bd-trim', 'bd-trim-free', 'bd-sign', 'bd-ribbon', 'bd-circle', 'bd-row-name', 'word-stalls', 'lumi-dressing-open', 'mw-post-ready', 'mw-notes-open', 'mw-letter-lane-open', 'jw-new-jewel', 'vm-this-is-valley', 'y1-open', 'ca-ribbon', 'lumi-post-open', 'lumi-salon-open', 'word-post', 'word-salon', 'lumi-hello-back', 'g-egg-waiting'],
 };

@@ -14,6 +14,7 @@ const C = (n: number): string => capitalise(numberWord(n));
  * Every Wave A number line, in budget order (most used first). Elizabeth says them all.
  * Ranges (master plan R7): bare numbers, move-in and herd count 0 or 1 to 60; doors 1 to 20; sky 1 to 12.
  * Wave C (Task C1, run 12) adds 61 to 100. Texts that match a v2 line are copied exactly, so those clips are free.
+ * Release 1.0.1 (docs/v3/next/plan.md 11.2) adds egg and hay-rack goals for 6 to 15, bundles in for 1 to 9, and bonds 11 to 15.
  */
 export function numberLines(): PackLine[] {
   const out: PackLine[] = [];
@@ -33,5 +34,9 @@ export function numberLines(): PackLine[] {
   out.push(N(numId('tap-door', 4), 'Tap door four.'));
   for (const n of range(1, 12)) out.push(N(numId('sky', n), n === 1 ? 'One sky unicorn!' : `${C(n)} sky unicorns!`));
   for (const n of range(2, 20)) out.push(N(ordId(n), `The ${capitalise(ordinalWord(n))}!`));
+  for (const n of range(6, 15)) out.push(N(numId('egg', n), `This egg needs ${W(n)} warm cups.`));
+  for (const n of range(6, 15)) out.push(N(numId('rack', n), `The hay rack needs ${W(n)} bundles.`));
+  for (const n of range(1, 9)) out.push(N(numId('in', n), n === 1 ? 'One bundle is in.' : `${C(n)} bundles are in.`));
+  for (const s of range(11, 15)) for (const a of range(s - 9, 9)) out.push(N(bondId(a, s - a), `${C(a)} and ${W(s - a)} make ${W(s)}!`));
   return out;
 }

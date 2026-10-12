@@ -1740,6 +1740,301 @@
    "id": "ord-20",
    "speaker": "narrator",
    "text": "The Twentieth!"
+  },
+  {
+   "id": "num-egg-6",
+   "speaker": "narrator",
+   "text": "This egg needs six warm cups."
+  },
+  {
+   "id": "num-egg-7",
+   "speaker": "narrator",
+   "text": "This egg needs seven warm cups."
+  },
+  {
+   "id": "num-egg-8",
+   "speaker": "narrator",
+   "text": "This egg needs eight warm cups."
+  },
+  {
+   "id": "num-egg-9",
+   "speaker": "narrator",
+   "text": "This egg needs nine warm cups."
+  },
+  {
+   "id": "num-egg-10",
+   "speaker": "narrator",
+   "text": "This egg needs ten warm cups."
+  },
+  {
+   "id": "num-egg-11",
+   "speaker": "narrator",
+   "text": "This egg needs eleven warm cups."
+  },
+  {
+   "id": "num-egg-12",
+   "speaker": "narrator",
+   "text": "This egg needs twelve warm cups."
+  },
+  {
+   "id": "num-egg-13",
+   "speaker": "narrator",
+   "text": "This egg needs thirteen warm cups."
+  },
+  {
+   "id": "num-egg-14",
+   "speaker": "narrator",
+   "text": "This egg needs fourteen warm cups."
+  },
+  {
+   "id": "num-egg-15",
+   "speaker": "narrator",
+   "text": "This egg needs fifteen warm cups."
+  },
+  {
+   "id": "num-rack-6",
+   "speaker": "narrator",
+   "text": "The hay rack needs six bundles."
+  },
+  {
+   "id": "num-rack-7",
+   "speaker": "narrator",
+   "text": "The hay rack needs seven bundles."
+  },
+  {
+   "id": "num-rack-8",
+   "speaker": "narrator",
+   "text": "The hay rack needs eight bundles."
+  },
+  {
+   "id": "num-rack-9",
+   "speaker": "narrator",
+   "text": "The hay rack needs nine bundles."
+  },
+  {
+   "id": "num-rack-10",
+   "speaker": "narrator",
+   "text": "The hay rack needs ten bundles."
+  },
+  {
+   "id": "num-rack-11",
+   "speaker": "narrator",
+   "text": "The hay rack needs eleven bundles."
+  },
+  {
+   "id": "num-rack-12",
+   "speaker": "narrator",
+   "text": "The hay rack needs twelve bundles."
+  },
+  {
+   "id": "num-rack-13",
+   "speaker": "narrator",
+   "text": "The hay rack needs thirteen bundles."
+  },
+  {
+   "id": "num-rack-14",
+   "speaker": "narrator",
+   "text": "The hay rack needs fourteen bundles."
+  },
+  {
+   "id": "num-rack-15",
+   "speaker": "narrator",
+   "text": "The hay rack needs fifteen bundles."
+  },
+  {
+   "id": "num-in-1",
+   "speaker": "narrator",
+   "text": "One bundle is in."
+  },
+  {
+   "id": "num-in-2",
+   "speaker": "narrator",
+   "text": "Two bundles are in."
+  },
+  {
+   "id": "num-in-3",
+   "speaker": "narrator",
+   "text": "Three bundles are in."
+  },
+  {
+   "id": "num-in-4",
+   "speaker": "narrator",
+   "text": "Four bundles are in."
+  },
+  {
+   "id": "num-in-5",
+   "speaker": "narrator",
+   "text": "Five bundles are in."
+  },
+  {
+   "id": "num-in-6",
+   "speaker": "narrator",
+   "text": "Six bundles are in."
+  },
+  {
+   "id": "num-in-7",
+   "speaker": "narrator",
+   "text": "Seven bundles are in."
+  },
+  {
+   "id": "num-in-8",
+   "speaker": "narrator",
+   "text": "Eight bundles are in."
+  },
+  {
+   "id": "num-in-9",
+   "speaker": "narrator",
+   "text": "Nine bundles are in."
+  },
+  {
+   "id": "num-bond-2-9",
+   "speaker": "narrator",
+   "text": "Two and nine make eleven!"
+  },
+  {
+   "id": "num-bond-3-8",
+   "speaker": "narrator",
+   "text": "Three and eight make eleven!"
+  },
+  {
+   "id": "num-bond-4-7",
+   "speaker": "narrator",
+   "text": "Four and seven make eleven!"
+  },
+  {
+   "id": "num-bond-5-6",
+   "speaker": "narrator",
+   "text": "Five and six make eleven!"
+  },
+  {
+   "id": "num-bond-6-5",
+   "speaker": "narrator",
+   "text": "Six and five make eleven!"
+  },
+  {
+   "id": "num-bond-7-4",
+   "speaker": "narrator",
+   "text": "Seven and four make eleven!"
+  },
+  {
+   "id": "num-bond-8-3",
+   "speaker": "narrator",
+   "text": "Eight and three make eleven!"
+  },
+  {
+   "id": "num-bond-9-2",
+   "speaker": "narrator",
+   "text": "Nine and two make eleven!"
+  },
+  {
+   "id": "num-bond-3-9",
+   "speaker": "narrator",
+   "text": "Three and nine make twelve!"
+  },
+  {
+   "id": "num-bond-4-8",
+   "speaker": "narrator",
+   "text": "Four and eight make twelve!"
+  },
+  {
+   "id": "num-bond-5-7",
+   "speaker": "narrator",
+   "text": "Five and seven make twelve!"
+  },
+  {
+   "id": "num-bond-6-6",
+   "speaker": "narrator",
+   "text": "Six and six make twelve!"
+  },
+  {
+   "id": "num-bond-7-5",
+   "speaker": "narrator",
+   "text": "Seven and five make twelve!"
+  },
+  {
+   "id": "num-bond-8-4",
+   "speaker": "narrator",
+   "text": "Eight and four make twelve!"
+  },
+  {
+   "id": "num-bond-9-3",
+   "speaker": "narrator",
+   "text": "Nine and three make twelve!"
+  },
+  {
+   "id": "num-bond-4-9",
+   "speaker": "narrator",
+   "text": "Four and nine make thirteen!"
+  },
+  {
+   "id": "num-bond-5-8",
+   "speaker": "narrator",
+   "text": "Five and eight make thirteen!"
+  },
+  {
+   "id": "num-bond-6-7",
+   "speaker": "narrator",
+   "text": "Six and seven make thirteen!"
+  },
+  {
+   "id": "num-bond-7-6",
+   "speaker": "narrator",
+   "text": "Seven and six make thirteen!"
+  },
+  {
+   "id": "num-bond-8-5",
+   "speaker": "narrator",
+   "text": "Eight and five make thirteen!"
+  },
+  {
+   "id": "num-bond-9-4",
+   "speaker": "narrator",
+   "text": "Nine and four make thirteen!"
+  },
+  {
+   "id": "num-bond-5-9",
+   "speaker": "narrator",
+   "text": "Five and nine make fourteen!"
+  },
+  {
+   "id": "num-bond-6-8",
+   "speaker": "narrator",
+   "text": "Six and eight make fourteen!"
+  },
+  {
+   "id": "num-bond-7-7",
+   "speaker": "narrator",
+   "text": "Seven and seven make fourteen!"
+  },
+  {
+   "id": "num-bond-8-6",
+   "speaker": "narrator",
+   "text": "Eight and six make fourteen!"
+  },
+  {
+   "id": "num-bond-9-5",
+   "speaker": "narrator",
+   "text": "Nine and five make fourteen!"
+  },
+  {
+   "id": "num-bond-6-9",
+   "speaker": "narrator",
+   "text": "Six and nine make fifteen!"
+  },
+  {
+   "id": "num-bond-7-8",
+   "speaker": "narrator",
+   "text": "Seven and eight make fifteen!"
+  },
+  {
+   "id": "num-bond-8-7",
+   "speaker": "narrator",
+   "text": "Eight and seven make fifteen!"
+  },
+  {
+   "id": "num-bond-9-6",
+   "speaker": "narrator",
+   "text": "Nine and six make fifteen!"
   }
  ]
 }

@@ -19,5 +19,6 @@
   {"id": "foal-yum", "speaker": "foal", "text": "Mmm! Yummy!"},
   {"id": "foal-cuddle", "speaker": "foal", "text": "[happy sigh] Aww."},
   {"id": "foal-yawn", "speaker": "foal", "text": "[yawns] Sleepy."},
-  {"id": "foal-look", "speaker": "foal", "text": "[giggles] Look!"}
+  {"id": "foal-look", "speaker": "foal", "text": "[giggles] Look!"},
+  {"id": "foal-hungry", "speaker": "foal", "text": "[giggles] I'm hungry!", "seed": 4107, "note": "Feeding (1.0.1): the hungry first wish and the manger wish. Fixed seed because the foal voice runs on eleven_v3."}
 ]}

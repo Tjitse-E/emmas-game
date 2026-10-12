@@ -2,6 +2,13 @@
 import { describe, expect, it } from 'vitest';
 import { game, ready, beginVisit } from '../../src/game.svelte.ts';
 import { router } from '../../src/platform/router.svelte.ts';
+import { openGameData } from '../../src/save/game-data.ts';
+import { memoryBackend } from '../../src/save/backend.ts';
+import { createGameFolder } from '../../src/core/world/index.ts';
+import type { CoreState } from '../../src/core/world/index.ts';
+import type { GameEvent, GameEventDraft } from '../../src/core/events.ts';
+import type { Slice } from '../../src/core/fold/engine.ts';
+import { hatch } from '../helpers/events.ts';
 
 describe('the game store', () => {
   it('opens at module load and folds an empty world', async () => {
@@ -59,5 +66,45 @@ describe('the game store', () => {
     game.endVisit('idle');   // a second end is a no-op
     expect(game.data!.allEvents().at(-1)?.type).toBe('visit.end');
     expect(game.data!.allEvents().filter((e) => e.type === 'visit.end')).toHaveLength(1);
+  });
+});
+
+// docs/v3/next/plan.md 3.3 and N9: the maths lift is a learn.override that reconcile returns. The store commits it
+// next to the facts, once per round, and stops when the folded state shows it.
+describe('the store commits the maths lift from reconcile', () => {
+  type Lift = { overrides: number };
+  const liftSlice: Slice<'lift', Lift> = {
+    name: 'lift', version: 1,
+    init: () => ({ overrides: 0 }),
+    apply: (st, ev: GameEvent) => { if (ev.type === 'learn.override') st.overrides++; return st; },
+  };
+  const folder = createGameFolder([liftSlice]);
+  type St = CoreState & { lift: Lift };
+  const lift: GameEventDraft = { type: 'learn.override', op: 'set-current', strand: 'm', step: 'M12A', placed: ['M12'], side: [] };
+  const passed: GameEventDraft = { type: 'step.passed', strand: 'm', step: 'M12' };
+  const open = (reconcile: (s: St) => GameEventDraft[], backend = memoryBackend()) => {
+    let t = 1_760_000_000_000;
+    return openGameData<St>({ folder, contentHash: 'c1', codeVersion: 'b1', backend, now: () => (t += 1000), schedule: () => {}, reconcile });
+  };
+  const count = (evs: readonly GameEvent[], type: string) => evs.filter((e) => e.type === type).length;
+
+  it('commits one override and one fact, then nothing more, also after a reopen', async () => {
+    const reconcile = (s: St): GameEventDraft[] => [passed, ...(s.lift.overrides === 0 ? [lift] : [])];
+    const backend = memoryBackend();
+    const d = await open(reconcile, backend);
+    const first = d.commit([hatch('b1')]);
+    expect(first.map((e) => e.type)).toEqual(['egg.hatched', 'step.passed', 'learn.override']);
+    expect(d.commit([hatch('b2')]).map((e) => e.type)).toEqual(['egg.hatched']);
+    await d.flush();
+    const again = await open(reconcile, backend);
+    expect(again.commit([hatch('b3')]).map((e) => e.type)).toEqual(['egg.hatched']);
+    expect(count(again.allEvents(), 'learn.override')).toBe(1);
+    expect(count(again.allEvents(), 'step.passed')).toBe(1);
+  });
+
+  it('commits an override returned twice in one round once', async () => {
+    const d = await open((s) => (s.lift.overrides === 0 ? [lift, { ...lift }] : []));
+    d.commit([hatch('b1')]);
+    expect(count(d.allEvents(), 'learn.override')).toBe(1);
   });
 });

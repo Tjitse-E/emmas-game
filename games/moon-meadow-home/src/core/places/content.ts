@@ -5,13 +5,14 @@ import openingsJson from '../../../content/places/openings.json' with { type: 'j
 import plotsJson from '../../../content/places/plots.json' with { type: 'json' };
 import type { OpeningDef } from './openings.ts';
 import type { PlotDef, RowDef } from './building.ts';
+import { RELEASES, type Release } from '../content/types.ts';
 
 export const CURRENT_RELEASE: string = releaseJson.release;
 
-/** Releases are '1.0', '1.1', '1.2', '1.3' and 'later'. 'later' is never released. */
+/** Releases in order (learning's RELEASES). 'later' and unknown values are never released. */
 export function released(release: string, current: string = CURRENT_RELEASE): boolean {
-  const r = Number(release), c = Number(current);
-  return Number.isFinite(r) && Number.isFinite(c) && r <= c;
+  const r = RELEASES.indexOf(release as Release), c = RELEASES.indexOf(current as Release);
+  return release !== 'later' && r >= 0 && c >= 0 && r <= c;
 }
 
 

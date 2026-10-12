@@ -39,7 +39,7 @@ export function phraseId(phraseIdInContent: string): string {
   return `phrase-${phraseIdInContent}`;
 }
 export type NumKind = 'n' | 'movein' | 'visit' | 'door-bed' | 'herd' | 'sky' | 'over' | 'cold' | 'warm' | 'nest'
-  | 'up' | 'more' | 'count' | 'tap-door' | 'need' | 'sash-has';
+  | 'up' | 'more' | 'count' | 'tap-door' | 'need' | 'sash-has' | 'egg' | 'rack' | 'in';
 export function numId(kind: NumKind, n: number): string {
   return kind === 'n' ? `num-${n}` : `num-${kind}-${n}`;
 }

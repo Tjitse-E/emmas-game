@@ -137,6 +137,12 @@
       "needs": []
     },
     {
+      "id": "hay-rack",
+      "strand": "m",
+      "release": "1.0.1",
+      "needs": []
+    },
+    {
       "id": "roll-call",
       "strand": "name",
       "release": "1.0",

@@ -74,7 +74,7 @@ export type StepId = string;   // 'R01', 'R04D', 'S10', 'M09'
 export type ItemId = string;   // see section 12
 export type GpcId = string;    // 'ai', 'ow.oa', 'a-e', 'y.ee'
 export type Phoneme = string;  // one of PHONEMES (learning, src/core/content/gpc.ts)
-export type Release = '1.0' | '1.1' | '1.2' | '1.3' | 'later';
+export type Release = '1.0' | '1.0.1' | '1.1' | '1.2' | '1.3' | 'later';
 
 /** Breed ids (art). Egg kinds (learning) bring the breed in BREED_OF (heartbeat). */
 export type BreedId = 'moon' | 'nestling' | 'pebble' | 'cosy' | 'berry' | 'snow' | 'bubble' | 'post' | 'sparkle';
@@ -138,6 +138,7 @@ export type MomentKind =
   | 'first-sound' | 'naming-bells' | 'naming-garden' | 'label' | 'label-plural' | 'sign' | 'note' | 'letter-order'
   | 'egg-moon' | 'egg-small-nest' | 'egg-two-stone' | 'egg-blanket' | 'egg-berry' | 'egg-snow'
   | 'door-visit' | 'roll-call-door' | 'trim' | 'beads' | 'post-pin' | 'post-sash' | 'parcel' | 'wall'
+  | 'hay-rack'          // docs/v3/next/plan.md N21: the stable's maths moment (release 1.0.1)
   | 'roll-call' | 'envelope'
   | 'station-wish';   // R34: a care-station wish; review or mixed picks only, never in a pass window
 
@@ -386,7 +387,7 @@ export type Learner = { v: 1; profile: string; lastT: number; [k: string]: unkno
 export type StepStatus = 'passed' | 'placed' | 'display' | 'waiting' | 'side' | 'school' | 'current' | 'ahead';
 export type SpellingKnowledge = { own: GpcId[]; current: StepId | null; currentIndex: number; pairs: string[]; finalVoicedOk: boolean; capitals: boolean; level: 1 | 2 | 3 };
 export type ReadingKnowledge = { gpcs: GpcId[]; items: ItemId[]; pairs: string[]; current: StepId | null; level: 1 | 2 | 3 };
-export type LearnFact = DraftOf<'step.passed'> | DraftOf<'placement.done'>;
+export type LearnFact = DraftOf<'step.passed'> | DraftOf<'placement.done'> | DraftOf<'learn.override'>;
 export type Jewel = { step: StepId; strand: Strand; face: string[]; fresh: boolean; t: number };
 
 export declare const LEARNER_FOLD_VERSION: number;
@@ -431,7 +432,8 @@ export type ItemRequest = {
 export type MathsTask =
   | { op: 'subitise'; n: number } | { op: 'numeral'; n: number } | { op: 'compare'; want: 'fewest' | 'most' }
   | { op: 'more'; n: number } | { op: 'less'; n: number } | { op: 'missing'; whole: number; part: number }
-  | { op: 'pair'; a: number; b: number } | { op: 'add'; a: number; b: number } | { op: 'take'; a: number; b: number }
+  | { op: 'pair'; a: number; b: number }   // a + b is the total (2 to 18), a <= b
+  | { op: 'add'; a: number; b: number } | { op: 'take'; a: number; b: number }
   | { op: 'pattern'; unit: 'AB' | 'ABB' | 'ABC' | 'AAB' };
 export type Carrier =
   | { kind: 'word'; word: string }
@@ -814,7 +816,7 @@ export function phraseId(phraseIdInContent: string): string {
   return `phrase-${phraseIdInContent}`;
 }
 export type NumKind = 'n' | 'movein' | 'visit' | 'door-bed' | 'herd' | 'sky' | 'over' | 'cold' | 'warm' | 'nest'
-  | 'up' | 'more' | 'count' | 'tap-door' | 'need' | 'sash-has';
+  | 'up' | 'more' | 'count' | 'tap-door' | 'need' | 'sash-has' | 'egg' | 'rack' | 'in';
 export function numId(kind: NumKind, n: number): string {
   return kind === 'n' ? `num-${n}` : `num-${kind}-${n}`;
 }

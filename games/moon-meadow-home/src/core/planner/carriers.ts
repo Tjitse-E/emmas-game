@@ -9,7 +9,7 @@ import { shuffle } from '../rng.ts';
 import type { Carrier, CarrierChoice, ItemRequest, PlanContext } from './types.ts';
 import { visitRange } from './visit.ts';
 
-const MATHS_MOMENTS: readonly MomentKind[] = ['post-sash', 'parcel', 'trim', 'beads', 'post-pin', 'wall'];
+const MATHS_MOMENTS: readonly MomentKind[] = ['post-sash', 'parcel', 'trim', 'beads', 'post-pin', 'wall', 'hay-rack'];
 const DOOR_MOMENTS: readonly MomentKind[] = ['door-visit', 'roll-call-door'];
 const PHRASE_MOMENTS: readonly MomentKind[] = ['note', 'tricky-act', 'basket-and', 'basket-adj', 'salon-card', 'asking-bubble', 'two-state-wish'];
 const WORD_ITEM_KINDS: readonly string[] = ['grapheme', 'cluster', 'pattern'];

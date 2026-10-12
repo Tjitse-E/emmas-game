@@ -7,8 +7,8 @@ export type GpcId = string;       // "ai", "ow.oa", "a-e", "y.ee"
 export type Phoneme = string;     // one of PHONEMES in gpc.ts
 export type ItemId = string;      // "r:g:ai", "s:end:es", "m:miss:10-7", "name:<key>"
 
-export type Release = '1.0' | '1.1' | '1.2' | '1.3' | 'later';
-export const RELEASES: readonly Release[] = ['1.0', '1.1', '1.2', '1.3', 'later'];
+export type Release = '1.0' | '1.0.1' | '1.1' | '1.2' | '1.3' | 'later';
+export const RELEASES: readonly Release[] = ['1.0', '1.0.1', '1.1', '1.2', '1.3', 'later'];
 /** True when something marked `r` is part of a build of release `build`. 'later' is never part of a build. */
 export function releaseAtMost(r: Release, build: Release): boolean {
   return r !== 'later' && RELEASES.indexOf(r) <= RELEASES.indexOf(build);
@@ -20,13 +20,14 @@ export type ItemKind =
   | 'mark' | 'capital' | 'and' | 'sentence' | 'adjective' | 'letter' | 'first-sound'
   | 'subitise' | 'numeral' | 'compare' | 'bond' | 'fact' | 'm-pattern';
 
-/** Contracts C2 MomentKind, with `wall` (R22) and `station-wish` (R34). */
+/** Contracts C2 MomentKind, with `wall` (R22), `station-wish` (R34) and `hay-rack` (docs/v3/next/plan.md N21). */
 export type MomentKind =
   | 'wish' | 'bath-wish' | 'twin-wish' | 'one-or-many' | 'tricky-act' | 'basket-and' | 'basket-adj'
   | 'salon-card' | 'asking-bubble' | 'two-state-wish'
   | 'first-sound' | 'naming-bells' | 'naming-garden' | 'label' | 'label-plural' | 'sign' | 'note' | 'letter-order'
   | 'egg-moon' | 'egg-small-nest' | 'egg-two-stone' | 'egg-blanket' | 'egg-berry' | 'egg-snow'
   | 'door-visit' | 'roll-call-door' | 'trim' | 'beads' | 'post-pin' | 'post-sash' | 'parcel' | 'wall'
+  | 'hay-rack'
   | 'roll-call' | 'envelope'
   | 'station-wish';
 export const MOMENT_KINDS: readonly MomentKind[] = [
@@ -35,6 +36,7 @@ export const MOMENT_KINDS: readonly MomentKind[] = [
   'first-sound', 'naming-bells', 'naming-garden', 'label', 'label-plural', 'sign', 'note', 'letter-order',
   'egg-moon', 'egg-small-nest', 'egg-two-stone', 'egg-blanket', 'egg-berry', 'egg-snow',
   'door-visit', 'roll-call-door', 'trim', 'beads', 'post-pin', 'post-sash', 'parcel', 'wall',
+  'hay-rack',
   'roll-call', 'envelope',
   'station-wish',
 ];
@@ -47,7 +49,7 @@ export type MathsTask =
   | { op: 'more'; n: number }                       // one more than n
   | { op: 'less'; n: number }                       // one less than n
   | { op: 'missing'; whole: number; part: number }  // part is shown, she places whole - part
-  | { op: 'pair'; a: number; b: number }            // a + b = 10, a <= b
+  | { op: 'pair'; a: number; b: number }            // a + b is the total (2 to 18), a <= b
   | { op: 'add'; a: number; b: number }             // a >= b, she counts on from a
   | { op: 'take'; a: number; b: number }            // a - b
   | { op: 'pattern'; unit: 'AB' | 'ABB' | 'ABC' | 'AAB' };

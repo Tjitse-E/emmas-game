@@ -38,3 +38,8 @@ export function nextEgg(ctx: PlanContext, rng: Rng): EggOffer {
   }
   return { kind: kind ?? 'moon', pick: null };
 }
+
+/** The hay rack's maths pick (docs/v3/next/plan.md 3.1). Lane eggs adds the easy-review filter (N8). */
+export function nextRack(ctx: PlanContext, rng: Rng): Pick | null {
+  return nextItem(ctx, { strand: 'm', moments: ['hay-rack'], place: 'manger' }, rng);
+}

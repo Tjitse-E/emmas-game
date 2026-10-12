@@ -148,4 +148,11 @@ describe('release gate', () => {
     expect(released('later', '1.3')).toBe(false);
     expect(released('1.2', '1.1')).toBe(false);
   });
+
+  it('orders the patch release 1.0.1 by the release list, not as a number', () => {
+    expect(released('1.0', '1.0.1')).toBe(true);
+    expect(released('1.1', '1.0.1')).toBe(false);
+    expect(released('1.0.1', '1.0.1')).toBe(true);
+    expect(released('later', '1.3')).toBe(false);
+  });
 });
