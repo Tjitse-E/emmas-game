@@ -14,6 +14,34 @@ export function placesHook(): PlacesHook {
 
 const parentStore = () => import('../parent/store.svelte.ts');
 
+/** Task A7: the meadow's part, set while the meadow is on screen. */
+export type MeadowApi = {
+  bubbles(): { kind: string; place: string }[];
+  tapBubble(kind: string): void;
+  opening(): string | null;
+  edges(): string[];
+  lite(): boolean;
+};
+let meadow: MeadowApi | null = null;
+export function registerMeadow(m: MeadowApi | null): void {
+  meadow = m;
+}
+/** Bubbles on the meadow now (empty when the meadow is not on screen). */
+api.bubbles = (): { kind: string; place: string }[] => meadow?.bubbles() ?? [];
+/** Taps the first bubble of this kind, as Emma would. */
+api.tapBubble = (kind: string): void => meadow?.tapBubble(kind);
+/** The opening the meadow announced on this arrival, or null. */
+api.opening = (): string | null => meadow?.opening() ?? null;
+/** The meadow's edges as `<id>:<open|plot>`. */
+api.edges = (): string[] => meadow?.edges() ?? [];
+/** Whether the meadow draws lite unicorns (R63). */
+api.lite = (): boolean => meadow?.lite() ?? false;
+/** Goes to a place scene (`meadow`, `toy-shelf`, `bath-pond`, ...) as an edge tap would. */
+api.goPlace = async (id: string, params: Record<string, unknown> = {}): Promise<void> => {
+  const { enterPlace } = await import('./nav.ts');
+  await enterPlace(id, params);
+};
+
 /** Task A15: the parent corner. */
 api.parent = {
   async open(pin?: string): Promise<boolean> { return (await parentStore()).unlock(pin); },
