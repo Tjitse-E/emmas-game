@@ -3,11 +3,13 @@
 // (`parent`) is registered lazily by the registry from src/parent/ParentCorner.svelte.
 import type { Component } from 'svelte';
 import './hook.ts';
+import Meadow from '../scenes/places/Meadow.svelte';
 import ToyShelf from '../scenes/places/ToyShelf.svelte';
 import BathPond from '../scenes/places/BathPond.svelte';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const placeScenes: Record<string, Component<any>> = {
+  meadow: Meadow,
   'toy-shelf': ToyShelf,
   'bath-pond': BathPond,
 };
