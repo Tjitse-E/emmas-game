@@ -833,6 +833,27 @@
       "fluency": false
     },
     {
+      "id": "tle",
+      "text": "tle",
+      "phonemes": [
+        "@",
+        "l"
+      ],
+      "vowel": false,
+      "sound": null,
+      "fluency": false
+    },
+    {
+      "id": "mb",
+      "text": "mb",
+      "phonemes": [
+        "m"
+      ],
+      "vowel": false,
+      "sound": "m",
+      "fluency": false
+    },
+    {
       "id": "u.uu",
       "text": "u",
       "phonemes": [

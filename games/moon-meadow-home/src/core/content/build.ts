@@ -7,6 +7,23 @@ import type {
   Step, StepId, Strand, Word,
 } from './types.ts';
 
+/** The leading and trailing consonant runs of a GPC list, as cluster ids (`fr-`, `-st`) or null.
+ *  A doubled consonant counts once, so "egg" has no cluster. */
+export function consonantRuns(gs: readonly GpcId[], table: Record<GpcId, RawGpc>): { lead: string | null; trail: string | null } {
+  const cons = (g: GpcId) => table[g] !== undefined && !table[g].vowel;
+  let lead = 0;
+  while (lead < gs.length && cons(gs[lead])) lead++;
+  let trail = 0;
+  while (trail < gs.length - lead && cons(gs[gs.length - 1 - trail])) trail++;
+  const once = (run: readonly GpcId[]) => run.filter((g, i) => i === 0 || g !== run[i - 1]);
+  const l = once(gs.slice(0, lead));
+  const t = once(gs.slice(gs.length - trail));
+  return {
+    lead: l.length >= 2 ? `${l.map(baseText).join('')}-` : null,
+    trail: t.length >= 2 ? `-${t.map(baseText).join('')}` : null,
+  };
+}
+
 /** The reading or spelling items a word holds. Only ids that exist in the built item index are added. */
 export function wordItems(word: RawWord, p: 'r' | 's', items: Record<ItemId, Item>, table: Record<GpcId, RawGpc>): ItemId[] {
   const out: ItemId[] = [];
@@ -14,19 +31,16 @@ export function wordItems(word: RawWord, p: 'r' | 's', items: Record<ItemId, Ite
   const gs = word.gpcs;
   for (const g of gs) add(`${p}:g:${g}`);
   const cons = (g: GpcId) => !table[g].vowel;
-  let lead = 0;
-  while (lead < gs.length && cons(gs[lead])) lead++;
-  let trail = 0;
-  while (trail < gs.length - lead && cons(gs[gs.length - 1 - trail])) trail++;
-  if (lead >= 2) add(`${p}:cl:${gs.slice(0, lead).map(baseText).join('')}-`);
-  if (trail >= 2) add(`${p}:cl:-${gs.slice(gs.length - trail).map(baseText).join('')}`);
-  if (lead >= 2 && trail >= 2) add(`${p}:pat:ccvcc`);
+  const runs = consonantRuns(gs, table);
+  if (runs.lead) add(`${p}:cl:${runs.lead}`);
+  if (runs.trail) add(`${p}:cl:${runs.trail}`);
+  if (runs.lead && runs.trail) add(`${p}:pat:ccvcc`);
   const digraphs = gs.filter(g => baseText(g).length >= 2 && !table[g].split).length;
   if (digraphs >= 2) add(`${p}:pat:two-digraphs`);
   if (gs.some((g, i) => i > 0 && g === gs[i - 1] && cons(g))) add(`${p}:pat:double`);
   if (word.compound) add(`${p}:pat:compound`);
   if ((word.syllables ?? 1) >= 2 && !word.compound) add(`${p}:pat:two-syllable`);
-  if ((lead >= 2 || trail >= 2) && gs.some(g => table[g].vowel && baseText(g).length >= 2)) add(`${p}:pat:long-cluster`);
+  if ((runs.lead || runs.trail) && gs.some(g => table[g].vowel && baseText(g).length >= 2)) add(`${p}:pat:long-cluster`);
   if (word.affix) add(`${p}:${word.affix === 'un' ? 'pre' : 'sfx'}:${word.affix}`);
   return out;
 }

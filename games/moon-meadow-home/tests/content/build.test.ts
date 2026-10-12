@@ -1,6 +1,6 @@
 // G/tests/content/build.test.ts
 import { describe, it, expect } from 'vitest';
-import { buildContent, stepIndex } from '../../src/core/content/build.ts';
+import { buildContent, consonantRuns, stepIndex } from '../../src/core/content/build.ts';
 import { spell } from '../../src/core/content/gpc.ts';
 import { miniContent, miniRaw } from '../fixtures/mini.ts';
 
@@ -51,6 +51,13 @@ describe('buildContent', () => {
 
   it('only adds cluster items that exist in the ladder', () => {
     expect(c.words.tray.rItems).not.toContain('r:cl:tr-');
+  });
+
+  it('counts a doubled consonant once in a cluster run', () => {
+    const t = { ...c.gpcs, g: c.gpcs.g };
+    expect(consonantRuns(['e', 'g', 'g'], t)).toEqual({ lead: null, trail: null });
+    expect(consonantRuns(['n', 'e', 's', 't'], t)).toEqual({ lead: null, trail: '-st' });
+    expect(consonantRuns(['t', 'r', 'ay'], t)).toEqual({ lead: 'tr-', trail: null });
   });
 
   it('names clips after the word and its plural', () => {

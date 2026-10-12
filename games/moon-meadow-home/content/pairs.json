@@ -294,15 +294,6 @@
       }
     },
     {
-      "pair": "th",
-      "a": "three",
-      "b": "tree",
-      "model": {
-        "a": "Three starts with th.",
-        "b": "Tree starts with t."
-      }
-    },
-    {
       "pair": "ch-h",
       "a": "chair",
       "b": "hair",
@@ -323,8 +314,8 @@
     },
     {
       "pair": "ee",
-      "a": "bee",
-      "b": "bay"
+      "a": "tree",
+      "b": "tray"
     },
     {
       "pair": "oo",
@@ -353,8 +344,8 @@
     },
     {
       "pair": "i-ee",
-      "a": "hill",
-      "b": "heel"
+      "a": "chick",
+      "b": "cheek"
     },
     {
       "pair": "i-ee",

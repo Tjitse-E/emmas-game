@@ -1,6 +1,6 @@
 // G/tools/lib/validate.ts
 // Pure content validation. Every check returns findings; nothing throws.
-import { buildContent, wordItems } from '../../src/core/content/build.ts';
+import { buildContent, consonantRuns, wordItems } from '../../src/core/content/build.ts';
 import { buildBlocklist, checkBlocked, type RawBlocklist } from '../../src/core/content/blocklist.ts';
 import { PHONEMES, phonemesOf, slugName, spell } from '../../src/core/content/gpc.ts';
 import { KEY_RE, NARRATOR_ONLY_PREFIXES, nameId } from '../../src/core/keys.ts';
@@ -211,20 +211,9 @@ function checkWords({ raw, c, t, table }: Ctx): Finding[] {
 
 function clusterFindings(w: RawWord, c: Content, table: Record<string, RawGpc>): Finding[] {
   const out: Finding[] = [];
-  const gs = w.gpcs;
-  const cons = (g: string) => !table[g].vowel;
-  let lead = 0;
-  while (lead < gs.length && cons(gs[lead])) lead++;
-  let trail = 0;
-  while (trail < gs.length - lead && cons(gs[gs.length - 1 - trail])) trail++;
-  const base = (g: string) => g.split('.')[0];
-  if (lead >= 2) {
-    const id = `r:cl:${gs.slice(0, lead).map(base).join('')}-`;
-    if (!c.items[id]) out.push(err('WORD_CLUSTER', `${w.w}: cluster item ${id} does not exist`));
-  }
-  if (trail >= 2) {
-    const id = `r:cl:-${gs.slice(gs.length - trail).map(base).join('')}`;
-    if (!c.items[id]) out.push(err('WORD_CLUSTER', `${w.w}: cluster item ${id} does not exist`));
+  const runs = consonantRuns(w.gpcs, table);
+  for (const run of [runs.lead, runs.trail]) {
+    if (run && !c.items[`r:cl:${run}`]) out.push(err('WORD_CLUSTER', `${w.w}: cluster item r:cl:${run} does not exist`));
   }
   return out;
 }

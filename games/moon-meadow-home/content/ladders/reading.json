@@ -843,6 +843,11 @@
           "id": "r:cl:-nch",
           "kind": "cluster",
           "cluster": "-nch"
+        },
+        {
+          "id": "r:cl:-lf",
+          "kind": "cluster",
+          "cluster": "-lf"
         }
       ]
     },
@@ -920,6 +925,21 @@
           "id": "r:cl:gl-",
           "kind": "cluster",
           "cluster": "gl-"
+        },
+        {
+          "id": "r:cl:cl-",
+          "kind": "cluster",
+          "cluster": "cl-"
+        },
+        {
+          "id": "r:cl:fl-",
+          "kind": "cluster",
+          "cluster": "fl-"
+        },
+        {
+          "id": "r:cl:sn-",
+          "kind": "cluster",
+          "cluster": "sn-"
         }
       ]
     },
