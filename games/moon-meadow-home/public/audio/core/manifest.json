@@ -1,3 +1,1158 @@
 {
- "clips": {}
+ "clips": {
+  "g-meadow-way": {
+   "hash": "d34e5dca1eba3b21785516338f7d72d13a6db4c097da2416d17f10373e6a216a",
+   "speaker": "narrator",
+   "text": "The meadow is this way.",
+   "file": "g-meadow-way.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1438,
+   "generated": "2026-10-12T13:04:29",
+   "ok": true,
+   "stt": {
+    "hash": "d34e5dca1eba3b21785516338f7d72d13a6db4c097da2416d17f10373e6a216a",
+    "text": "The meadow is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-look": {
+   "hash": "0aeea1d569ab760af9b2f7c96518e29b903577010d15147e1ecdb50f5910f17c",
+   "speaker": "narrator",
+   "text": "Look, like this.",
+   "file": "g-look.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1423,
+   "generated": "2026-10-12T13:04:29",
+   "ok": true,
+   "stt": {
+    "hash": "0aeea1d569ab760af9b2f7c96518e29b903577010d15147e1ecdb50f5910f17c",
+    "text": "Look, like this",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-listen": {
+   "hash": "7972284bc12facf4b26672b46f7e6cf76db63353a9cab34cbb5111caed553e51",
+   "speaker": "narrator",
+   "text": "Listen.",
+   "file": "g-listen.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 604,
+   "generated": "2026-10-12T13:04:28",
+   "ok": true,
+   "stt": {
+    "hash": "7972284bc12facf4b26672b46f7e6cf76db63353a9cab34cbb5111caed553e51",
+    "text": "Listen",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-now-listen": {
+   "hash": "b9719d86595b3a4ab0e152fce2d6edffa3fe4684c776f34b3d4a26255b7eacf9",
+   "speaker": "narrator",
+   "text": "Now listen.",
+   "file": "g-now-listen.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 926,
+   "generated": "2026-10-12T13:04:29",
+   "ok": true,
+   "stt": {
+    "hash": "b9719d86595b3a4ab0e152fce2d6edffa3fe4684c776f34b3d4a26255b7eacf9",
+    "text": "Now listen",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-says": {
+   "hash": "3e25b60f337b310d8398136d6ba87507971bd376a74bfac3577b929b0c176097",
+   "speaker": "narrator",
+   "text": "This is what it says.",
+   "file": "fb-says.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1356,
+   "generated": "2026-10-12T13:04:31",
+   "ok": true,
+   "stt": {
+    "hash": "3e25b60f337b310d8398136d6ba87507971bd376a74bfac3577b929b0c176097",
+    "text": "This is what it says",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-lovely": {
+   "hash": "94502247db4e301610067880a8f36541a949f48643c914e47c64fbb25d021d4f",
+   "speaker": "narrator",
+   "text": "Lovely!",
+   "file": "fb-lovely.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 955,
+   "generated": "2026-10-12T13:04:29",
+   "ok": true,
+   "stt": {
+    "hash": "94502247db4e301610067880a8f36541a949f48643c914e47c64fbb25d021d4f",
+    "text": "Lovely",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-well-done": {
+   "hash": "18a739e52dc936b9727f2ffb88cde7aca12fdff9206e0a73b7738706b0ee3d50",
+   "speaker": "narrator",
+   "text": "Well done!",
+   "file": "fb-well-done.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1079,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true,
+   "stt": {
+    "hash": "18a739e52dc936b9727f2ffb88cde7aca12fdff9206e0a73b7738706b0ee3d50",
+    "text": "Well done",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-yes": {
+   "hash": "805689c4b8c9b192326f6f03adab43d572f2568279f22fc0fec39f37a061130f",
+   "speaker": "narrator",
+   "text": "Yes!",
+   "file": "fb-yes.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 718,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true,
+   "stt": {
+    "hash": "805689c4b8c9b192326f6f03adab43d572f2568279f22fc0fec39f37a061130f",
+    "text": "Yes",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-letters": {
+   "hash": "33672cf6a064c24bc37a3ab7f43a380784c564bbb5dd599166531838c3665694",
+   "speaker": "narrator",
+   "text": "Look at the letters again.",
+   "file": "fb-letters.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1361,
+   "generated": "2026-10-12T13:04:29",
+   "ok": true,
+   "stt": {
+    "hash": "33672cf6a064c24bc37a3ab7f43a380784c564bbb5dd599166531838c3665694",
+    "text": "Look at the letters again",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-listen": {
+   "hash": "e3747cd3051d5092b0a65e96bc5ec2ae348e46678895a24823fb0f3a6637059f",
+   "speaker": "narrator",
+   "text": "Hmm. Listen again.",
+   "file": "fb-listen.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1784,
+   "generated": "2026-10-12T13:04:29",
+   "ok": true,
+   "stt": {
+    "hash": "e3747cd3051d5092b0a65e96bc5ec2ae348e46678895a24823fb0f3a6637059f",
+    "text": "Hmm. Listen again",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h-sounds": {
+   "hash": "5e5fa2beca994b386bd54871fda8bf79e74202b60bcce5f2c7d7e533bb4c2781",
+   "speaker": "narrator",
+   "text": "Listen to the sounds.",
+   "file": "h-sounds.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1443,
+   "generated": "2026-10-12T13:04:29",
+   "ok": true,
+   "stt": {
+    "hash": "5e5fa2beca994b386bd54871fda8bf79e74202b60bcce5f2c7d7e533bb4c2781",
+    "text": "Listen to the sounds",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "platform-turn": {
+   "hash": "1e391ce1bf20fee0fb6d4fadf0119769ddee548866d1bf5c51b0575ee1dc492a",
+   "speaker": "narrator",
+   "text": "Please turn the iPad on its side.",
+   "file": "platform-turn.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2188,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true,
+   "stt": {
+    "hash": "1e391ce1bf20fee0fb6d4fadf0119769ddee548866d1bf5c51b0575ee1dc492a",
+    "text": "Please turn the iPad on its side",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "foal-hello": {
+   "hash": "cc02b3a3ee811430f40da36fb65ac92653d6b6b52bce1e4238b7ee2a4719ef99",
+   "speaker": "foal",
+   "text": "[giggles] Hello!",
+   "file": "foal-hello.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1904,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true
+  },
+  "foal-yay": {
+   "hash": "bc886f18820c90291eecd5131b311d1db543a82f2a24454da817d21bae568f71",
+   "speaker": "foal",
+   "text": "[excited] Yay! Thank you!",
+   "file": "foal-yay.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1722,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true
+  },
+  "foal-silly": {
+   "hash": "d9ed1f78f0699cd9eb06513e1b1daa9a4beaf930d376f4929efe24e4500b9238",
+   "speaker": "foal",
+   "text": "[giggles] Silly!",
+   "file": "foal-silly.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1781,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true
+  },
+  "foal-notme": {
+   "hash": "3242795164cbface268d4a3cad12b0bbb2b88ce69efc737d69d82faa987a36a1",
+   "speaker": "foal",
+   "text": "[giggles] Not me!",
+   "file": "foal-notme.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1630,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true
+  },
+  "foal-wee": {
+   "hash": "4d51df3fea22047003bd4ab32e14391bf0df6c759e75daa3570a3c47c8b43826",
+   "speaker": "foal",
+   "text": "Wheee!",
+   "file": "foal-wee.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1474,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true
+  },
+  "foal-yum": {
+   "hash": "e9946dc104080199a3ec5c374d78c54fad7a588abd0df50249308dadd5e538f8",
+   "speaker": "foal",
+   "text": "Mmm! Yummy!",
+   "file": "foal-yum.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1840,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true
+  },
+  "foal-cuddle": {
+   "hash": "dedeacef6b503dc3c9fa9adcf633bdcbae9ee02cf466cf7f6ee07c0631a00b3f",
+   "speaker": "foal",
+   "text": "[happy sigh] Aww.",
+   "file": "foal-cuddle.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1856,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true
+  },
+  "foal-yawn": {
+   "hash": "ea4a78a7154c0c0699252d32fe66aec9ddaab327750a480224c5b539d2a8cb26",
+   "speaker": "foal",
+   "text": "[yawns] Sleepy.",
+   "file": "foal-yawn.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 3440,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true
+  },
+  "foal-look": {
+   "hash": "5e7f3c3835f3cad32c195bf7cf40078c17aad841960bf7745d18859260eb220f",
+   "speaker": "foal",
+   "text": "[giggles] Look!",
+   "file": "foal-look.mp3",
+   "model": "eleven_v3",
+   "seed": 7,
+   "duration_ms": 1920,
+   "generated": "2026-10-12T13:04:31",
+   "ok": true
+  },
+  "g-egg": {
+   "hash": "8e81cc2242bd1ec1d11c5ad4212099c1b1637528c4d4e65a90742bd2ceff8de1",
+   "speaker": "narrator",
+   "text": "Make every cup warm, and the egg will hatch.",
+   "file": "g-egg.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3030,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true,
+   "stt": {
+    "hash": "8e81cc2242bd1ec1d11c5ad4212099c1b1637528c4d4e65a90742bd2ceff8de1",
+    "text": "Make every cup warm and the egg will hatch",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-stone": {
+   "hash": "128c7032885d617763f77d5433ccdced1b3a2b1c9de62f5627c96bd9d47b7d51",
+   "speaker": "narrator",
+   "text": "Drag one stone to the nest.",
+   "file": "g-stone.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2166,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true,
+   "stt": {
+    "hash": "128c7032885d617763f77d5433ccdced1b3a2b1c9de62f5627c96bd9d47b7d51",
+    "text": "Drag one stone to the nest",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-two-stones": {
+   "hash": "3f3911e5f327790a0c7e7c4d68e851cd9986cc90dc3cf3cfb01de1220742bc88",
+   "speaker": "narrator",
+   "text": "This egg needs two stones. Together they make every cup warm.",
+   "file": "g-two-stones.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 4760,
+   "generated": "2026-10-12T13:04:31",
+   "ok": true,
+   "stt": {
+    "hash": "3f3911e5f327790a0c7e7c4d68e851cd9986cc90dc3cf3cfb01de1220742bc88",
+    "text": "This egg needs two stones. Together they make every cup warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-one-more": {
+   "hash": "bbe47ede6c9cca3d323e690982fd733709a13426a9e77114a9ffc141165c03dc",
+   "speaker": "narrator",
+   "text": "Now one more stone.",
+   "file": "g-one-more.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1911,
+   "generated": "2026-10-12T13:04:30",
+   "ok": true,
+   "stt": {
+    "hash": "bbe47ede6c9cca3d323e690982fd733709a13426a9e77114a9ffc141165c03dc",
+    "text": "Now one more stone",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-blanket": {
+   "hash": "40541ae84cc53f9d928d4adfecaf15f1bd4e2484cb8f84da0a21d19570b9d975",
+   "speaker": "narrator",
+   "text": "The blanket hides the cups.",
+   "file": "g-blanket.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1872,
+   "generated": "2026-10-12T13:04:31",
+   "ok": true,
+   "stt": {
+    "hash": "40541ae84cc53f9d928d4adfecaf15f1bd4e2484cb8f84da0a21d19570b9d975",
+    "text": "The blanket hides the cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-stars": {
+   "hash": "0f8647c575d4b8deeacc7aaea66b706c73041bf5df23422d7a82f43d46a45be0",
+   "speaker": "narrator",
+   "text": "Look at the stars on the egg. Then drag the stone that matches.",
+   "file": "g-stars.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 4240,
+   "generated": "2026-10-12T13:04:32",
+   "ok": true,
+   "stt": {
+    "hash": "0f8647c575d4b8deeacc7aaea66b706c73041bf5df23422d7a82f43d46a45be0",
+    "text": "Look at the stars on the egg, then drag the stone that matches",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-count-stars": {
+   "hash": "1d7e9d9b6956b826146224f090d421a0763ed2dace15f6b7a544ac71219a5dd7",
+   "speaker": "narrator",
+   "text": "Count the stars on the egg. Then drag the stone that matches.",
+   "file": "g-count-stars.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 4344,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "1d7e9d9b6956b826146224f090d421a0763ed2dace15f6b7a544ac71219a5dd7",
+    "text": "Count the stars on the egg, then drag the stone that matches",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-warm": {
+   "hash": "9638ddb15f021c736f2303a5577664440fdd51eb0313d1482068278fc7474730",
+   "speaker": "narrator",
+   "text": "Every cup is warm!",
+   "file": "fb-warm.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1716,
+   "generated": "2026-10-12T13:04:31",
+   "ok": true,
+   "stt": {
+    "hash": "9638ddb15f021c736f2303a5577664440fdd51eb0313d1482068278fc7474730",
+    "text": "Every cup is warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-hot": {
+   "hash": "cc87bda1f6968905f7288e8f549512496648a3a48c1916446886bbbd89dc007f",
+   "speaker": "narrator",
+   "text": "Too hot!",
+   "file": "fb-hot.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1216,
+   "generated": "2026-10-12T13:04:31",
+   "ok": true,
+   "stt": {
+    "hash": "cc87bda1f6968905f7288e8f549512496648a3a48c1916446886bbbd89dc007f",
+    "text": "Too hot",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-brr": {
+   "hash": "a15ab2e29d6ca53985ed22ed24667e68e9222c4b36680138100175cec3cb3474",
+   "speaker": "narrator",
+   "text": "Brr!",
+   "file": "fb-brr.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 754,
+   "generated": "2026-10-12T13:04:31",
+   "ok": true,
+   "stt": {
+    "hash": "a15ab2e29d6ca53985ed22ed24667e68e9222c4b36680138100175cec3cb3474",
+    "text": "Brrr.",
+    "match": true,
+    "how": "alike"
+   }
+  },
+  "fb-too-many": {
+   "hash": "10a9568eac494b178e3500ec2c89724a38b09bccdb32e04b15dd25e0ed7a23c1",
+   "speaker": "narrator",
+   "text": "Too many!",
+   "file": "fb-too-many.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1224,
+   "generated": "2026-10-12T13:04:32",
+   "ok": true,
+   "stt": {
+    "hash": "10a9568eac494b178e3500ec2c89724a38b09bccdb32e04b15dd25e0ed7a23c1",
+    "text": "Too many",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h-count": {
+   "hash": "bbb9a59ad45f0f3b00f0e02de5aaf7d12fb10c15e668abd50a38c6df521734a4",
+   "speaker": "narrator",
+   "text": "Let's count the cold cups.",
+   "file": "h-count.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1693,
+   "generated": "2026-10-12T13:04:32",
+   "ok": true,
+   "stt": {
+    "hash": "bbb9a59ad45f0f3b00f0e02de5aaf7d12fb10c15e668abd50a38c6df521734a4",
+    "text": "Let's count the cold cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h-peek": {
+   "hash": "b9eb6ecf1ca596bad46b5b3b67513e832eae0edf85d99769bfeb00b9ecd72a6d",
+   "speaker": "narrator",
+   "text": "Let's peek under the blanket.",
+   "file": "h-peek.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1804,
+   "generated": "2026-10-12T13:04:32",
+   "ok": true,
+   "stt": {
+    "hash": "b9eb6ecf1ca596bad46b5b3b67513e832eae0edf85d99769bfeb00b9ecd72a6d",
+    "text": "Let's peek under the blanket",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h-stars": {
+   "hash": "7910a5e6782bd718fe06600cb8ba2928c611e5920c08b00dcdcb9a01b073b09f",
+   "speaker": "narrator",
+   "text": "Let's count the stars.",
+   "file": "h-stars.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1536,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "7910a5e6782bd718fe06600cb8ba2928c611e5920c08b00dcdcb9a01b073b09f",
+    "text": "Let's count the stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-hatching": {
+   "hash": "a1f211716f88b9bfb50e31085878c285b6cc1ed35ac23d40b3808ee13138bade",
+   "speaker": "queen",
+   "text": "It's hatching!",
+   "file": "lumi-hatching.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 911,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "a1f211716f88b9bfb50e31085878c285b6cc1ed35ac23d40b3808ee13138bade",
+    "text": "It's hatching",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-baby": {
+   "hash": "3b2dd1ccf8f95f2973540cb4abe01835e77b8d0a92a3e8322ecd3e253126cc3f",
+   "speaker": "queen",
+   "text": "A baby unicorn! Hello, little one.",
+   "file": "lumi-baby.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2101,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "3b2dd1ccf8f95f2973540cb4abe01835e77b8d0a92a3e8322ecd3e253126cc3f",
+    "text": "A baby unicorn. Hello, little one",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-sparkly": {
+   "hash": "1d675f42755dfcbde9e732bf46ac9cbc83a05f68ac5e03c29630c4f6cffd7218",
+   "speaker": "queen",
+   "text": "Ooh, a sparkly one!",
+   "file": "lumi-sparkly.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1380,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "1d675f42755dfcbde9e732bf46ac9cbc83a05f68ac5e03c29630c4f6cffd7218",
+    "text": "Ooh, a sparkly one",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-bells": {
+   "hash": "3dfaa40ac60096f823e0306f4d0f65cde18ff21309e7023f2287a7360f3f9436",
+   "speaker": "narrator",
+   "text": "Your baby needs a name! Tap a bell to hear a name.",
+   "file": "g-bells.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3496,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "3dfaa40ac60096f823e0306f4d0f65cde18ff21309e7023f2287a7360f3f9436",
+    "text": "Your baby needs a name. Tap a bell to hear a name",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-bell-drag": {
+   "hash": "0b1e88a22b8a612fc24d394e5df024a7f52daac5281c6d442f93d19f2ca18379",
+   "speaker": "narrator",
+   "text": "Drag the name you like to your baby.",
+   "file": "g-bell-drag.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2164,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "0b1e88a22b8a612fc24d394e5df024a7f52daac5281c6d442f93d19f2ca18379",
+    "text": "Drag the name you like to your baby",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-spell": {
+   "hash": "133983b5c2e767567efd636a5e99aed47c455cac09ee9fc016319f3355e4fd94",
+   "speaker": "narrator",
+   "text": "Let's write the name on the tag. Listen.",
+   "file": "g-spell.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2607,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "133983b5c2e767567efd636a5e99aed47c455cac09ee9fc016319f3355e4fd94",
+    "text": "Let's write the name on the tag. Listen",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-gems": {
+   "hash": "7c5989a874810489950e820b0791547c723fcf4fc49a5e8cd7fe749e9502420e",
+   "speaker": "narrator",
+   "text": "Put the gems in the slots.",
+   "file": "g-gems.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1813,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "7c5989a874810489950e820b0791547c723fcf4fc49a5e8cd7fe749e9502420e",
+    "text": "Put the gems in the slots",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-slide": {
+   "hash": "cbe91ea073e5988e292a898bec083d7b1254668909322a21bab2faf8ea70fee9",
+   "speaker": "narrator",
+   "text": "Now slide the star, and listen.",
+   "file": "g-slide.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2443,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "cbe91ea073e5988e292a898bec083d7b1254668909322a21bab2faf8ea70fee9",
+    "text": "Now slide the star and listen",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-spelled": {
+   "hash": "ede6beab42a93c7730463e53392127efcccc431019a0c334a818c8441b2fd32c",
+   "speaker": "narrator",
+   "text": "You wrote your baby's name!",
+   "file": "fb-spelled.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1900,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "ede6beab42a93c7730463e53392127efcccc431019a0c334a818c8441b2fd32c",
+    "text": "You wrote your baby's name",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-gold": {
+   "hash": "58ac909a53b0e39fb38affca08aa84932c0982eaecb5223d0b0f89ccb3ad6efe",
+   "speaker": "narrator",
+   "text": "Make any name you like!",
+   "file": "g-gold.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1725,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "58ac909a53b0e39fb38affca08aa84932c0982eaecb5223d0b0f89ccb3ad6efe",
+    "text": "Make any name you like",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-gold-yes": {
+   "hash": "d585df9f81d23ef78443d2b41d0bf802966dee3dc1b83b63ff9179fdcc973d25",
+   "speaker": "narrator",
+   "text": "What a lovely name!",
+   "file": "fb-gold-yes.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1669,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "d585df9f81d23ef78443d2b41d0bf802966dee3dc1b83b63ff9179fdcc973d25",
+    "text": "What a lovely name",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-tricky": {
+   "hash": "b380a472b5629b6de28e0b49657a32fed007d25a0dee7a9bc8e762619e4af1a9",
+   "speaker": "narrator",
+   "text": "What a great name! It's a tricky one for me to say.",
+   "file": "fb-tricky.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3743,
+   "generated": "2026-10-12T13:04:33",
+   "ok": true,
+   "stt": {
+    "hash": "b380a472b5629b6de28e0b49657a32fed007d25a0dee7a9bc8e762619e4af1a9",
+    "text": "What a great name. It's a tricky one for me to say",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-no-vowel": {
+   "hash": "258248935b9329373cf841e25420579c7d92094d5ae27836e160eec8db6c0101",
+   "speaker": "narrator",
+   "text": "Every name needs a pink gem!",
+   "file": "fb-no-vowel.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2050,
+   "generated": "2026-10-12T13:04:34",
+   "ok": true,
+   "stt": {
+    "hash": "258248935b9329373cf841e25420579c7d92094d5ae27836e160eec8db6c0101",
+    "text": "Every name needs a pink gem",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-silly": {
+   "hash": "4ffb4e4176e146c272e22398aa0a81ced43e73ca3bcbd0dace061b058577e8f3",
+   "speaker": "narrator",
+   "text": "That's a silly name! Try other gems.",
+   "file": "fb-silly.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2951,
+   "generated": "2026-10-12T13:04:34",
+   "ok": true,
+   "stt": {
+    "hash": "4ffb4e4176e146c272e22398aa0a81ced43e73ca3bcbd0dace061b058577e8f3",
+    "text": "That's a silly name. Try other gems",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-that-says": {
+   "hash": "76a31c19d9037dd651b8e85a6a8197e467e18607cf8c3450c13730eb0cdb2c3d",
+   "speaker": "narrator",
+   "text": "That says.",
+   "file": "fb-that-says.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 954,
+   "generated": "2026-10-12T13:04:34",
+   "ok": true,
+   "stt": {
+    "hash": "76a31c19d9037dd651b8e85a6a8197e467e18607cf8c3450c13730eb0cdb2c3d",
+    "text": "That says",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-garden": {
+   "hash": "43ae8fcf200ba17aadc6cec68a376e9f783e095e5b4239fe5bb96a036bd06ad3",
+   "speaker": "narrator",
+   "text": "Tap a picture, and hear the names.",
+   "file": "g-garden.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2274,
+   "generated": "2026-10-12T13:04:37",
+   "ok": true,
+   "stt": {
+    "hash": "43ae8fcf200ba17aadc6cec68a376e9f783e095e5b4239fe5bb96a036bd06ad3",
+    "text": "Tap a picture and hear the names",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-first-sound": {
+   "hash": "8c77961e5428dff2959a3420d8ecdecd264673efa9ae244e526cd68d817d57e2",
+   "speaker": "narrator",
+   "text": "Tap a gem, and hear names that start with its sound.",
+   "file": "g-first-sound.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3393,
+   "generated": "2026-10-12T13:04:35",
+   "ok": true,
+   "stt": {
+    "hash": "8c77961e5428dff2959a3420d8ecdecd264673efa9ae244e526cd68d817d57e2",
+    "text": "Tap a gem and hear names that start with its sound",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-plus": {
+   "hash": "eaaedb4655fd8cee0f7193812038cc8e33be81f89a1412c3d0f6007c24a6e815",
+   "speaker": "narrator",
+   "text": "Tap the plus to add a gem slot.",
+   "file": "g-plus.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2243,
+   "generated": "2026-10-12T13:04:35",
+   "ok": true,
+   "stt": {
+    "hash": "eaaedb4655fd8cee0f7193812038cc8e33be81f89a1412c3d0f6007c24a6e815",
+    "text": "Tap the plus to add a gem slot",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-sky-name": {
+   "hash": "ceeb241aae35b2a533122bdf27dc5e96184c0f73112b663dde0e1511b30872ec",
+   "speaker": "narrator",
+   "text": "Ten stars make a sky unicorn! Give it a name.",
+   "file": "g-sky-name.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3600,
+   "generated": "2026-10-12T13:04:36",
+   "ok": true,
+   "stt": {
+    "hash": "ceeb241aae35b2a533122bdf27dc5e96184c0f73112b663dde0e1511b30872ec",
+    "text": "10 stars make a sky unicorn. Give it a name",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-moon-name": {
+   "hash": "202bdad1293c32866bff00853e2941196d6edcbe20e0b7747c00c4e5d5f0d009",
+   "speaker": "queen",
+   "text": "The moon told me a new name!",
+   "file": "lumi-moon-name.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1271,
+   "generated": "2026-10-12T13:04:37",
+   "ok": true,
+   "stt": {
+    "hash": "202bdad1293c32866bff00853e2941196d6edcbe20e0b7747c00c4e5d5f0d009",
+    "text": "The moon told me a new name",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-wish": {
+   "hash": "f42b751d4b6841d2560b563a99a5f2ebe1200d234f469989d72dc69e4ed92647",
+   "speaker": "narrator",
+   "text": "Your baby has a wish!",
+   "file": "g-wish.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1786,
+   "generated": "2026-10-12T13:04:36",
+   "ok": true,
+   "stt": {
+    "hash": "f42b751d4b6841d2560b563a99a5f2ebe1200d234f469989d72dc69e4ed92647",
+    "text": "Your baby has a wish",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-more-than-one": {
+   "hash": "3308c3208bcade1ca79b8049787acc05f0570a0e09a79771cad8591cc40463cb",
+   "speaker": "narrator",
+   "text": "More than one.",
+   "file": "fb-more-than-one.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1049,
+   "generated": "2026-10-12T13:04:37",
+   "ok": true,
+   "stt": {
+    "hash": "3308c3208bcade1ca79b8049787acc05f0570a0e09a79771cad8591cc40463cb",
+    "text": "More than one",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb-just-one": {
+   "hash": "9940ca4aaf7a819f1b5776e355cfabb2fc8fe70bde98a734515b8ced31758d2b",
+   "speaker": "narrator",
+   "text": "Just one.",
+   "file": "fb-just-one.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 817,
+   "generated": "2026-10-12T13:04:37",
+   "ok": true,
+   "stt": {
+    "hash": "9940ca4aaf7a819f1b5776e355cfabb2fc8fe70bde98a734515b8ced31758d2b",
+    "text": "Just one",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-tent": {
+   "hash": "85006a580c8a70502810c47fba931acc42a6c360f253945c4a8f166c2c5a4afc",
+   "speaker": "narrator",
+   "text": "A cosy tent for now! Your new stable row is coming.",
+   "file": "g-tent.mp3",
+   "model": "eleven_v4",
+   "seed": 2011,
+   "duration_ms": 3728,
+   "generated": "2026-10-12T13:05:06",
+   "ok": true,
+   "stt": {
+    "hash": "85006a580c8a70502810c47fba931acc42a6c360f253945c4a8f166c2c5a4afc",
+    "text": "A cozy tent for now. Your new stable row is coming",
+    "match": true,
+    "how": "spelling"
+   }
+  },
+  "g-rollcall": {
+   "hash": "5e4a7d468067823f49b9c8dbdd5b666609ae98962faa9e6e6ec3cfbdff230730",
+   "speaker": "narrator",
+   "text": "Bedtime! Look at the lantern, and tap that baby's door.",
+   "file": "g-rollcall.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 4104,
+   "generated": "2026-10-12T13:04:38",
+   "ok": true,
+   "stt": {
+    "hash": "5e4a7d468067823f49b9c8dbdd5b666609ae98962faa9e6e6ec3cfbdff230730",
+    "text": "Bedtime. Look at the lantern and tap that baby's door",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-moon": {
+   "hash": "4a3d7d797b32c3d29371c8582dac509436904bef7098bae4a63f7f6df5d4c078",
+   "speaker": "narrator",
+   "text": "Tap the moon when it's bedtime.",
+   "file": "g-moon.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1994,
+   "generated": "2026-10-12T13:04:37",
+   "ok": true,
+   "stt": {
+    "hash": "4a3d7d797b32c3d29371c8582dac509436904bef7098bae4a63f7f6df5d4c078",
+    "text": "Tap the moon when it's bedtime",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-night": {
+   "hash": "3fd2da533b6a22f18f01a3f1c31f52e4385a5b338c35153fa868dc67dcc21ba8",
+   "speaker": "queen",
+   "text": "Night night, little one.",
+   "file": "lumi-night.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1427,
+   "generated": "2026-10-12T13:04:37",
+   "ok": true,
+   "stt": {
+    "hash": "3fd2da533b6a22f18f01a3f1c31f52e4385a5b338c35153fa868dc67dcc21ba8",
+    "text": "Night night, little one",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-goodnight-emma": {
+   "hash": "a79aa484ab1523f918d1f22d2295b7130738e41cf581d6451a7990ce4824e242",
+   "speaker": "queen",
+   "text": "Goodnight, Emma.",
+   "file": "lumi-goodnight-emma.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 942,
+   "generated": "2026-10-12T13:04:38",
+   "ok": true,
+   "stt": {
+    "hash": "a79aa484ab1523f918d1f22d2295b7130738e41cf581d6451a7990ce4824e242",
+    "text": "Good night, Emma",
+    "match": true,
+    "how": "alike"
+   }
+  },
+  "lumi-moving": {
+   "hash": "08f84736968a5ddcb22ba3602a350bd48b65886457f486bb7ab5b38c1de4cee5",
+   "speaker": "queen",
+   "text": "Emma! Your unicorns are moving to a bigger home.",
+   "file": "lumi-moving.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2946,
+   "generated": "2026-10-12T13:04:39",
+   "ok": true,
+   "stt": {
+    "hash": "08f84736968a5ddcb22ba3602a350bd48b65886457f486bb7ab5b38c1de4cee5",
+    "text": "Emma, your unicorns are moving to a bigger home",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-here-they-come": {
+   "hash": "631594ac91c811ce255822f5d81f5392180c349dadd3ee94988b597be66b6636",
+   "speaker": "narrator",
+   "text": "Here they come!",
+   "file": "g-here-they-come.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 940,
+   "generated": "2026-10-12T13:04:39",
+   "ok": true,
+   "stt": {
+    "hash": "631594ac91c811ce255822f5d81f5392180c349dadd3ee94988b597be66b6636",
+    "text": "Here they come",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-pins-came": {
+   "hash": "fe44355602fddba08e3f8efeb78bb465ba50d25828351379d9dac8ba3d8e0d86",
+   "speaker": "narrator",
+   "text": "All your pins came too!",
+   "file": "g-pins-came.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1766,
+   "generated": "2026-10-12T13:04:39",
+   "ok": true,
+   "stt": {
+    "hash": "fe44355602fddba08e3f8efeb78bb465ba50d25828351379d9dac8ba3d8e0d86",
+    "text": "All your pins came too",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-hello": {
+   "hash": "b313844bc5363f9ba18e3f079b3aa01292b8facfe300fd423c51d0f14f75c744",
+   "speaker": "queen",
+   "text": "Hello, Emma! I'm Queen Lumi.",
+   "file": "lumi-hello.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1677,
+   "generated": "2026-10-12T13:04:38",
+   "ok": true,
+   "stt": {
+    "hash": "b313844bc5363f9ba18e3f079b3aa01292b8facfe300fd423c51d0f14f75c744",
+    "text": "Hello, Emma. I'm Queen Lumi",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-hello-back": {
+   "hash": "aa641b6d6055d6d6c46643d1002738b5ba4bd830b4f60aa10b861274110a26ae",
+   "speaker": "queen",
+   "text": "Hello, Emma!",
+   "file": "lumi-hello-back.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 802,
+   "generated": "2026-10-12T13:04:40",
+   "ok": true,
+   "stt": {
+    "hash": "aa641b6d6055d6d6c46643d1002738b5ba4bd830b4f60aa10b861274110a26ae",
+    "text": "Hello, Emma",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-meadow-yours": {
+   "hash": "80badd0b438cc82585388feb86c67f02de9f78bd5fbfc7105f157d2e3a7c5c03",
+   "speaker": "queen",
+   "text": "This meadow is yours. Will you make it a home for my unicorns?",
+   "file": "lumi-meadow-yours.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 3524,
+   "generated": "2026-10-12T13:04:40",
+   "ok": true,
+   "stt": {
+    "hash": "80badd0b438cc82585388feb86c67f02de9f78bd5fbfc7105f157d2e3a7c5c03",
+    "text": "This meadow is yours. Will you make it a home for my unicorns?",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi-crown": {
+   "hash": "64bff45d77b9f6a64ca36f051f7a361385a0f949637e5aa2f5aa13da530a57f4",
+   "speaker": "queen",
+   "text": "Here is your crown. You are my Nest Keeper now!",
+   "file": "lumi-crown.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2500,
+   "generated": "2026-10-12T13:04:39",
+   "ok": true,
+   "stt": {
+    "hash": "64bff45d77b9f6a64ca36f051f7a361385a0f949637e5aa2f5aa13da530a57f4",
+    "text": "Here is your crown. You are my nest keeper now",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g-egg-waiting": {
+   "hash": "d4b2486786fad2735b31e2b7a7c02981c8fd188669fed64dc4eda55d753fe22e",
+   "speaker": "narrator",
+   "text": "An egg is waiting.",
+   "file": "g-egg-waiting.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1535,
+   "generated": "2026-10-12T13:04:40",
+   "ok": true,
+   "stt": {
+    "hash": "d4b2486786fad2735b31e2b7a7c02981c8fd188669fed64dc4eda55d753fe22e",
+    "text": "An egg is waiting",
+    "match": true,
+    "how": "exact"
+   }
+  }
+ },
+ "updated": "2026-10-12T13:05:07"
 }

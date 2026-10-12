@@ -1,2 +1,4 @@
 {"t": "2026-10-12T12:05:00", "lines": "shared/audio/phonics", "made": 3, "chars": 34, "credits": 40.8, "credits_before": 34007, "stt_calls": 20, "stt_credits": 6.8, "note": "run 0: oo-short, yoo, iz with their takes, plus blend checks of the new sounds"}
 {"t": "2026-10-12T12:13:21", "lines": "stt-probe", "made": 0, "chars": 0, "credits": 2, "credits_before": null, "stt_calls": 6, "stt_credits": 2}
+{"t": "2026-10-12T13:05:07", "lines": "games/moon-meadow-home/public/audio/core/lines.json", "made": 73, "chars": 998, "credits": 1034.76, "credits_before": 33999, "stt_calls": 64, "stt_credits": 21.76}
+{"t": "2026-10-12T13:08:42", "lines": "games/moon-meadow-home/public/audio/numbers/lines.json", "made": 365, "chars": 5621, "credits": 5745.1, "credits_before": 33935, "stt_calls": 365, "stt_credits": 124.1}
