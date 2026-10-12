@@ -114,3 +114,7 @@ Emma's real names were refused with "I don't know that name". This patch removes
 | Queen Emma's Letters was unclear | One goal per moment, spoken and shown with the moonbeam and a gold outline. The replay button (top left) and a tap on Lumi repeat the goal and never give the answer. Goal words use warmth only and never "read". |
 | Moonbeam Stables was too easy | Nothing is counted aloud before she commits, stones are not ten-frame shapes, words are never said before she gives an item, distractors are one sound away, pantries and bushes reshuffle after a miss, and only first tries move her up. |
 | v1 "Zob" spliced lines and forced last pick | Names are separate clips at sentence boundaries. Four bushes, the target is never the last sign left. |
+
+## Moving Day
+
+`move.html` next to the game shows the herd saved in this Safari tab and downloads it as a file for the Moon Meadow parent corner. Open it at the same address and port as the game.

@@ -1,0 +1,345 @@
+{
+  "v": 2,
+  "night": 5,
+  "crown": true,
+  "herd": [
+    {
+      "id": 1,
+      "name": "sam",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#ff7fbf",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 0,
+      "stickers": [
+        "pin",
+        "hat",
+        "pin"
+      ],
+      "night": 1,
+      "playNight": 0
+    },
+    {
+      "id": 2,
+      "name": "tam",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#9d7bff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 1,
+      "stickers": [],
+      "night": 1,
+      "playNight": 0
+    },
+    {
+      "id": 3,
+      "name": "pip",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#4fc3ff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": true,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 2,
+      "stickers": [],
+      "night": 1,
+      "playNight": 0
+    },
+    {
+      "id": 4,
+      "name": "ben",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#ff7fbf",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 3,
+      "stickers": [
+        "pan"
+      ],
+      "night": 1,
+      "playNight": 0
+    },
+    {
+      "id": 5,
+      "name": "fen",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#9d7bff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": true,
+        "golden": false
+      },
+      "hearts": 4,
+      "stickers": [],
+      "night": 2,
+      "playNight": 0
+    },
+    {
+      "id": 6,
+      "name": "tess",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#4fc3ff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": true
+      },
+      "hearts": 5,
+      "stickers": [],
+      "night": 2,
+      "playNight": 0
+    },
+    {
+      "id": 7,
+      "name": "kit",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#ff7fbf",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 6,
+      "stickers": [],
+      "night": 2,
+      "playNight": 0
+    },
+    {
+      "id": 8,
+      "name": "sam",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#9d7bff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 0,
+      "stickers": [],
+      "night": 2,
+      "playNight": 0
+    },
+    {
+      "id": 9,
+      "name": "dan",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#4fc3ff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 1,
+      "stickers": [],
+      "night": 3,
+      "playNight": 0
+    },
+    {
+      "id": 10,
+      "name": "liss",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#ff7fbf",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 2,
+      "stickers": [],
+      "night": 3,
+      "playNight": 0
+    },
+    {
+      "id": 11,
+      "name": "rob",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#9d7bff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 3,
+      "stickers": [],
+      "night": 3,
+      "playNight": 0
+    },
+    {
+      "id": 12,
+      "name": "pod",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#4fc3ff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 4,
+      "stickers": [],
+      "night": 3,
+      "playNight": 0
+    },
+    {
+      "id": 13,
+      "name": "mip",
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#ff7fbf",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 5,
+      "stickers": [],
+      "night": 4,
+      "playNight": 0
+    },
+    {
+      "id": 14,
+      "name": null,
+      "c": {
+        "body": "#ffe0ef",
+        "mane": "#9d7bff",
+        "mane2": "#ffbf3f"
+      },
+      "traits": {
+        "shiny": false,
+        "speckled": false,
+        "golden": false
+      },
+      "hearts": 6,
+      "stickers": [],
+      "night": 4,
+      "playNight": 0
+    }
+  ],
+  "jar": 3,
+  "jarGoal": 10,
+  "gifts": [
+    "hat",
+    "cup"
+  ],
+  "seen": {
+    "firstEgg": 1
+  },
+  "lv": {
+    "r": {
+      "step": 3,
+      "streak": 1
+    },
+    "s": {
+      "step": 2,
+      "streak": 0
+    },
+    "m": {
+      "step": 4,
+      "streak": 2
+    }
+  },
+  "log": [
+    {
+      "strand": "r",
+      "result": "miss",
+      "wish": "hat",
+      "night": 1,
+      "t": 1
+    },
+    {
+      "strand": "r",
+      "result": "first",
+      "wish": "hat",
+      "night": 2,
+      "t": 2
+    },
+    {
+      "strand": "s",
+      "result": "helped",
+      "name": "ken",
+      "night": 2,
+      "t": 3
+    },
+    {
+      "strand": "m",
+      "result": "first",
+      "egg": "plain",
+      "mode": "two",
+      "step": 4,
+      "night": 3,
+      "t": 4
+    },
+    {
+      "strand": "own",
+      "result": "logged",
+      "name": "tamo",
+      "night": 3,
+      "t": 5
+    }
+  ],
+  "nextId": 15,
+  "nameWishes": [
+    {
+      "name": "tamo",
+      "night": 3,
+      "t": 5
+    },
+    {
+      "name": "lunabel",
+      "night": 4,
+      "t": 6
+    },
+    {
+      "name": "tamo",
+      "night": 4,
+      "t": 7
+    }
+  ]
+}
