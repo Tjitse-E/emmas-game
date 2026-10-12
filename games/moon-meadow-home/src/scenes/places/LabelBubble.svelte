@@ -222,7 +222,7 @@
   }
 
   const labelHook = {
-    task: () => (task ? { target: task.target, level: task.level, count: task.count, plural: task.plural, own: task.slots.map((s) => s.own), tray: task.tray.map((g) => g.g) } : null),
+    task: () => (task ? { step: task.served.step, s10: task.s10, target: task.target, level: task.level, count: task.count, plural: task.plural, own: task.slots.map((s) => s.own), tray: task.tray.map((g) => g.g) } : null),
     build: (gems: string[], end: string | null) => build(gems, end),
     slide: () => slide(),
     last: () => last,
