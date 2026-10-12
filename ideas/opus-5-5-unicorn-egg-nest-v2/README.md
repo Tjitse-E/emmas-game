@@ -48,7 +48,7 @@ One night takes about 4 to 5 minutes, plus play time, which has no limit.
   - `foal` (Flicker): baby unicorn tiny words and giggles (`foal-*`).
 - Letter sounds come from the shared phonics library (`shared/audio/phonics/`), not from `lines.json`.
 - Names and words are their own clips and sit at sentence boundaries: "Ken!" + "Where are you?", "A pan." + "Lovely!".
-- `audio/lines.json`: 201 lines, 3,305 characters, about 3,459 credits (foal lines cost double).
+- `audio/lines.json`: 246 lines since the patch of 2026-10-12 (201 before), foal lines cost double.
 - Speech order: an instruction never cuts off a word Emma asked to hear (a bell, a pantry item, a gem). It waits and then goes on. When she acts (a stone, a give, a bush, a slide), older instructions and replays stop, so they never talk over the answer.
 - Effects are the synthesized `EmmaAudio.sfx()` set (chime, pop, whoosh, hatch and so on).
 
@@ -66,7 +66,7 @@ One night takes about 4 to 5 minutes, plus play time, which has no limit.
 
 What it covers:
 - Night 1 and later nights with the egg choice, all three egg kinds (M2, M3, M4), hatch with shiny, speckled and golden babies.
-- Bells, the name tree, spelling with read-back, wrong gems popping out with the slot humming the sound it needs, the gold bell with an approved list.
+- Bells, the name tree, spelling with read-back, wrong gems popping out with the slot humming the sound it needs, the gold bell (any name since the patch of 2026-10-12).
 - One wish per night with the once-per-wish funny miss and a reshuffle on every miss.
 - Reward with the Nest Book, the star jar and the Queen's gift.
 - Play time with tricks, brush, treats, cuddles and "one more egg".
@@ -81,9 +81,24 @@ Test hook `window.__game`:
 - Hook actions behave like a touch: they end a running hint or ghost hand first, as a real finger does.
 
 Placeholders and cuts:
-- Cut for the demo: the parent corner, the calendar lock, the 200-name own-name list (the gold bell uses a fixed tray of t m n p and a i o, which gives 25 approved names; "pon" is blocked because the voice always said "pawn", and wish and pantry words such as pan, tap and mop are not names), human stretched takes (hints use the approved letter sounds), the picture card on gem taps, the 10 s free care after the wish (care lives in play time), berry wishes.
+- Cut for the demo: the parent corner, the calendar lock, the 200-name own-name list (the gold bell uses a fixed tray of t m n p and a i o; see the patch below), human stretched takes (hints use the approved letter sounds), the picture card on gem taps, the 10 s free care after the wish (care lives in play time), berry wishes.
 - Pictures are simple inline SVG drawings. They need a check with Emma (does she know peg, cot, hut?).
 - The chime per dot uses the shared `chime` effect, so it does not rise in pitch yet.
+
+## Patch 2026-10-12
+
+Emma's real names were refused with "I don't know that name". This patch removes every refusal while v3 is built. The save format did not change (still `v: 2` under `emma-unicorn-egg-nest-v2`), so her herd keeps loading.
+
+- **Gold bell.** Every build from the tray is a name. Gems stay in the tray, so a letter can be used twice (Nan, Pip, Mom). All 48 builds were checked: 45 are names, each with an Elizabeth clip. Only `tit`, `nit` and `nip` (an ethnic slur in English) are turned down: the gems shake out and Elizabeth says "Let's pick a different name. Try other gems!". The blocklist is `NAME_BLOCK` (rude or unkind words in English and Dutch). Wish words (Pan, Pin, Mop) and Pom are names now. A baby is never wished the word that is its own name.
+- **Pronunciation fixes.** Pon is "Ponn." (Pon! came out as "pawn"), Non is "Nonn" with seed 53, Tot uses inline IPA, Pap is "Papp!", Dat is "Datt!". The notes are in `lines.json`.
+- **Shared names.** A second Tam is accepted: "Tam!" and "Another one! Now you have two." (up to five, then "lots"). At bedtime only one bush ever shows a name, so a shared name can always be found. The second find prefers a name no other baby has.
+- **Names without a clip.** Accepted, and the name goes on the tag. Elizabeth says "What a great name! It's a tricky one for me to say." The name is logged with `[name-wish]` in the console and in the optional save field `nameWishes`, so the generator can add it later. Such a baby is not called at bedtime.
+- **Bell names.** Level 1 has 50 bell names (was 12), so three full bell sets stay free for a herd of 40 at level 1. Nip is not one of them. A baby already called Nip in an old save keeps its name. If the pool ever runs short, the bells fill up from other levels and then from names the herd already has.
+- **Herd cap.** The little egg works up to 50 babies (was 12). At 50 it sleeps, and a tap makes Lumi say "The meadow is full, so no more eggs tonight. A new egg comes tomorrow night!" The nightly egg still comes.
+- **Big herds.** The fence shows the newest 60 babies in rows, play time shows them in a grid that shrinks to fit, and goodnight shows them in rows. The Nest Book has an overview button (four squares) with 40 babies per spread. A tap on a baby opens its page.
+- **New clips:** 38 names and 8 lines, about 760 credits including the pronunciation trials.
+- **Test hook additions:** `herd(n)`, `forgetClip(name)`, `bookAll(on)`, `bookTap(i)`. `state` shows `nameWishes`, `herdCap`, `herdFull` and `book`.
+- **Ear check needed:** `name-mam` (speech-to-text hears "Ma'am"), and the respelled names above.
 
 ## Changes from v1
 

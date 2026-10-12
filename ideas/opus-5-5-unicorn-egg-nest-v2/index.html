@@ -327,6 +327,14 @@ button{font:inherit;border:0;background:none;padding:0;cursor:pointer;-webkit-ap
 .bkBtn svg{width:56px;height:56px}
 #bkPrev{left:110px;top:690px} #bkNext{left:978px;top:690px} #bkClose{left:1060px;top:70px}
 #bkPage{position:absolute;left:520px;top:744px;width:140px;text-align:center;color:#fff3c4;font-size:30px;font-weight:700}
+#bkAll{left:30px;top:124px}
+#bkGrid{position:absolute;left:150px;top:96px;width:880px;height:640px}
+#book.all #bkLeft,#book.all #bkRight{display:none}
+.bkThumb{position:absolute;width:96px;height:114px;touch-action:none;display:flex;flex-direction:column;align-items:center}
+.bkThumb .pic{width:92px;height:80px}
+.bkThumb .pic svg{width:100%;height:100%;overflow:visible}
+.bkThumb .nm{font-size:26px;line-height:30px;font-weight:700;color:#5b2d6e;white-space:nowrap}
+.mini-asleep{filter:grayscale(.7) brightness(.75);animation:none!important}
 #gift::before{background:rgba(10,12,40,.6)}
 #chest{position:absolute;left:390px;top:470px;width:400px;height:250px}
 #chest svg{width:100%;height:100%}
@@ -344,6 +352,7 @@ button{font:inherit;border:0;background:none;padding:0;cursor:pointer;-webkit-ap
 .tool.lifted{opacity:.3}
 #miniEgg{position:absolute;left:560px;top:440px;width:100px;height:126px;touch-action:none;z-index:57;animation:eggIdle 2.4s ease-in-out infinite}
 #miniEgg svg{width:100%;height:100%;overflow:visible}
+#miniEgg.nope{animation:no .45s}
 .trick-buck svg{animation:buck .35s ease-in-out 4 alternate;transform-origin:80% 95%}
 @keyframes buck{to{transform:rotate(16deg)}}
 .trick-spin{animation:spin 1.1s cubic-bezier(.4,0,.3,1)}
@@ -463,6 +472,8 @@ button{font:inherit;border:0;background:none;padding:0;cursor:pointer;-webkit-ap
     <button class="bkBtn" id="bkPrev" aria-label="Back"><svg viewBox="0 0 64 64"><path d="M40 12 L18 32 L40 52" stroke="#9a5a00" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button class="bkBtn" id="bkNext" aria-label="Next"><svg viewBox="0 0 64 64"><path d="M24 12 L46 32 L24 52" stroke="#9a5a00" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button class="bkBtn" id="bkClose" aria-label="Close"><svg viewBox="0 0 64 64"><path d="M16 16 L48 48 M48 16 L16 48" stroke="#9a5a00" stroke-width="9" stroke-linecap="round"/></svg></button>
+    <button class="bkBtn hidden" id="bkAll" aria-label="All babies"><svg viewBox="0 0 64 64"><g fill="#ffb3d9" stroke="#9a5a00" stroke-width="4"><rect x="8" y="8" width="20" height="20" rx="5"/><rect x="36" y="8" width="20" height="20" rx="5"/><rect x="8" y="36" width="20" height="20" rx="5"/><rect x="36" y="36" width="20" height="20" rx="5"/></g></svg></button>
+    <div id="bkGrid" class="hidden"></div>
     <div id="bkPage"></div>
   </div>
 
@@ -498,20 +509,28 @@ const LEVEL_GRAPHEMES = {
 };
 const ALL_GRAPHEMES = ['s','a','t','p','i','n','m','d','g','o','c','k','ck','e','u','r','h','b','f','ff','l','ll','ss'];
 const SUSTAIN_DEFAULT = new Set(['s','ss','m','n','f','ff','l','ll','r','v','z','zz','sh','th','ng']);
+// level 1 has 50 bell names, so the bells and the name tree never run out for a herd of 50 (patch 2026-10-12)
 const BELL_NAMES = {
-  1: ['sam','tam','pam','tim','nim','sid','dan','tad','sim','pim','mip','tan'],
+  1: ['sam','tam','pam','tim','nim','sid','dan','tad','sim','pim','mip','tan',
+      'san','sap','sis','sip','sas','tas','tat','tip','tin','tid','pat','pap','pad','pit','pip','pid',
+      'nas','nat','nap','nan','nam','nin','nid','nis','mas','mat','man','mam','mit','min','mim','mid',
+      'das','dat','dap','dit','dip','din'],
   2: ['tom','pod','ted','kip','ken','ron','kit','cam','tig'],
   3: ['ben','fen','lin','tess','rob','fin','liss']
 };
 const COUSIN_EXTRA = ['tod','rod','pid','ned','tid','kim','kin','ked','ren','sip','rib'];
-const BLOCKED = new Set('tit zit nit bum nob poo pom fat mad bad sad dad mum kid kill sex dick cock fuck piss cum fag git sod gob puss suck shit pik pis lul kut bom zog mog pon'.split(' '));
+// BLOCKED: a gem in the spelling tray may never turn the name into one of these words (tray planner only)
+const BLOCKED = new Set('tit zit nit nip bum nob poo pom fat mad bad sad dad mum kid kill sex dick cock fuck piss cum fag git sod gob puss suck shit pik pis lul kut bom zog mog pon'.split(' '));
 const GOLD_TRAY = { c: ['t', 'm', 'n', 'p'], v: ['a', 'i', 'o'] };
-// own names: no blocked word and no wish or pantry word, so a baby is never called Pan while a wish asks for a pan
-const NOT_NAMES = new Set('pan pin map mop tap top pot mat'.split(' '));
+// NAME_BLOCK: the only builds the gold bell turns down, rude or unkind words in English and Dutch.
+// Of the 48 builds of the gold tray only tit, nit and nip (an ethnic slur) are on it. Every other build is a name.
+const NAME_BLOCK = new Set('tit tits nit nip bum poo piss pis pik lul kut kont tiet poep dik dick cock fuck shit cum fag sex kill'.split(' '));
 const OWN_NAMES = new Set();
-GOLD_TRAY.c.forEach(a => GOLD_TRAY.v.forEach(b => GOLD_TRAY.c.forEach(c => { const w = a + b + c; if (a !== c && !BLOCKED.has(w) && !NOT_NAMES.has(w)) OWN_NAMES.add(w); })));
+GOLD_TRAY.c.forEach(a => GOLD_TRAY.v.forEach(b => GOLD_TRAY.c.forEach(c => { const w = a + b + c; if (!NAME_BLOCK.has(w)) OWN_NAMES.add(w); })));
 const NAME_CLIPS = new Set([...BELL_NAMES[1], ...BELL_NAMES[2], ...BELL_NAMES[3], ...COUSIN_EXTRA, ...OWN_NAMES]);
-const RESERVED = new Set(['lumi','pippa','pip','pom','dot','sizzle']);
+const RESERVED = new Set(['lumi','pippa','dot','sizzle']);
+const HERD_CAP = 50;  // the little egg in play time stops here and Lumi says why; the nightly egg still comes
+const HERD_SHOW = 60; // the meadow, play time and goodnight show the newest 60 babies; the Nest Book shows all
 const WISH = { 1: ['pan','map','tap','pin'], 2: ['cat','cup','mop','top','pig','net'], 3: ['bag','bun','log','hat'] };
 const VOWEL_PAIR = { pan:'pin', pin:'pan', map:'mop', tap:'top', cat:'cot', cup:'cap', mop:'map', top:'tap', pig:'peg', net:'nut', bag:'bug', bun:'bin', log:'leg', hat:'hut' };
 const CONFUSE = [['hat','cap'],['pin','pen'],['pot','pan'],['cot','bed'],['cup','mug'],['mat','rug']];
@@ -618,11 +637,17 @@ function sound(g){ if (DBG.fast) return Promise.resolve(); return A.sound(g).cat
 function sfx(n){ if (!DBG.fast) { try { A.sfx(n); } catch (e) {} } }
 const nameId = n => 'name-' + n;
 const wordId = w => 'word-' + w;
+// a name is spoken only when it has a clip; LINE_IDS comes from audio/lines.json at Play, NAME_CLIPS is the fallback
+let LINE_IDS = null;
+const hasNameClip = n => !!n && (LINE_IDS ? LINE_IDS.has(nameId(n)) : NAME_CLIPS.has(n));
+const sameNameLine = k => k <= 5 ? 'fb-same-' + k : 'fb-same-lots';
 
 /* ---------------- state ---------------- */
 function freshSave(){
+  // nameWishes is optional (patch 2026-10-12): names Emma made that have no clip yet, for the next generator run.
+  // The save stays v 2, and an older save without it loads with the default.
   return { v: 2, night: 1, crown: false, herd: [], jar: 0, jarGoal: 5, gifts: [], seen: {},
-    lv: { r: { step: 2, streak: 0 }, s: { step: 2, streak: 0 }, m: { step: 0, streak: 0 } }, log: [], nextId: 1 };
+    lv: { r: { step: 2, streak: 0 }, s: { step: 2, streak: 0 }, m: { step: 0, streak: 0 } }, log: [], nextId: 1, nameWishes: [] };
 }
 let S = freshSave();
 function save(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); return true; } catch (e) { return false; } }
@@ -1083,14 +1108,29 @@ async function starsToJar(n, from){
 /* ---------------- herd in the meadow ---------------- */
 // the first spots stay clear of the nest, so the first babies are always visible
 const FENCE_SPOTS = [[268,330],[150,352],[30,338],[800,330],[372,346],[880,350],[960,330],[1040,346],[700,346],[290,360],[1110,350],[620,340]];
+const shownHerd = () => S.herd.slice(-HERD_SHOW);
+const herdFull = () => S.herd.length >= HERD_CAP;
+/* fenceSpots(n): up to 12 babies keep the v2 spots. A bigger herd stands in rows along the fence, smaller towards
+   the back. Back rows come first, so the newest babies stand in front. Each spot is { x, y, s } (s = size). */
+function fenceSpots(n){
+  if (n <= FENCE_SPOTS.length) return FENCE_SPOTS.slice(0, n).map(([x, y]) => ({ x, y, s: 0.92 }));
+  const rows = Math.min(4, Math.ceil(n / 16)), out = [];
+  const per = []; for (let r = 0; r < rows; r++) per.push(Math.floor(n / rows) + (r < n % rows ? 1 : 0)); // r 0 is the front row
+  for (let r = rows - 1; r >= 0; r--){
+    const s = [0.8, 0.68, 0.58, 0.5][r], w = 120 * s * 0.8, feet = [458, 432, 410, 392][r];
+    const k = per[r], x0 = 12 + (r % 2) * 26, x1 = 1168 - w - (r % 2) * 26, step = k > 1 ? (x1 - x0) / (k - 1) : 0;
+    for (let i = 0; i < k; i++) out.push({ x: x0 + step * i, y: feet - 110 * s * 0.8, s });
+  }
+  return out;
+}
 function renderHerd(mode = 'fence', skipId){
   const h = $('#herd'); h.innerHTML = '';
-  S.herd.slice(-12).forEach((b, i) => {
+  const list = shownHerd(), spots = fenceSpots(list.length);
+  list.forEach((b, i) => {
     if (b.id === skipId) return;
     const d = el('div', 'hbaby', h); d.dataset.id = b.id;
-    const sz = mode === 'fence' ? 0.92 : 1;
-    const p = FENCE_SPOTS[i % FENCE_SPOTS.length];
-    d.style.left = p[0] + 'px'; d.style.top = p[1] + 'px';
+    const p = spots[i], sz = p.s;
+    d.style.left = p.x + 'px'; d.style.top = p.y + 'px';
     d.style.width = 120 * sz * (0.8 + stageOf(b) * 0.12) + 'px'; d.style.height = 110 * sz * (0.8 + stageOf(b) * 0.12) + 'px';
     d.innerHTML = `<div class="bob" style="animation-delay:${-i * .27}s">${babySVG(b)}</div>`;
   });
@@ -1102,7 +1142,8 @@ async function preloadAll(){
     const r = await fetch('audio/lines.json', { cache: 'no-cache' });
     const d = await r.json();
     const ids = d.lines.map(l => l.id);
-    const p = Promise.all([A.preload(ids), A.preloadSounds(ALL_GRAPHEMES)]).catch(() => {});
+    LINE_IDS = new Set(ids);
+    const p =Promise.all([A.preload(ids), A.preloadSounds(ALL_GRAPHEMES)]).catch(() => {});
     await Promise.race([p, rawSleep(5000)]);
   } catch (e) { console.warn('[audio] could not read lines.json', e); }
   try {
@@ -1159,7 +1200,8 @@ async function stepArrival(){
     await speak('lumi-crown');
   } else {
     // the herd runs to the fence
-    $$('#herd .hbaby').forEach((d, i) => { const l = parseFloat(d.style.left); d.style.left = (l + 300) + 'px'; requestAnimationFrame(() => setTimeout(() => d.style.left = l + 'px', 50 + i * 120)); });
+    const hb = $$('#herd .hbaby'), gap = Math.min(120, 2400 / Math.max(1, hb.length));
+    hb.forEach((d, i) => { const l = parseFloat(d.style.left); d.style.left = (l + 300) + 'px'; requestAnimationFrame(() => setTimeout(() => d.style.left = l + 'px', 50 + i * gap)); });
     sfx('sparkle'); await wait(900);
     await speak('lumi-welcome');
   }
@@ -1446,7 +1488,7 @@ function bellPool(){
   const lv = sLevel(), taken = new Set(S.herd.map(b => b.name));
   let pool = [];
   for (let l = 1; l <= lv; l++) pool = pool.concat(BELL_NAMES[l]);
-  return pool.filter(n => !taken.has(n) && !RESERVED.has(n));
+  return pool.filter(n => !taken.has(n) && !RESERVED.has(n) && hasNameClip(n));
 }
 function drawBellSet(){
   const pool = shuffle(bellPool().filter(n => !N.offered.has(n)));
@@ -1454,6 +1496,11 @@ function drawBellSet(){
   for (const n of pool){ if (set.length >= 3) break; if (set.every(m => !oneSoundApart(m, n))) set.push(n); }
   set.forEach(n => N.offered.add(n));
   if (set.length < 3){ shuffle(bellPool()).forEach(n => { if (set.length < 3 && !set.includes(n)) set.push(n); }); }
+  // never fewer than three bells: then any unused name with a clip, and as a last resort a name the herd already has
+  if (set.length < 3){
+    const taken = new Set(S.herd.map(b => b.name)), all = [1, 2, 3].flatMap(l => BELL_NAMES[l]).filter(n => hasNameClip(n) && !RESERVED.has(n) && !set.includes(n));
+    [...shuffle(all.filter(n => !taken.has(n))), ...shuffle(all)].forEach(n => { if (set.length < 3 && !set.includes(n)) set.push(n); });
+  }
   return set;
 }
 async function stepName(){
@@ -1635,7 +1682,8 @@ function dropGem(d, g, kind, p){
     return false;
   }
   if (s.gem) returnGem(i, true);
-  s.g = g; s.gem = d; d.classList.add('used');
+  // gold bell gems stay in the tray, so a letter can be used twice (Nan, Pip, Mom) (patch 2026-10-12)
+  s.g = g; s.gem = d; if (!N.gold) d.classList.add('used');
   s.el.textContent = g; s.el.classList.add('filled'); restartClass(s.el, 'bump'); sfx('pop');
   sparkle(centreOf(s.el).x, centreOf(s.el).y, 6);
   listenSound(g);
@@ -1725,18 +1773,27 @@ async function checkSpelling(){
   try {
     const built = N.slots.map(s => s.g);
     if (N.gold){
+      // every build is a name (patch 2026-10-12). Only a rude or unkind word is turned down, gently, and its gems shake out.
       const w = built.join('');
-      if (OWN_NAMES.has(w) && !S.herd.some(b => b.name === w)){
-        N.mode = 'named'; sfx('sparkle'); hearts(200, 260, 12);
-        record('own', 'logged', { name: w });
-        await speak(nameId(w), 'fb-gold-yes');
-        flipCapital();
-        await wait(500);
-        fire('named', w);
-      } else {
-        await speak('fb-gold-no');
+      if (NAME_BLOCK.has(w)){
+        record('own', 'blocked', { name: w });
+        sfx('soft-no');
+        N.slots.forEach(s => restartClass(s.el, 'no'));
+        await wait(450);
+        N.slots.forEach((s, i) => returnGem(i, true)); sfx('whoosh');
+        await speak('fb-gold-other');
         G.lastAct = Date.now();
+        return;
       }
+      N.mode = 'named'; sfx('sparkle'); hearts(200, 260, 12);
+      const same = S.herd.filter(b => b.name === w).length, clip = hasNameClip(w);
+      record('own', 'logged', Object.assign({ name: w }, same ? { same: same + 1 } : {}, clip ? {} : { noClip: true }));
+      if (!clip){ logNameWish(w); await speak('fb-tricky'); }
+      else if (same) await speak(nameId(w), sameNameLine(same + 1));
+      else await speak(nameId(w), 'fb-gold-yes');
+      flipCapital();
+      await wait(500);
+      fire('named', w);
       return;
     }
     const right = built.every((g, i) => g === N.target[i]);
@@ -1774,6 +1831,13 @@ async function checkSpelling(){
     }
   } catch (e) { if (e !== CANCEL) console.error(e); } finally { G.busy = false; G.lastAct = Date.now(); }
 }
+/* a name without a clip is still accepted; it is logged so the generator can add the clip on its next run */
+function logNameWish(n){
+  console.info('[name-wish]', n);
+  if (!Array.isArray(S.nameWishes)) S.nameWishes = [];
+  if (!S.nameWishes.some(x => x.name === n)) S.nameWishes.push({ name: n, night: S.night, t: Date.now() });
+  save();
+}
 function flipCapital(){
   const s = N.slots[0]; if (!s) return;
   anim(s.el, [{ transform: 'rotateY(0)' }, { transform: 'rotateY(90deg)' }, { transform: 'rotateY(0)' }], { duration: 500 });
@@ -1800,9 +1864,10 @@ async function prance(baby){
   $('#stones').innerHTML = ''; $('#tenframe').innerHTML = ''; $('#blanket').classList.add('hidden');
   const h = $('#hatchling'); h.innerHTML = babySVG(baby) + `<div class="nametag" style="top:226px;font-size:40px;line-height:52px">${nameHTML(baby.name)}</div>`;
   h.classList.remove('hidden');
-  const target = FENCE_SPOTS[Math.min(S.herd.length, FENCE_SPOTS.length - 1)];
-  const from = { x: 460, y: 120 }, dx = target[0] - from.x - 60, dy = target[1] - from.y - 60, hops = 4, kf = [];
-  for (let k = 0; k <= hops * 2; k++){ const t = k / (hops * 2), up = k % 2 ? -70 : 0; kf.push({ transform: `translate(${dx * t}px,${dy * t + up}px) scale(${1 - 0.55 * t})` }); }
+  const after = S.herd.concat([baby]).slice(-HERD_SHOW), sp = fenceSpots(after.length)[after.length - 1];
+  const target = [sp.x, sp.y], shrink = 1 - 0.45 * sp.s / 0.92;
+  const from = { x: 460, y: 120 }, dx = target[0] - from.x - 130 * shrink, dy = target[1] - from.y - 125 * shrink, hops = 4, kf = [];
+  for (let k = 0; k <= hops * 2; k++){ const t = k / (hops * 2), up = k % 2 ? -70 : 0; kf.push({ transform: `translate(${dx * t}px,${dy * t + up}px) scale(${1 - shrink * t})` }); }
   sfx('whoosh');
   await anim(h, kf, { duration: 1700, easing: 'linear' });
   h.classList.add('hidden'); h.innerHTML = ''; h.style.transform = '';
@@ -1815,8 +1880,8 @@ async function prance(baby){
 /* ---------------- 5 wish ---------------- */
 const W = { target: null, baby: null, items: [], funny: false };
 function wishTarget(baby){
-  const lv = rLevel(); const pool = WISH[lv].filter(w => !(baby.stickers || []).includes(w));
-  return pick(pool.length ? pool : WISH[lv]);
+  const lv = rLevel(); const pool = WISH[lv].filter(w => !(baby.stickers || []).includes(w) && w !== baby.name); // never a wish that is the baby's own name
+  return pick(pool.length ? pool : WISH[lv].filter(w => w !== baby.name));
 }
 const PAIR_ONLY = ['leg', 'hut']; // only used as the vowel pair of log and hat
 function confusable(a, b){ return CONFUSE.some(([x, y]) => (x === a && y === b) || (x === b && y === a)); }
@@ -1957,14 +2022,36 @@ async function wishAnswer(){
 }
 
 /* ---------------- 6 reward, Nest Book, Queen's gift ---------------- */
-let bookIdx = 0;
+let bookIdx = 0, bookAll = false, allSpread = 0;
+const ALL_PER = 40; // the overview shows 20 babies per page, 40 per spread
 function openBook(id){
   if (!S.herd.length){ bookIdx = 0; }
   else bookIdx = id != null ? Math.max(0, S.herd.findIndex(b => b.id === id)) : S.herd.length - 1;
-  renderBook(); $('#book').classList.remove('hidden'); sfx('whoosh');
+  setBookAll(false); $('#book').classList.remove('hidden'); sfx('whoosh');
 }
 function closeBook(){ $('#book').classList.add('hidden'); fire('bookClosed'); }
+/* the overview: every baby as a small picture with its name; a tap opens that baby's page */
+function setBookAll(on){
+  bookAll = !!on && S.herd.length > 1;
+  $('#book').classList.toggle('all', bookAll); $('#bkGrid').classList.toggle('hidden', !bookAll);
+  $('#bkAll').classList.toggle('hidden', S.herd.length < 2);
+  if (bookAll){ allSpread = Math.floor(bookIdx / ALL_PER); renderBookAll(); } else renderBook();
+}
+function renderBookAll(){
+  const spreads = Math.max(1, Math.ceil(S.herd.length / ALL_PER));
+  allSpread = Math.min(Math.max(0, allSpread), spreads - 1);
+  const g = $('#bkGrid'); g.innerHTML = '';
+  S.herd.slice(allSpread * ALL_PER, (allSpread + 1) * ALL_PER).forEach((b, i) => {
+    const side = i < ALL_PER / 2 ? 0 : 1, k = i % (ALL_PER / 2);
+    const d = el('div', 'bkThumb', g, `<div class="pic">${babySVG(b)}</div><div class="nm">${nameHTML(b.name || '?')}</div>`);
+    d.style.left = ((side ? 448 : 34) + (k % 4) * 100) + 'px'; d.style.top = (34 + Math.floor(k / 4) * 116) + 'px';
+    tapper(d, () => { bookIdx = S.herd.indexOf(b); sfx('whoosh'); setBookAll(false); });
+  });
+  ['#bkPrev', '#bkNext'].forEach(s => $(s).classList.toggle('hidden', spreads < 2));
+  $('#bkPage').textContent = spreads > 1 ? `${allSpread + 1} / ${spreads}` : '';
+}
 function renderBook(highlight){
+  ['#bkPrev', '#bkNext'].forEach(s => $(s).classList.remove('hidden'));
   const b = S.herd[bookIdx];
   $('#bkPage').textContent = S.herd.length ? `${bookIdx + 1} / ${S.herd.length}` : '';
   if (!b){ $('#bkPortrait').innerHTML = eggSVG(EGG_COLS.plain); $('#bkName').innerHTML = ''; $('#bkMeta').innerHTML = ''; $('#bkStages').innerHTML = ''; $('#bkHearts').textContent = ''; $('#bkStickers').innerHTML = ''; return; }
@@ -1983,8 +2070,9 @@ function renderBook(highlight){
   }
 }
 tapper($('#crown'), () => { if (G.phase === 'arrival' && fire('crown')) return; if (!S.crown || G.dragging) return; if ($('#book').classList.contains('hidden')) openBook(); else closeBook(); });
-tapper($('#bkPrev'), () => { if (!S.herd.length) return; bookIdx = (bookIdx - 1 + S.herd.length) % S.herd.length; sfx('whoosh'); renderBook(); });
-tapper($('#bkNext'), () => { if (!S.herd.length) return; bookIdx = (bookIdx + 1) % S.herd.length; sfx('whoosh'); renderBook(); });
+tapper($('#bkPrev'), () => { if (!S.herd.length) return; sfx('whoosh'); if (bookAll){ allSpread--; if (allSpread < 0) allSpread = Math.ceil(S.herd.length / ALL_PER) - 1; renderBookAll(); return; } bookIdx = (bookIdx - 1 + S.herd.length) % S.herd.length; renderBook(); });
+tapper($('#bkNext'), () => { if (!S.herd.length) return; sfx('whoosh'); if (bookAll){ allSpread = (allSpread + 1) % Math.ceil(S.herd.length / ALL_PER); renderBookAll(); return; } bookIdx = (bookIdx + 1) % S.herd.length; renderBook(); });
+tapper($('#bkAll'), () => { sfx('whoosh'); setBookAll(!bookAll); });
 tapper($('#bkClose'), () => closeBook());
 async function stepReward(){
   stepTimer('reward');
@@ -2039,16 +2127,34 @@ async function stepGift(){
 /* ---------------- 7 play time ---------------- */
 // the herd comes forward into the meadow for play time: the first spots are big and in front, clear of Lumi, the little egg and the tools
 const PLAY_SPOTS = [[300,420],[700,410],[880,400],[420,600],[640,600],[1010,470],[180,400],[290,240],[480,240],[690,240],[880,230],[1010,240]];
+// play time with more than 12 babies: a tidy grid, as big as fits, clear of the buttons, the moon, Lumi, the little egg and the tools
+const PLAY_KEEP_OUT = [{ x: 0, y: 0, w: 220, h: 120 }, { x: 820, y: 0, w: 260, h: 190 }, { x: 0, y: 570, w: 250, h: 250 }, { x: 530, y: 420, w: 150, h: 160 }, { x: 840, y: 672, w: 340, h: 148 }];
+function playSpots(n){
+  if (n <= PLAY_SPOTS.length) return PLAY_SPOTS.slice(0, n).map(([x, y]) => ({ x, y, s: 1 }));
+  const X0 = 16, X1 = 1164, Y0 = 120, Y1 = 690;
+  for (let s = 0.95; s > 0.3; s -= 0.025){
+    const w = 160 * s, h = 150 * s, tag = Math.max(16, 26 * s) * 1.3 + 12, cw = w + 8, ch = h * 0.9 + tag;
+    const cols = Math.floor((X1 - X0) / cw), rows = Math.floor((Y1 - Y0) / ch);
+    const ox = X0 + (X1 - X0 - cols * cw) / 2, cells = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++){
+      const box = { x: ox + c * cw, y: Y0 + r * ch, w, h: h * 0.9 + tag };
+      if (!PLAY_KEEP_OUT.some(k => box.x < k.x + k.w && box.x + box.w > k.x && box.y < k.y + k.h && box.y + box.h > k.y)) cells.push({ x: box.x, y: box.y, s });
+    }
+    if (cells.length >= n) return cells.slice(cells.length - n); // the top cells stay empty when there is room to spare
+  }
+  return Array.from({ length: n }, (_, i) => ({ x: X0 + (i % 14) * 80, y: Y0 + Math.floor(i / 14) * 100, s: 0.3 }));
+}
 async function stepPlay(){
   stepTimer('play');
   hideOverlays(); showScene('play');
   const h = $('#herd'); h.innerHTML = '';
-  S.herd.slice(-12).forEach((b, i) => {
-    const sc = 1 + stageOf(b) * 0.12;
+  const list = shownHerd(), spots = playSpots(list.length);
+  list.forEach((b, i) => {
+    const p = spots[i], sc = p.s * (1 + stageOf(b) * (p.s < 1 ? 0.06 : 0.12)), fs = Math.max(16, Math.round(26 * p.s));
     const d = el('div', 'hbaby', h); d.dataset.id = b.id; d.style.pointerEvents = 'auto'; d.style.touchAction = 'none';
-    d.style.left = PLAY_SPOTS[i][0] + 'px'; d.style.top = PLAY_SPOTS[i][1] + 'px';
+    d.style.left = p.x + 'px'; d.style.top = p.y + 'px';
     d.style.width = 160 * sc + 'px'; d.style.height = 150 * sc + 'px';
-    d.innerHTML = `<div class="bob" style="animation-delay:${-i * .27}s">${babySVG(b)}</div><div class="nametag htag" style="font-size:26px;line-height:34px">${nameHTML(b.name)}</div>`;
+    d.innerHTML = `<div class="bob" style="animation-delay:${-i * .27}s">${babySVG(b)}</div><div class="nametag htag" style="font-size:${fs}px;line-height:${Math.round(fs * 1.3)}px${p.s < 1 ? `;border-width:${Math.max(3, Math.round(5 * p.s))}px;padding:0 ${Math.round(18 * p.s)}px;border-radius:${Math.round(20 * p.s)}px` : ''}">${nameHTML(b.name)}</div>`;
     tapper(d, () => trick(b, d));
   });
   // tools
@@ -2064,9 +2170,11 @@ async function stepPlay(){
       onDrop: p => { const t = $$('#herd .hbaby').find(b => inRect(p, rectOf(b), 10)); if (!t) return false; care(k, S.herd.find(b => String(b.id) === t.dataset.id), t); return true; } });
   });
   const me = $('#miniEgg'); me.innerHTML = `<svg viewBox="0 0 420 170" style="position:absolute;left:-60px;top:70px;width:220px;height:90px">${nestSVG('back')}</svg><div style="position:absolute;inset:0">${eggSVG(EGG_COLS.plain)}</div><svg viewBox="0 0 420 170" style="position:absolute;left:-60px;top:70px;width:220px;height:90px">${nestSVG('front')}</svg>`; me.classList.remove('hidden');
+  me.querySelector('div').classList.toggle('mini-asleep', herdFull()); // a full meadow: the little egg sleeps, and a tap makes Lumi say why
   G.phase = 'play';
   // play time is about caring: the moonbeam shows the care tools first; the moon glows for bedtime
-  setGoal(['g-play', 'g-play-egg', 'g-moon'], $('#tools'), { nodim: true, pad: 8 });
+  const full = herdFull();
+  setGoal(full ? ['g-play', 'g-moon'] : ['g-play', 'g-play-egg', 'g-moon'], $('#tools'), { nodim: true, pad: 8 });
   $('#moonBtn').classList.add('glow');
   G.task = null; G.playIdleSaid = false; G.playLast = Date.now();
   const ended = until('playEnd');
@@ -2077,7 +2185,8 @@ async function stepPlay(){
     const t = $('#tools .tool'), b = $('#herd .hbaby');
     if (t && b) await ghostMove(centreOf(t), centreOf(b), TOOLS.brush.replace('<svg ', '<svg style="width:100%;height:100%" '), 80, 1700, true);
   }
-  if (G.phase === 'play') await speak('g-play-egg', 'g-moon');
+  if (G.phase === 'play' && full && !G.night.fullSaid){ G.night.fullSaid = true; await speak('lumi-full', 'g-moon'); }
+  else if (G.phase === 'play') await speak(...(full ? ['g-moon'] : ['g-play-egg', 'g-moon']));
   const choice = await ended;
   $('#moonBtn').classList.remove('glow'); clearSpot();
   $('#tools').classList.add('hidden'); me.classList.add('hidden');
@@ -2088,7 +2197,12 @@ async function stepPlay(){
   }
 }
 tapper($('#moonBtn'), () => { if (G.phase === 'play') { sfx('chime'); fire('playEnd', 'moon'); } });
-tapper($('#miniEgg'), () => { if (G.phase === 'play' && S.herd.length < 12) { sfx('magic'); fire('playEnd', 'egg'); } });
+function tapMiniEgg(){
+  if (G.phase !== 'play') return false;
+  if (herdFull()){ restartClass($('#miniEgg'), 'nope'); sfx('soft-no'); listen('lumi-full'); return false; } // never a silent stop
+  sfx('magic'); return fire('playEnd', 'egg');
+}
+tapper($('#miniEgg'), () => tapMiniEgg());
 setInterval(() => { // after 60 s without a touch, Lumi says once that the moon is sleepy
   if (G.phase !== 'play' || G.playIdleSaid || DBG.fast) return;
   if (Date.now() - G.lastAct > 60000){ G.playIdleSaid = true; say('g-sleepy'); }
@@ -2129,7 +2243,7 @@ async function trick(b, d){
 const B = { finds: [], target: null, bushes: [], misses: 0 };
 function cousinsFor(name){
   const herdNames = new Set(S.herd.map(b => b.name));
-  const avoid = n => herdNames.has(n) || n === name || PICTURES.includes(n) || RESERVED.has(n);
+  const avoid = n => herdNames.has(n) || n === name || PICTURES.includes(n) || RESERVED.has(n) || !hasNameClip(n);
   const lv = rLevel();
   const fits = n => gr(n).every(g => levelGraphemes(Math.max(lv, nameLevel(name)), isVowel(g) ? 'v' : 'c').includes(g));
   let c = shuffle([...NAME_CLIPS].filter(n => !avoid(n) && oneSoundApart(n, name) && fits(n)));
@@ -2143,9 +2257,18 @@ function cousinsFor(name){
 async function stepBedtime(){
   stepTimer('bedtime');
   hideOverlays(); showScene('base'); renderHerd('fence');
-  const newest = S.herd.find(b => b.id === G.night.newBabies[0]) || S.herd[S.herd.length - 1];
+  // only a baby whose name has a clip can be called. Two babies may share a name (patch 2026-10-12): only one bush
+  // ever shows a name, because cousins never use a herd name, so a shared name is still solvable. The second find
+  // prefers a name no other baby has, and never repeats the first find's name.
+  const canSeek = b => b && hasNameClip(b.name);
+  const nameCount = n => S.herd.filter(b => b.name === n).length;
+  let newest = S.herd.find(b => b.id === G.night.newBabies[0]) || S.herd[S.herd.length - 1];
+  if (!canSeek(newest)){ const ok = shuffle(S.herd.filter(canSeek)); newest = ok.find(b => nameCount(b.name) === 1) || ok[0]; }
   const finds = [newest];
-  if (S.night >= 2){ const older = shuffle(S.herd.filter(b => b !== newest && !G.night.newBabies.includes(b.id)))[0]; if (older) finds.push(older); }
+  if (S.night >= 2 && newest){
+    const older = shuffle(S.herd.filter(b => b !== newest && !G.night.newBabies.includes(b.id) && canSeek(b) && b.name !== newest.name));
+    const pickOlder = older.find(b => nameCount(b.name) === 1) || older[0]; if (pickOlder) finds.push(pickOlder);
+  }
   B.finds = finds.filter(Boolean);
   await speak('lumi-bedtime');
   showOverlay('bed');
@@ -2157,7 +2280,7 @@ function layoutBushes(names){
   const box = $('#bushes'); box.innerHTML = ''; B.bushes = [];
   const xs = [250, 460, 670, 880];
   names.forEach((n, i) => {
-    const baby = S.herd.find(b => b.name === n);
+    const baby = n === B.target && B.targetBaby ? B.targetBaby : S.herd.find(b => b.name === n);
     const c = baby ? baby.c : randomColours();
     const d = el('div', 'bush', box); d.style.left = xs[i] + 'px'; d.dataset.name = n;
     d.innerHTML = `<div class="hid">${baby ? babySVG(baby) : unicornSVG(c)}</div><div class="bb">${BUSH_SVG}</div>`;
@@ -2188,7 +2311,7 @@ function signLetters(sign, n, onUse, onTap){
   });
 }
 async function seekOne(baby){
-  B.target = baby.name;
+  B.target = baby.name; B.targetBaby = baby;
   const names = shuffle([baby.name, ...cousinsFor(baby.name)]);
   layoutBushes(names);
   // the babies run behind the bushes
@@ -2277,7 +2400,9 @@ async function stepGoodnight(){
   await speak('lumi-goodnight');
   hideOverlays(); showOverlay('goodnight');
   const sp = $('#sleepers'); sp.innerHTML = '';
-  S.herd.slice(-8).forEach((b, i) => { const s = el('div', 'sleeper', sp, unicornSVG(b.c, Object.assign(babyOpts(b), { sleep: true })) + `<div class="zz" style="left:80px;top:-6px;animation-delay:${-i * .4}s">z</div>`); s.style.left = (280 + i * 110) + 'px'; s.style.top = (520 + (i % 2) * 60) + 'px'; });
+  const list = shownHerd(), spots = sleeperSpots(list.length);
+  list.forEach((b, i) => { const p = spots[i]; const s = el('div', 'sleeper', sp, unicornSVG(b.c, Object.assign(babyOpts(b), { sleep: true })) + (i % Math.max(1, Math.round(list.length / 10)) ? '' : `<div class="zz" style="left:${80 * p.s}px;top:-6px;animation-delay:${-i * .4}s">z</div>`));
+    s.style.left = p.x + 'px'; s.style.top = p.y + 'px'; s.style.width = 120 * p.s + 'px'; s.style.height = 100 * p.s + 'px'; });
   S.lastNightDone = S.night; save();
   G.phase = 'goodnight';
   setGoal(['g-next'], $('#nextMoon'), { round: true });
@@ -2289,6 +2414,19 @@ async function stepGoodnight(){
   nextNight();
 }
 tapper($('#nextMoon'), () => { if (G.phase === 'goodnight') fire('nextNight'); });
+/* sleepers: up to 8 keep the v2 row; more lie in staggered rows below the moon, back rows first and smaller */
+function sleeperSpots(n){
+  if (n <= 8) return Array.from({ length: n }, (_, i) => ({ x: 280 + i * 110, y: 520 + (i % 2) * 60, s: 1 }));
+  for (let s = 1; s > 0.3; s -= 0.025){
+    const cw = 120 * s * 0.82, ch = 100 * s * 0.72, X0 = 250, X1 = 1170 - 120 * s, Y0 = 452, Y1 = 812 - 100 * s;
+    const cols = Math.floor((X1 - X0 - cw / 2) / cw) + 1, rows = Math.floor((Y1 - Y0) / ch) + 1;
+    if (cols * rows < n) continue;
+    const rowsUsed = Math.ceil(n / cols), out = [];
+    for (let i = 0; i < n; i++){ const r = Math.floor(i / cols), c = i % cols; out.push({ x: X0 + c * cw + (r % 2) * cw / 2, y: Y1 - (rowsUsed - 1 - r) * ch, s }); }
+    return out;
+  }
+  return Array.from({ length: n }, (_, i) => ({ x: 250 + (i % 20) * 45, y: 460 + Math.floor(i / 20) * 40, s: 0.3 }));
+}
 function nextNight(){
   cancelFlow();
   S.night++; save();
@@ -2325,10 +2463,12 @@ renderHerd('fence'); renderGifts();
 $('#crown').classList.toggle('hidden', !S.crown);
 
 /* ---------------- test hook ---------------- */
-function ensureHerd(n){
+function ensureHerd(n, varied){
   while (S.herd.length < n){
     const pool = BELL_NAMES[1].filter(x => !S.herd.some(b => b.name === x));
-    S.herd.push({ id: S.nextId++, name: pick(pool), c: randomColours(), traits: { shiny: false, speckled: false, golden: false }, hearts: 0, stickers: [], night: S.night, playNight: 0 });
+    const name = pool.length ? pick(pool) : pick([...OWN_NAMES]); // a full level 1 list: shared names are allowed now
+    const traits = varied ? { shiny: rand() < 0.2, speckled: rand() < 0.3, golden: rand() < 0.15 } : { shiny: false, speckled: false, golden: false };
+    S.herd.push({ id: S.nextId++, name, c: randomColours(), traits, hearts: varied ? Math.floor(rand() * 8) : 0, stickers: varied && rand() < 0.5 ? [pick(WISH[1])] : [], night: S.night, playNight: 0 });
   }
   if (!G.night.newBabies.length && S.herd.length) G.night.newBabies = [S.herd[S.herd.length - 1].id];
   save(); renderHerd('fence');
@@ -2371,7 +2511,8 @@ window.__game = {
       naming: { mode: N.mode, bells: N.bells.slice(), name: N.name, target: N.target.slice(), slots: N.slots.map(s => s.g), tray: N.tray.map(d => d.dataset.g) },
       wish: { target: W.target, items: W.items.map(i => i.w), baby: W.baby ? W.baby.name : null },
       seek: { target: B.target, bushes: B.bushes.map(b => b.dataset.name) },
-      said: G.said.slice(-12), missing: (A.missing || []).slice() };
+      said: G.said.slice(-12), missing: (A.missing || []).slice(),
+      herdCap: HERD_CAP, herdFull: herdFull(), nameWishes: (S.nameWishes || []).slice(), book: { open: !$('#book').classList.contains('hidden'), all: bookAll, idx: bookIdx, spread: allSpread } };
   },
   steps: Object.keys(JUMPS),
   jump(step){ if (!JUMPS[step]) return false; jumpPrep(); JUMPS[step](); return true; },
@@ -2404,7 +2545,7 @@ window.__game = {
     const gs = Array.isArray(list) ? list : gr(list);
     N.slots.forEach((s, i) => { if (s.gem) returnGem(i, true); });
     gs.forEach((g, i) => { const d = N.tray.find(x => x.dataset.g === g && !x.classList.contains('used')); const s = N.slots[i]; if (!d || !s) return;
-      const kind = isVowel(g) ? 'v' : 'c'; if (s.kind !== kind) return; s.g = g; s.gem = d; d.classList.add('used'); s.el.textContent = g; s.el.classList.add('filled'); });
+      const kind = isVowel(g) ? 'v' : 'c'; if (s.kind !== kind) return; s.g = g; s.gem = d; if (!N.gold) d.classList.add('used'); s.el.textContent = g; s.el.classList.add('filled'); });
     N.announcedSlide = true; checkSlotsFull();
     return N.slots.map(s => s.g);
   },
@@ -2415,7 +2556,13 @@ window.__game = {
   seek(x){ touchStart(); if (G.phase !== 'seek') return false; const d = typeof x === 'number' ? B.bushes[x] : B.bushes.find(b => b.dataset.name === x); if (!d) return false; pickBush(d); return d.dataset.name; },
   toBed(){ touchStart(); return fire('inBed'); },
   moon(){ touchStart(); return fire('playEnd', 'moon'); },
-  extraEgg(){ touchStart(); return fire('playEnd', 'egg'); },
+  extraEgg(){ touchStart(); return tapMiniEgg(); },
+  /** herd(n): add test babies (varied colours, traits and hearts) until the herd has n. */
+  herd(n){ ensureHerd(n, true); return S.herd.length; },
+  /** forgetClip(name): act as if this name has no clip, to test the "tricky name" path. */
+  forgetClip(n){ if (!LINE_IDS) LINE_IDS = new Set([...NAME_CLIPS].map(nameId)); LINE_IDS.delete(nameId(n)); return !hasNameClip(n); },
+  bookAll(on = true){ setBookAll(on); return bookAll; },
+  bookTap(i){ const d = $$('#bkGrid .bkThumb')[i || 0]; if (!d) return false; d.dispatchEvent(new PointerEvent('pointerup', { bubbles: true })); return bookIdx; },
   care(kind, i){ touchStart(); const d = $$('#herd .hbaby')[i || 0]; if (!d || G.phase !== 'play') return false; care(kind, S.herd.find(b => String(b.id) === d.dataset.id), d); return true; },
   trick(i){ touchStart(); const d = $$('#herd .hbaby')[i || 0]; if (!d || G.phase !== 'play') return false; trick(S.herd.find(b => String(b.id) === d.dataset.id), d); return true; },
   pickGift(i){ touchStart(); const d = $$('.present')[i || 0]; if (!d) return false; return fire('gift', d.dataset.w); },

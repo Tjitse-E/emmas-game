@@ -19,4 +19,5 @@ Read these first:
 - Speech uses ElevenLabs. Elizabeth is the narrator and the only voice for letter sounds and words Emma learns from. Characters use the voices in VOICES.md. Never use browser speech as the voice Emma hears. Generate audio ahead of time. Never put the API key in client code or in git.
 - The ElevenLabs API key is `ELEVENLABS_API` in `.env`. Agents never read, print, source or copy `.env`. Scripts that need the key load `.env` themselves (for example Node's `process.loadEnvFile()`), so the command that runs them does not mention `.env`. This is enforced: `.claude/settings.json` denies the file to Claude Code and `.codex/config.toml` denies it to Codex.
 - Use our own characters. No trademarked characters (for example, real Furbies or Disney princesses).
+- The app is fully British English. There is no Dutch anywhere in the app: no Dutch words, text, audio, names spoken the Dutch way or Dutch help. Emma's Dutch background only decides which English sounds and words get extra practice.
 - Code, comments, docs and commit messages are in English.
