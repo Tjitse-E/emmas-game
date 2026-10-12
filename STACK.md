@@ -18,15 +18,19 @@
 
 Browser testing uses `playwright-cli` with WebKit and iPad emulation. The config lives in `.playwright/cli.config.json` and is picked up automatically.
 
-`playwright-cli` blocks `file:` URLs, so serve the repo over HTTP first:
+`playwright-cli` blocks `file:` URLs, so serve the repo over HTTP first. The Node server in `games/moon-meadow-home/server/` serves the whole repo and never serves dot files such as `.env`. Settings: `PORT`, `HOST` (use `127.0.0.1` for checks) and `MOON_DIST` (the v3 build folder, default `dist`). Run it outside the sandbox, from the repo root:
 
 ```sh
-python3 -m http.server 8765 --bind 127.0.0.1 &
-playwright-cli open http://127.0.0.1:8765/ideas/<idea-slug>/index.html
-playwright-cli screenshot
-playwright-cli resize 820 1180   # portrait check
-playwright-cli close
+PORT=8770 HOST=127.0.0.1 node games/moon-meadow-home/server/serve.ts &
+playwright-cli -s=check open http://127.0.0.1:8770/ideas/<idea-slug>/index.html
+playwright-cli -s=check screenshot --filename "$TMPDIR/shot.png"
+playwright-cli -s=check resize 820 1180   # portrait check
+playwright-cli -s=check close
 ```
+
+Never use port 8765: it is Emma's live server. Use a free port that is not in `PORTS` in [docs/v3/plan/contracts.ts](docs/v3/plan/contracts.ts) (the example uses 8770). Stop the server when you are done.
+
+Moon Meadow Home has scripted flows with their own runner: `MMH_LANE=<lane> MMH_PORT=<port> bash games/moon-meadow-home/flows/run.sh` (see its [README](games/moon-meadow-home/README.md)).
 
 Notes:
 - The browser does not start inside the Claude Code sandbox. Run `playwright-cli` outside it.
@@ -39,8 +43,22 @@ Notes:
 - Audio is generated ahead of time and saved as files (for example `ideas/<idea-slug>/audio/*.mp3`). The game never calls the API from the browser, so the API key never reaches the client.
 - The API key is `ELEVENLABS_API` in `.env` (gitignored). The generation script loads `.env` itself. It is never committed.
 
+## Games with a build (`games/`)
+
+- Chosen games move from `ideas/` to `games/<slug>/`: Vite 8 + Svelte 5 + TypeScript 6, exact versions in `package.json`, lock file committed. Moon Meadow Home is the first.
+- The build uses a relative base, so `dist/` works at any path. It targets Safari 15 (iPad Air 2).
+- Unit tests run with Vitest. Browser checks use the flows in `games/<slug>/flows/`.
+- Sound still goes through `shared/audio.js`, bundled into the game. Clip packs live in `games/<slug>/public/audio/<pack>/`.
+- npm cannot write its cache inside the Claude Code sandbox. `npm install`, `npm ci` and `npx` installs run outside it, or inside it with `--cache "$TMPDIR/npm-cache"` and `registry.npmjs.org` allowed.
+- Parallel agents each work in their own git worktree `.worktrees/<lane>` on branch `lane/<lane>`, with `node_modules` linked to the main tree's. Never run `npm install` in a worktree. The integrator merges the lane branches into `main`.
+
+## Hosting
+
+- Now: Tjitse's Mac serves the repo on the home network on port 8765. Emma opens `http://<LocalHostName>.local:8765/` in Safari (`scutil --get LocalHostName` gives the name). v2 and v3 share that origin, so v3 can read the v2 herd.
+- The server serves Moon Meadow Home from `games/moon-meadow-home/dist-emma`, a promoted copy of the build. `tools/promote.sh` builds and copies into it, only after a gate passed. Older hashed files stay, so an open tab keeps working.
+- `tools/go-live.sh` (in `games/moon-meadow-home/`) starts the server, outside the sandbox, and checks it from the LAN address and the `.local` name. It is also the restart command after a reboot or a sleep.
+- Plain http has no service worker and no `navigator.storage.persist()`. The game works without them and uses them on HTTPS.
+
 ## Deployment
 
-- Target: dedicated bare metal server `odin.vendic.cloud`.
-- The games are static files (HTML, JS, audio), served by a plain web server.
-- Deployment details to be decided when the first game is chosen.
+- Later: `odin.vendic.cloud` over HTTPS at `/unicorns/`. Agents do not deploy there. The deploy note will be `docs/v3/deploy-odin.md` (Wave C).
