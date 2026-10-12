@@ -2,7 +2,9 @@
 // release file (R27). Later tasks add one export per content/places/*.json file they create.
 import releaseJson from '../../../content/release.json' with { type: 'json' };
 import openingsJson from '../../../content/places/openings.json' with { type: 'json' };
+import plotsJson from '../../../content/places/plots.json' with { type: 'json' };
 import type { OpeningDef } from './openings.ts';
+import type { PlotDef, RowDef } from './building.ts';
 
 export const CURRENT_RELEASE: string = releaseJson.release;
 
@@ -17,3 +19,8 @@ export function released(release: string, current: string = CURRENT_RELEASE): bo
 export const openingDefs: readonly OpeningDef[] = openingsJson.order as OpeningDef[];
 /** The first fresh jewel jumps the queue. */
 export const jewelsOpening: OpeningDef = openingsJson.jewels as OpeningDef;
+
+/** Building plots in the valley (Task A12). Rows are not listed: they are `row-<n>` plots (R26). */
+export const plotDefs: readonly PlotDef[] = plotsJson.plots as PlotDef[];
+/** Stable rows: full Building Days up to `fullUntil`, then a short build. */
+export const rowDef: RowDef = plotsJson.rows;

@@ -1,0 +1,23 @@
+{
+  "plots": [
+    { "id": "bath-pond", "area": "meadow", "kind": "herd", "herd": 5, "release": "1.0", "breed": "bubble", "picture": "building-bath-pond", "map": [250, 600], "opening": "bath-pond", "lumi": "lumi-pond-open",
+      "sign": { "word": "pond", "graphemes": ["p", "o", "n", "d"], "clip": "word-pond" } },
+    { "id": "post-box", "area": "stable-yard", "kind": "herd", "herd": 15, "release": "1.1", "breed": "post", "picture": "building-post-box", "map": [640, 610], "opening": "post-box", "lumi": "lumi-post-open",
+      "sign": { "word": "post", "graphemes": ["p", "o", "s", "t"], "clip": "word-post", "gifts": [1] } },
+    { "id": "letter-lane", "area": "stable-yard", "kind": "place", "herd": 20, "release": "1.2", "picture": "building-icon-letter-lane", "map": [780, 520], "opening": "letter-lane" },
+    { "id": "dressing", "area": "meadow", "kind": "place", "release": "1.1", "picture": "place-dressing", "map": [400, 470], "opening": "dressing" },
+    { "id": "salon", "area": "village-lane", "kind": "jewel", "stones": 3, "release": "1.2", "breed": "sparkle", "picture": "building-salon", "map": [880, 330], "lumi": "lumi-salon-open",
+      "sign": { "word": "salon", "graphemes": ["s", "a", "l", "o", "n"], "clip": "word-salon" } },
+    { "id": "kitchen", "area": "village-lane", "kind": "jewel", "stones": 3, "release": "2", "picture": "place-kitchen", "map": [1000, 260] },
+    { "id": "tea-garden", "area": "village-lane", "kind": "jewel", "stones": 3, "release": "2", "picture": "place-tea-garden", "map": [1060, 400] },
+    { "id": "hide-seek", "area": "meadow", "kind": "jewel", "stones": 3, "key": "R28", "release": "2", "picture": "place-hide-seek", "map": [160, 420] },
+    { "id": "story-nook", "area": "meadow", "kind": "jewel", "stones": 3, "key": "R06", "release": "3", "picture": "place-story-nook", "map": [120, 560] },
+    { "id": "castle-gate", "area": "castle-hill", "kind": "jewel", "stones": 4, "release": "4", "picture": "place-castle-gate", "map": [600, 140] }
+  ],
+  "rows": {
+    "fullUntil": 5,
+    "lumi": "lumi-row-open",
+    "picture": "building-stall-row",
+    "sign": { "word": "stalls", "graphemes": ["s", "t", "a", "ll", "s"], "clip": "word-stalls" }
+  }
+}

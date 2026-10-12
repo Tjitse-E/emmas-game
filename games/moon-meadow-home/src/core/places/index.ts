@@ -13,6 +13,9 @@ export type { PlaceAction, PlaceDraft, LearnPayload } from './actions.ts';
 export { CURRENT_RELEASE, released } from './content.ts';
 export { earned, isAnnounced, JEWELS_OPENING, openingCtx, openingDefs, openingDue, REWARD_OPENINGS } from './openings.ts';
 export type { OpeningCtx, OpeningDef } from './openings.ts';
+export { nextPart, nextRow, partAsks, partsDone, partsFor, readyPlots, rowOfPlot, rowPlotId, signFor } from './building.ts';
+export type { PartAsk, PartId, PlotDef, SignDef } from './building.ts';
+export { plotDefs, rowDef } from './content.ts';
 
 /** Bump when the places fold changes (part of the snapshot key). */
 export const PLACES_FOLD_VERSION = 1;
