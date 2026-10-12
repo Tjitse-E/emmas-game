@@ -2,6 +2,7 @@
 // said() and audioMissing() are platform's synchronous methods (P-A10); they are not registered here.
 import { callHook, hasHook, registerHook, registerState, sceneHook } from '../platform/hooks.ts';
 import { clock } from '../platform/clock.ts';
+import { emitTouch } from '../platform/touch.ts';
 import { currentStep, isPlacing, setCurrentOverride } from '../core/learning/index.ts';
 import type { Learner } from '../core/learning/index.ts';
 import type { Content as LearnContent } from '../core/content/types.ts';
@@ -134,6 +135,8 @@ export function registerGameHooks(game: G, o: HookOpts): void {
     game.endVisit('goodnight');
     clock.advance(6 * 3_600_000);
     try { sessionStorage.setItem(NOW_KEY, String(clock.offset())); } catch { /* storage blocked */ }
+    // The moon is a tap: without one at the new time the 30-minute idle watcher ends the new visit on its next tick.
+    emitTouch();
     await o.wake();
     return game.visit;
   }));

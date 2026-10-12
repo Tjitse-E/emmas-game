@@ -44,6 +44,7 @@ until_stage() {
 hook "call('goodnight.long', false)" >/dev/null
 hook "call('feed.manger', 'wish')" >/dev/null
 hook "call('hb.goodnight')" >/dev/null
+scene_is goodnight   # the previous evening may still show rest
 until_stage manger
 expect_eq "$(fs 's.manger')" wish 'tonight is a manger wish'
 wait_for "() => window.__game.said().includes('g-hungry')"
@@ -87,11 +88,13 @@ fi
 until_stage rest
 
 # ---- the hay rack, with a miss, on the next evening
-hook 'newVisit()' >/dev/null
+# The clock moves first, then newVisit starts the evening's visit at the new time (as the eggs flow does).
 hook "setNow(Date.now() + 86400000)" >/dev/null
+hook 'newVisit()' >/dev/null
 hook "setStep('m', 'M12F')" >/dev/null
 hook "call('feed.manger', 'rack')" >/dev/null
 hook "call('hb.goodnight')" >/dev/null
+scene_is goodnight   # the previous evening may still show rest
 until_stage manger
 expect_eq "$(fs 's.manger')" rack 'tonight is the hay rack'
 wait_for "() => window.__game.said().includes('g-hay-rack')"
@@ -109,6 +112,7 @@ hook 'newVisit()' >/dev/null
 hook "call('feed.manger', null)" >/dev/null
 hook "call('goodnight.long', true)" >/dev/null
 hook "call('hb.goodnight')" >/dev/null
+scene_is goodnight   # the previous evening may still show rest
 until_stage rest
 stages="$(val "async () => (await window.__game.call('goodnight.walk')).stages.join(',')")"
 case ",$stages," in *,manger,*|*,free,*) fail "a long visit fed the babies: $stages" ;; esac

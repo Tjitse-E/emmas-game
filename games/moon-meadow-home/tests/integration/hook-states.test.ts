@@ -7,6 +7,8 @@ import { createLearnerSlice } from '../../src/core/learning/index.ts';
 import { createPlacesSlice } from '../../src/core/places/index.ts';
 import { content } from '../../src/core/content/static.ts';
 import { fakeDevice } from '../helpers/events.ts';
+import { clock } from '../../src/platform/clock.ts';
+import { lastTouchAt } from '../../src/platform/touch.ts';
 
 /** A folded log whose maths placement ended at M10 (Emma's Wave A save in short). */
 function learnerAtM10() {
@@ -27,6 +29,8 @@ const fake = {
   log: [{ type: 'visit.start' }, { type: 'learn.override', op: 'set-current' }, { type: 'care.done' }],
   get data() { return { status: () => ({ quarantined: this.quarantined }), allEvents: () => this.log }; },
   scene: 'meadow',
+  endVisit: () => {},
+  visit: 'v2',
 };
 registerGameHooks(fake as never, { seed: () => {}, ready: async () => {}, wake: async () => {}, setScaffold: () => {} });
 
@@ -51,5 +55,14 @@ describe('hook states for the 1.0.1 flows', () => {
   it('events lists the log, or the events of one type', async () => {
     expect(await callHook('events', [])).toHaveLength(3);
     expect(await callHook('events', ['learn.override'])).toEqual([{ type: 'learn.override', op: 'set-current' }]);
+  });
+});
+
+describe('the newVisit hook', () => {
+  it('counts as a touch at the new time, so the idle watcher does not end the new visit at once', async () => {
+    const before = clock.now();
+    await callHook('newVisit', []);
+    expect(lastTouchAt()).toBeGreaterThanOrEqual(before + 6 * 3_600_000);
+    clock.setNow(null);
   });
 });
