@@ -1,7 +1,9 @@
 import { capitalise, numberWord, ordinalWord } from './number-words.ts';
 import { bondId, numId, ordId } from '../../src/audio/ids.ts';
 
-export type PackLine = { id: string; speaker: 'narrator' | 'queen' | 'foal'; text: string; note?: string; seed?: number; expect?: string[] };
+import type { PackLine } from './lines-lib.ts';
+
+export type { PackLine };
 
 const range = (a: number, b: number): number[] => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 const N = (id: string, text: string): PackLine => ({ id, speaker: 'narrator', text });
