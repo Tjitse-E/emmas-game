@@ -76,6 +76,8 @@ class Budget(unittest.TestCase):
             self.assertEqual(ga.read_ledger(p), 0)
             p.write_text('{"credits": 120}\n{"credits": 30}\n')
             self.assertEqual(ga.read_ledger(p), 150)
+            p.write_text('{"credits": 120}\n{"credits": 0.34}\n{"credits": 0.34}\n')
+            self.assertEqual(ga.read_ledger(p), 121)
 
     def test_apply_overrides(self):
         lines = [{'id': 'a', 'speaker': 'narrator', 'text': 'A.'}, {'id': 'b', 'speaker': 'narrator', 'text': 'B.', 'seed': 3}]

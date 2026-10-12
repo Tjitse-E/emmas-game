@@ -12,6 +12,8 @@ sound is made by one of these methods:
 - sonorant:  like onset, but for voiced first sounds (l r w y qu): cut where the vowel's loudness rise starts.
 - vowel:     a carrier word that starts with the vowel ("At."), cut at the closure of the next consonant.
 - strip:     a carrier word whose first consonant is removed, keeping the vowel ("Car." gives ar).
+- strip-vowel: the vowel in the middle of a carrier word, between a voiceless first consonant and the closure
+             of the last consonant ("Hook." gives oo as in book).
 - coda:      the last sound of a carrier word, after its vowel ("Box." gives x).
 - coda-nasal / tail: the nasal at the end of "Sing." (ng) and the final vowel of "Letter." (er).
 - word:      a real word or letter name used whole (vowel teams: "Oh.", "Air.").
@@ -57,7 +59,7 @@ SOUNDS = {
     's': dict(takes=[T('respell', 'Sssss.')], sustain=True, aliases=['ss']),
     'm': dict(takes=[T('respell', 'Mmmmm.')], sustain=True),
     'n': dict(takes=[T('respell', 'Nnnnn.')], sustain=True),
-    'f': dict(takes=[T('respell', 'Fffff.')], sustain=True, aliases=['ff']),
+    'f': dict(takes=[T('respell', 'Fffff.')], sustain=True, aliases=['ff', 'ph']),
     'v': dict(takes=[T('respell', 'Vvvvv.')], sustain=True),
     'z': dict(takes=[T('respell', 'Zzzzz.')], sustain=True, aliases=['zz']),
     'sh': dict(takes=[T('respell', 'Shhhhh.')], sustain=True),
@@ -80,7 +82,7 @@ SOUNDS = {
     'd': dict(takes=[T('voiced-stop', 'Dog.'), T('voiced-stop', 'Dip.'), T('voiced-stop', 'Den.')]),
     'g': dict(takes=[T('voiced-stop', 'Got.'), T('voiced-stop', 'Gift.'), T('voiced-stop', 'Get.')]),
     # Glides and qu: voiced onset up to the start of the vowel.
-    'w': dict(takes=[T('sonorant', 'Wet.'), T('sonorant', 'Win.')]),
+    'w': dict(takes=[T('sonorant', 'Wet.'), T('sonorant', 'Win.')], aliases=['wh']),
     'y': dict(takes=[T('sonorant', 'Yes.'), T('sonorant', 'Yak.')]),
     # British qu is k plus a w that is mostly breathed: the aspiration before the vowel.
     'qu': dict(takes=[T('onset', 'Quit.', cap_ms=150), T('onset', 'Queen.', cap_ms=150)]),
@@ -95,20 +97,45 @@ SOUNDS = {
     'o': dict(takes=[T('vowel', 'Ox.'), T('vowel', 'Off.')], kind='vowel', expect=['o', 'oh', 'ah', 'uh']),
     'u': dict(takes=[T('vowel', 'Up.')], kind='vowel'),
     # Long vowels and vowel teams: words or letter names, or a word with its first consonant removed.
-    'ai': dict(takes=[T('word', 'A.'), T('strip', 'Hay.')], kind='vowel', expect=['a', 'ay', 'eh', 'hey', 'eight']),
-    'ee': dict(takes=[T('word', 'Ee.')], kind='vowel'),
-    'igh': dict(takes=[T('word', 'Eye.')], kind='vowel'),
-    'oa': dict(takes=[T('word', 'Oh.')], kind='vowel'),
-    'oo': dict(takes=[T('word', 'Ooo.')], kind='vowel'),
+    'ai': dict(takes=[T('word', 'A.'), T('strip', 'Hay.')], kind='vowel', expect=['a', 'ay', 'eh', 'hey', 'eight'],
+               aliases=['ay', 'a-e']),
+    'ee': dict(takes=[T('word', 'Ee.')], kind='vowel', aliases=['ea', 'e-e', 'ey']),
+    'igh': dict(takes=[T('word', 'Eye.')], kind='vowel', aliases=['ie', 'i-e']),
+    'oa': dict(takes=[T('word', 'Oh.')], kind='vowel', aliases=['oe', 'o-e']),
+    'oo': dict(takes=[T('word', 'Ooo.')], kind='vowel', aliases=['ue']),
     'ar': dict(takes=[T('word', 'Ah.'), T('strip', 'Car.')], kind='vowel', expect=['ah', 'are', 'r', 'aa', 'car']),
-    'or': dict(takes=[T('word', 'Or.')], kind='vowel'),
-    'ur': dict(takes=[T('word', 'Err.'), T('strip', 'Fur.')], kind='vowel', expect=['er', 'err', 'ur', 'uh', 'her']),
-    'ow': dict(takes=[T('word', 'Ow!')], kind='vowel'),
-    'oi': dict(takes=[T('word', 'Oi!')], kind='vowel'),
+    'or': dict(takes=[T('word', 'Or.')], kind='vowel', aliases=['aw', 'au']),
+    'ur': dict(takes=[T('word', 'Err.'), T('strip', 'Fur.')], kind='vowel', expect=['er', 'err', 'ur', 'uh', 'her'],
+               aliases=['ir']),
+    'ow': dict(takes=[T('word', 'Ow!')], kind='vowel', aliases=['ou']),
+    'oi': dict(takes=[T('word', 'Oi!')], kind='vowel', aliases=['oy']),
     'ear': dict(takes=[T('word', 'Ear.')], kind='vowel'),
     'air': dict(takes=[T('word', 'Air.')], kind='vowel'),
     'er': dict(takes=[T('tail', 'Letter.'), T('tail', 'Hammer.')], kind='vowel', expect=['uh', 'er', 'a', 'ah']),
+    # Phase 5 (v3). Short oo as in book. No English word starts with it, and "Ook." is read as "oak", so the
+    # vowel is cut from the middle of a word after a voiceless first sound (b + the Hood cut + k is heard as a word
+    # with the book vowel). Like the other short vowels, a clean cut usually gives an empty transcript.
+    'oo-short': dict(takes=[T('strip-vowel', 'Hood.'), T('strip-vowel', 'Foot.'), T('strip-vowel', 'Cook.')],
+                     kind='vowel', expect=['ook', 'uk', 'oo', 'u', 'uh', 'look', 'book', 'hood', 'good', 'foot', 'cook']),
+    # The long u of cube and few.
+    'yoo': dict(takes=[T('word', 'You.'), T('word', 'Yoo.')], kind='vowel', expect=['you', 'yu', 'u', 'ew', 'yoo'],
+                aliases=['u-e', 'ew']),
+    # The -es ending of foxes, said with the slider and the readbacks (spec 3.10).
+    'iz': dict(takes=[T('word', 'Iz.'), T('word', 'Izz.')], kind='vowel', expect=['is', 'iz', 'izz', 'es', 'his']),
 }
+
+
+def alias_entries(sounds):
+    """Index entries for every alias whose main sound is already made. Aliases share the main sound's file."""
+    out = {}
+    for g, spec in SOUNDS.items():
+        entry = sounds.get(g)
+        if not entry:
+            continue
+        for alias in spec.get('aliases', []):
+            out[alias] = {'id': f'snd-{alias}', 'file': entry['file'], 'sustain': entry['sustain'],
+                          'kind': entry['kind'], 'same_as': g}
+    return out
 
 LOUD_DB, VOICED_DB, ZCR_VOICED = -40.0, -28.0, 0.12
 
@@ -224,6 +251,12 @@ def segment(path, take):
     if m == 'strip':
         v = first(db, voiced, on, off)
         return (v + 3) * 10, (off + 1) * 10
+    if m == 'strip-vowel':
+        # The vowel in the middle of a carrier word: after a voiceless first consonant ("Hook." gives oo as in
+        # book), up to the closure of the last consonant. For vowels no English word starts with.
+        v = first(db, voiced, on, off)
+        end = first(db, lambda i: db[i] < -30, v + 3, off + 1)
+        return (v + 3) * 10, max(end, v + 7) * 10
     if m == 'coda':
         # From the release after the vowel's closure to the end ("Box." gives the k burst and the s).
         last_v = max((i for i in range(n) if voiced(i)), default=on)
@@ -442,18 +475,20 @@ def main():
                  'kind': spec.get('kind', 'consonant'), 'chosen': chosen['n'], 'method': chosen['method'],
                  'duration_ms': ga.duration_ms(main_file), 'takes': takes}
         sounds[g] = entry
-        for alias in spec.get('aliases', []):
-            shutil.copyfile(main_file, OUT / f'snd-{alias}.mp3')
-            sounds[alias] = {'id': f'snd-{alias}', 'file': main_file.name, 'sustain': entry['sustain'],
-                             'kind': entry['kind'], 'same_as': g}
         line = ', '.join(f'{t["n"]}:{t["text"] or "+".join(t["parts"])} s={t["score"]} '
                          f'{t["metrics"]["sound_ms"]}ms v{t["metrics"]["voiced_ms"]} o{t["metrics"]["open_ms"]} w{t["metrics"]["wobble"]} '
                          f'stt={t["stt"]!r}' for t in takes)
         print(f'{g:<4} -> take {chosen["n"]}   {line}', flush=True)
 
+    # Every alias of every made sound, also of sounds this run did not touch (new Phase 5 spellings of old sounds).
+    for alias, entry in alias_entries(sounds).items():
+        src, dst = OUT / entry['file'], OUT / f'snd-{alias}.mp3'
+        if not dst.exists() or dst.read_bytes() != src.read_bytes():
+            shutil.copyfile(src, dst)
+        sounds[alias] = entry
     order_all = list(SOUNDS) + [a for s in SOUNDS.values() for a in s.get('aliases', [])]
     out = {'note': 'Pure British phonics sounds, voice Elizabeth (eleven_v4). Made by scripts/generate-phonics.py. '
-                   'Keyed by grapheme. Aliases (ss ff ll zz c ck) use the file of their main sound.',
+                   'Keyed by sound code; aliases (other spellings of the same sound) use the file of their main sound.',
            'updated': datetime.datetime.now().isoformat(timespec='seconds'),
            'sounds': {g: sounds[g] for g in order_all if g in sounds}}
     index_path.write_text(json.dumps(out, ensure_ascii=False, indent=1) + '\n')

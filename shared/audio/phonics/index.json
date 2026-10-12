@@ -1,6 +1,6 @@
 {
- "note": "Pure British phonics sounds, voice Elizabeth (eleven_v4). Made by scripts/generate-phonics.py. Keyed by grapheme. Aliases (ss ff ll zz c ck) use the file of their main sound.",
- "updated": "2026-10-10T11:26:54",
+ "note": "Pure British phonics sounds, voice Elizabeth (eleven_v4). Made by scripts/generate-phonics.py. Keyed by sound code; aliases (other spellings of the same sound) use the file of their main sound.",
+ "updated": "2026-10-12T12:10:40",
  "sounds": {
   "s": {
    "id": "snd-s",
@@ -1930,6 +1930,174 @@
     }
    ]
   },
+  "oo-short": {
+   "id": "snd-oo-short",
+   "file": "snd-oo-short.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "strip-vowel",
+   "duration_ms": 290,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/oo-short-1.mp3",
+     "method": "strip-vowel",
+     "text": "Hood.",
+     "parts": null,
+     "cut_ms": [
+      180,
+      370
+     ],
+     "metrics": {
+      "ms": 290,
+      "sound_ms": 190,
+      "voiced_ms": 170,
+      "open_ms": 120,
+      "wobble": 0
+     },
+     "stt_key": "07e20949e3d5dfdd07a4917bdd9a46aa92c291f57c9a2ef421411527cb553682:(180, 370)",
+     "stt": "",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/oo-short-2.mp3",
+     "method": "strip-vowel",
+     "text": "Foot.",
+     "parts": null,
+     "cut_ms": [
+      200,
+      290
+     ],
+     "metrics": {
+      "ms": 190,
+      "sound_ms": 90,
+      "voiced_ms": 80,
+      "open_ms": 70,
+      "wobble": 0
+     },
+     "stt_key": "6d201e1aa8e4e97a683e6f916a4423877f4f7ebfbffa450e7910bc1624bdc139:(200, 290)",
+     "stt": "",
+     "score": 30.0
+    },
+    {
+     "n": 3,
+     "file": "takes/oo-short-3.mp3",
+     "method": "strip-vowel",
+     "text": "Cook.",
+     "parts": null,
+     "cut_ms": [
+      140,
+      210
+     ],
+     "metrics": {
+      "ms": 170,
+      "sound_ms": 70,
+      "voiced_ms": 70,
+      "open_ms": 70,
+      "wobble": 0
+     },
+     "stt_key": "ffe62472b581dba5a3bc1dfa7b5f0f1a135ea2a9b968cc4c33be4b9f9ff9e4d9:(140, 210)",
+     "stt": "",
+     "score": 50.0
+    }
+   ]
+  },
+  "yoo": {
+   "id": "snd-yoo",
+   "file": "snd-yoo.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 644,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/yoo-1.mp3",
+     "method": "word",
+     "text": "You.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 640,
+      "sound_ms": 500,
+      "voiced_ms": 420,
+      "open_ms": 80,
+      "wobble": 0
+     },
+     "stt_key": "4ca887e3ade46e08690c46f45eb9a8d5ae7a1e0ad7c06b949f6b45c51215a551:None",
+     "stt": "You",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/yoo-2.mp3",
+     "method": "word",
+     "text": "Yoo.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 670,
+      "sound_ms": 480,
+      "voiced_ms": 440,
+      "open_ms": 30,
+      "wobble": 0
+     },
+     "stt_key": "de5cd3e500881e62e710c3ccf622ddb8dbc6375b82fd1da72d3f4d1cd406e294:None",
+     "stt": "You",
+     "score": 0.0
+    }
+   ]
+  },
+  "iz": {
+   "id": "snd-iz",
+   "file": "snd-iz.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "chosen": 1,
+   "method": "word",
+   "duration_ms": 700,
+   "takes": [
+    {
+     "n": 1,
+     "file": "takes/iz-1.mp3",
+     "method": "word",
+     "text": "Iz.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 690,
+      "sound_ms": 550,
+      "voiced_ms": 240,
+      "open_ms": 150,
+      "wobble": 1
+     },
+     "stt_key": "081f414200ed8eeb48354a19acf5585848da27528568845f23c781824b962f0f:None",
+     "stt": "Is",
+     "score": 0.0
+    },
+    {
+     "n": 2,
+     "file": "takes/iz-2.mp3",
+     "method": "word",
+     "text": "Izz.",
+     "parts": null,
+     "cut_ms": null,
+     "metrics": {
+      "ms": 700,
+      "sound_ms": 510,
+      "voiced_ms": 250,
+      "open_ms": 80,
+      "wobble": 1
+     },
+     "stt_key": "964291e2b4e6f07dfa94831611cf4a3998dfec4f6170bfb72be4da98a7bd3686:None",
+     "stt": "Is",
+     "score": 0.0
+    }
+   ]
+  },
   "ss": {
    "id": "snd-ss",
    "file": "snd-s.mp3",
@@ -1939,6 +2107,13 @@
   },
   "ff": {
    "id": "snd-ff",
+   "file": "snd-f.mp3",
+   "sustain": true,
+   "kind": "consonant",
+   "same_as": "f"
+  },
+  "ph": {
+   "id": "snd-ph",
    "file": "snd-f.mp3",
    "sustain": true,
    "kind": "consonant",
@@ -1971,6 +2146,132 @@
    "sustain": false,
    "kind": "consonant",
    "same_as": "k"
+  },
+  "wh": {
+   "id": "snd-wh",
+   "file": "snd-w.mp3",
+   "sustain": false,
+   "kind": "consonant",
+   "same_as": "w"
+  },
+  "ay": {
+   "id": "snd-ay",
+   "file": "snd-ai.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "ai"
+  },
+  "a-e": {
+   "id": "snd-a-e",
+   "file": "snd-ai.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "ai"
+  },
+  "ea": {
+   "id": "snd-ea",
+   "file": "snd-ee.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "ee"
+  },
+  "e-e": {
+   "id": "snd-e-e",
+   "file": "snd-ee.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "ee"
+  },
+  "ey": {
+   "id": "snd-ey",
+   "file": "snd-ee.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "ee"
+  },
+  "ie": {
+   "id": "snd-ie",
+   "file": "snd-igh.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "igh"
+  },
+  "i-e": {
+   "id": "snd-i-e",
+   "file": "snd-igh.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "igh"
+  },
+  "oe": {
+   "id": "snd-oe",
+   "file": "snd-oa.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "oa"
+  },
+  "o-e": {
+   "id": "snd-o-e",
+   "file": "snd-oa.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "oa"
+  },
+  "ue": {
+   "id": "snd-ue",
+   "file": "snd-oo.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "oo"
+  },
+  "aw": {
+   "id": "snd-aw",
+   "file": "snd-or.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "or"
+  },
+  "au": {
+   "id": "snd-au",
+   "file": "snd-or.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "or"
+  },
+  "ir": {
+   "id": "snd-ir",
+   "file": "snd-ur.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "ur"
+  },
+  "ou": {
+   "id": "snd-ou",
+   "file": "snd-ow.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "ow"
+  },
+  "oy": {
+   "id": "snd-oy",
+   "file": "snd-oi.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "oi"
+  },
+  "u-e": {
+   "id": "snd-u-e",
+   "file": "snd-yoo.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "yoo"
+  },
+  "ew": {
+   "id": "snd-ew",
+   "file": "snd-yoo.mp3",
+   "sustain": false,
+   "kind": "vowel",
+   "same_as": "yoo"
   }
  }
 }

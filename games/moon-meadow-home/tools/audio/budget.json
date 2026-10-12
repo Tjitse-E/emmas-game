@@ -3,5 +3,15 @@
  "startCredits": 34007,
  "floor": 10007,
  "measured": "2026-10-12",
- "note": "Build budget for the v3 session. Every generator run passes the floor, the ledger, the cap and the speech-to-text cost per check (tools/audio/gen.sh)."
+ "note": "Build budget for the v3 session. Every generator run passes the floor, the ledger, the cap and the speech-to-text cost per check (tools/audio/gen.sh).",
+ "sttPerCheck": 0.34,
+ "sttProbe": {
+  "measured": "2026-10-12T12:13:21",
+  "calls": 6,
+  "audioSeconds": 7.1,
+  "counterChange": 2,
+  "counterSettled": true,
+  "session": "Across all of run 0 (34 characters of speech, 26 checks) the counter moved 8 credits, so one check of a short clip costs at most about 0.3 credits.",
+  "note": "Credits per check, rounded up to a hundredth. Every later run reserves this per clip it checks (gen.sh passes it as --stt-cost) and the ledger records it."
+ }
 }

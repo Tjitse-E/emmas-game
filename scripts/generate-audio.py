@@ -22,6 +22,7 @@ import concurrent.futures
 import datetime
 import hashlib
 import json
+import math
 import re
 import shlex
 import subprocess
@@ -278,7 +279,8 @@ def read_ledger(path):
     """Credits spent by earlier runs, from a JSON-lines ledger. A missing file is zero."""
     if not path or not Path(path).exists():
         return 0
-    return sum(int(json.loads(l).get('credits', 0)) for l in Path(path).read_text().splitlines() if l.strip())
+    total = sum(float(json.loads(l).get('credits', 0)) for l in Path(path).read_text().splitlines() if l.strip())
+    return math.ceil(round(total, 6))  # speech-to-text costs are fractions of a credit
 
 
 def apply_overrides(lines, overrides):
@@ -332,7 +334,7 @@ def main():
     ap.add_argument('--force', action='store_true', help='regenerate even when cached')
     ap.add_argument('--stt', action='store_true', help='check narrator and queen clips with speech-to-text (scribe_v2)')
     ap.add_argument('--stt-retry', type=int, default=0, help='regenerate a clip that fails speech-to-text up to N times')
-    ap.add_argument('--stt-cost', type=int, default=0,
+    ap.add_argument('--stt-cost', type=float, default=0,
                     help='credits one speech-to-text check costs (sttPerCheck in budget.json); counted in the budget')
     ap.add_argument('--credits', action='store_true', help='print the credits left this month and stop')
     ap.add_argument('--floor', type=int, default=MIN_CREDITS, help='never leave fewer credits than this (at least 8000)')
@@ -534,8 +536,8 @@ def main():
     orphans = sorted(p.name for p in audio_dir.glob('*.mp3') if p.stem not in current)
     if args.ledger:
         record = {'t': datetime.datetime.now().isoformat(timespec='seconds'), 'lines': str(rel), 'made': sent['made'],
-                  'chars': sent['chars'], 'credits': sent['credits'] + sent['stt_credits'], 'credits_before': before,
-                  'stt_calls': sent['stt'], 'stt_credits': sent['stt_credits']}
+                  'chars': sent['chars'], 'credits': round(sent['credits'] + sent['stt_credits'], 2),
+                  'credits_before': before, 'stt_calls': sent['stt'], 'stt_credits': round(sent['stt_credits'], 2)}
         with open(args.ledger, 'a') as f:
             f.write(json.dumps(record) + '\n')
 
@@ -543,7 +545,7 @@ def main():
     print(f'  generated: {sent["made"]}, skipped (unchanged): {skipped}, failed: {len(sent["failed"])}, '
           f'not made (budget): {len(over_budget)}')
     print(f'  characters sent: {sent["chars"]} (about {sent["credits"]} credits), speech-to-text calls: {sent["stt"]}'
-          f' (about {sent["stt_credits"]} credits)')
+          f' (about {sent["stt_credits"]:.1f} credits)')
     if before is not None:
         print(f'  credits left before this run: {before} (the usage counter can lag a few minutes)')
     if orphans:
