@@ -1,0 +1,31 @@
+# Seed word pictures per reading step. Ids are the singular word. Animals are always toys.
+R01 | tap
+R02 | pin pan map mat tin pad
+R03 | pot pig dog cot cap cat can top mop pod tag
+R04 | duck sock rock sack bed net pen peg cup mug nut sun rug pup
+R05 | hat bun bag log lid fan fig hen hut bib cub tub bud bat
+R07 | bell ball dress hill muff moss puff
+R08 | jam jug web wig box fox well
+R09 | zip yam
+R10 | chip ship shell ring sink chick dish fish bath path ink
+R11 | bin lock
+R13 | rain nail pail bee tree sheep seed light night sail chain weed
+R14 | boat coat goat soap toast road toad moon spoon boot pool hoop roof broom stool book hook wood wool
+R15 | star jar card harp cart scarf fork horn corn cork
+R16 | cow owl crown gown towel flower coin foil soil tower
+R17 | chair stairs hammer ladder letter butter dinner slipper pepper
+R18 | rainbow sunset teapot toolbox starfish popcorn windmill sandpit
+R19 | bow bead cape cake kite bike key carrot apple pancake plank brick castle horse glass brush bush peach bench branch sash mouse
+R20 | pie pea tile
+R21 | nest milk tent belt desk lamp pond mask gift vest bulb mint sand quilt raft
+R22 | frog crab drum flag sled plum pram clip clock block twig grass swan
+R23 | trunk stamp plant
+R26 | train rabbit garden picnic basket button kitten napkin magnet jacket pumpkin muffin ribbon lemon melon pillow teacup sweet sheet blanket balloon
+R27 | blanket-fluffy pillow-fluffy hat-fluffy scarf-fluffy coat-fluffy slipper-fluffy
+R30 | tray crayon spade whale gate plate vase skate paint
+R32 | seal leaf beach cream bean wheel jeans
+R34 | tie lime pine tights hive slide
+R36 | shirt bird skirt turnip purse fern
+R38 | cube tape cane
+R39 | home rose globe snow cone rope hose bowl window snowman crow
+R41 | jewel stew glue statue screw

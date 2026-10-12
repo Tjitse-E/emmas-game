@@ -1,0 +1,11 @@
+bg-meadow | A | meadow | a wide sunny meadow at the foot of a soft green hill, a few flowers along the edges, little wooden stable roofs far away on the left, a pale blue sky with a pale daytime moon. The lower two thirds is open soft grass with nothing on it
+bg-nest | A | core | a cosy night-time corner of the meadow under a deep blue and violet sky with stars and a big glowing moon, warm lantern light on soft grass. The centre is an open grassy area with nothing on it
+bg-stable-yard | A | stables | a sunny stable yard with a cobbled path and soft grass, flower pots and a water trough at the far edges. The middle is open and empty
+bg-building-yard | A | building | a sunny building site in a meadow, a flat cleared plot of soft earth in the centre, tidy stacks of planks and bricks at the far edges
+bg-bath-pond | A | bath | a close view of a big round bath pond with clear blue water and stepping stones, reeds and flowers around it, a little wooden slide at one side. The water in the centre is open
+bg-sky | A | core | a calm deep blue and violet night sky over a dark meadow horizon, a big glowing crescent moon in the upper right. The rest of the sky is open for stars
+bg-post-box | B | post | a sunny corner of the stable yard with a little post office stand and a pin board at the left. Open ground in the middle
+bg-dressing-corner | B | dressing | a pretty open gazebo dressing corner with a tall mirror, hooks and a small wardrobe at the sides. Open floor in the centre
+bg-salon | C | salon | a bright cosy hair salon for unicorns with a big mirror on the left and shelves of brushes and bows. Open floor in the centre
+bg-valley-map | C | valley | a painted map of a small valley seen from above at an angle: a meadow at the bottom, a stable yard, a village lane, a hill with an old castle, and sky at the top, soft paths between them and empty plots of grass
+bg-letter-lane | C | letters | a little lane in the stable yard with a path and soft grass. The lane centre is open

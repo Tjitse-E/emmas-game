@@ -1,0 +1,199 @@
+# Wave A
+station-hay-rack | station | A | meadow | 480 | - | - | a small wooden hay rack on legs, filled with golden hay
+station-brush-stand | station | A | meadow | 480 | - | - | a little wooden stand holding three soft grooming brushes
+station-hat-box | station | A | meadow | 480 | - | - | a round striped hat box with its lid slightly open
+station-nap-cushion | station | A | meadow | 480 | - | - | a big round soft cushion with a folded blanket on it
+station-swing | station | A | meadow | 480 | - | - | a wooden swing seat hanging from a small wooden frame with ropes
+item-nest | item | A | meadow | 640 | - | - | a big round cosy nest of twigs lined with soft moss
+egg-moon | egg | A | core | 512 | - | - | a pale lilac egg with tiny silver crescent moons
+egg-nestling | egg | A | core | 512 | - | - | a cream egg with a soft twig pattern
+egg-pebble | egg | A | core | 512 | - | - | a pale grey-blue egg with smooth pebble spots
+egg-cosy | egg | A | core | 512 | - | - | a peach egg with a knitted blanket pattern
+egg-berry | egg | A | core | 512 | - | - | a pink egg with little red berry dots
+egg-snow | egg | A | core | 512 | - | - | a white and pale blue egg with snowflakes
+egg-bubble | egg | A | core | 512 | - | - | a pale aqua egg with bubble circles
+egg-post | egg | A | core | 512 | - | - | a pale yellow egg with a tiny envelope pattern
+egg-sparkle | egg | A | core | 512 | - | - | a lilac egg with gold sparkles
+egg-golden | egg | A | core | 512 | - | - | a shining golden egg
+egg-speckled | egg | A | core | 512 | - | - | a cream egg with soft brown speckles
+egg-shell-top | egg | A | core | 512 | - | - | the top half of a cracked open pale egg shell, jagged edge at the bottom
+egg-shell-bottom | egg | A | core | 512 | - | - | the bottom half of a cracked open pale egg shell, jagged edge at the top
+item-moon-cup | item | A | core | 256 | - | - | a small round pale cup glowing with warm moonlight
+item-berry-bowl | item | A | core | 320 | - | - | a small empty wooden bowl
+item-berry | item | A | core | 160 | - | - | one round pink moonberry with a tiny leaf
+item-name-bell | item | A | core | 320 | - | - | a small golden bell with a ribbon loop at the top
+item-gold-bell | item | A | core | 400 | - | - | a large shiny golden bell with a star on it
+item-name-tree | item | A | core | 640 | - | - | a small round tree with little golden bells hanging from its branches
+item-name-tag | item | A | core | 400 | - | - | a blank rounded wooden name tag with a little ribbon
+item-wish-basket | item | A | meadow | 640 | - | - | a big empty woven picnic basket with a handle
+item-toy-shelf | item | A | meadow | 800 | - | - | a wide empty wooden toy shelf with two shelves
+item-jar | item | A | meadow | 320 | - | - | an empty clear glass jar with a cork lid
+item-jar-label | item | A | meadow | 320 | - | - | a blank cream paper label with a scalloped edge
+item-mice-jar | item | A | meadow | 320 | - | - | a clear glass jar holding five small grey plush toy mice
+item-crown-emma | item | A | core | 256 | - | - | a small golden princess crown with a pink gem
+item-camp-tent | item | A | stables | 480 | - | - | a small cosy striped tent with the door flaps closed
+item-camp-tent-open | item | A | stables | 480 | - | - | a small cosy striped tent with the door flaps open, dark inside
+item-lantern | item | A | stables | 256 | - | - | a small unlit hanging lantern
+item-lantern-lit | item | A | stables | 256 | - | - | a small hanging lantern glowing warm yellow
+item-plaque | item | A | stables | 256 | - | - | a blank small brass door plaque
+item-flower-box | item | A | stables | 320 | - | - | a wooden window flower box with pink flowers
+item-stall-door | item | A | stables | 400 | #b98ad8 | - | a rounded wooden stable door, closed, with a top and a bottom half
+item-stall-door-open | item | A | stables | 400 | #b98ad8 | - | a rounded wooden stable door frame with only the top half open, dark inside
+building-stall-row | building | A | stables | 1400 | - | - | a long low stable building front with ten empty arched doorways in two rows of five, no doors in them
+outfit-nightcap | outfit | A | stables | 320 | - | head | a soft striped nightcap with a pom-pom
+outfit-hardhat | outfit | A | building | 320 | - | head | a small yellow builder's hard hat
+item-wheelbarrow | item | A | building | 480 | - | - | a small wooden wheelbarrow
+item-scissors | item | A | building | 320 | - | - | a pair of big round-tipped golden scissors
+item-sign-board | item | A | building | 640 | - | - | a blank wooden sign board on two posts
+item-trim-tile | item | A | building | 160 | #f2a6c7 | - | one square decorative tile with a flower shape
+item-plot | item | A | meadow | 640 | - | - | an empty square plot of soft earth with a small blank picture sign on a post
+item-plot-stone | item | A | meadow | 256 | #ffd86b | - | a round flat glowing stepping stone
+building-bath-pond | building | A | meadow | 1024 | - | - | a small round bath pond with blue water, a little slide and stones around it
+building-stable-gate | building | A | meadow | 640 | - | - | a small arched wooden gate with a lantern
+item-moonbeam-bridge | item | A | core | 1024 | - | - | a soft glowing arched bridge made of pale moonlight
+pin-founder-star | pin | A | core | 160 | - | - | a golden star pin badge
+item-blanket-cover | item | A | core | 512 | - | - | a small knitted blanket folded into a dome shape
+ui-icon-envelope | ui | A | core | 192 | - | - | a small sealed envelope with a heart seal
+ui-icon-hammer | ui | A | core | 192 | - | - | a small wooden hammer
+ui-icon-jewel | ui | A | core | 192 | - | - | a sparkling pink jewel
+ui-icon-jar | ui | A | core | 192 | - | - | a small jar with a blank label
+ui-icon-moon | ui | A | core | 192 | - | - | a smiling sleepy crescent moon
+ui-stone | ui | A | core | 256 | #cfd6e6 | - | one smooth round flat river stone, plain
+ui-gem | ui | A | core | 256 | #ff8fc4 | - | a round faceted gem button seen from the front, plain
+ui-gem-crescent | ui | A | core | 256 | #ffd36b | - | a crescent moon shaped faceted gem, plain
+ui-star | ui | A | core | 128 | - | - | a small glowing five-pointed star
+ui-sparkle | ui | A | core | 128 | - | - | a four-pointed white and gold sparkle
+decor-moonflower | decor | A | meadow | 192 | - | - | a single small glowing pale blue moonflower with a short stem and two leaves
+decor-moonflower-patch-3 | decor | A | meadow | 320 | - | - | a small patch of three glowing pale blue moonflowers
+decor-moonflower-patch-7 | decor | A | meadow | 480 | - | - | a patch of seven glowing pale blue moonflowers
+item-moon | item | A | core | 480 | - | - | a big friendly smiling crescent moon, pale yellow, glowing softly
+item-brush | item | A | meadow | 256 | - | - | a soft round grooming brush with a short wooden handle
+item-treat | item | A | meadow | 256 | - | - | a small round golden oat biscuit treat with a heart pressed into it
+item-heart | item | A | meadow | 256 | - | - | a soft puffy pink heart
+ui-ghost-hand | ui | A | core | 192 | - | - | svg: a soft pale glowing hand pointing down and to the left
+ui-replay | ui | A | core | 192 | - | - | svg: a round speaker button with two sound waves
+ui-turn-ipad | ui | A | core | 640 | - | - | svg: a tablet turning from upright to sideways with a curved arrow
+ui-play | ui | A | core | 400 | - | - | svg: a big round green button with a white triangle
+# Wave B
+ui-stone-snow | ui | B | core | 256 | - | - | a smooth flat pale blue stone with a frosty snowflake pattern
+building-post-box | building | B | post | 1024 | - | - | a little post office stand with a round red post box and a pin board
+item-envelope | item | B | post | 320 | - | - | a closed cream envelope with a heart seal
+item-envelope-open | item | B | post | 320 | - | - | an open cream envelope, empty
+item-parcel | item | B | post | 400 | - | - | a parcel box tied with string, open at the top, empty
+item-pin-pot | item | B | post | 400 | - | - | a round pot full of little golden star pins
+item-sash | item | B | post | 800 | #f48fb1 | - | a wide ribbon sash laid flat in a gentle curve
+item-note-paper | item | B | post | 640 | - | - | a blank sheet of cream note paper with a scalloped edge
+pin-star | pin | B | post | 160 | - | - | a plain golden star pin badge with a small shine
+pin-flower-1 | pin | B | post | 160 | - | - | a daisy pin badge
+pin-flower-2 | pin | B | post | 160 | - | - | a rose pin badge
+pin-flower-3 | pin | B | post | 160 | - | - | a tulip pin badge
+pin-flower-4 | pin | B | post | 160 | - | - | a sunflower pin badge
+pin-flower-5 | pin | B | post | 160 | - | - | a bluebell pin badge
+pin-flower-6 | pin | B | post | 160 | - | - | a poppy pin badge
+pin-flower-7 | pin | B | post | 160 | - | - | a lily pin badge
+pin-flower-8 | pin | B | post | 160 | - | - | a lavender sprig pin badge
+pin-flower-9 | pin | B | post | 160 | - | - | a four-leaf clover pin badge
+pin-flower-10 | pin | B | post | 160 | - | - | a cherry blossom pin badge
+pin-sweet-1 | pin | B | post | 160 | - | - | a round lollipop pin badge
+pin-sweet-2 | pin | B | post | 160 | - | - | a cupcake pin badge
+pin-sweet-3 | pin | B | post | 160 | - | - | a cookie pin badge
+pin-sweet-4 | pin | B | post | 160 | - | - | a wrapped sweet pin badge
+pin-sweet-5 | pin | B | post | 160 | - | - | an ice lolly pin badge
+pin-sweet-6 | pin | B | post | 160 | - | - | a jelly pin badge
+pin-sweet-7 | pin | B | post | 160 | - | - | a doughnut pin badge
+pin-sweet-8 | pin | B | post | 160 | - | - | a candy cane pin badge
+pin-sweet-9 | pin | B | post | 160 | - | - | a macaron pin badge
+pin-sweet-10 | pin | B | post | 160 | - | - | a strawberry pin badge
+pin-sea-1 | pin | B | post | 160 | - | - | a seashell pin badge
+pin-sea-2 | pin | B | post | 160 | - | - | a starfish pin badge
+pin-sea-3 | pin | B | post | 160 | - | - | a pearl pin badge
+pin-sea-4 | pin | B | post | 160 | - | - | a coral pin badge
+pin-sea-5 | pin | B | post | 160 | - | - | an anchor pin badge
+pin-sea-6 | pin | B | post | 160 | - | - | a sailing boat pin badge
+pin-sea-7 | pin | B | post | 160 | - | - | a wave pin badge
+pin-sea-8 | pin | B | post | 160 | - | - | a sandcastle pin badge
+pin-sea-9 | pin | B | post | 160 | - | - | a bucket and spade pin badge
+pin-sea-10 | pin | B | post | 160 | - | - | a beach ball pin badge
+pin-moon-1 | pin | B | post | 160 | - | - | a crescent moon pin badge
+pin-moon-2 | pin | B | post | 160 | - | - | a full moon pin badge
+pin-moon-3 | pin | B | post | 160 | - | - | a twinkling star pin badge
+pin-moon-4 | pin | B | post | 160 | - | - | a comet pin badge
+pin-moon-5 | pin | B | post | 160 | - | - | a ringed planet pin badge
+pin-moon-6 | pin | B | post | 160 | - | - | a fluffy cloud pin badge
+pin-moon-7 | pin | B | post | 160 | - | - | a rainbow pin badge
+pin-moon-8 | pin | B | post | 160 | - | - | a sun pin badge
+pin-moon-9 | pin | B | post | 160 | - | - | a shooting star pin badge
+pin-moon-10 | pin | B | post | 160 | - | - | a little lantern pin badge
+pin-first-bath | pin | B | post | 160 | - | - | a pin badge with a rubber duck in bubbles
+pin-tenth-baby | pin | B | post | 160 | - | - | a pin badge with a golden horseshoe
+pin-first-building | pin | B | post | 160 | - | - | a pin badge with a tiny house
+pin-moving-day | pin | B | post | 160 | - | - | a pin badge with a moonbeam bridge
+outfit-crown-gold | outfit | B | dressing | 320 | - | head | a small golden crown
+outfit-crown-silver | outfit | B | dressing | 320 | - | head | a small silver crown with blue gems
+outfit-crown-flower | outfit | B | dressing | 320 | - | head | a crown of small flowers
+outfit-tiara | outfit | B | dressing | 320 | - | head | a sparkling tiara
+outfit-hat-party | outfit | B | dressing | 320 | - | head | a striped party hat with a pom-pom
+outfit-hat-sun | outfit | B | dressing | 320 | - | head | a straw sun hat with a ribbon
+outfit-hat-top | outfit | B | dressing | 320 | - | head | a small top hat with a flower
+outfit-cape | outfit | B | dressing | 480 | #b07ce0 | back | a short flowing cape seen from the side
+outfit-cape-star | outfit | B | dressing | 480 | #5b7fd6 | back | a short flowing cape with little stars, seen from the side
+outfit-garland-daisy | outfit | B | dressing | 400 | - | neck | a round garland of daisies
+outfit-garland-rose | outfit | B | dressing | 400 | - | neck | a round garland of pink roses
+outfit-garland-leaf | outfit | B | dressing | 400 | - | neck | a round garland of green leaves and berries
+outfit-bow | outfit | B | dressing | 256 | #ff6fa8 | mane | a ribbon bow for a mane
+outfit-necklace-pearl | outfit | B | dressing | 400 | - | neck | a pearl necklace in a loop
+item-jewel-box | item | B | core | 480 | - | - | a small jewel box with the lid open, lined with velvet
+item-jewel-letter | item | B | core | 256 | #ff8fc4 | - | a large faceted gem, plain, seen from the front
+item-jewel-number | item | B | core | 256 | - | - | a round glowing moonstone, plain
+decor-fountain | decor | B | meadow | 640 | - | - | a small stone fountain with water
+decor-lantern-arch | decor | B | meadow | 640 | - | - | an arch hung with little lanterns
+decor-flower-bridge | decor | B | meadow | 640 | - | - | a small wooden bridge covered in flowers
+decor-star-bench | decor | B | meadow | 640 | - | - | a garden bench with a star carved in its back
+decor-rainbow-arch | decor | B | meadow | 640 | - | - | a small arch painted like a rainbow
+decor-moon-gate | decor | B | meadow | 640 | - | - | a round garden gate shaped like a crescent moon
+decor-crystal-tree | decor | B | meadow | 640 | - | - | a small tree with sparkling crystal leaves
+decor-bell-arch | decor | B | meadow | 640 | - | - | an arch with three little bells
+decor-flower-clock | decor | B | meadow | 640 | - | - | a round flower bed shaped like a clock face with no numbers
+decor-wishing-well | decor | B | meadow | 640 | - | - | a wishing well with a little roof and flowers
+decor-swing-seat | decor | B | meadow | 640 | - | - | a garden swing seat with cushions
+decor-sundial | decor | B | meadow | 640 | - | - | a stone sundial with no numbers
+decor-mushroom-ring | decor | B | meadow | 640 | - | - | a ring of red spotted toadstools
+item-home-book | item | B | home | 480 | - | - | a big closed storybook with a gold unicorn horn on the cover
+ui-tab-herd | ui | B | home | 192 | - | - | a tiny unicorn horseshoe
+ui-tab-pins | ui | B | home | 192 | - | - | a golden star pin
+ui-tab-breeds | ui | B | home | 192 | - | - | a small egg with a star
+ui-tab-album | ui | B | home | 192 | - | - | a small photo with a heart
+ui-tab-home | ui | B | home | 192 | - | - | a tiny house with a heart
+ui-tab-sky | ui | B | home | 192 | - | - | a crescent moon with two stars
+item-photo-frame | item | B | home | 480 | - | - | an empty golden photo frame
+# Wave C
+building-salon | building | C | salon | 1024 | - | - | a pretty little hair salon with a striped awning
+item-salon-brush | item | C | salon | 320 | - | - | a round hairbrush
+item-sparkle-mist | item | C | salon | 320 | - | - | a spray bottle of sparkle mist
+item-mirror | item | C | salon | 480 | - | - | a hand mirror with a golden frame
+item-comb | item | C | salon | 320 | - | - | a wide comb
+item-hair-clip | item | C | salon | 256 | - | - | a hair clip with a star
+item-camera | item | C | salon | 320 | - | - | a toy camera
+building-icon-bath-pond | building | C | valley | 320 | - | - | a tiny round pond with a slide, seen from above at an angle
+building-icon-post-box | building | C | valley | 320 | - | - | a tiny post box stand, seen from above at an angle
+building-icon-letter-lane | building | C | valley | 320 | - | - | a tiny row of stone arches, seen from above at an angle
+building-icon-salon | building | C | valley | 320 | - | - | a tiny salon with a striped awning, seen from above at an angle
+building-icon-stables | building | C | valley | 320 | - | - | a tiny stable building, seen from above at an angle
+building-icon-castle | building | C | valley | 320 | - | - | a tiny old castle on a hill, seen from above at an angle
+ui-map-scroll | ui | C | valley | 192 | - | - | a rolled map scroll with a ribbon
+ui-mist | ui | C | valley | 640 | - | - | a soft white cloud of mist with fuzzy edges
+item-letter-arch | item | C | letters | 480 | - | - | a stone arch with a blank round panel at the top
+item-title-ribbon | item | C | core | 256 | #f6c445 | - | a rosette ribbon with two tails
+item-herd-banner | item | C | meadow | 640 | - | - | a royal banner on a pole with a unicorn horn on it
+item-hundred-flag | item | C | meadow | 480 | - | - | a big festive flag on a tall pole
+outfit-come-along | outfit | C | core | 256 | #ff9f43 | neck | a ribbon tied around the neck with a small bow
+prop-basket-packed | prop | C | meadow | 400 | - | - | a picnic basket with the lid closed and full
+prop-basket-open | prop | C | meadow | 400 | - | - | a picnic basket with the lid open and food beside it
+prop-bow-tied | prop | C | meadow | 256 | - | - | a neatly tied ribbon bow
+prop-bow-loose | prop | C | meadow | 256 | - | - | an untied ribbon lying loose
+prop-gate-locked | prop | C | meadow | 480 | - | - | a small wooden gate with a closed padlock
+prop-gate-open | prop | C | meadow | 480 | - | - | a small wooden gate standing open with an open padlock
+prop-bag-zipped | prop | C | meadow | 320 | - | - | a small bag with the zip closed
+prop-bag-unzipped | prop | C | meadow | 320 | - | - | a small bag with the zip open
+prop-box-packed | prop | C | meadow | 400 | - | - | a cardboard box with toys packed inside, flaps folded
+prop-box-unpacked | prop | C | meadow | 400 | - | - | an empty open cardboard box with toys next to it

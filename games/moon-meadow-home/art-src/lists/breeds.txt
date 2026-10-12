@@ -1,0 +1,9 @@
+moon | A | gold | none, this is the reference baby itself
+nestling | A | bronze | a short fluffy tufted mane and tail like soft feathers, and small cream feather tufts on the chest and above each hoof
+pebble | A | silver | a smooth straight mane cut in a neat bob and a short straight tail, and round cream pebble-shaped spots on the back and rump
+cosy | A | pearl | a thick wavy mane in two soft braids and a bushy tail, and a cream patch on the back shaped like a little blanket with a stitched edge
+bubble | A | pearl | round puffy bubble-like tufts of mane and tail, and small cream circle spots like bubbles on the body
+berry | B | gold | bouncy ringlet curls in the mane and tail, and small cream heart-shaped spots on the rump
+snow | B | silver | a long straight flowing mane and tail, cream snowflake marks on the rump and cream socks on all four legs
+post | B | bronze | a neat single braid in the mane and a braided tail, a cream star blaze on the forehead and cream socks on the front legs
+sparkle | C | gold | a long sweeping mane and tail with extra curls at the ends, and tiny cream star sparkles scattered over the coat
