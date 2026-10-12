@@ -4,8 +4,10 @@
 import type { Component } from 'svelte';
 import './hook.ts';
 import ToyShelf from '../scenes/places/ToyShelf.svelte';
+import BathPond from '../scenes/places/BathPond.svelte';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const placeScenes: Record<string, Component<any>> = {
   'toy-shelf': ToyShelf,
+  'bath-pond': BathPond,
 };
