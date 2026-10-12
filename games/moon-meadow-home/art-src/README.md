@@ -1,8 +1,46 @@
-# Moon Meadow Home: early art sources
+# Moon Meadow Home: art sources
+
+Everything the game draws comes from here. The pipeline in `tools/art/` turns Codex image generation into cut-out WebP pictures in `public/art/` and one `public/art/manifest.json`. The style is locked in [docs/v3/art/STYLE.md](../../../docs/v3/art/STYLE.md) and every Codex run attaches [docs/v3/art/style-reference.png](../../../docs/v3/art/style-reference.png).
+
+## Folders
+
+| Path | What it holds |
+|---|---|
+| `lists/*.txt` | The id lists: `words.txt` and `notes.txt` (word pictures), `tint.txt`, `items.txt`, `breeds.txt`, `backgrounds.txt`, and `requests.txt` from other workstreams |
+| `lists/calibration.json` | The sheet grid measured on real Codex output (4 by 4, 1254 px sheets) |
+| `lists/sheets/<batch>.json` | Planned sheets of a batch and the list entry of every id in it |
+| `raw/` | Codex PNG output. Not committed |
+| `sources/<sheet>.webp` | Lossless copy of every Codex output, committed, so nothing has to be generated again |
+| `work/` | Codex working folders, cut issues and PNG contact sheets. Not committed |
+| `jobs/<batch>.jsonl` | Ledger of Codex runs |
+| `meta/<batch>.json` | Manifest entries written by `cut`, `svg` and `backgrounds` |
+| `review/<batch>.json` | The verdict per picture: `pending`, `ok`, `redo`, `svg` or `swap:<other id>` |
+| `svg/<id>.svg` | Hand-drawn SVG fallbacks |
+| `missing.json` | List ids that are not in the manifest yet |
+
+## Running the pipeline
+
+All commands run from `games/moon-meadow-home` as `PYTHONPATH=tools python3 -m art.pipeline <command>`. Each prints one line per id it touched and ends with a count line.
+
+1. `plan-sheets --batch words-a --source words` plans sheets of 16 objects. Filters: `--wave A`, `--kinds item,egg`, `--packs core`, `--ids a,b`. `--source` is `words`, `items`, `requests` or the name of another list in `lists/` written as `id | step-or-kind | description` (for example `words-top`). Tinted pictures get their own grey sheets. Lines whose description starts with `svg:` get the verdict `svg` at once. Ids that are already `ok` in any batch are skipped.
+2. `gen --batch words-a` runs Codex, at most 4 at once, with stdin closed. **Run it outside the sandbox.** A sheet whose source is already in `sources/` is not generated again. When Codex stops on the subscription's usage limit, wait at most 60 minutes and run the same command again.
+3. `cut --batch words-a` cuts each sheet, fits every picture to its size, saves WebP to `public/art/`, runs the automatic checks (and Apple Vision text detection when it is available, which is only outside the sandbox) and writes a contact sheet per sheet to `work/contact/`.
+4. `review --batch words-a` prints the contact sheets and the pending ids. **Look at every cut picture** and set its verdict in `review/words-a.json`. `ok` only when the picture shows the right thing, whole, in the house style, with no text. Use `swap:<other id>` when two objects came out in each other's places.
+5. `redo --batch words-a` plans the `redo` and missing ids again as `words-a-r1`, then `words-a-r2`. An id that fails in `-r2` gets the verdict `svg`.
+6. `svg --batch words-a` renders `svg/<id>.svg` for every `svg` verdict with ImageMagick into `meta/words-a-svg.json`.
+7. `backgrounds --batch bg-a --wave A` generates backgrounds (outside the sandbox), crops them to 1770 x 1230 and writes their dominant colour. `--use-early` starts from the early pictures below instead of a new Codex run; they still need a review.
+8. `manifest` writes `public/art/manifest.json` from every `meta/` file, with only reviewed pictures (`--strict` fails when one is left out), and `missing.json`. Only the `art-gen` lane runs it.
+9. `check-all` checks every manifest file again and fails while a word of `words.txt` has no picture. `contact-html` writes `contact/index.html` to look at the pictures at real size on the iPad. `status` prints the counts per batch.
+
+`sprite` and `derive` come with Task A8.
+
+Tests: `PYTHONPATH=tools python3 -m unittest discover -s tools/art/tests -t tools`.
+
+## Early art sources
 
 Early art for the v3 unicorn game, made on 2026-10-12 in the locked style of [docs/v3/art/style-reference.png](../../../docs/v3/art/style-reference.png) (see [docs/v3/art/STYLE.md](../../../docs/v3/art/STYLE.md)). These are source pictures. The app may later move, crop or scale them.
 
-## How they were made
+### How they were made
 
 Every picture came from the image generation tool in Tjitse's Codex subscription, one `codex exec` call per picture, run outside the sandbox, with stdin closed:
 
@@ -18,7 +56,7 @@ codex exec --skip-git-repo-check --sandbox workspace-write \
 - Each picture took 1 to 2 minutes. Four ran in parallel without problems.
 - The built-in image tool chooses the aspect ratio itself. It ignored the request for the widest size, so backgrounds came out at 1536 x 1024, 1672 x 941 or 1774 x 887. Larger sizes (up to 3840 px) are only available through the Codex CLI fallback, which is the paid image API and is not used. The 2360 x 1640 target in spec section 5.5 needs upscaling or a crop.
 
-## Breeds
+### Breeds
 
 All breeds stand in side view facing right on plain white, in the reference pose. Every prompt starts with "Use your image generation tool to draw" and ends with the same style sentence: *Same style as the attached style reference: clean shapes, smooth soft shading, a warm outline in a darker shade of each fill, light from the top left, no paint, watercolour, brush or paper texture.*
 
@@ -43,7 +81,7 @@ All breeds stand in side view facing right on plain white, in the reference pose
 | `breed-sparkle-baby.png` | 1312 x 1199 | 1575 KB | Use your image generation tool to draw one single baby unicorn foal with a pastel rose coat and a softly rainbow-tinted pastel mane and tail with a few tiny sparkles in it. Use the same character design, proportions, pose and camera angle as the attached style reference picture: standing in side view facing right, full body visible, big head, big eyes with two highlights and lashes, rosy cheeks, short legs, round body, curly mane and tail, golden horn and golden hooves. Exactly one horn and exactly four legs. Only the colours change from the reference. Same style as the attached style reference: clean shapes, smooth soft shading, a warm outline in a darker shade of each fill, light from the top left, no paint, watercolour, brush or paper texture. Plain white background, no ground, no shadow props, no text, no letters, no other characters. |
 | `breed-sparkle-foal.png` | 1312 x 1199 | 1610 KB | Use your image generation tool to draw one single young unicorn foal with a pastel rose coat and a softly rainbow-tinted pastel mane and tail with a few tiny sparkles in it. It is the same character as the attached baby picture breed-sparkle-baby.png, but a bit older: longer legs, slightly bigger and slightly less round body, same face style, same big eyes with two highlights and lashes, rosy cheeks, curly mane and tail, golden horn and golden hooves, same colours. Standing in side view facing right, full body visible, same pose and camera angle as the attached pictures. Exactly one horn and exactly four legs. Same style as the attached style reference: clean shapes, smooth soft shading, a warm outline in a darker shade of each fill, light from the top left, no paint, watercolour, brush or paper texture. Plain white background, no text, no letters, no other characters. |
 
-## Backgrounds
+### Backgrounds
 
 | File | Size | Weight | Prompt |
 |---|---|---|---|
@@ -57,7 +95,7 @@ All breeds stand in side view facing right on plain white, in the reference pose
 | `bg-building-day-yard.png` | 1774 x 887 | 1570 KB | Use your image generation tool to draw a wide landscape background picture for a children's game, using the widest landscape size the tool offers (1536 x 1024 or wider): a building day yard: an open grassy plot with a few stacked wooden planks, a small pile of smooth stones, a wooden wheelbarrow, a little fence, a pale sky. Keep the centre plot calm and empty for game objects. Same style as the attached style reference: clean shapes, smooth soft shading, a warm outline in a darker shade of each fill, light from the top left, no paint, watercolour, brush or paper texture. Soft, uncluttered, pastel colours, gentle shapes. No characters, no animals, no unicorns, no people, no text, no letters, no numbers, no signs with writing. |
 | `bg-goodnight-sky.png` | 1774 x 887 | 1713 KB | Use your image generation tool to draw a wide landscape background picture for a children's game, using the widest landscape size the tool offers (1536 x 1024 or wider): a goodnight scene: a deep blue and violet night sky with soft stars and a gentle crescent moon above a dark rounded meadow hill, a small cosy stable on the hill with warm golden lamp light glowing from its window and a small lantern nearby. Keep the sky and the hilltop calm, with empty space for game objects. Same style as the attached style reference: clean shapes, smooth soft shading, a warm outline in a darker shade of each fill, light from the top left, no paint, watercolour, brush or paper texture. Soft, uncluttered, pastel colours, gentle shapes. No characters, no animals, no unicorns, no people, no text, no letters, no numbers, no signs with writing. |
 
-## Cut-outs
+### Cut-outs
 
 | File | Size | Weight | Made from |
 |---|---|---|---|
@@ -75,14 +113,14 @@ swiftc -O -module-cache-path "$TMPDIR/mc" tools/cutout.swift -o "$TMPDIR/cutout"
 - Inside the Claude Code sandbox, `swiftc` needs `-module-cache-path` pointing at a writable folder, and running the tool fails with "Could not build inference plan - ANECF error", because the sandbox blocks the Neural Engine. Run it outside the sandbox.
 - On a dark background a thin light fringe of 1 to 2 px shows along the outline. Shrinking the alpha by 2 px and softening it by 0.8 px removes the fringe but also thins the warm outline. The cut-outs here are left as Vision made them. On the pastel game backgrounds the fringe is hard to see.
 - rembg was not tried, because the built-in tool worked.
-## Regenerations
+### Regenerations
 
 - `breed-cosy-baby.png`: the first try had no visible fluffy fetlocks. The prompt now asks for big puffy tufts that half cover each hoof.
 - `breed-berry-baby.png`: the first try had a hot pink coat and a deep purple mane, too saturated for the pastel rule. The prompt now asks for soft pastel berry pink and soft plum.
 - `bg-valley-map.png`: try 1 was a busy 3D isometric game map with no calm clearings. Try 2 was too abstract (plain coloured blobs). Try 3 keeps large empty clearings with a few edge details per area.
 - `bg-salon.png`: the first try was cluttered (sofa, plants, many bottles, a castle in the window). The prompt now lists the few objects allowed.
 
-## Open points
+### Open points
 
 - `bg-building-day-yard.png` uses a brighter lime green than the other scenes. Fine for early art, worth a redraw before release.
 - `bg-stable-yard.png` has softer outlines in the far landscape than the reference.
