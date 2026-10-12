@@ -5,7 +5,7 @@ import { placesHook } from '../../src/places/hook.ts';
 
 describe('places glue', () => {
   it('has a scene map for the registry and registers its test API as window.__game.places', () => {
-    expect(placeScenes).toEqual({});
+    expect(Object.keys(placeScenes)).toContain('toy-shelf');
     expect(hookExtensions().get('places')).toBe(placesHook());
   });
 });

@@ -82,3 +82,26 @@ export function labelAfterLines(task: LabelTask): string[] {
 export function labelModel(task: LabelTask): string[] {
   return ['lb-listen', wordId(task.target)];
 }
+
+// ---- own slots and the stem tray (Task A10). Heartbeat's ownSlots and planTray land in the same batch, so the
+// label keeps its own small versions over learning's spelling knowledge (the grapheme ids she owns).
+
+/** A slot is hers when she owns its grapheme in spelling, or when it is the item the planner served. */
+export function labelOwn(graphemes: readonly string[], owned: (k: number) => boolean, served: readonly string[]): boolean[] {
+  return graphemes.map((g, k) => owned(k) || served.includes(g));
+}
+
+/** Gems a tray falls back on when her own gems give too few others. */
+const FILLER = ['s', 'a', 't', 'p', 'i', 'n', 'm', 'd', 'o', 'g'];
+
+/**
+ * The gems for her own stem slots plus distractors from gems she owns (1, 2 or 3 by scaffold level), so
+ * every choice has at least three options. Distractors never repeat a grapheme of the word.
+ */
+export function stemTray(graphemes: readonly string[], own: readonly boolean[], pool: readonly string[], level: 1 | 2 | 3, rng: Rng): string[] {
+  const need = [...new Set(graphemes.filter((_, k) => own[k]))];
+  const inWord = new Set(graphemes);
+  const others = shuffle([...new Set([...pool, ...FILLER])].filter((g) => !inWord.has(g)), rng);
+  const extra = Math.max(level, 3 - need.length);
+  return shuffle([...need, ...others.slice(0, extra)], rng);
+}
