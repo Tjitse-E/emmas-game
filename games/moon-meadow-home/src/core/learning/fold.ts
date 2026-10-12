@@ -14,9 +14,10 @@ import { initPlacement, recordProbe } from './placement.ts';
 import { moveScaffold } from './scaffold.ts';
 import { isPlacedStep, isPassedStep, placedByRelease, profileOf, schoolFn, STRANDS } from './status.ts';
 import { localDay } from './time.ts';
+import { mathsTotal } from './egg-visit.ts';
 
 /** Part of the snapshot key: change it whenever the fold logic changes. */
-export const LEARNER_FOLD_VERSION = 2;   // 2: recent results keep the pair of a Dutch-tagged error
+export const LEARNER_FOLD_VERSION = 3;   // 2: recent results keep the pair of a Dutch-tagged error; 3: visit eggs, overridden
 
 const RECENT_MAX = 300;
 const FLUENCY_TYPES: readonly FluencyType[] = ['grapheme', 'tricky', 'bond', 'fact', 'table'];
@@ -24,7 +25,7 @@ const LEARN_STRANDS: readonly LearnStrand[] = ['r', 's', 'm', 'name'];
 
 function emptyVisit(seq: number, startT: number, tz: number): VisitState {
   return {
-    seq, startT, tz, counts: { r: 0, s: 0, m: 0, name: 0 }, ladder: 0, spell: 0, golden: false, box0: {}, recent: [],
+    seq, startT, tz, counts: { r: 0, s: 0, m: 0, name: 0 }, ladder: 0, spell: 0, golden: false, box0: {}, recent: [], eggs: [],
   };
 }
 
@@ -139,6 +140,12 @@ function onResult(l: Learner, e: LearnResultEvent, c: Content): void {
   rec.push(pair ? { t: e.t, r: e.result, err, slot: e.slot, pair } : { t: e.t, r: e.result, err, slot: e.slot });
   if (rec.length > RECENT_MAX) rec.splice(0, rec.length - RECENT_MAX);
   if (e.slot === 'golden') v.golden = true;
+  if (strand === 'm' && e.place === 'nest') {
+    const first = Array.isArray(e.items) ? e.items[0] : undefined;
+    const task = first ? c.items[first.id]?.task : undefined;
+    const total = task ? mathsTotal(task) : null;
+    if (total !== null) (v.eggs ??= []).push({ total, moment: e.moment });
+  }
 
   // 5. The step part.
   if (strand === 'name' || !e.step) return;
@@ -228,6 +235,7 @@ function onOverride(l: Learner, e: LearnOverrideEvent, c: Content): void {
     case 'set-current': {
       if (!l.placement[e.strand] || c.steps[e.step]?.strand !== e.strand) return;
       endPlacement(l, c, e.strand, e.step, stepList(e.placed), stepList(e.side), e.t, true);
+      l.placement[e.strand].overridden = true;
       return;
     }
     case 'mark-placed': case 'unmark-placed': {

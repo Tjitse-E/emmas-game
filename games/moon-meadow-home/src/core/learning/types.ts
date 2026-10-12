@@ -37,7 +37,7 @@ export type LearnOverrideEvent = ProfileOverride | SetCurrentOverride | PlacedOv
 export type V2Seed = { strand: 'r' | 's'; item: ItemId; box: 0 | 1 };
 export type ImportV2Event = EventBase & { type: 'import.v2'; hash: string; seeds: V2Seed[]; mathsV2Step?: number };
 export type LearnEvent = VisitStartEvent | LearnResultEvent | StepPassedEvent | PlacementDoneEvent | LearnOverrideEvent | ImportV2Event;
-export type LearnFact = Payload<StepPassedEvent> | Payload<PlacementDoneEvent>;
+export type LearnFact = Payload<StepPassedEvent> | Payload<PlacementDoneEvent> | Payload<SetCurrentOverride>;
 
 export type ItemMemory = {
   box: Box;
@@ -80,6 +80,8 @@ export type PlacementState = {
    * A loaded step below `current` that is not listed here counts as placed (R35): it was loaded by a later release.
    */
   listed: StepId[];
+  /** A set-current override ended or moved this placement (a parent, a flow or the 1.0.1 maths lift). */
+  overridden?: boolean;
 };
 export type VisitState = {
   seq: number;
@@ -91,6 +93,8 @@ export type VisitState = {
   golden: boolean;
   box0: Record<ItemId, number>;   // other results of the same strand since the item fell into box 0 this visit
   recent: string[];               // carrier keys, newest last
+  /** Nest maths results of this visit, oldest first: their total and moment (docs/v3/next/plan.md 3.4). */
+  eggs: { total: number; moment: MomentKind }[];
 };
 export type FluencyState = { median: number | null; computedAt: number; samples: number[] };
 /** pair: the contrast pair of a Dutch-tagged error, when the result names it (a pair item or a twin carrier). */

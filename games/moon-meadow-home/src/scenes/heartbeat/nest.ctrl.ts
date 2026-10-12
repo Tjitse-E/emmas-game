@@ -2,15 +2,22 @@
 // frost and its line; the egg hatches when the stones are right, and the result goes with the hatch.
 import type { EggLook } from '../../types/contracts.ts';
 import type { ErrorTag, Served } from '../../core/heartbeat/types.ts';
-import { type EggKind, type EggTask, buildEggTask, focusedHintLines, goalLines, judgeStones, missLines, successLines } from '../../core/maths/eggs.ts';
+import {
+  type EggKind, type EggTask, type GoalSeen, buildEggTask, cupFill, focusedHintLines, goalLines, judgeStones, missLines, successLines,
+} from '../../core/maths/eggs.ts';
 import { type StoneSpec, planStones } from '../../core/maths/stones.ts';
 import { BREED_OF, rollHatch } from '../../core/heartbeat/hatch.ts';
 import { momentResult } from '../../core/heartbeat/result.ts';
 import { learnLog } from './learn-bridge.ts';
 import type { SceneDeps } from './deps.ts';
 
-export type NestView = { placed: string[]; warmNow: number; mood: 'hot' | 'cold' | null; diff: number; solved: boolean };
-export type NestOpts = { golden: boolean; speckled: boolean; firstEver: boolean; free?: boolean };
+export type NestView = {
+  placed: string[]; warmNow: number; mood: 'hot' | 'cold' | null; diff: number; solved: boolean;
+  /** Each cup: 0 warm already, 1 warmed by the first stone, 2 by the second, -1 cold (docs/v3/next/plan.md E5). */
+  fill: (0 | 1 | 2 | -1)[];
+};
+/** seen: the two-nest and two-stone goals already said this visit (N27); both false when left out. */
+export type NestOpts = { golden: boolean; speckled: boolean; firstEver: boolean; free?: boolean; seen?: GoalSeen };
 export type PlaceOutcome = 'solved' | 'miss' | 'need-more' | 'ignored';
 
 export class NestCtrl {
@@ -58,7 +65,7 @@ export class NestCtrl {
       },
       target: () => (this.answerIds()[0] ? `stone ${this.stones.find((s) => s.id === this.answerIds()[0])!.value}` : null),
     });
-    await this.d.audio.sayAll(goalLines(this.task, this.opts.firstEver));
+    await this.d.audio.sayAll(goalLines(this.task, this.opts.firstEver, this.opts.seen ?? { twoNests: false, twoStones: false }));
   }
 
   repeatGoal(): Promise<void> {
@@ -109,6 +116,11 @@ export class NestCtrl {
     return null;
   }
 
+  /** N29: after a two-stone miss the first stone stays only while a free stone still makes the total with it. */
+  private partnerLeft(first: StoneSpec): boolean {
+    return this.stones.some((s) => s !== first && s.value === this.task.target - first.value);
+  }
+
   stoneOf(value: number): string | null {
     return this.stones.find((s) => s.value === value && !this.placed.includes(s))?.id ?? null;
   }
@@ -116,7 +128,7 @@ export class NestCtrl {
   view(): NestView {
     return {
       placed: this.placed.map((s) => s.id), warmNow: this.task.warm + this.placed.reduce((n, s) => n + s.value, 0),
-      mood: this.mood, diff: this.diff, solved: this.solved,
+      mood: this.mood, diff: this.diff, solved: this.solved, fill: cupFill(this.task, this.placed.map((s) => s.value)),
     };
   }
 
@@ -140,7 +152,7 @@ export class NestCtrl {
       this.lastError = v.error ?? 'other';
       this.mood = v.diff > 0 ? 'hot' : 'cold';
       this.diff = v.diff;
-      this.placed = this.task.stonesNeeded === 2 ? this.placed.slice(0, 1) : [];
+      this.placed = this.task.stonesNeeded === 2 && this.partnerLeft(this.placed[0]) ? this.placed.slice(0, 1) : [];
       this.onchange();
       await this.d.audio.sayAll(missLines(this.task, v.diff));
       await this.d.hints.miss();
@@ -168,7 +180,8 @@ export class NestCtrl {
 const FREE_EGG: Partial<Record<EggKind, Served>> = {
   moon: { strand: 'm', step: 'M02', id: 'm:num:3', carrier: '', items: [], scaffold: 1, probe: false, source: 'review' },
   'small-nest': { strand: 'm', step: 'M05', id: 'm:miss:5-2', carrier: '', items: [], scaffold: 1, probe: false, source: 'review' },
-  'two-stone': { strand: 'm', step: 'M10', id: 'm:pair:3+7', carrier: '', items: [], scaffold: 1, probe: false, source: 'review' },
+  // N28: a free two-stone egg is not making ten.
+  'two-stone': { strand: 'm', step: 'M12A', id: 'm:pair:3+5', carrier: '', items: [], scaffold: 1, probe: false, source: 'review' },
   blanket: { strand: 'm', step: 'M11', id: 'm:hid:10-4', carrier: '', items: [], scaffold: 1, probe: false, source: 'review' },
 };
 export function freeEgg(kind: EggKind): Served {

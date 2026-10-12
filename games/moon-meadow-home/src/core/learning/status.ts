@@ -180,7 +180,31 @@ export function servableItems(c: Content, step: StepId): ItemId[] {
   return (c.steps[step]?.items ?? []).map(it => it.id).filter(id => c.items[id]?.carriers !== 0);
 }
 
-/** Facts the fold has discovered. The store records each one once as an event, so a merge never takes them back. */
+/** 1.0.1 (decisions 2026-10-12): her maths moves above bonds to 10, once. */
+export const MATHS_LIFT_FROM: readonly StepId[] = ['M09', 'M10', 'M11', 'M12'];
+export const MATHS_LIFT_TO: StepId = 'M12A';
+const LIFT_NEW_STEPS: readonly StepId[] = ['M12A', 'M12B', 'M12C', 'M12D', 'M12E', 'M12F'];
+
+/**
+ * The maths lift (docs/v3/next/plan.md N9): a year 1 maths placement that ended in M09 to M12 and never measured
+ * the 1.0.1 steps is set to M12A, once. Any set-current override (this lift, a parent, a flow) stops it.
+ */
+export function mathsLift(l: Learner, c: Content): Payload<SetCurrentOverride> | null {
+  if (l.profile !== 'year1') return null;
+  const p = l.placement.m;
+  if (!p?.done || p.overridden === true) return null;
+  if (c.steps[MATHS_LIFT_TO]?.loaded !== true) return null;
+  // A placement that already measured the new steps keeps what it measured.
+  if (LIFT_NEW_STEPS.some(id => (c.steps[id]?.items ?? []).some(it => (l.items[it.id]?.seen ?? 0) > 0))) return null;
+  const cur = currentStep(l, c, 'm');
+  if (cur === null || !MATHS_LIFT_FROM.includes(cur)) return null;
+  return setCurrentOverride(l, c, 'm', MATHS_LIFT_TO);
+}
+
+/**
+ * Facts the fold has discovered. The store records each one once as an event, so a merge never takes them back.
+ * The maths lift comes last; it is the only learn.override here, and folding it stops it (placement.overridden).
+ */
 export function pendingLearnFacts(l: Learner, c: Content): LearnFact[] {
   const out: LearnFact[] = [];
   const isSch = schoolFn(l, c);
@@ -196,5 +220,7 @@ export function pendingLearnFacts(l: Learner, c: Content): LearnFact[] {
       if (readyToPass(st, servableItems(c, id), l.items, c.steps[id].top, c.budget)) out.push({ type: 'step.passed', strand, step: id });
     }
   }
+  const lift = mathsLift(l, c);
+  if (lift) out.push(lift);
   return out;
 }

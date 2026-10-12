@@ -24,6 +24,8 @@ export type SimOptions = {
   momentsPerVisit: [number, number];         // checked ladder moments per visit, inclusive range
   profile: string;                           // 'year1' or 'fresh'
   trueLevel?: Partial<Record<Strand, StepId>>;   // probe answers: at or below this step use `accuracy`, above it 0.2
+  /** Record the 1.0.1 maths lift (a learn.override from pendingLearnFacts) as the store does. Default true. */
+  lift?: boolean;
 };
 export type SimStepRecord = { strand: Strand; step: StepId; school: boolean; startT: number | null; passT: number | null; weeks: number | null };
 export type SimReport = {
@@ -100,7 +102,10 @@ export function simulate(o: SimOptions): SimReport {
   };
   const emit = (t: number, draft: Record<string, unknown>): void => {
     record(t, draft);
-    for (const f of pendingLearnFacts(l, c)) record(t, { ...f });
+    for (const f of pendingLearnFacts(l, c)) {
+      if (f.type === 'learn.override' && o.lift === false) continue;
+      record(t, { ...f });
+    }
   };
 
   const answer = (p: Pick, strand: Strand): Result => {
