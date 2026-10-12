@@ -135,13 +135,19 @@
     const offs = [
       registerSceneHook('naming', {
         answer: answerMove, wrong: wrongMove, idle: () => { deps.hints.idle(); },
-        target: () => (ctrl.mode === 'pick' && ctrl.bells[0] ? `bell ${ctrl.bells[0].name}` : null),
+        target: () => {
+          if (ctrl.mode === 'pick') return ctrl.bells[0] ? `bell ${ctrl.bells[0].name}` : 'gold bell';
+          const m = ctrl.mode === 'spell' ? ctrl.answerMoves()[0] : undefined;
+          return m ? `gem ${m.gem}` : ctrl.mode === 'spell' ? 'star' : null;
+        },
         mode: () => ctrl.mode,
       }),
       registerHook('naming.gold', async (gems: string[]) => { ctrl.openGold(gems); return ctrl.goldSlide(); }),
       registerHook('naming.addSlot', () => ctrl.addSlot()),
       registerHook('naming.removeSlot', (i: number) => ctrl.removeSlot(i)),
       registerHook('naming.mode', () => ctrl.mode),
+      /** The moves that spell the name: drag `gem <gem>` to `slot <slot + 1>`. */
+      registerHook('naming.moves', () => ctrl.answerMoves()),
       registerHook('naming.bells', () => ctrl.bells.map((b) => b.name)),
     ];
     // Kept after the scene closes, so a flow can read the name it gave after the heartbeat moved on.
