@@ -11,6 +11,10 @@ import type { Action } from '../../core/actions.ts';
 import type { Strand } from '../../core/heartbeat/types.ts';
 import { createHintRunner, type HintRunner } from './hint-runner.ts';
 import { createBridge } from './learn-bridge.ts';
+import { compileBlocklist, type Blocklist, type RawBlocklist } from '../../core/naming/blocklist.ts';
+import { indexBank } from '../../core/naming/check.ts';
+import type { NameEntry } from '../../core/heartbeat/types.ts';
+import rawBlocklist from '../../../../../shared/blocklist.json';
 
 type Mark = '!' | '?';
 /** The part of the audio facade the controllers use. Ids are checked at runtime by the facade (R52). */
@@ -46,4 +50,14 @@ export function liveDeps(meta: { place: string; strand: Strand }): SceneDeps {
     uuid: () => uuid4(),
     pause: (ms) => sleep(ms),
   };
+}
+
+let names: { bank: NameEntry[]; index: Map<string, NameEntry>; blocklist: Blocklist } | null = null;
+/** The name bank, its sound index and the naming blocklist, built once. */
+export function namingData(): { bank: NameEntry[]; index: Map<string, NameEntry>; blocklist: Blocklist } {
+  if (!names) {
+    const bank = bridge.names();
+    names = { bank, index: indexBank(bank), blocklist: compileBlocklist(rawBlocklist as RawBlocklist) };
+  }
+  return names;
 }
