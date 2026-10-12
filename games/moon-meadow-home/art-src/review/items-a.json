@@ -2,5 +2,21 @@
  "ui-ghost-hand": "svg",
  "ui-replay": "svg",
  "ui-turn-ipad": "svg",
- "ui-play": "svg"
+ "ui-play": "svg",
+ "item-moon-cup": "ok",
+ "item-name-bell": "ok",
+ "item-berry-bowl": "ok",
+ "item-berry": "ok",
+ "item-jar": "ok",
+ "item-jar-label": "ok",
+ "item-mice-jar": "ok",
+ "item-crown-emma": "ok",
+ "item-lantern": "ok",
+ "item-lantern-lit": "ok",
+ "item-plaque": "ok",
+ "item-flower-box": "ok",
+ "outfit-nightcap": "ok",
+ "outfit-hardhat": "ok",
+ "item-scissors": "ok",
+ "pin-founder-star": "ok"
 }

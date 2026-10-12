@@ -161,10 +161,10 @@ bush: a round green bush
 peach: a peach
 bench: a wooden garden bench
 branch: a leafy tree branch
-sash: a ribbon sash folded in a loop
+sash: a wide shiny pink satin sash like a winner wears, a long band hanging in a big V shape with a small rosette where the ends meet
 mouse: a small grey plush toy mouse
 pie: a fruit pie
-pea: one green pea
+pea: a green pea pod split open showing a row of round green peas
 tile: a square floor tile with a flower pattern
 nest: a bird nest with no bird
 milk: a glass bottle of milk
@@ -252,7 +252,7 @@ skirt: a skirt
 turnip: a turnip
 purse: a small purse
 fern: a fern
-cube: a colourful puzzle cube
+cube: a plain glossy pastel blue cube with soft rounded corners, three faces showing, like a big sugar cube
 tape: a roll of sticky tape
 cane: a candy cane
 home: a small cottage with a door and windows

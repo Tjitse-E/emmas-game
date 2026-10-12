@@ -175,6 +175,412 @@
    "tint": {
     "default": "#5a7fc0"
    }
+  },
+  "tap": {
+   "src": "words/tap.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pin": {
+   "src": "words/pin.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pan": {
+   "src": "words/pan.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pig": {
+   "src": "words/pig.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cap": {
+   "src": "words/cap.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "can": {
+   "src": "words/can.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "duck": {
+   "src": "words/duck.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bed": {
+   "src": "words/bed.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "net": {
+   "src": "words/net.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pen": {
+   "src": "words/pen.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "peg": {
+   "src": "words/peg.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "nut": {
+   "src": "words/nut.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "hut": {
+   "src": "words/hut.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cub": {
+   "src": "words/cub.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bud": {
+   "src": "words/bud.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bell": {
+   "src": "words/bell.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "box": {
+   "src": "words/box.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "fox": {
+   "src": "words/fox.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "ship": {
+   "src": "words/ship.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "shell": {
+   "src": "words/shell.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "ring": {
+   "src": "words/ring.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sheep": {
+   "src": "words/sheep.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "boat": {
+   "src": "words/boat.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "boot": {
+   "src": "words/boot.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "chair": {
+   "src": "words/chair.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cake": {
+   "src": "words/cake.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bike": {
+   "src": "words/bike.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "key": {
+   "src": "words/key.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "carrot": {
+   "src": "words/carrot.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "apple": {
+   "src": "words/apple.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pancake": {
+   "src": "words/pancake.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "plank": {
+   "src": "words/plank.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "brick": {
+   "src": "words/brick.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "castle": {
+   "src": "words/castle.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "horse": {
+   "src": "words/horse.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "glass": {
+   "src": "words/glass.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "brush": {
+   "src": "words/brush.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bush": {
+   "src": "words/bush.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "peach": {
+   "src": "words/peach.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "bench": {
+   "src": "words/bench.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "branch": {
+   "src": "words/branch.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sash": {
+   "src": "words/sash.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "mouse": {
+   "src": "words/mouse.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pie": {
+   "src": "words/pie.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pea": {
+   "src": "words/pea.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pine": {
+   "src": "words/pine.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cube": {
+   "src": "words/cube.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "tape": {
+   "src": "words/tape.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "shirt": {
+   "src": "words/shirt.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#f9d65c"
+   }
+  },
+  "skirt": {
+   "src": "words/skirt.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex",
+   "tint": {
+    "default": "#a77bd6"
+   }
   }
  }
 }

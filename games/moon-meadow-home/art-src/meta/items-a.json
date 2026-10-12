@@ -1,0 +1,142 @@
+{
+ "pictures": {
+  "item-moon-cup": {
+   "src": "items/item-moon-cup.webp",
+   "w": 256,
+   "h": 206,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-name-bell": {
+   "src": "items/item-name-bell.webp",
+   "w": 247,
+   "h": 320,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-berry-bowl": {
+   "src": "items/item-berry-bowl.webp",
+   "w": 320,
+   "h": 241,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-berry": {
+   "src": "items/item-berry.webp",
+   "w": 138,
+   "h": 160,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-jar": {
+   "src": "items/item-jar.webp",
+   "w": 247,
+   "h": 320,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-jar-label": {
+   "src": "items/item-jar-label.webp",
+   "w": 320,
+   "h": 260,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-mice-jar": {
+   "src": "items/item-mice-jar.webp",
+   "w": 258,
+   "h": 320,
+   "kind": "item",
+   "pack": "meadow",
+   "source": "codex"
+  },
+  "item-crown-emma": {
+   "src": "items/item-crown-emma.webp",
+   "w": 256,
+   "h": 239,
+   "kind": "item",
+   "pack": "core",
+   "source": "codex"
+  },
+  "item-lantern": {
+   "src": "items/item-lantern.webp",
+   "w": 160,
+   "h": 256,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-lantern-lit": {
+   "src": "items/item-lantern-lit.webp",
+   "w": 161,
+   "h": 256,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-plaque": {
+   "src": "items/item-plaque.webp",
+   "w": 256,
+   "h": 129,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "item-flower-box": {
+   "src": "items/item-flower-box.webp",
+   "w": 320,
+   "h": 240,
+   "kind": "item",
+   "pack": "stables",
+   "source": "codex"
+  },
+  "outfit-nightcap": {
+   "src": "outfits/outfit-nightcap.webp",
+   "w": 320,
+   "h": 283,
+   "kind": "outfit",
+   "pack": "stables",
+   "source": "codex",
+   "slot": "head",
+   "attach": [
+    160,
+    260
+   ]
+  },
+  "outfit-hardhat": {
+   "src": "outfits/outfit-hardhat.webp",
+   "w": 320,
+   "h": 275,
+   "kind": "outfit",
+   "pack": "building",
+   "source": "codex",
+   "slot": "head",
+   "attach": [
+    160,
+    253
+   ]
+  },
+  "item-scissors": {
+   "src": "items/item-scissors.webp",
+   "w": 320,
+   "h": 272,
+   "kind": "item",
+   "pack": "building",
+   "source": "codex"
+  },
+  "pin-founder-star": {
+   "src": "pins/pin-founder-star.webp",
+   "w": 160,
+   "h": 160,
+   "kind": "pin",
+   "pack": "core",
+   "source": "codex"
+  }
+ }
+}

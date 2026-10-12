@@ -1,0 +1,28 @@
+{
+ "backgrounds": {
+  "bg-meadow": {
+   "src": "bg/bg-meadow.webp",
+   "w": 1770,
+   "h": 1230,
+   "pack": "meadow",
+   "dominant": "#71b34b",
+   "source": "codex"
+  },
+  "bg-nest": {
+   "src": "bg/bg-nest.webp",
+   "w": 1770,
+   "h": 1230,
+   "pack": "core",
+   "dominant": "#2c6e53",
+   "source": "codex"
+  },
+  "bg-sky": {
+   "src": "bg/bg-sky.webp",
+   "w": 1770,
+   "h": 1230,
+   "pack": "core",
+   "dominant": "#1a2279",
+   "source": "codex"
+  }
+ }
+}
