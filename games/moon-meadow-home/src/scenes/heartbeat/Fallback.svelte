@@ -5,6 +5,12 @@
   const kind = $derived(
     id.startsWith('egg-') ? 'egg'
       : id.startsWith('station-') || id === 'building-bath-pond' ? 'station'
+        // 1.0.1 stable and feeding pictures (docs/v3/next/plan.md A3), matched before door, nest and blanket.
+        : id.includes('stall-bed') ? 'stall-bed'
+        : id.includes('straw') ? 'straw-pile'
+        : id.includes('manger') ? 'manger'
+        : id.includes('hay-bundle') ? 'hay-bundle'
+        : id.includes('food-tray') ? 'food-tray'
         : id.includes('bell') ? (id.includes('gold') ? 'bell-gold' : 'bell')
           : id.includes('door') ? 'door'
             : id.includes('tent') ? 'tent'
@@ -22,14 +28,49 @@
                                     : id === 'sky-unicorn' ? 'sky-unicorn'
                                       : 'round',
   );
+  // The checked cloth on the food tray: lines kept inside the cloth ellipse (centre 100,108, radii 70 by 44).
+  const CLOTH_V = [-48, -24, 0, 24, 48].map((dx) => ({ x: 100 + dx, h: 44 * Math.sqrt(1 - (dx / 70) ** 2) }));
+  const CLOTH_H = [-22, 0, 22].map((dy) => ({ y: 108 + dy, w: 70 * Math.sqrt(1 - (dy / 44) ** 2) }));
   const EGG: Record<string, string> = {
     'egg-moon': '#e6dcff', 'egg-nestling': '#fff1d6', 'egg-pebble': '#dfe3ea', 'egg-cosy': '#ffe2cf', 'egg-berry': '#ffd0e8',
     'egg-snow': '#eef8ff', 'egg-golden': '#ffd86b', 'egg-speckled': '#f5ecd9',
   };
 </script>
 
-<svg viewBox="0 0 200 200" width={size} height={size} aria-hidden="true">
-  {#if kind === 'egg'}
+<svg viewBox="0 0 200 200" width={size} height={size} aria-hidden="true" data-kind={kind}>
+  {#if kind === 'stall-bed'}
+    <rect x="30" y="34" width="140" height="146" rx="6" fill="#ecc89a" stroke="#a46a33" stroke-width="5" />
+    {#each [65, 100, 135] as x (x)}<line x1={x} y1="38" x2={x} y2="176" stroke="#c99a62" stroke-width="4" />{/each}
+    <rect x="14" y="22" width="26" height="170" rx="9" fill="#c98f5a" stroke="#8a5a2e" stroke-width="5" />
+    <rect x="160" y="22" width="26" height="170" rx="9" fill="#c98f5a" stroke="#8a5a2e" stroke-width="5" />
+    <rect x="8" y="12" width="184" height="22" rx="10" fill="#d9a066" stroke="#8a5a2e" stroke-width="5" />
+    <path d="M40 186 L40 160 Q55 142 72 156 Q88 138 104 154 Q120 138 136 156 Q150 142 160 160 L160 186 Z" fill="#ffd97a" stroke="#c9a03a" stroke-width="5" stroke-linejoin="round" />
+    {#each [[58, 168, 66, 158], [92, 172, 98, 160], [124, 170, 132, 160], [146, 176, 150, 166]] as [x1, y1, x2, y2] (x1)}<line {x1} {y1} {x2} {y2} stroke="#e0b445" stroke-width="3" stroke-linecap="round" />{/each}
+    <rect x="18" y="30" width="7" height="60" rx="3" fill="#fff" opacity="0.35" />
+  {:else if kind === 'straw-pile'}
+    <path d="M10 172 Q22 122 64 112 Q84 92 108 104 Q148 98 172 128 Q190 148 190 172 Q100 186 10 172 Z" fill="#ffd97a" stroke="#c9a03a" stroke-width="6" stroke-linejoin="round" />
+    {#each [[34, 160, 48, 136], [70, 150, 80, 124], [104, 156, 110, 122], [138, 152, 146, 128], [164, 162, 172, 146], [88, 170, 96, 150]] as [x1, y1, x2, y2] (x1)}<line {x1} {y1} {x2} {y2} stroke="#e0b445" stroke-width="4" stroke-linecap="round" />{/each}
+    <ellipse cx="72" cy="124" rx="22" ry="8" fill="#fff" opacity="0.4" />
+  {:else if kind === 'manger'}
+    <rect x="50" y="128" width="16" height="58" rx="6" fill="#b07a45" stroke="#8a5a2e" stroke-width="5" />
+    <rect x="134" y="128" width="16" height="58" rx="6" fill="#b07a45" stroke="#8a5a2e" stroke-width="5" />
+    <path d="M20 66 L180 66 L158 144 L42 144 Z" fill="#c98f5a" stroke="#8a5a2e" stroke-width="6" stroke-linejoin="round" />
+    <line x1="30" y1="96" x2="170" y2="96" stroke="#a46a33" stroke-width="4" />
+    <line x1="37" y1="120" x2="163" y2="120" stroke="#a46a33" stroke-width="4" />
+    <rect x="14" y="58" width="172" height="16" rx="7" fill="#d9a066" stroke="#8a5a2e" stroke-width="5" />
+    <rect x="30" y="62" width="60" height="5" rx="2" fill="#fff" opacity="0.4" />
+  {:else if kind === 'hay-bundle'}
+    <path d="M44 52 Q100 24 156 52 L146 100 L160 154 Q100 182 40 154 L54 100 Z" fill="#ffd97a" stroke="#c9a03a" stroke-width="6" stroke-linejoin="round" />
+    {#each [70, 90, 110, 130] as x (x)}<line x1={x} y1="46" x2={x} y2="84" stroke="#e0b445" stroke-width="4" stroke-linecap="round" /><line x1={x} y1="118" x2={x} y2="160" stroke="#e0b445" stroke-width="4" stroke-linecap="round" />{/each}
+    <path d="M50 96 Q100 112 150 96 L150 110 Q100 126 50 110 Z" fill="#ef5a62" stroke="#b8323b" stroke-width="4" stroke-linejoin="round" />
+    <ellipse cx="74" cy="60" rx="14" ry="6" fill="#fff" opacity="0.4" />
+  {:else if kind === 'food-tray'}
+    <ellipse cx="100" cy="112" rx="90" ry="60" fill="#c98f5a" stroke="#8a5a2e" stroke-width="6" />
+    <ellipse cx="100" cy="108" rx="70" ry="44" fill="#ffe4ef" stroke="#e7a3c0" stroke-width="3" />
+    {#each CLOTH_V as v (v.x)}<line x1={v.x} y1={108 - v.h} x2={v.x} y2={108 + v.h} stroke="#ffb3d1" stroke-width="7" opacity="0.7" />{/each}
+    {#each CLOTH_H as h (h.y)}<line x1={100 - h.w} y1={h.y} x2={100 + h.w} y2={h.y} stroke="#ffb3d1" stroke-width="7" opacity="0.7" />{/each}
+    <path d="M30 96 Q46 66 82 58" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.45" />
+  {:else if kind === 'egg'}
     <path d="M100 10 C160 10 190 100 190 140 C190 180 150 196 100 196 C50 196 10 180 10 140 C10 100 40 10 100 10 Z" fill={tint || EGG[id] || '#e6dcff'} stroke="#9a7bc4" stroke-width="6" />
     <ellipse cx="70" cy="70" rx="16" ry="28" fill="#fff" opacity="0.5" />
   {:else if kind === 'nest'}
