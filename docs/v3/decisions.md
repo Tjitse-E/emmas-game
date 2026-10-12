@@ -27,3 +27,13 @@ Tjitse's decisions after the v2 round. These override `brainstorm.md`, the conce
 - **No extra spending on art:** pictures come from the image generation tool in Tjitse's Codex subscription, or are drawn as SVG. No paid image API, no OpenRouter, no Gemini prepay. The paid research in `research/image-models.md` is reference only.
 - **Art style:** no gouache, watercolour or brush texture. Clean shapes with smooth soft shading.
 - **Style locked:** `art/style-reference.png` is the style reference for all v3 art, described in `art/STYLE.md`.
+
+## 2026-10-12, build decisions
+
+The lead's decisions for the build session. The full list with reasons is in `plan.md` sections 2.1 and 2.4.
+
+- **App:** `games/moon-meadow-home/`, served from Tjitse's Mac on port 8765 by one Node script (`server/serve.ts`) that replaces `python3 -m http.server`. v2 and v3 share the origin, so v3 reads Emma's v2 save directly. File import stays as a second route.
+- **Plain http at home:** no service worker, `persist()` or `crypto.subtle` is required. odin gets a deploy note only, because agents cannot reach it.
+- **Scope:** all of spec 7.1 in three waves. Wave A (items 1 to 13) must be playable before Wave B starts.
+- **Checks this session:** speech-to-text checks replace Tjitse's ear check. WebKit iPad emulation replaces the real iPad. Both originals are listed for Tjitse in the game README.
+- **Deviations from the spec:** a miss then a right answer stays `miss` (L1); the default profile is `year1` (L2); R12 and R24 to R29 load with 1.2 (L3); unnamed v2 babies are named one per heartbeat after Moving Day (L4); numbers 61 to 100 come last and are cut first if credits run short (L5).
