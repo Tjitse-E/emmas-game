@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audio check</title>
+<style>
+  body { font: 18px/1.4 system-ui, sans-serif; margin: 16px; background: #fff; color: #222; }
+  button { font-size: 28px; padding: 20px 32px; }
+</style>
+</head>
+<body>
+<button id="go" aria-label="check every clip">Check every clip</button>
+<pre id="out"></pre>
+<script src="../../../shared/audio.js"></script>
+<script>
+// Decodes every clip of every v3 pack and every letter sound in this browser engine.
+// Serve the repo root over http, open this page, then call run() (playwright-cli eval) or tap the button.
+// PACKS is contracts C8 (src/audio/packs.ts).
+var PACKS = ['core', 'numbers', 'words-phase2', 'words-phase3-4', 'words-year1',
+  'phrases-meadow', 'phrases-notes', 'phrases-salon', 'places', 'area-stable-yard', 'area-village-lane',
+  'names-t1', 'names-new'];
+var BASE = '../public/audio/';
+
+function run() {
+  EmmaAudio.init({ base: BASE + 'core/', phonics: '../../../shared/audio/phonics/' });
+  return EmmaAudio.unlock().then(function () {
+    return Promise.all(PACKS.map(function (p) { return EmmaAudio.addPack(p, BASE + p + '/'); }));
+  }).then(function (manifests) {
+    var ids = [];
+    manifests.forEach(function (m) { if (m && m.clips) ids = ids.concat(Object.keys(m.clips)); });
+    var missing = [];
+    var chunks = [];
+    for (var i = 0; i < ids.length; i += 100) chunks.push(ids.slice(i, i + 100));
+    return chunks.reduce(function (p, chunk) {
+      return p.then(function () {
+        return EmmaAudio.preload(chunk).then(function (miss) {
+          missing = missing.concat(miss);
+          EmmaAudio.forget(chunk); // keep memory flat on a long list
+        });
+      });
+    }, Promise.resolve()).then(function () {
+      return EmmaAudio.preloadSounds();
+    }).then(function (soundsMissing) {
+      window.__audioCheck = { packs: PACKS.length, clips: ids.length, missing: missing, soundsMissing: soundsMissing };
+      document.getElementById('out').textContent = JSON.stringify(window.__audioCheck, null, 1);
+      return window.__audioCheck;
+    });
+  });
+}
+document.getElementById('go').addEventListener('pointerdown', function () { run(); });
+</script>
+</body>
+</html>
