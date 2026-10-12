@@ -12,3 +12,5 @@ export { searchList, initPlacement, recordProbe, nextProbe, placementEnd } from 
 export type { IsSchool } from './placement.ts';
 export * from './status.ts';
 export { LEARNER_FOLD_VERSION, createLearner, applyLearnEvent, foldLearner, createLearnerSlice } from './fold.ts';
+export { tagError } from './errors.ts';
+export type { ErrorInput } from './errors.ts';
