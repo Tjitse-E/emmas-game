@@ -1,6 +1,6 @@
 // Place value types (Task A1a). Value types only: no import of core's events. Task A1 adds the
 // state, fold and action types on top of these. Shared shapes come from contracts (R41).
-import type { ErrorTag, ItemResult, LearnStrand, Result, StepId, Strand } from '../../types/contracts.ts';
+import type { ErrorTag, ItemResult, LearnStrand, OutfitSlot, Result, StepId, Strand, WorldBaby } from '../../types/contracts.ts';
 
 export type { ErrorTag, ItemResult, Result, StepId, Strand };
 export type { Rng } from '../rng.ts';
@@ -23,3 +23,24 @@ export type WordView = {
   id: string; word: string; graphemes: string[]; picture: string; rStep: StepId; sStep: StepId; tags: string[];
   plural?: { word: string; ending: 's' | 'es'; graphemes: string[] };
 };
+
+// ---- Task A1: views of other workstreams' data, in the shapes place logic reads.
+
+/** A baby as places read it: integration's world view baby (contracts C3, R28). */
+export type BabyView = WorldBaby;
+
+/** The learner as place logic reads it. Task A1b builds it from learning's slice (`toLearnerView`). */
+export type LearnerView = {
+  current: Record<Strand, StepId | null>;
+  passed: { step: StepId; strand: Strand; t: number; visit: string }[];
+  placed: { step: StepId; strand: Strand }[];
+  placementEnded: Record<Strand, boolean>;
+  /** True when the step is passed, placed, current or below the current step in its ladder. */
+  reached(step: StepId): boolean;
+  scaffold(strand: Strand, step: StepId): 1 | 2 | 3;
+  passedOrPlaced(step: StepId): boolean;
+};
+
+export type Mark = '.' | '?' | '!';
+export type PlotId = string;
+export type Outfit = Partial<Record<OutfitSlot, string | null>>;
