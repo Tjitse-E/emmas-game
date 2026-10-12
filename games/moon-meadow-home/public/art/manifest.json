@@ -1,6 +1,6 @@
 {
  "v": 1,
- "built": "2026-10-12T12:44:36",
+ "built": "2026-10-12T12:50:20",
  "rigMode": "sprite",
  "pictures": {
   "apple": {
@@ -586,6 +586,14 @@
   },
   "cub": {
    "src": "words/cub.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cube": {
+   "src": "words/cube.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -1752,6 +1760,14 @@
    "pack": "words",
    "source": "codex"
   },
+  "pea": {
+   "src": "words/pea.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
   "peach": {
    "src": "words/peach.webp",
    "w": 320,
@@ -2093,6 +2109,14 @@
   },
   "sandpit": {
    "src": "words/sandpit.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "sash": {
+   "src": "words/sash.webp",
    "w": 320,
    "h": 320,
    "kind": "word",
@@ -2505,6 +2529,14 @@
   },
   "tin": {
    "src": "words/tin.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "toad": {
+   "src": "words/toad.webp",
    "w": 320,
    "h": 320,
    "kind": "word",

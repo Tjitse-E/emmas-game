@@ -1,0 +1,36 @@
+{
+ "pictures": {
+  "sash": {
+   "src": "words/sash.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "pea": {
+   "src": "words/pea.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "cube": {
+   "src": "words/cube.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  },
+  "toad": {
+   "src": "words/toad.webp",
+   "w": 320,
+   "h": 320,
+   "kind": "word",
+   "pack": "words",
+   "source": "codex"
+  }
+ }
+}

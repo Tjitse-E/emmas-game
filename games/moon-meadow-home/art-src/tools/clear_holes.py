@@ -4,6 +4,9 @@ The cutter keeps white inside an outline on purpose (snow, eggs, sheep). Where t
 area is background, this makes every near-white region larger than --min (fraction of the picture) transparent.
 Run it again after a new `cut` of the same batch, because `cut` writes the picture again.
   python3 art-src/tools/clear_holes.py public/art/items/station-swing.webp [--min 0.01]
+With --at only the white regions under the given points (fractions of width and height) are cleared, so white
+that belongs to the object (a cup's inside, a highlight) stays:
+  python3 art-src/tools/clear_holes.py public/art/words/mug.webp --at 0.73,0.48
 """
 import argparse
 import sys
@@ -35,6 +38,7 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument('path')
     p.add_argument('--min', type=float, default=0.01)
+    p.add_argument('--at', nargs='*', default=None, help='x,y fractions inside the white regions to clear')
     a = p.parse_args(argv)
     im = Image.open(a.path).convert('RGBA')
     arr = np.asarray(im).copy()
@@ -43,8 +47,24 @@ def main(argv=None) -> int:
     lab, n = label(white)
     sizes = np.bincount(lab.ravel(), minlength=n + 1)
     cleared = 0
+    h, w = white.shape
+    chosen = set()
+    if a.at:
+        for pt in a.at:
+            fx, fy = (float(v) for v in pt.split(','))
+            x, y = min(w - 1, int(fx * w)), min(h - 1, int(fy * h))
+            ys, xs = np.nonzero(lab)
+            if len(xs) == 0:
+                continue
+            j = int(np.argmin((xs - x) ** 2 + (ys - y) ** 2))
+            if (xs[j] - x) ** 2 + (ys[j] - y) ** 2 <= (0.03 * w) ** 2:
+                chosen.add(int(lab[ys[j], xs[j]]))
+            else:
+                print(f'{a.path}: no white region at {pt}')
+    else:
+        chosen = {k for k in range(1, n + 1) if sizes[k] >= a.min * white.size}
     for k in range(1, n + 1):
-        if sizes[k] >= a.min * white.size:
+        if k in chosen:
             region = lab == k
             # soften the rim: pixels next to the region that are almost white become half transparent
             arr[region, 3] = 0
@@ -55,7 +75,7 @@ def main(argv=None) -> int:
     near[1:] |= hole[:-1]; near[:-1] |= hole[1:]; near[:, 1:] |= hole[:, :-1]; near[:, :-1] |= hole[:, 1:]
     arr[rim & near, 3] = (arr[rim & near, 3] // 3)
     Image.fromarray(arr, 'RGBA').save(a.path, 'WEBP', quality=88, method=6, exact=False)
-    print(f'{a.path}: cleared {cleared} px in {sum(1 for k in range(1, n + 1) if sizes[k] >= a.min * white.size)} regions')
+    print(f'{a.path}: cleared {cleared} px in {len(chosen)} regions')
     return 0
 
 
