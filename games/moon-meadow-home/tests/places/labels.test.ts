@@ -143,3 +143,22 @@ describe('label results and lines', () => {
 });
 
 function stem(w: { graphemes: string[] }) { return w.graphemes; }
+
+describe('label own slots and stem tray', () => {
+  it('owns the graphemes she owns and the served one', async () => {
+    const { labelOwn } = await import('../../src/core/places/labels.ts');
+    expect(labelOwn(['f', 'o', 'x'], (k) => k === 0, ['x'])).toEqual([true, false, true]);
+  });
+
+  it('holds the own gems and one to three others she owns, at least three gems', async () => {
+    const { stemTray } = await import('../../src/core/places/labels.ts');
+    const t1 = stemTray(['f', 'o', 'x'], [true, true, true], ['b', 'c', 'f'], 1, rng(2));
+    expect(t1.filter((g) => ['f', 'o', 'x'].includes(g)).sort()).toEqual(['f', 'o', 'x']);
+    expect(t1).toHaveLength(4);
+    const t3 = stemTray(['h', 'a', 't'], [false, true, false], ['b', 'c'], 3, rng(5));
+    expect(t3).toContain('a');
+    expect(t3).toHaveLength(4);
+    expect(t3.filter((g) => g === 'h' || g === 't')).toEqual([]);
+    expect(stemTray(['b', 'e', 'd'], [false, true, false], [], 1, rng(1)).length).toBeGreaterThanOrEqual(3);
+  });
+});
