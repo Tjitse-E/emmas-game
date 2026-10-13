@@ -83,7 +83,9 @@
     </div>
   {/each}
   {#if camp.length}
-    <div class="camp" aria-label="moonbeam camp">
+    <!-- The camp keeps clear of lane feed's top band: it steps aside during the checked manger moment (the wish
+         bubble may sit anywhere there) and shrinks to the right of the food tray, left of the moon, in free feeding. -->
+    <div class="camp" class:aside={stage === 'manger'} class:compact={stage === 'free'} aria-label="moonbeam camp">
       {#each camp.slice(0, 6) as b (b.id)}
         <span class="tent">
           <ArtImg id="item-camp-tent" size={96} />
@@ -129,7 +131,11 @@
   .hit { position: absolute; background: none; border: 0; padding: 0; z-index: 6; border-radius: 18px; }
   .stall-hit { inset: 0; }
   .baby-hit { left: 40px; right: 10px; top: 110px; bottom: 10px; }
-  .camp { position: absolute; left: 380px; top: 14px; width: 520px; height: 110px; display: flex; gap: 8px; justify-content: center; z-index: 2; }
+  .camp { position: absolute; left: 380px; top: 14px; width: 520px; height: 110px; display: flex; gap: 8px; justify-content: center; z-index: 3;
+    transition: opacity calc(400ms * var(--speed, 1)); }
+  .camp.aside { opacity: 0; visibility: hidden; }
+  /* Free feeding: the tray ends near x 540 and the moon starts at x 940; the strip shrinks into x 560 to 930. */
+  .camp.compact { left: 330px; width: 600px; justify-content: flex-end; transform: scale(0.6); transform-origin: 100% 0; }
   .tent { position: relative; }
   .tent-head { position: absolute; left: 28px; top: 46px; width: 42px; height: 42px; overflow: hidden; border-radius: 40%; pointer-events: none; }
   .tent-head.asleep { filter: brightness(0.8); }
