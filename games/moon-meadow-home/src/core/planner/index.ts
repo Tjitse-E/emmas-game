@@ -3,10 +3,10 @@
 export type * from './types.ts';
 export { mulberry32, shuffle, pick, makeRng } from './rng.ts';
 export { carrierFor, carrierChoices, carrierKey } from './carriers.ts';
-export { nextItem } from './select.ts';
+export { nextItem, previewItem } from './select.ts';
 export { visitStats, isTired, spellingShareLow, wantsLabelBubble, leastPractisedStrand, visitRange, shouldVisitDoor } from './visit.ts';
 export type { VisitStats } from './visit.ts';
-export { eggKindOf, eggMoments, nextEgg, nextRack, easyReview, eggOk } from './eggs.ts';
+export { eggKindOf, eggMoments, nextEgg, nextRack, easyReview, eggOk, previewStep } from './eggs.ts';
 export { mathsTotal, lastEggTotal, tensThisVisit, visitEggSeen } from '../learning/egg-visit.ts';
 export type { EggOffer } from './eggs.ts';
 export { nextNameReviews } from './names.ts';

@@ -76,4 +76,26 @@ describe('simulated learner', () => {
     expect(m).not.toContain('M10');
     expect(r.steps.find((s) => s.step === 'M12A')?.passT ?? null).not.toBeNull();
   });
+
+  // Review 2026-10-13: from her Wave A save (placed at M10), the lift, the re-probe and the next-band preview bring
+  // totals 11 and 12 within about 2 weeks and 13 to 15 within about 5, even when the re-probe lands her on M12A.
+  it("from Emma's Wave A save, totals over 10 come within weeks", { timeout: 300_000 }, () => {
+    const c101 = readContent('1.0.1');
+    const firstWeek = (r: ReturnType<typeof simulate>, totals: number[]) =>
+      (Math.min(...totals.map((n) => r.firstTotalT[n] ?? Infinity)) - r.startT) / WEEK;
+    const w11: number[] = [];
+    const w13: number[] = [];
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const r = simulate({
+        ...base, content: c101, seed, accuracy: 0.85, weeks: 7, profile: 'year1', trueLevel: EMMA, lift: true, placedAt: { m: 'M10' }, eggs: true,
+      });
+      expect(r.liftLanded, `seed ${seed}`).not.toBeNull();
+      w11.push(firstWeek(r, [11, 12]));
+      w13.push(firstWeek(r, [13, 14, 15]));
+    }
+    expect(median(w11), `11 and 12: ${w11}`).toBeLessThanOrEqual(2);
+    expect(Math.max(...w11), `11 and 12: ${w11}`).toBeLessThanOrEqual(3);
+    expect(median(w13), `13 to 15: ${w13}`).toBeLessThanOrEqual(5);
+    expect(Math.max(...w13), `13 to 15: ${w13}`).toBeLessThanOrEqual(6.5);
+  });
 });

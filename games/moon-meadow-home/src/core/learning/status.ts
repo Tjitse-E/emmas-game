@@ -183,7 +183,7 @@ export function servableItems(c: Content, step: StepId): ItemId[] {
 /** 1.0.1 (decisions 2026-10-12): her maths moves above bonds to 10, once. */
 export const MATHS_LIFT_FROM: readonly StepId[] = ['M09', 'M10', 'M11', 'M12'];
 export const MATHS_LIFT_TO: StepId = 'M12A';
-const LIFT_NEW_STEPS: readonly StepId[] = ['M12A', 'M12B', 'M12C', 'M12D', 'M12E', 'M12F'];
+export const LIFT_NEW_STEPS: readonly StepId[] = ['M12A', 'M12B', 'M12C', 'M12D', 'M12E', 'M12F'];
 
 /**
  * The maths lift (docs/v3/next/plan.md N9): a year 1 maths placement that ended in M09 to M12 and never measured
@@ -201,9 +201,36 @@ export function mathsLift(l: Learner, c: Content): Payload<SetCurrentOverride> |
   return setCurrentOverride(l, c, 'm', MATHS_LIFT_TO);
 }
 
+/** The step the re-probe after the lift probes now, or null when no re-probe runs (review 2026-10-13). */
+export function reprobeStep(l: Learner, c: Content): StepId | null {
+  const rp = l.placement.m?.reprobe;
+  if (!rp || rp.closed || rp.landed !== null) return null;
+  return c.steps[rp.at]?.loaded === true ? rp.at : null;
+}
+
+/** The step after `step` the re-probe climbs to, or null at the top of the 1.0.1 steps. */
+export function reprobeNext(l: Learner, c: Content, step: StepId): StepId | null {
+  const at = LIFT_NEW_STEPS.indexOf(step);
+  if (at < 0) return null;
+  for (const id of LIFT_NEW_STEPS.slice(at + 1)) {
+    const s = c.steps[id];
+    if (s?.loaded && !s.display && !s.contrast && !isSchool(l, c, id)) return id;
+  }
+  return null;
+}
+
+/** The re-probe has found her step: one set-current there, unless it is already her current step. */
+export function reprobeLanding(l: Learner, c: Content): Payload<SetCurrentOverride> | null {
+  const rp = l.placement.m?.reprobe;
+  if (!rp || rp.closed || rp.landed === null) return null;
+  if (currentStep(l, c, 'm') === rp.landed) return null;
+  return setCurrentOverride(l, c, 'm', rp.landed);
+}
+
 /**
  * Facts the fold has discovered. The store records each one once as an event, so a merge never takes them back.
- * The maths lift comes last; it is the only learn.override here, and folding it stops it (placement.overridden).
+ * The maths lift comes last, or the re-probe's landing after it; these are the only learn.override drafts here,
+ * and folding one stops it (placement.overridden, reprobe.closed).
  */
 export function pendingLearnFacts(l: Learner, c: Content): LearnFact[] {
   const out: LearnFact[] = [];
@@ -220,7 +247,7 @@ export function pendingLearnFacts(l: Learner, c: Content): LearnFact[] {
       if (readyToPass(st, servableItems(c, id), l.items, c.steps[id].top, c.budget)) out.push({ type: 'step.passed', strand, step: id });
     }
   }
-  const lift = mathsLift(l, c);
+  const lift = mathsLift(l, c) ?? reprobeLanding(l, c);
   if (lift) out.push(lift);
   return out;
 }

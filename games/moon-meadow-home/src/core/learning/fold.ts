@@ -12,12 +12,14 @@ import { newMemory, updateMemory } from './leitner.ts';
 import { newStepState, pushWindow, recordReview } from './mastery.ts';
 import { initPlacement, recordProbe } from './placement.ts';
 import { moveScaffold } from './scaffold.ts';
-import { isPlacedStep, isPassedStep, placedByRelease, profileOf, schoolFn, STRANDS } from './status.ts';
+import {
+  isPlacedStep, isPassedStep, mathsLift, MATHS_LIFT_TO, placedByRelease, profileOf, reprobeNext, reprobeStep, schoolFn, STRANDS,
+} from './status.ts';
 import { localDay } from './time.ts';
 import { mathsTotal } from './egg-visit.ts';
 
 /** Part of the snapshot key: change it whenever the fold logic changes. */
-export const LEARNER_FOLD_VERSION = 3;   // 2: recent results keep the pair of a Dutch-tagged error; 3: visit eggs, overridden
+export const LEARNER_FOLD_VERSION = 4;   // 2: recent results keep the pair of a Dutch-tagged error; 3: visit eggs, overridden; 4: re-probe
 
 const RECENT_MAX = 300;
 const FLUENCY_TYPES: readonly FluencyType[] = ['grapheme', 'tricky', 'bond', 'fact', 'table'];
@@ -156,6 +158,7 @@ function onResult(l: Learner, e: LearnResultEvent, c: Content): void {
   if (probe) {
     const p = l.placement[strand];
     if (!p.done) recordProbe(p, step.id, e.result, c, strand, schoolFn(l, c));
+    else if (strand === 'm' && reprobeStep(l, c) === step.id) recordReprobe(l, c, e);
     return;
   }
   const day = localDay(e.t, l.visit.tz);
@@ -178,6 +181,25 @@ function onResult(l: Learner, e: LearnResultEvent, c: Content): void {
     default:
       break;   // warmup and name: nothing
   }
+}
+
+/**
+ * One probe of the re-probe after the lift. Two first tries climb to the next step; two that are not first land her
+ * on this step. So a step takes two probe eggs, or three after one slip (a child at 85 percent clears a step she
+ * knows 94 times in 100, and a step she does not know about 10 times in 100).
+ */
+function recordReprobe(l: Learner, c: Content, e: LearnResultEvent): void {
+  const rp = l.placement.m.reprobe;
+  if (!rp) return;
+  rp.r.push(e.result);
+  for (const { id } of Array.isArray(e.items) ? e.items : []) if (!rp.ids.includes(id)) rp.ids.push(id);
+  const need = c.budget.placement.itemsPerProbe;
+  if (rp.r.filter(r => r !== 'first').length >= need) { rp.landed = rp.at; return; }
+  if (rp.r.filter(r => r === 'first').length < need) return;
+  const next = reprobeNext(l, c, rp.at);
+  if (next === null) { rp.landed = rp.at; return; }
+  rp.at = next;
+  rp.r = [];
 }
 
 function onPassed(l: Learner, e: StepPassedEvent, c: Content): void {
@@ -234,8 +256,14 @@ function onOverride(l: Learner, e: LearnOverrideEvent, c: Content): void {
     }
     case 'set-current': {
       if (!l.placement[e.strand] || c.steps[e.step]?.strand !== e.strand) return;
+      // The lift (a set-current to M12A on a save the lift applies to) starts the re-probe; any other set-current ends it.
+      const lift = e.strand === 'm' && e.step === MATHS_LIFT_TO && mathsLift(l, c) !== null;
+      const rp = l.placement[e.strand].reprobe;
       endPlacement(l, c, e.strand, e.step, stepList(e.placed), stepList(e.side), e.t, true);
-      l.placement[e.strand].overridden = true;
+      const p = l.placement[e.strand];
+      p.overridden = true;
+      if (lift) p.reprobe = { at: MATHS_LIFT_TO, r: [], ids: [], landed: null, closed: false };
+      else if (rp) p.reprobe = { ...rp, closed: true };
       return;
     }
     case 'mark-placed': case 'unmark-placed': {

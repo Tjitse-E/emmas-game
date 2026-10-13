@@ -5,12 +5,13 @@
 import type { Content, MomentKind, StepId, Strand } from '../../src/core/content/types.ts';
 import { applyLearnEvent, createLearner } from '../../src/core/learning/fold.ts';
 import {
-  currentStep, isPlacing, isSchool, openSchoolSteps, pendingLearnFacts, sideSteps,
+  currentStep, isPlacing, isSchool, openSchoolSteps, pendingLearnFacts, placementLists, sideSteps,
 } from '../../src/core/learning/status.ts';
 import type { EventBase, Learner, Result } from '../../src/core/learning/types.ts';
 import { learnResultPayload } from '../../src/core/planner/result.ts';
 import { nextItem } from '../../src/core/planner/select.ts';
 import { nextNameReviews } from '../../src/core/planner/names.ts';
+import { nextEgg } from '../../src/core/planner/eggs.ts';
 import { spellingShareLow } from '../../src/core/planner/visit.ts';
 import type { AssetIndex, ItemRequest, Pick, PlanContext } from '../../src/core/planner/types.ts';
 import { mulberry32 } from '../../src/core/rng.ts';
@@ -26,6 +27,10 @@ export type SimOptions = {
   trueLevel?: Partial<Record<Strand, StepId>>;   // probe answers: at or below this step use `accuracy`, above it 0.2
   /** Record the 1.0.1 maths lift (a learn.override from pendingLearnFacts) as the store does. Default true. */
   lift?: boolean;
+  /** Start with these strands already placed (a placement.done at this step), as a save from an earlier release. */
+  placedAt?: Partial<Record<Strand, StepId>>;
+  /** Serve maths through the nest's egg planner (nextEgg: the total rules, easy-review filter and next-band preview). */
+  eggs?: boolean;
 };
 export type SimStepRecord = { strand: Strand; step: StepId; school: boolean; startT: number | null; passT: number | null; weeks: number | null };
 export type SimReport = {
@@ -38,6 +43,8 @@ export type SimReport = {
   stuck: Strand[];                           // strands with 5 visits in a row of 0 served moments while they had something to learn
   nullPicks: number;
   oneRatio: number | null;                   // share of R19 picks that showed one thing
+  firstTotalT: Record<number, number>;       // maths: the time a total (pair sum, missing whole) was first asked
+  liftLanded: StepId | null;                 // maths: where the re-probe after the lift landed, if it ran
 };
 
 const DAY = 86_400_000;
@@ -119,15 +126,25 @@ export function simulate(o: SimOptions): SimReport {
     if (rng() < acc) return 'first';
     return rng() < 0.5 ? 'miss' : 'helped';
   };
+  const firstTotalT: Record<number, number> = {};
   const play = (t: number, p: Pick, strand: Strand): void => {
+    if (strand === 'm' && p.carrier.kind === 'maths') {
+      const k = p.carrier.task;
+      const total = k.op === 'pair' ? k.a + k.b : k.op === 'missing' ? k.whole : null;
+      if (total !== null) firstTotalT[total] ??= t;
+    }
     const result = answer(p, strand);
     const ms = result === 'first' ? 900 + 2100 * rng() : null;
-    emit(t, { ...learnResultPayload(p, { result, ms, place: 'sim' }) });
+    emit(t, { ...learnResultPayload(p, { result, ms, place: strand === 'm' && o.eggs ? 'nest' : 'sim' }) });
   };
 
   const names = c.names.slice(0, NAME_POOL).map((x, i) => ({ babyId: `sim-baby-${i}`, name: x.name, gpcs: x.gpcs }));
 
   if (o.profile !== l.profile) emit(START_T - 60_000, { type: 'learn.override', op: 'profile', profile: o.profile });
+  for (const strand of STRANDS) {
+    const at = o.placedAt?.[strand];
+    if (at) emit(START_T - 30_000, { type: 'placement.done', strand, current: at, ...placementLists(l, c, strand, at) });
+  }
 
   for (let week = 0; week < o.weeks; week++) {
     const count = Math.min(7, between(rng, o.visitsPerWeek));
@@ -155,7 +172,7 @@ export function simulate(o: SimOptions): SimReport {
           ...(strand === 'm' ? { doors: { built: herd, own: herd } } : {}),
         };
         const ctx: PlanContext = { c, l, now: t, assets: ALL_ASSETS };
-        const p = nextItem(ctx, req, planRng);
+        const p = strand === 'm' && o.eggs ? nextEgg(ctx, planRng).pick : nextItem(ctx, req, planRng);
         if (!p) {
           if (learningSteps(l, c, strand).length > 0) nullPicks += 1;
           continue;
@@ -215,6 +232,8 @@ export function simulate(o: SimOptions): SimReport {
     stuck: STRANDS.filter(s => stuck.has(s)),
     nullPicks,
     oneRatio: r19 > 0 ? r19One / r19 : null,
+    firstTotalT,
+    liftLanded: l.placement.m.reprobe?.landed ?? null,
   };
 }
 

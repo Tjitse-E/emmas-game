@@ -17,7 +17,7 @@ Emma's server runs on the Mac on port 8765. It serves `dist-emma`, promoted from
 
 ## 1.0.1
 
-First check for Tjitse: after the release, open the parent corner on Emma's iPad and look at Overrides. Maths must read "current M12A". If it shows a step before M12A, tap "Make current" on M12A twice. The move to M12A was tested on a synthetic Wave A save only, unless the release notes say her real export was checked (plan section 15, step 6).
+First check for Tjitse: after the release, open the parent corner on Emma's iPad and look at Overrides. Maths must read "current M12A" (or a later step from M12B to M12F once she has played a few eggs). If it shows a step before M12A, tap "Make current" on M12A twice. The move to M12A was tested on a synthetic Wave A save only, unless the release notes say her real export was checked (plan section 15, step 6).
 
 1.0.1 answers Emma's first play of Wave A (12 October 2026). Plan: [docs/v3/next/plan.md](../../docs/v3/next/plan.md).
 
@@ -26,7 +26,7 @@ First check for Tjitse: after the release, open the parent corner on Emma's iPad
 - The lantern walk. Goodnight starts in the meadow at dusk. She reads the name on the lantern and leads that baby along a glowing path into the stable. The others follow, lie down in the straw, and she can tuck them in.
 - Supper in the stable. Before bed one baby asks for a food, or the hay rack needs filling ("The hay rack needs fifteen bundles. Nine are in."). Then she can feed every baby. A long visit skips this, so bedtime stays short.
 
-Her save moves up in maths once. On the first load, a year 1 save whose maths sits on bonds to 10 (M09 to M12) becomes current at M12A, pairs that make 7, 8 and 9. M09 to M12 count as placed and come back only as review. This happens one time only: a step set in the parent corner later always wins. To set it back, open Overrides and tap "Make current" twice on the step you want (for example M10).
+Her save moves up in maths once. On the first load, a year 1 save whose maths sits on bonds to 10 (M09 to M12) becomes current at M12A, pairs that make 7, 8 and 9. M09 to M12 count as placed and come back only as review. Her next eggs are a short check: two eggs a step from M12A up to M12F. Two right first tries move to the next step; two that are not first stop the check there, and that step becomes current. So a child who already knows 7, 8 and 9 reaches 11 and 12 on the first day. Once half of her current step is going well, one egg a visit comes from the next band (11 and 12, later 13 to 15) as a preview. The move happens one time only: a step set in the parent corner later always wins. To set it back, open Overrides and tap "Make current" twice on the step you want (for example M10).
 
 Gate: `bash tools/gate.sh 1.0.1` from this folder, outside the sandbox. It needs `content/release.json` at `1.0.1`, runs the flows in `flows/gate-1.0.1.txt` and treats the flows in `flows/gate-1.0.1-warn.txt` as warnings, like Gate A. `flows/integration/upgrade.flow.sh` loads a Wave A save (`tests/fixtures/wave-a-save.json`, made by `node tools/make-wave-a-save.ts`) and checks the move to M12A.
 

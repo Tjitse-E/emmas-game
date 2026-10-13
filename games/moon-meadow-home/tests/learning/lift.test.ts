@@ -124,4 +124,24 @@ describe('the lift through the store (3.3)', () => {
     expect(overrides(again.allEvents())).toHaveLength(1);
     expect(currentStep(again.folded().state.learner, c, 'm')).toBe('M12A');
   });
+
+  it('writes the re-probe landing once, after the lift (review 2026-10-13)', async () => {
+    const backend = memoryBackend();
+    const d = await open(backend);
+    d.commit([{ type: 'placement.done', strand: 'm', current: 'M10', placed: BELOW_M10, side: [] } as GameEventDraft]);
+    const probe = (step: string, id: string, r: 'first' | 'miss') => ({
+      type: 'learn.result', strand: 'm', step, carrier: 'test', items: [{ id, r }], result: r, ms: 1500, scaffold: 3, error: null,
+      place: 'nest', moment: c.steps[step].moments[0], slot: 'probe', probe: true,
+    }) as GameEventDraft;
+    const [a, b] = [c.steps.M12A.items, c.steps.M12B.items];
+    d.commit([probe('M12A', a[0].id, 'first'), probe('M12A', a[1].id, 'first'), probe('M12B', b[0].id, 'first'), probe('M12B', b[1].id, 'first')]);
+    d.commit([probe('M12C', c.steps.M12C.items[0].id, 'miss'), probe('M12C', c.steps.M12C.items[1].id, 'miss')]);
+    const steps = (evs: readonly GameEvent[]) => overrides(evs).map((e) => (e as unknown as { step: string }).step);
+    expect(steps(d.allEvents())).toEqual(['M12A', 'M12C']);
+    expect(currentStep(d.folded().state.learner, c, 'm')).toBe('M12C');
+    await d.flush();
+    const again = await open(backend);
+    expect(steps(again.allEvents())).toEqual(['M12A', 'M12C']);
+    expect(currentStep(again.folded().state.learner, c, 'm')).toBe('M12C');
+  });
 });

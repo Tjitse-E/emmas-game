@@ -5,8 +5,9 @@ import type { ItemId, MomentKind, StepId } from '../content/types.ts';
 import { newMemory, dueAt, isDue } from '../learning/leitner.ts';
 import { nextProbe, searchList } from '../learning/placement.ts';
 import {
-  currentStep, isPassedStep, isPlacedStep, isPlacing, openSchoolSteps, schoolFn, sideSteps,
+  currentStep, isPassedStep, isPlacedStep, isPlacing, openSchoolSteps, reprobeStep, schoolFn, sideSteps,
 } from '../learning/status.ts';
+import { lastEggTotal, mathsTotal } from '../learning/egg-visit.ts';
 import { localDay } from '../learning/time.ts';
 import type { Slot } from '../learning/types.ts';
 import type { Rng } from '../rng.ts';
@@ -118,6 +119,26 @@ function placingPick(s: Session): Pick | null {
   return null;
 }
 
+/**
+ * The re-probe after the maths lift (review 2026-10-13): items of the probed step in content order (the first three
+ * share no part), not one it already probed, and not the total of the last egg when another will do.
+ */
+function reprobePick(s: Session): Pick | null {
+  const { c, l } = s.ctx;
+  const step = reprobeStep(l, c);
+  if (step === null || stepMoments(s, step, false).length === 0) return null;
+  const done = l.placement.m.reprobe?.ids ?? [];
+  const last = lastEggTotal(l);
+  const totalOf = (id: ItemId): number | null => { const t = c.items[id]?.task; return t ? mathsTotal(t) : null; };
+  const fresh = stepItems(s, step).filter(id => !done.includes(id));
+  const order = [...fresh.filter(id => totalOf(id) !== last), ...fresh.filter(id => totalOf(id) === last)];
+  for (const id of order) {
+    const pick = tryItem(s, step, id, 'probe', scaffoldFor(s, step, false), true, false, true);
+    if (pick) return pick;
+  }
+  return null;
+}
+
 // ---- slots
 
 function serveStep(s: Session, step: StepId, slot: Slot, minBox: number): Pick | null {
@@ -213,6 +234,22 @@ function mixedPick(s: Session, minBox: number): Pick | null {
   return null;
 }
 
+/**
+ * One of `ids` (in this order) of `step` as a mixed pick at the step's own level (1 before she starts it), within
+ * the new-item cap. The eggs' next-band preview uses it (eggs.ts); the fold never moves a step on a mixed pick
+ * of a step that is not passed or placed.
+ */
+export function previewItem(ctx: PlanContext, req: ItemRequest, rng: Rng, step: StepId, ids: readonly ItemId[]): Pick | null {
+  const moments = req.moments.filter(m => ctx.c.moments[m]?.loaded === true && ctx.c.moments[m].strand === req.strand);
+  const s: Session = { ctx, req: { ...req, moments }, rng, moments, cache: newCarrierCache() };
+  for (const id of ids) {
+    if (!newAllowed(s, id)) continue;
+    const p = tryItem(s, step, id, 'mixed', scaffoldFor(s, step, true), false, false, false);
+    if (p) return p;
+  }
+  return null;
+}
+
 export function nextItem(ctx: PlanContext, req: ItemRequest, rng: Rng): Pick | null {
   const { c, l } = ctx;
   const strand = req.strand;
@@ -220,6 +257,10 @@ export function nextItem(ctx: PlanContext, req: ItemRequest, rng: Rng): Pick | n
   if (moments.length === 0) return null;
   const s: Session = { ctx, req, rng, moments, cache: newCarrierCache() };
   if (isPlacing(l, strand)) return placingPick(s);
+  if (strand === 'm') {
+    const rp = reprobePick(s);
+    if (rp) return rp;
+  }
 
   const b = c.budget;
   const counts = l.visit.counts;

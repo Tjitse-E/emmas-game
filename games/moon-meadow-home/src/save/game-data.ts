@@ -142,8 +142,9 @@ export async function openGameData<St extends { facts: FactsState }>(opts: GameD
     if (!opts.reconcile) return out;
     for (let round = 0; round < 3; round++) {
       const cands = opts.reconcile(folded.state);
-      // Facts are recorded once by key. The maths lift (learn.override, docs/v3/next/plan.md N9) is the only non-fact
-      // draft a reconcile returns; folding it sets placement.overridden, so the next round no longer returns it.
+      // Facts are recorded once by key. The maths lift and the re-probe's landing after it (learn.override,
+      // docs/v3/next/plan.md N9, N9a) are the only non-fact drafts a reconcile returns; folding one sets
+      // placement.overridden or closes the re-probe, so the next round no longer returns it.
       const seen = new Set<string>();
       const overrides = cands.filter((c) => {
         if (c.type !== 'learn.override') return false;

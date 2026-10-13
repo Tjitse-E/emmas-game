@@ -52,4 +52,17 @@ echo "$EGGS" | node -e '
   const easy = ids.filter((id) => { const t = total(id); return t === null || t < 6; });
   if (easy.length) { console.error("easy eggs: " + easy.join(", ")); process.exit(1); }' || fail 'an easy egg after the upgrade'
 [ "$(val 'async () => (await window.__game.call("events")).length')" -gt "$FIRST_NEW" ] || fail 'autoplay wrote nothing'
+
+# The short re-probe after the lift (review 2026-10-13): her first eggs are probes from M12A up, and it writes at
+# most one more set-current (where she lands), never below M12A.
+FIRST_EGG="$(val "async () => { const e = (await window.__game.call('events', 'learn.result'))
+  .find((x) => x.strand === 'm' && x.place === 'nest' && !x.visit.startsWith('v-wavea'));
+  return e ? [e.slot, e.step].join(' ') : 'none'; }")"
+expect_eq "$FIRST_EGG" 'probe M12A' 'the first egg after the upgrade'
+LANDINGS="$(val 'async () => JSON.stringify((await window.__game.call("events", "learn.override"))
+  .filter((e) => e.op === "set-current" && e.strand === "m").map((e) => e.step))')"
+echo "maths set-current after the upgrade: $LANDINGS"
+case "$LANDINGS" in '["M12A"]'|'["M12A","M12B"]'|'["M12A","M12C"]'|'["M12A","M12D"]'|'["M12A","M12E"]'|'["M12A","M12F"]') ;;
+  *) fail "maths set-current after the re-probe: $LANDINGS" ;; esac
+case "$(state mathsStep)" in M12A|M12B|M12C|M12D|M12E|M12F) ;; *) fail "maths step after the re-probe: $(state mathsStep)" ;; esac
 finish

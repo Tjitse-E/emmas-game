@@ -1,11 +1,11 @@
 // G/src/core/planner/eggs.ts
 // The nest's egg offer: the egg kind follows the moment of the maths pick. No pick gives a free egg (Decision 10).
 import type { Content, EggKind, MomentKind, StepId } from '../content/types.ts';
-import { currentStep, isPassedStep, isPlacedStep } from '../learning/status.ts';
+import { currentStep, isPassedStep, isPlacedStep, servableItems } from '../learning/status.ts';
 import { lastEggTotal, mathsTotal, tensThisVisit } from '../learning/egg-visit.ts';
 import type { Learner } from '../learning/types.ts';
 import type { Rng } from '../rng.ts';
-import { nextItem } from './select.ts';
+import { nextItem, previewItem } from './select.ts';
 import type { ItemRequest, Pick, PlanContext } from './types.ts';
 
 export type EggOffer = { kind: EggKind; pick: Pick | null };
@@ -65,6 +65,51 @@ export function eggOk(l: Learner, c: Content): (p: Pick) => boolean {
   return (p) => p.probe || (!easyReview(l, c, p) && (last === null || totalOf(p) !== last));
 }
 
+/** The 1.0.1 bands: totals 7 to 9, 11 and 12, 13 to 15. Each band is a pair step, then a missing step. */
+const BANDS: readonly (readonly StepId[])[] = [['M12A', 'M12B'], ['M12C', 'M12D'], ['M12E', 'M12F']];
+/** The preview draws from the first items of the next pair step, which share no part (maths.json). */
+const PREVIEW_ITEMS = 3;
+
+function bandTotals(c: Content, band: readonly StepId[]): Set<number> {
+  const out = new Set<number>();
+  for (const id of band) {
+    for (const it of c.steps[id]?.items ?? []) {
+      const t = c.items[it.id]?.task;
+      const n = t ? mathsTotal(t) : null;
+      if (n !== null) out.add(n);
+    }
+  }
+  return out;
+}
+
+/**
+ * The next-band preview (review 2026-10-13): once half of her current step's items have had a first try, one egg
+ * a visit may come from the pair step of the next band, so totals over 10 appear weeks before she reaches them.
+ * Null when there is no next band, it is not loaded, she is not half way, or this visit already had one.
+ */
+export function previewStep(l: Learner, c: Content): StepId | null {
+  const cur = currentStep(l, c, 'm');
+  const i = cur === null ? -1 : BANDS.findIndex(b => b.includes(cur));
+  if (cur === null || i < 0 || i + 1 >= BANDS.length) return null;
+  const next = BANDS[i + 1][0];
+  if (c.steps[next]?.loaded !== true || isPassedStep(l, next) || isPlacedStep(l, c, next)) return null;
+  const items = servableItems(c, cur);
+  const firsts = items.filter(id => (l.items[id]?.firsts ?? 0) > 0).length;
+  if (items.length === 0 || firsts * 2 < items.length) return null;
+  const totals = bandTotals(c, BANDS[i + 1]);
+  if ((l.visit.eggs ?? []).some(e => totals.has(e.total))) return null;
+  return next;
+}
+
+function previewEgg(ctx: PlanContext, req: ItemRequest, ok: (p: Pick) => boolean, rng: Rng): Pick | null {
+  const { c, l } = ctx;
+  const step = previewStep(l, c);
+  if (step === null) return null;
+  const last = (id: string) => l.items[id]?.lastT ?? -Infinity;
+  const ids = (c.steps[step]?.items ?? []).slice(0, PREVIEW_ITEMS).map(it => it.id).sort((a, b) => last(a) - last(b));
+  return previewItem(ctx, { ...req, accept: ok }, rng, step, ids);
+}
+
 /**
  * The planner's own pick first. A probe, or a pick that passes the filter, stands. Otherwise the same step and
  * slot with the filter; then, only for review, mixed or side, any slot with the filter; else the first pick
@@ -85,7 +130,11 @@ function filtered(ctx: PlanContext, req: ItemRequest, ok: (p: Pick) => boolean, 
 export function nextEgg(ctx: PlanContext, rng: Rng): EggOffer {
   const { c, l } = ctx;
   const moments = eggMoments(c);
-  const pick = moments.length > 0 ? filtered(ctx, { strand: 'm', moments, place: 'nest' }, eggOk(l, c), rng) : null;
+  const req: ItemRequest = { strand: 'm', moments, place: 'nest' };
+  const ok = eggOk(l, c);
+  let pick = moments.length > 0 ? filtered(ctx, req, ok, rng) : null;
+  // A review or mixed egg may be the next band's preview instead; never a probe or a current egg.
+  if (pick && (pick.slot === 'review' || pick.slot === 'mixed')) pick = previewEgg(ctx, req, ok, rng) ?? pick;
   if (pick) return { kind: eggKindOf(c, pick.moment) ?? 'moon', pick };
   let kind = firstEggOf(c, currentStep(l, c, 'm'));
   if (!kind) {
