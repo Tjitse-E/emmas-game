@@ -1,7 +1,9 @@
 <script lang="ts">
   // The hay to choose from (docs/v3/next/plan.md F5, N21). Scaffold 1: a pile of N small bundles laid out like a
   // little ten-frame (5 a row); scaffold 2: the same pile with its numeral; scaffold 3: a hay cart with its numeral.
-  // A pile is dragged to the hay rack.
+  // A pile is dragged to the hay rack. Review 2026-10-13: bundles are 60 stage px (at least 56) so she can count them by
+  // touching each one; three piles (scaffold 1) lie in rows of five, four piles (scaffold 2) in rows of three, so
+  // every scaffold fits the pile tray (x 40 to 1140).
   import { drag } from '../../platform/input.ts';
   import type { StoneSpec } from '../../core/maths/stones.ts';
   import HayBundle from './HayBundle.svelte';
@@ -9,9 +11,12 @@
   let { choices, scaffold, disabled = false, hidden = null, onplace }: {
     choices: StoneSpec[]; scaffold: 1 | 2 | 3; disabled?: boolean; hidden?: string | null; onplace: (id: string) => void;
   } = $props();
+  /** Bundle size in stage px and bundles per row. */
+  const BUNDLE = 60;
+  const cols = $derived(choices.length <= 3 ? 5 : 3);
 </script>
 
-<div class="choices">
+<div class="choices" class:carts={scaffold === 3} style:--b="{BUNDLE}px" style:--cols={cols}>
   {#each choices as c (c.id)}
     <button class="pile" class:gone={hidden === c.id} data-touch aria-label="hay {c.value}" data-choice={c.id}
       use:drag={{ data: c.id, disabled, onDrop: (d) => { if (d.targetId === 'hay-rack') onplace(c.id); } }}>
@@ -25,7 +30,7 @@
         </svg>
       {:else}
         <span class="heap" aria-hidden="true">
-          {#each Array.from({ length: c.value }) as _, i (i)}<HayBundle size={27} />{/each}
+          {#each Array.from({ length: c.value }) as _, i (i)}<HayBundle size={BUNDLE} />{/each}
         </span>
       {/if}
       {#if scaffold >= 2}<span class="num" aria-hidden="true">{c.value}</span>{/if}
@@ -34,11 +39,12 @@
 </div>
 
 <style>
-  .choices { display: flex; gap: 22px; justify-content: center; align-items: flex-end; }
-  .pile { width: 162px; min-height: 124px; padding: 10px 8px 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  .choices { display: flex; gap: 16px; justify-content: center; align-items: flex-end; }
+  .pile { min-width: 150px; min-height: 124px; box-sizing: border-box; padding: 10px 8px 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
     gap: 4px; background: #fff7e3; border: 4px solid #d9a53a; border-radius: 26px; touch-action: none; }
   .pile.gone { visibility: hidden; }
-  .heap { display: grid; grid-template-columns: repeat(5, 27px); gap: 2px; justify-content: center; direction: ltr; }
+  .carts .pile { width: 176px; }
+  .heap { display: grid; grid-template-columns: repeat(var(--cols), var(--b)); gap: 3px; justify-content: center; direction: ltr; }
   .cart { width: 120px; height: 90px; }
   .num { font: 700 34px / 1 'Andika', sans-serif; color: #5a3818; }
 </style>

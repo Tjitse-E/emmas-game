@@ -326,7 +326,9 @@
   .drawer.top { top: 0; bottom: auto; border-top: 0; border-bottom: 6px solid #5a3818; }
   .item { display: grid; place-items: center; width: 156px; height: 156px; background: #fffaf0; border: 4px solid #e8b878; border-radius: 30px; touch-action: none; padding: 0; }
   .rack-panel { position: absolute; left: 290px; top: 160px; pointer-events: auto; }
-  .piles { position: absolute; left: 190px; right: 190px; top: 590px; padding: 14px 0; border-radius: 30px; pointer-events: auto;
+  /* Just under the rack (its panel ends near y 430) and nearly full width, so five carts or three piles of big
+     bundles fit (HayChoices). */
+  .piles { position: absolute; left: 40px; right: 40px; top: 452px; padding: 14px 0; border-radius: 30px; pointer-events: auto;
     background: #6e4520dd; border: 5px solid #5a3818; }
   .tray { position: absolute; left: 224px; top: 8px; pointer-events: auto; }
   .want { position: absolute; display: flex; flex-direction: column; align-items: center; padding: 6px 8px 4px; background: #fffaf0; border: 4px solid #c9b8ff;

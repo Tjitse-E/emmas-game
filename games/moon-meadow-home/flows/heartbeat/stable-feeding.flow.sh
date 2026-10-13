@@ -139,6 +139,11 @@ if [ -n "$sleeper" ]; then
 fi
 until_stage rest
 
+# Every pile fits the pile tray, and bundles are big enough to count by touch (56 stage px or more).
+piles_ok() {
+  expect_eq "$(val "() => { const k = window.__game.state().fit.scale; const t = document.querySelector('.piles').getBoundingClientRect(); return [...document.querySelectorAll('[data-choice]')].flatMap((p) => { const b = p.getBoundingClientRect(); const small = [...p.querySelectorAll('.heap > *')].some((h) => h.getBoundingClientRect().width / k < 55.5); return b.left < t.left || b.right > t.right || b.bottom > t.bottom || small ? [p.getAttribute('aria-label')] : []; }).join(','); }")" '' "the hay piles fit and count by touch (${1:-})"
+}
+
 # ---- the hay rack, with a miss, on the next evening
 # The clock moves first, then newVisit starts the evening's visit at the new time (as the eggs flow does).
 hook "setNow(Date.now() + 86400000)" >/dev/null
@@ -151,12 +156,27 @@ until_stage manger
 expect_eq "$(fs 's.manger')" rack 'tonight is the hay rack'
 wait_for "() => window.__game.said().includes('g-hay-rack')"
 expect_eq "$(val "() => window.__game.said().some((x) => /^num-rack-\\d+\$/.test(x)) && window.__game.said().some((x) => /^num-in-\\d+\$/.test(x))")" true 'the rack says its numbers'
+piles_ok 'first evening'
 hook 'wrong()' >/dev/null
 expect_eq "$(val "() => window.__game.said().some((x) => x === 'fb-too-many' || /^num-more-\\d+\$/.test(x))")" true 'a wrong pile says how far off'
 drag_to "$(hook 'target()')" 'hay rack'
 wait_for "() => window.__game.state().lastLog && window.__game.state().lastLog.moment === 'hay-rack'"
 expect_eq "$(val "() => { const l = window.__game.state().lastLog; return [l.strand, l.place, l.result, l.baby].join(' '); }")" 'm manger miss ' 'the hay rack result'
 shot hay-rack
+until_stage rest
+
+# ---- the hay rack at scaffold 1 (bundles only): three piles of big bundles still fit
+hook "setNow(Date.now() + 86400000)" >/dev/null
+hook 'newVisit()' >/dev/null
+for st in M12 M12B M12D M12F; do hook "setScaffold('m', '$st', 1)" >/dev/null; done
+hook "call('feed.manger', 'rack')" >/dev/null
+hook "call('hb.goodnight')" >/dev/null
+scene_is goodnight
+until_stage manger
+expect_eq "$(fs 's.manger')" rack 'the second rack evening'
+expect_eq "$(val "() => document.querySelectorAll('[data-choice] .heap').length > 0")" true 'scaffold 1 shows bundles'
+piles_ok 'scaffold 1'
+shot hay-rack-s1
 until_stage rest
 
 # ---- a long visit skips the mangers
