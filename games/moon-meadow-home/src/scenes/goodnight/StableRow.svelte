@@ -61,14 +61,14 @@
       {#if b}
         <!-- In bed the pen clips the baby at the stall floor, so it sinks into the straw instead of into the row below. -->
         <div class="pen">
-          <div class="who" class:asleep={bed} class:poke={poked === d.number} style:--tilt="{bed ? 6 : 0}deg"
+          <div class="who" class:asleep={bed} class:poke={poked === d.number} style:--tilt="{bed ? 3 : 0}deg"
             use:walkIn={{ from: box.x + 260, delay: 120 * rank(b.id), on: walking }}>
             <Unicorn breed={b.breed} stage={b.stage} colours={b.colours} traits={b.traits} height={170} seed={i} label=""
               pose={bed ? 'sleep' : 'idle'} />
           </div>
           {#if bed}
             <span class="straw"><ArtImg id="item-straw-pile" size={200} /></span>
-            {#if tucked.has(b.id)}<span class="blanket"><ArtImg id="item-sleep-blanket" size={170} /></span>{/if}
+            {#if tucked.has(b.id)}<span class="blanket"><ArtImg id="item-sleep-blanket" size={122} /></span>{/if}
           {/if}
         </div>
         {#if bed}<span class="zzz" aria-hidden="true">z</span>{/if}
@@ -94,24 +94,31 @@
 </div>
 
 <style>
-  /* isolation keeps the stalls' z-index inside the stable, so lane feed's layer (mounted after it) lies on top. */
+  /* isolation keeps the stalls' z-index inside the stable, so lane feed's layer (mounted after it) lies on top.
+     A stall makes no stacking context of its own, so the night overlay sits between its parts: the backdrop, the
+     stall frames and (in bed) the mangers darken; the babies, door numbers, z and tap targets stay above it. */
   .stable { position: absolute; inset: 0; overflow: hidden; isolation: isolate; }
-  .dark { position: absolute; inset: 0; background: #0b0614; opacity: 0; pointer-events: none; transition: opacity calc(1200ms * var(--speed, 1)); z-index: 1; }
-  .bed .dark { opacity: 0.42; }
-  .stall { position: absolute; width: 210px; height: 320px; z-index: 2; }
+  .dark { position: absolute; inset: 0; background: #0b0614; opacity: 0; pointer-events: none; transition: opacity calc(1200ms * var(--speed, 1)); z-index: 2; }
+  .bed .dark { opacity: 0.5; }
+  .stall { position: absolute; width: 210px; height: 320px; }
   .bedpic { position: absolute; left: 0; bottom: 0; pointer-events: none; }
   .plaque { position: absolute; left: 50%; top: 4px; transform: translateX(-50%); min-width: 48px; text-align: center; z-index: 5;
     font: 700 28px 'Andika', sans-serif; color: #3b2a1a; background: #fff3d6; border: 3px solid #b98a5a; border-radius: 10px; }
-  .manger { position: absolute; left: 0; top: 214px; pointer-events: none; z-index: 3; }
-  .pen { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+  .manger { position: absolute; left: 0; top: 214px; pointer-events: none; z-index: 4; }
+  /* In bed the baby lies in front of its manger, so the whole sleeping baby shows. */
+  .bed .manger { z-index: 1; }
+  .pen { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
   .bed .pen { overflow: hidden; border-radius: 0 0 14px 14px; }
   .who { position: absolute; left: 44px; bottom: 18px; width: 170px; height: 200px; display: flex; align-items: flex-end; justify-content: center;
     pointer-events: none; z-index: 2; transform-origin: 50% 100%; transition: transform calc(900ms * var(--speed, 1)) ease-in-out; }
-  /* N24: lying down is a settle on the sleep pose, about 40 percent into the straw, head tilted down. */
-  .who.asleep { transform: translateY(40%) rotate(var(--tilt)); filter: brightness(0.85); }
+  /* N24: lying down is a settle on the sleep pose into the straw, head tilted down. Review 2026-10-13: a 40 percent
+     sink behind the manger left only the ears; the baby now sinks a fifth, a little smaller and left of the right
+     post, so the whole head and back show above the straw. */
+  .who.asleep { transform: translate(-16px, 20%) scale(0.86) rotate(var(--tilt)); }
   .who.poke { animation: sr-poke calc(600ms * var(--speed, 1)) 2; }
-  .straw { position: absolute; left: 20px; bottom: -30px; pointer-events: none; z-index: 4; }
-  .blanket { position: absolute; left: 40px; bottom: 30px; pointer-events: none; z-index: 4; animation: sr-lay calc(500ms * var(--speed, 1)) ease-out; }
+  .straw { position: absolute; left: 6px; bottom: -58px; pointer-events: none; z-index: 4; }
+  /* The blanket lies over the back, never over the head. */
+  .blanket { position: absolute; left: 14px; bottom: 36px; pointer-events: none; z-index: 5; animation: sr-lay calc(500ms * var(--speed, 1)) ease-out; }
   .zzz { position: absolute; right: 18px; top: 60px; color: #c9b8ff; font: 700 30px 'Andika', sans-serif; z-index: 5; pointer-events: none;
     animation: sr-z calc(2400ms * var(--speed, 1)) ease-in-out infinite; }
   .half-door { position: absolute; left: 5px; bottom: -6px; pointer-events: none; z-index: 5; clip-path: inset(45% 0 0 0);

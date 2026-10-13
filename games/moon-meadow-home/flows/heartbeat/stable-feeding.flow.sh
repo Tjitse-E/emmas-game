@@ -112,6 +112,11 @@ shot stable-free
 tap moon
 until_stage bed
 expect_eq "$(val "() => document.querySelectorAll('[aria-label^=\"tray food \"]').length")" 0 'no tray at bedtime'
+# Lying down (review 2026-10-13): every sleeping baby stays inside its stall, lies in front of its manger, shows at
+# least 45 percent of itself above the straw, and the night overlay lies over the stall frames.
+sleep 1
+expect_eq "$(val "() => [...document.querySelectorAll('.stall')].flatMap((st) => { const u = st.querySelector('.who.asleep .uni-wrap'); if (!u) return []; const s = st.getBoundingClientRect(), b = u.getBoundingClientRect(), w = st.querySelector('.straw').getBoundingClientRect(); const z = (q) => Number(getComputedStyle(st.querySelector(q)).zIndex); return b.right <= s.right + 1 && b.left >= s.left - 1 && (w.top - b.top) / b.height >= 0.45 && z('.manger') < z('.pen') ? [] : [st.querySelector('.plaque').textContent]; }).join(',')")" '' 'sleeping babies show whole'
+expect_eq "$(val "() => getComputedStyle(document.querySelector('.stall')).zIndex === 'auto' && Number(getComputedStyle(document.querySelector('.dark')).zIndex) >= 1")" true 'the night overlay darkens the stalls'
 t="$(hook 'target()')"
 case "$t" in "stall "*) tap "$t"; sleep 0.3 ;; esac
 naps0="$(naps)"
