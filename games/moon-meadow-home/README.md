@@ -6,7 +6,7 @@ Svelte 5 + Vite + TypeScript on the DOM, a fixed 1180 x 820 stage scaled to fit,
 
 ## Play tonight
 
-Emma's server runs on the Mac on port 8765. It serves `dist-emma`, promoted from commit 3d1aecc after Gate A passed.
+Emma's server runs on the Mac on port 8765. It serves `dist-emma`, release 1.0.1, promoted from commit 0c38970 on 13 October 2026 after the 1.0.1 gate passed.
 
 - iPad: open http://MacBook-Pro-3.local:8765/ideas/opus-5-5-unicorn-egg-nest-v2/ in a Safari tab (not a home-screen icon) and tap the small moon button under the home button at the top right. That opens Moon Meadow Home on the same address as her v2 save, so her herd moves in.
 - If the `.local` name does not open, use http://192.168.88.171:8765/ideas/opus-5-5-unicorn-egg-nest-v2/. Her save is stored per address, so use the address she used for v2 until now. The other address shows an empty herd.
@@ -15,16 +15,16 @@ Emma's server runs on the Mac on port 8765. It serves `dist-emma`, promoted from
 - Log with each request's iPad version: `games/moon-meadow-home/.data/serve.log`.
 - Fallback: if her herd does not move in (another address, or storage cleared), open `ideas/opus-5-5-unicorn-egg-nest-v2/move.html` on the address she used for v2, download the file, and import it in the parent corner under Backup.
 
-## 1.0.1
+## What is new in 1.0.1
 
 First check for Tjitse: after the release, open the parent corner on Emma's iPad and look at Overrides. Maths must read "current M12A" (or a later step from M12B to M12F once she has played a few eggs). If it shows a step before M12A, tap "Make current" on M12A twice. The move to M12A was tested on a synthetic Wave A save only, unless the release notes say her real export was checked (plan section 15, step 6).
 
-1.0.1 answers Emma's first play of Wave A (12 October 2026). Plan: [docs/v3/next/plan.md](../../docs/v3/next/plan.md).
+1.0.1 answers Emma's first play of Wave A (12 October 2026). It is live for her since 13 October 2026. Plan: [docs/v3/next/plan.md](../../docs/v3/next/plan.md).
 
-- Harder eggs. Each egg asks a different total, from 7 up to 15. Totals over 10 show a second nest of cups. Making 10 comes back only now and then.
-- Hungry babies. The first wish is sometimes "I'm hungry!": she reads the food word and feeds the baby. In the meadow the treat button is a tray of three foods that say their names.
+- Harder maths. Each egg asks a different total, from 7 up to 15. Totals over 10 show a second nest of cups. Making 10 comes back only now and then.
+- Feeding. The first wish is sometimes "I'm hungry!": she reads the food word and feeds the baby. In the meadow the treat button is a tray of three foods that say their names.
 - The lantern walk. Goodnight starts in the meadow at dusk. She reads the name on the lantern and leads that baby along a glowing path into the stable. The others follow, lie down in the straw, and she can tuck them in.
-- Supper in the stable. Before bed one baby asks for a food, or the hay rack needs filling ("The hay rack needs fifteen bundles. Nine are in."). Then she can feed every baby. A long visit skips this, so bedtime stays short.
+- Feeding in the stable. Before bed one baby asks for a food, or the hay rack needs filling ("The hay rack needs fifteen bundles. Nine are in."). Then she can feed every baby. A long visit skips this, so bedtime stays short.
 
 Her save moves up in maths once. On the first load, a year 1 save whose maths sits on bonds to 10 (M09 to M12) becomes current at M12A, pairs that make 7, 8 and 9. M09 to M12 count as placed and come back only as review. Her next eggs are a short check: two eggs a step from M12A up to M12F. Two right first tries move to the next step; two that are not first stop the check there, and that step becomes current. So a child who already knows 7, 8 and 9 reaches 11 and 12 on the first day. Once half of her current step is going well, one egg a visit comes from the next band (11 and 12, later 13 to 15) as a preview. The move happens one time only: a step set in the parent corner later always wins. To set it back, open Overrides and tap "Make current" twice on the step you want (for example M10).
 
@@ -32,13 +32,15 @@ Gate: `bash tools/gate.sh 1.0.1` from this folder, outside the sandbox. It needs
 
 ## Watch Emma play
 
-Waves B and C wait for her feedback. Sit next to her and note:
+Sit next to her and note:
 
 - Does she understand Lumi without help? Note each time she looks at you, and what Lumi had just said.
-- Does Moving Day bring her v2 herd? Check the number of babies and their names against v2.
+- Harder maths: which totals does she get right on the first try, and where does she stop? Note whether she uses the second nest of cups for totals over 10, and whether the missing-number eggs ("5 and ? make 8") stop her.
+- Feeding: when a baby is hungry, does she read the food word herself, or wait for it to be spoken? Does she find the right food in the basket? Does she use the food tray in the meadow, and does she mix up look-alike foods?
+- Lantern walk: does she read the name on the lantern and find that baby? Can she drag it along the glowing path to the stable gate? Does she tuck the babies in without being told?
+- Feeding in the stable: does she understand what a baby at the manger wants? On a hay rack evening, does she work out how many bundles are missing? Does she find the moon to go to bed, or does the feeding feel too long?
 - Does she name babies without a refused name? Note each name she tries and how she reacts when the bell does not take it.
 - Where does she get stuck or bored? Note the scene and what she did just before.
-- Which plural and reading moments does she get right? The one-or-many baskets, the jar labels, the words she reads.
 - What does she ask for?
 - Anything that breaks: a frozen screen, a missing sound, a wrong picture. Note the time, so it can be found in `serve.log`.
 
@@ -51,13 +53,13 @@ Afterwards, export the save:
 
 ## Checks for Tjitse
 
-Gate A passed all blocking checks: 1081 tests, `npm run check` clean, `check:audio` and `check:content` without errors, and every blocking flow at three iPad sizes. These checks need the iPad, odin or your ear, so this session could not run them:
+The 1.0.1 gate passed all blocking checks: 1214 tests, `npm run check` clean, `check:audio` and `check:content` without errors, and every blocking flow at three iPad sizes. These checks need the iPad, odin or your ear, so this session could not run them:
 
 - Real iPad: open `http://MacBook-Pro-3.local:8765/games/moon-meadow-home/stress.html` and read the verdict. The WebKit stress run on the Mac was fine (about 60 fps, 26 MB decoded).
 - Real v2 save: watch Moving Day tonight. Only synthetic v2 saves were tested.
 - Home screen and offline: plain http has no service worker or `persist()`. Export after each evening until Wave C brings the server copy.
 - odin: nothing is deployed there yet. Emma plays from the Mac only.
-- Ear check: listen to new clips on `shared/review.html`. Clips that failed the speech check are never served. `check:content` lists 42 missing pictures or clips (the game shows a fallback).
+- Ear check: listen to new clips on `shared/review.html`. Clips that failed the speech check are never served. `check:content` lists 116 missing pictures or clips (the game shows a fallback).
 
 ## Commands
 

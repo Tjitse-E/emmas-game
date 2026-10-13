@@ -1,6 +1,6 @@
 # Moon Meadow Home 1.0.1: plan from Emma's first play
 
-Status: planned on 2026-10-12, revised after validation the same day, not built yet.
+Status: planned on 2026-10-12, built and released to Emma on 2026-10-13 (promoted from commit 0c38970 after the gate passed).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task by task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
