@@ -6,6 +6,7 @@ import type { EggTask } from '../maths/eggs.ts';
 import { bondId, numId } from '../keys.ts';
 import { type Rng, shuffle } from '../rng.ts';
 import type { WordEntry } from './types.ts';
+import { ROW_SIZE } from './stables.ts';
 
 /** N11: the long-run share of hungry first wishes. */
 export const HUNGRY_SHARE = 1 / 3;
@@ -99,16 +100,26 @@ export function trayFoods(words: Iterable<WordEntry>, readable: (w: WordEntry) =
   return shuffle(out, rng);
 }
 
-/** Free-stage wants (N20): each door's baby wants one of the tray foods, neighbours different when the tray allows. */
+/** Free-stage wants (N20): each door's baby wants one of the tray foods. Babies in neighbouring stalls (side by side
+ * or one above the other in the row's 5 by 2 ten-frame) want different foods when the tray has two or more. */
 export function mangerWants(doors: number[], tray: string[], rng: Rng): Record<number, string> {
   const out: Record<number, string> = {};
   if (tray.length === 0) return out;
-  let prev: string | null = null;
-  for (const d of doors) {
-    const opts = tray.length > 1 ? tray.filter((f) => f !== prev) : tray;
-    const f = opts[Math.floor(rng() * opts.length)];
-    out[d] = f;
-    prev = f;
+  const at = (d: number) => {
+    const i = (d - 1) % ROW_SIZE;
+    return { row: Math.floor((d - 1) / ROW_SIZE), col: i % 5, line: Math.floor(i / 5) };
+  };
+  // Two foods: a chessboard, so no neighbours match even across empty stalls.
+  const flip = tray.length === 2 && rng() < 0.5 ? 1 : 0;
+  for (const d of [...doors].sort((a, b) => a - b)) {
+    const p = at(d);
+    if (tray.length === 1) { out[d] = tray[0]; continue; }
+    if (tray.length === 2) { out[d] = tray[(p.col + p.line + flip) % 2]; continue; }
+    // Three or more: in door order the left and upper neighbours are already set, so at least one food is free.
+    const taken = new Set([d - 1, d - 5].filter((n) => n >= 1 && n in out && at(n).row === p.row
+      && (n === d - 1 ? at(n).line === p.line : true)).map((n) => out[n]));
+    const opts = tray.filter((f) => !taken.has(f));
+    out[d] = opts[Math.floor(rng() * opts.length)];
   }
   return out;
 }
