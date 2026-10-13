@@ -22,7 +22,7 @@
   import { unitSoundKey } from '../heartbeat/wish.ctrl.ts';
   import { ghost } from '../heartbeat/guides.svelte.ts';
   import ArtImg from '../heartbeat/ArtImg.svelte';
-  import { MangerCtrl, TOP_ROW_MAX_Y, chooseSpot } from './manger.ctrl.ts';
+  import { MangerCtrl, TOP_ROW_MAX_Y, WISH_BUBBLE_MIN_W, bubbleBox, chooseSpot } from './manger.ctrl.ts';
   import { RackCtrl } from './rack.ctrl.ts';
   import { feedFlags, feedState } from './flags.ts';
   import { pickTray, trayRng, trayWordMap } from './tray.ts';
@@ -37,10 +37,7 @@
 
   /** The basket drawer (3.7): the bottom 260 px, or the top 260 px when the hungry baby stands in the bottom row. */
   const DRAWER_H = 260;
-  const STAGE_W = 1180;
   const STAGE_H = 820;
-  /** Left edge of the top band that is free of the replay button (ReplayButton: x 128 to 208, y 24 to 104). */
-  const BAND_LEFT = 224;
 
   const wishDeps = liveDeps({ place: 'manger', strand: 'r' });
   const rackDeps = liveDeps({ place: 'manger', strand: 'm' });
@@ -63,7 +60,12 @@
     });
     return built.task !== null && built.task.kind === 'basket';
   };
-  const wishServed = wishBaby && spot ? bridge.serve('manger', rng, makeFood) : null;
+  /** Test builds: feed.word forces the wish word, served without a planner pick (nothing is logged). */
+  const forcedServed = (w: string): Served => ({
+    strand: 'r', step: words.get(w)?.one ? 'R19' : 'R05', id: w, carrier: w, items: [], scaffold: 1, probe: false, source: 'current',
+  });
+  const forced = feedFlags.word && wishBaby && spot ? forcedServed(feedFlags.word) : null;
+  const wishServed = forced && makeFood(forced) ? forced : wishBaby && spot ? bridge.serve('manger', rng, makeFood) : null;
   const wishTask = wishServed ? built.task : null;
   const rackPick = list.length ? bridge.rack(rng) : null;
   const plan = list.length ? mangerPlan({ rng, forced: feedFlags.manger, wish: wishTask !== null, rack: rackPick !== null }) : 'none';
@@ -184,14 +186,9 @@
     const k = wishServed?.pick?.carrier;
     return k && k.kind === 'plural' && k.count >= 3 ? Math.min(5, k.count) : 3;
   };
-  /** The wish bubble: in the top band over the hungry baby's stall, or over its stall in the bottom row. */
-  // The replay button sits at x 128 to 208 in the top band, so the bubble starts right of it (BAND_LEFT).
-  const bubbleAt = spot
-    ? (() => {
-      const left = Math.min(STAGE_W - 300, Math.max(BAND_LEFT, spot.x - 142));
-      return { left, top: drawerTop ? spot.y - 330 : 10, tail: Math.min(256, Math.max(28, spot.x - left)) };
-    })()
-    : { left: 0, top: 0, tail: 142 };
+  /** The wish bubble sizes to its word (the plural ending must show) and stays clear of the replay and Home buttons. */
+  let bubbleW = $state(WISH_BUBBLE_MIN_W);
+  const bubbleAt = $derived(spot ? bubbleBox(spot, bubbleW, drawerTop) : { left: 0, top: 0, tail: WISH_BUBBLE_MIN_W / 2 });
   /** During the wish only mangers clear of the drawer take drops; in free feeding all of them. */
   const zoneOpen = (s: MangerSpot): boolean => {
     if (stage !== 'wish') return true;
@@ -258,7 +255,7 @@
   {/if}
 
   {#if stage === 'wish' && mctrl && wv && spot}
-    <div class="bubble" style:left="{bubbleAt.left}px" style:top="{bubbleAt.top}px" style:--tail="{bubbleAt.tail}px">
+    <div class="bubble" bind:offsetWidth={bubbleW} style:left="{bubbleAt.left}px" style:top="{bubbleAt.top}px" style:--tail="{bubbleAt.tail}px">
       <PrintWithDots units={wv.units} dotsMs={mctrl.wish.task.dotsMs} glow={wv.glow} label="wish" onsound={playUnit} />
     </div>
     <div class="drawer" class:top={drawerTop}>
@@ -290,7 +287,7 @@
   .zone { position: absolute; width: 120px; height: 100px; border-radius: 30px; pointer-events: auto; }
   .zone.wishing { box-shadow: 0 0 0 5px #ffe08a, 0 0 28px 8px #ffd45e; animation: glow calc(1400ms * var(--speed, 1)) ease-in-out infinite; }
   @keyframes glow { 50% { box-shadow: 0 0 0 5px #ffe08a99, 0 0 16px 4px #ffd45e88; } }
-  .bubble { position: absolute; width: 284px; display: flex; justify-content: center; pointer-events: auto; }
+  .bubble { position: absolute; width: max-content; min-width: 284px; display: flex; justify-content: center; pointer-events: auto; }
   .bubble::after { content: ''; position: absolute; left: var(--tail, 50%); bottom: -16px; margin-left: -14px; border: 14px solid transparent; border-top-color: #c9b8ff; border-bottom: 0; }
   .drawer { position: absolute; left: 0; right: 0; bottom: 0; height: 260px; display: flex; gap: 16px; align-items: center; justify-content: center;
     pointer-events: auto; background: linear-gradient(#a8743ccc, #6e4520ee); border-top: 6px solid #5a3818; }

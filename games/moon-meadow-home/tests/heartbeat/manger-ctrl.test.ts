@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MangerCtrl, chooseSpot } from '../../src/scenes/feed/manger.ctrl.ts';
+import { HOME_BAND_LEFT, MangerCtrl, WISH_BUBBLE_MIN_W, bubbleBox, chooseSpot } from '../../src/scenes/feed/manger.ctrl.ts';
 import { buildWish } from '../../src/core/heartbeat/wish.ts';
 import { makeRng } from '../../src/core/rng.ts';
 import type { MangerSpot } from '../../src/scenes/feed/types.ts';
@@ -45,5 +45,37 @@ describe('the manger wish (docs/v3/next/plan.md F5)', () => {
     expect(await c.hook().wrong()).toBe('miss');
     await c.hook().answer();
     expect(f.actions[0].payload.result).toBe('miss');
+  });
+});
+
+// Review 2026-10-13: a 284 px bubble over door 5 ran under the Home button and hid the plural 's'.
+describe('the manger wish bubble (R19 one or many)', () => {
+  const door = (n: number) => ({ x: 40 + ((n - 1) % 5) * 224 + 56, y: (n <= 5 ? 140 : 480) + 270 });
+  it('stays in the free top band, clear of the replay and Home buttons, for every top-row door and width', () => {
+    for (const n of [1, 2, 3, 4, 5]) {
+      for (const w of [WISH_BUBBLE_MIN_W, 420, 520, 640]) {
+        const b = bubbleBox(door(n), w, false);
+        expect(b.top, `door ${n}`).toBe(10);
+        expect(b.left, `door ${n} w ${w}`).toBeGreaterThanOrEqual(224);
+        expect(b.left + w, `door ${n} w ${w}`).toBeLessThanOrEqual(HOME_BAND_LEFT);
+        expect(b.tail).toBeGreaterThanOrEqual(28);
+        expect(b.tail).toBeLessThanOrEqual(w - 28);
+      }
+    }
+  });
+  it('points the tail at the manger when the bubble can sit over it', () => {
+    const b = bubbleBox(door(3), 300, false);
+    expect(b.left + b.tail).toBe(door(3).x);
+  });
+  it('stays on stage over a bottom-row door, with the basket drawer at the top', () => {
+    for (const n of [6, 8, 10]) {
+      const b = bubbleBox(door(n), 520, true);
+      expect(b.top).toBe(door(n).y - 330);
+      expect(b.left).toBeGreaterThanOrEqual(16);
+      expect(b.left + 520).toBeLessThanOrEqual(1180 - 16);
+    }
+  });
+  it('never starts left of the band for a word wider than the band', () => {
+    expect(bubbleBox(door(5), 2000, false).left).toBe(224);
   });
 });

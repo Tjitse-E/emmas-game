@@ -40,6 +40,41 @@ until_stage() {
   fail "goodnight never reached $1 (last $s)"
 }
 
+# ---- the wish bubble fits its word (review 2026-10-13): a long word over door 5 (top band, next to Home) and
+# door 10 (drawer at the top) stays on stage and clear of the Home button, so the plural ending shows.
+# 'strawberry' has no plural in the word list; 'marshmallows' is the longest food plural.
+bubble_fits() {
+  val "() => {
+    const st = document.getElementById('stage').getBoundingClientRect();
+    const k = st.width / 1180;
+    const r = document.querySelector('.bubble [aria-label=\"wish\"]')?.getBoundingClientRect();
+    if (!r) return 'no print';
+    const b = { l: (r.left - st.left) / k, r: (r.right - st.left) / k, t: (r.top - st.top) / k, btm: (r.bottom - st.top) / k };
+    if (b.l < 0 || b.r > 1180 || b.t < 0 || b.btm > 820) return 'off stage ' + JSON.stringify(b);
+    const hr = document.querySelector('[aria-label=\"Home\"]')?.getBoundingClientRect();
+    const h = hr ? { l: (hr.left - st.left) / k, r: (hr.right - st.left) / k, t: (hr.top - st.top) / k, btm: (hr.bottom - st.top) / k }
+      : { l: 1084, r: 1164, t: 16, btm: 96 };
+    const cross = b.l < h.r && b.r > h.l && b.t < h.btm && b.btm > h.t;
+    return cross ? 'under Home ' + JSON.stringify(b) : 'ok';
+  }"
+}
+hook "call('feed.manger', 'wish')" >/dev/null
+for word in marshmallows strawberry; do
+  for d in 5 10; do
+    hook "call('feed.word', $(jsq "$word"))" >/dev/null
+    hook "call('feed.preview', { doors: [$d] })" >/dev/null
+    wait_for "() => !!document.querySelector('.bubble [aria-label=\"wish\"]')"
+    sleep 0.3
+    expect_eq "$(val "() => document.querySelector('.bubble [aria-label=\"wish\"]').textContent.replace(/\\s/g, '')")" "$word" "the wish shows $word"
+    expect_eq "$(bubble_fits)" ok "the $word bubble at door $d"
+    shot "bubble-$word-$d"
+  done
+done
+hook "call('feed.preview', null)" >/dev/null
+hook "call('feed.word', null)" >/dev/null
+hook "call('feed.manger', null)" >/dev/null
+hook 'mute(true)' >/dev/null
+
 # ---- a manger wish
 hook "call('goodnight.long', false)" >/dev/null
 hook "call('feed.manger', 'wish')" >/dev/null
