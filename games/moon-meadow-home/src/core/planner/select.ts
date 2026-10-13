@@ -8,6 +8,7 @@ import {
   currentStep, isPassedStep, isPlacedStep, isPlacing, openSchoolSteps, reprobeStep, schoolFn, sideSteps,
 } from '../learning/status.ts';
 import { lastEggTotal, mathsTotal } from '../learning/egg-visit.ts';
+import { itemStrand } from '../learning/ids.ts';
 import { localDay } from '../learning/time.ts';
 import type { Slot } from '../learning/types.ts';
 import type { Rng } from '../rng.ts';
@@ -94,6 +95,32 @@ function newAllowed(s: Session, id: ItemId): boolean {
 
 // ---- placement
 
+/** The item of this strand she had last (any place), or null. */
+function lastItemOf(s: Session): ItemId | null {
+  let best: ItemId | null = null;
+  let bestT = -Infinity;
+  for (const [id, m] of Object.entries(s.ctx.l.items)) {
+    if (m.lastT > bestT && itemStrand(id) === s.req.strand) { best = id; bestT = m.lastT; }
+  }
+  return best;
+}
+
+/**
+ * A probe step's items in random order, except that the item she just had goes last, and so does an item with the
+ * total of that item or of the last egg (review 2026-10-13). The probe still asks its step: M09 to M11 have only
+ * totals of 10, and a step with one item asks that item again.
+ */
+function probeOrder(s: Session, step: StepId): ItemId[] {
+  const { c, l } = s.ctx;
+  const ids = shuffle(stepItems(s, step), s.rng);
+  const totalOf = (id: ItemId): number | null => { const t = c.items[id]?.task; return t ? mathsTotal(t) : null; };
+  const last = lastItemOf(s);
+  const avoid = new Set<number>();
+  for (const n of [last === null ? null : totalOf(last), s.req.strand === 'm' ? lastEggTotal(l) : null]) if (n !== null) avoid.add(n);
+  const rank = (id: ItemId): number => (id === last ? 2 : 0) + (avoid.has(totalOf(id) ?? NaN) ? 1 : 0);
+  return ids.map((id, i) => ({ id, i, r: rank(id) })).sort((a, b) => a.r - b.r || a.i - b.i).map(x => x.id);
+}
+
 function placingPick(s: Session): Pick | null {
   const { c, l } = s.ctx;
   const strand = s.req.strand;
@@ -101,7 +128,7 @@ function placingPick(s: Session): Pick | null {
   const isSch = schoolFn(l, c);
   const probe = nextProbe(p, c, strand, l.visit.seq, isSch);
   if (probe !== null) {
-    for (const id of shuffle(stepItems(s, probe), s.rng)) {
+    for (const id of probeOrder(s, probe)) {
       const pick = tryItem(s, probe, id, 'probe', scaffoldFor(s, probe, false), true, false, true);
       if (pick) return pick;
     }

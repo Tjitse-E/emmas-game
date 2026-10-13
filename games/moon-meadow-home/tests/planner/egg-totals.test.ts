@@ -209,3 +209,48 @@ describe('easyReview (N8)', () => {
     expect(easyReview(l10, content, pick('M05', 'review', { op: 'missing', whole: 5, part: 2 }))).toBe(false);
   });
 });
+
+describe('placement probe eggs (review 2026-10-13)', () => {
+  const totalsOf = (step: string) => new Set(content.steps[step].items.map((it) => {
+    const t = content.items[it.id]?.task;
+    return t ? mathsTotal(t) : null;
+  }));
+
+  /** A new year 1 player's maths placement through eggs: each probe folds back, answered right up to `top`. */
+  function placement(seed: number, top: string): Pick[] {
+    resetSeq();
+    const evs: LearnEvent[] = [visitStart(T0)];
+    let t = T0 + 60_000;
+    const rng = mulberry32(seed);
+    const out: Pick[] = [];
+    for (let i = 0; i < 40; i++) {
+      const x = ctxOf(evs, t);
+      if (x.l.placement.m.done) break;
+      const p = nextEgg(x, rng).pick;
+      if (!p) break;
+      if (p.probe) out.push(p);
+      const r = !p.probe || content.steps[p.step!].index <= content.steps[top].index ? 'first' : 'miss';
+      t += 60_000;
+      evs.push(stamp(t, learnResultPayload(p, { result: r, ms: 2000, place: 'nest' })));
+      for (const f of pendingLearnFacts(foldLearner(evs, content, 'year1'), content)) evs.push(stamp(t + 1, f) as LearnEvent);
+      if (i % 6 === 5) { t += DAY; evs.push(visitStart(t)); }
+    }
+    return out;
+  }
+
+  it('never asks the same item twice in a row, nor the same total when the step has another', () => {
+    for (const top of ['M05', 'M09', 'M10', 'M12', 'M12B', 'M12D', 'M12F']) {
+      for (let seed = 1; seed <= 15; seed++) {
+        const probes = placement(seed, top);
+        expect(probes.length, `${top} seed ${seed}`).toBeGreaterThan(1);
+        for (let i = 1; i < probes.length; i++) {
+          const a = probes[i - 1], b = probes[i];
+          const where = `${top} seed ${seed}: ${a.step} ${a.items[0]} then ${b.step} ${b.items[0]}`;
+          expect(b.items[0], where).not.toBe(a.items[0]);
+          const ta = totalOf(a), tb = totalOf(b);
+          if (ta !== null && ta === tb) expect([...totalsOf(b.step!)].filter((n) => n !== ta), where).toEqual([]);
+        }
+      }
+    }
+  });
+});
