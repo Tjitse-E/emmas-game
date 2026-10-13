@@ -97,16 +97,16 @@ Status: planned on 2026-10-12, revised after validation the same day, not built 
 
 ### 3.2 Step ids, item ids and the maths ladder (owner: eggs)
 
-Inserted in `G/content/ladders/maths.json` directly after `M12`, in this order. All `levels: 3`. Items are listed in exactly this order (round-robin by total, N5).
+Inserted in `G/content/ladders/maths.json` directly after `M12`, in this order. All `levels: 3`. Items are listed in exactly this order (round-robin by total, N5). The first three items of each step share no part, so her first day on a step is not all "count on two" (review 2026-10-13).
 
 | Step | Title | Moments | Face | Items in order (totals) |
 |---|---|---|---|---|
-| M12A | Pairs that make 7, 8 and 9 | `egg-two-stone` | `["5", "3"]` | `m:pair:2+5`, `m:pair:2+6`, `m:pair:2+7`, `m:pair:3+4`, `m:pair:3+5`, `m:pair:3+6`, `m:pair:4+4`, `m:pair:4+5` (7, 8, 9, 7, 8, 9, 8, 9) |
-| M12B | Missing part of 7, 8 and 9 | `egg-small-nest`, `hay-rack` | `["8"]` | `m:gap:7-2`, `m:gap:8-3`, `m:gap:9-2`, `m:gap:7-3`, `m:gap:8-5`, `m:gap:9-4`, `m:gap:7-5`, `m:gap:8-6`, `m:gap:9-6` (7, 8, 9 three times) |
-| M12C | Pairs that make 11 and 12 | `egg-two-stone` | `["8", "4"]` | `m:pair:2+9`, `m:pair:3+9`, `m:pair:3+8`, `m:pair:4+8`, `m:pair:4+7`, `m:pair:5+7`, `m:pair:5+6`, `m:pair:6+6` (11, 12 alternating) |
-| M12D | Missing part of 11 and 12 | `egg-moon`, `hay-rack` | `["12"]` | `m:gap:11-3`, `m:gap:12-4`, `m:gap:11-5`, `m:gap:12-5`, `m:gap:11-7`, `m:gap:12-7`, `m:gap:11-9`, `m:gap:12-9` (11, 12 alternating) |
-| M12E | Pairs that make 13, 14 and 15 | `egg-two-stone` | `["8", "5"]` | `m:pair:4+9`, `m:pair:5+9`, `m:pair:6+9`, `m:pair:5+8`, `m:pair:6+8`, `m:pair:7+8`, `m:pair:6+7`, `m:pair:7+7` (13, 14, 15, 13, 14, 15, 13, 14) |
-| M12F | Missing part of 13, 14 and 15 | `egg-moon`, `hay-rack` | `["15"]` | `m:gap:13-6`, `m:gap:14-6`, `m:gap:15-7`, `m:gap:13-8`, `m:gap:14-7`, `m:gap:15-8`, `m:gap:13-9`, `m:gap:14-9`, `m:gap:15-9` (13, 14, 15 three times) |
+| M12A | Pairs that make 7, 8 and 9 | `egg-two-stone` | `["5", "3"]` | `m:pair:2+5`, `m:pair:4+4`, `m:pair:3+6`, `m:pair:3+4`, `m:pair:2+6`, `m:pair:4+5`, `m:pair:3+5`, `m:pair:2+7` (7, 8, 9, 7, 8, 9, 8, 9) |
+| M12B | Missing part of 7, 8 and 9 | `egg-small-nest`, `hay-rack` | `["8"]` | `m:gap:7-3`, `m:gap:8-6`, `m:gap:9-4`, `m:gap:7-2`, `m:gap:8-5`, `m:gap:9-6`, `m:gap:7-5`, `m:gap:8-3`, `m:gap:9-2` (7, 8, 9 three times) |
+| M12C | Pairs that make 11 and 12 | `egg-two-stone` | `["8", "4"]` | `m:pair:2+9`, `m:pair:4+8`, `m:pair:5+6`, `m:pair:3+9`, `m:pair:4+7`, `m:pair:6+6`, `m:pair:3+8`, `m:pair:5+7` (11, 12 alternating) |
+| M12D | Missing part of 11 and 12 | `egg-moon`, `hay-rack` | `["12"]` | `m:gap:11-3`, `m:gap:12-5`, `m:gap:11-9`, `m:gap:12-4`, `m:gap:11-5`, `m:gap:12-7`, `m:gap:11-7`, `m:gap:12-9` (11, 12 alternating) |
+| M12E | Pairs that make 13, 14 and 15 | `egg-two-stone` | `["8", "5"]` | `m:pair:5+8`, `m:pair:7+7`, `m:pair:6+9`, `m:pair:4+9`, `m:pair:6+8`, `m:pair:7+8`, `m:pair:6+7`, `m:pair:5+9` (13, 14, 15, 13, 14, 15, 13, 14) |
+| M12F | Missing part of 13, 14 and 15 | `egg-moon`, `hay-rack` | `["15"]` | `m:gap:13-8`, `m:gap:14-6`, `m:gap:15-9`, `m:gap:13-6`, `m:gap:14-9`, `m:gap:15-7`, `m:gap:13-9`, `m:gap:14-7`, `m:gap:15-8` (13, 14, 15 three times) |
 
 Item shape (the `kind` and `fluency` follow M10 and M12):
 

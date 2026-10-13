@@ -93,6 +93,25 @@ describe('the 1.0.1 maths steps (docs/v3/next/plan.md 3.2)', () => {
     }
   });
 
+  // The planner offers new items in content order, three a day, so the first three are her first day on a step.
+  // Review 2026-10-13: a first day of 2+5, 2+6, 2+7 was all "count on two".
+  it('starts each step with three items that share no part', () => {
+    for (const id of NEW) {
+      const first = c.steps[id].items.slice(0, 3).map((it) => c.items[it.id].task!);
+      if (first[0].op === 'pair') {
+        const parts = first.flatMap((t) => [...new Set([t.a!, t.b!])]);
+        expect(new Set(parts).size, `${id} ${JSON.stringify(first)}`).toBe(parts.length);
+      } else {
+        const shown = first.map((t) => t.part!);
+        const answers = first.map((t) => t.whole! - t.part!);
+        expect(new Set(shown).size, `${id} shown parts ${shown}`).toBe(3);
+        expect(new Set(answers).size, `${id} answers ${answers}`).toBe(3);
+      }
+      const all = new Set(c.steps[id].items.map((it) => totalOf(c.items[it.id].task as never)));
+      expect(new Set(first.map((t) => totalOf(t as never))).size, `${id} totals`).toBe(Math.min(3, all.size));
+    }
+  });
+
   it('puts each pair step before the missing step of the same totals', () => {
     const ops = (id: string) => new Set(c.steps[id].items.map((it) => c.items[it.id].task!.op));
     for (const [pairStep, gapStep] of [['M12A', 'M12B'], ['M12C', 'M12D'], ['M12E', 'M12F']]) {
