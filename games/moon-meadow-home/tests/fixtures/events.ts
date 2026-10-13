@@ -7,6 +7,8 @@ export const HOUR = 3_600_000;
 export const DAY = 24 * HOUR;
 /** 1 December 2026, 15:00 UTC, which is 17:00 in Cyprus (UTC+2). */
 export const T0 = Date.UTC(2026, 11, 1, 15, 0, 0);
+/** 9 October 2026, 14:00 UTC: Emma's first Wave A play, before 1.0.1 reached her (the maths lift's cut-off). */
+export const WAVE_A_T0 = Date.UTC(2026, 9, 9, 14, 0, 0);
 
 let seq = 0;
 export function resetSeq(): void { seq = 0; }

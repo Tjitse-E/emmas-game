@@ -7,7 +7,7 @@ import { foldLearner } from '../../src/core/learning/fold.ts';
 import { currentStep, pendingLearnFacts, reprobeStep, stepStatus } from '../../src/core/learning/status.ts';
 import type { LearnEvent, LearnFact, Result } from '../../src/core/learning/types.ts';
 import { mulberry32, nextEgg } from '../../src/core/planner/index.ts';
-import { T0, DAY, resetSeq, visitStart, placementDone, override, result, stamp } from '../fixtures/events.ts';
+import { T0, WAVE_A_T0, DAY, resetSeq, visitStart, placementDone, override, result, stamp } from '../fixtures/events.ts';
 
 const BELOW_M10 = ['M01', 'M02', 'M05', 'M07', 'M08', 'M09'];
 const assets = { clip: () => true, picture: () => true };
@@ -15,7 +15,7 @@ const assets = { clip: () => true, picture: () => true };
 /** A year 1 log placed at M10, with the lift recorded as the store does. */
 function lifted(): LearnEvent[] {
   resetSeq();
-  const evs: LearnEvent[] = [visitStart(T0), placementDone(T0 + 10, 'm', 'M10', BELOW_M10), visitStart(T0 + DAY)];
+  const evs: LearnEvent[] = [visitStart(WAVE_A_T0), placementDone(WAVE_A_T0 + 10, 'm', 'M10', BELOW_M10), visitStart(T0 + DAY)];
   const lift = pendingLearnFacts(foldLearner(evs, c, 'year1'), c).find((f) => f.type === 'learn.override')!;
   evs.push(stamp(T0 + DAY + 1, lift) as LearnEvent);
   return evs;

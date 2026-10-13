@@ -27,7 +27,10 @@ export type SimOptions = {
   trueLevel?: Partial<Record<Strand, StepId>>;   // probe answers: at or below this step use `accuracy`, above it 0.2
   /** Record the 1.0.1 maths lift (a learn.override from pendingLearnFacts) as the store does. Default true. */
   lift?: boolean;
-  /** Start with these strands already placed (a placement.done at this step), as a save from an earlier release. */
+  /**
+   * Start with these strands already placed (a placement.done at this step), as a save from an earlier release: the
+   * placement is dated in Wave A (PLACED_T), before 1.0.1 reached her, so the maths lift applies to it.
+   */
   placedAt?: Partial<Record<Strand, StepId>>;
   /** Serve maths through the nest's egg planner (nextEgg: the total rules, easy-review filter and next-band preview). */
   eggs?: boolean;
@@ -50,6 +53,12 @@ export type SimReport = {
 const DAY = 86_400_000;
 const WEEK = 7 * DAY;
 const START_T = Date.UTC(2026, 11, 1, 15, 0, 0);
+/**
+ * A save placed by an earlier release is placed as Emma's was: in Wave A on 12 October 2026, before 1.0.1 reached her
+ * (so the lift applies), and play starts the next day.
+ */
+const PLACED_T = Date.UTC(2026, 9, 12, 15, 0, 0);
+const PLACED_START_T = Date.UTC(2026, 9, 13, 15, 0, 0);
 const TZ = 120;
 const MOMENT_GAP = 40_000;                   // time between two moments of a visit
 const PROBE_MISS_ACCURACY = 0.2;
@@ -140,10 +149,12 @@ export function simulate(o: SimOptions): SimReport {
 
   const names = c.names.slice(0, NAME_POOL).map((x, i) => ({ babyId: `sim-baby-${i}`, name: x.name, gpcs: x.gpcs }));
 
-  if (o.profile !== l.profile) emit(START_T - 60_000, { type: 'learn.override', op: 'profile', profile: o.profile });
+  const startT = o.placedAt ? PLACED_START_T : START_T;
+  const setupT = o.placedAt ? PLACED_T : startT;
+  if (o.profile !== l.profile) emit(setupT - 60_000, { type: 'learn.override', op: 'profile', profile: o.profile });
   for (const strand of STRANDS) {
     const at = o.placedAt?.[strand];
-    if (at) emit(START_T - 30_000, { type: 'placement.done', strand, current: at, ...placementLists(l, c, strand, at) });
+    if (at) emit(setupT - 30_000, { type: 'placement.done', strand, current: at, ...placementLists(l, c, strand, at) });
   }
 
   for (let week = 0; week < o.weeks; week++) {
@@ -156,7 +167,7 @@ export function simulate(o: SimOptions): SimReport {
     days.sort((a, b) => a - b);
 
     for (const day of days) {
-      let t = START_T + week * WEEK + day * DAY;
+      let t = startT + week * WEEK + day * DAY;
       visits += 1;
       emit(t, { type: 'visit.start', tz: TZ });
       const perVisit: Record<Strand, number> = { r: 0, s: 0, m: 0 };
@@ -221,7 +232,7 @@ export function simulate(o: SimOptions): SimReport {
   }
 
   return {
-    startT: START_T,
+    startT,
     visits,
     events,
     steps,

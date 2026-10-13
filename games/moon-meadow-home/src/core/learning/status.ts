@@ -186,13 +186,23 @@ export const MATHS_LIFT_TO: StepId = 'M12A';
 export const LIFT_NEW_STEPS: readonly StepId[] = ['M12A', 'M12B', 'M12C', 'M12D', 'M12E', 'M12F'];
 
 /**
- * The maths lift (docs/v3/next/plan.md N9): a year 1 maths placement that ended in M09 to M12 and never measured
- * the 1.0.1 steps is set to M12A, once. Any set-current override (this lift, a parent, a flow) stops it.
+ * 1.0.1 reached Emma on 2026-10-13 at 05:51 UTC (commit d633d75). A maths placement that ended before then ran under
+ * Wave A content, whose search stopped at M12. One that ended later searched M12A to M12F and keeps what it measured:
+ * a new player who misses M11 and M12 ends at M10 without ever seeing M12A, and must not be lifted (review 2026-10-13).
+ * Events carry no release, so the time of the placement.done tells the two apart.
+ */
+export const WAVE_A_PLACED_BEFORE = Date.UTC(2026, 9, 13, 5, 52, 0);
+
+/**
+ * The maths lift (docs/v3/next/plan.md N9): a year 1 maths placement that ended under Wave A content in M09 to M12
+ * and never measured the 1.0.1 steps is set to M12A, once. Any set-current override (this lift, a parent, a flow)
+ * stops it.
  */
 export function mathsLift(l: Learner, c: Content): Payload<SetCurrentOverride> | null {
   if (l.profile !== 'year1') return null;
   const p = l.placement.m;
   if (!p?.done || p.overridden === true) return null;
+  if (p.doneT === undefined || p.doneT >= WAVE_A_PLACED_BEFORE) return null;
   if (c.steps[MATHS_LIFT_TO]?.loaded !== true) return null;
   // A placement that already measured the new steps keeps what it measured.
   if (LIFT_NEW_STEPS.some(id => (c.steps[id]?.items ?? []).some(it => (l.items[it.id]?.seen ?? 0) > 0))) return null;

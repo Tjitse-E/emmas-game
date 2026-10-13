@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import { content as c } from '../../src/core/content/static.ts';
 import { foldLearner } from '../../src/core/learning/fold.ts';
 import { searchList } from '../../src/core/learning/placement.ts';
-import { currentStep, mathsLift, pendingLearnFacts, schoolFn, stepStatus } from '../../src/core/learning/status.ts';
+import { currentStep, mathsLift, pendingLearnFacts, schoolFn, stepStatus, WAVE_A_PLACED_BEFORE } from '../../src/core/learning/status.ts';
 import type { LearnEvent, LearnFact } from '../../src/core/learning/types.ts';
 import { createLearnerSlice } from '../../src/core/learning/index.ts';
 import { validateEvent } from '../../src/core/events.ts';
@@ -14,15 +14,17 @@ import type { CoreState } from '../../src/core/world/index.ts';
 import type { Learner } from '../../src/core/learning/types.ts';
 import { openGameData } from '../../src/save/game-data.ts';
 import { memoryBackend } from '../../src/save/backend.ts';
-import { T0, DAY, resetSeq, visitStart, placementDone, override, result, stamp } from '../fixtures/events.ts';
+import { T0, WAVE_A_T0, DAY, resetSeq, visitStart, placementDone, override, result, stamp } from '../fixtures/events.ts';
+import { mulberry32, nextEgg } from '../../src/core/planner/index.ts';
+import { learnResultPayload } from '../../src/core/planner/result.ts';
 
 const BELOW_M10 = ['M01', 'M02', 'M05', 'M07', 'M08', 'M09'];
 const placedBelow = (step: string) => c.order.m.filter((id) => c.steps[id].loaded && c.steps[id].index < c.steps[step].index);
 
-/** A year 1 log whose maths placement ended at `current`. */
-function placedAt(current: string, extra: LearnEvent[] = []): LearnEvent[] {
+/** A year 1 log whose maths placement ended at `current`, under Wave A content (before 1.0.1 reached her) by default. */
+function placedAt(current: string, extra: LearnEvent[] = [], t0 = WAVE_A_T0): LearnEvent[] {
   resetSeq();
-  return [visitStart(T0), ...extra, placementDone(T0 + 10, 'm', current, current === 'M10' ? BELOW_M10 : placedBelow(current)), visitStart(T0 + DAY)];
+  return [visitStart(t0), ...extra, placementDone(t0 + 10, 'm', current, current === 'M10' ? BELOW_M10 : placedBelow(current)), visitStart(T0 + DAY)];
 }
 const lifts = (facts: LearnFact[]) => facts.filter((f) => f.type === 'learn.override');
 
@@ -60,7 +62,7 @@ describe('mathsLift', () => {
   });
 
   it('keeps a placement that measured the new steps', () => {
-    const probe = result(T0 + 5, { strand: 'm', step: 'M12A', items: ['m:pair:3+5'], r: 'miss', probe: true, moment: 'egg-two-stone', place: 'nest' });
+    const probe = result(WAVE_A_T0 + 5, { strand: 'm', step: 'M12A', items: ['m:pair:3+5'], r: 'miss', probe: true, moment: 'egg-two-stone', place: 'nest' });
     const l = foldLearner(placedAt('M12', [probe]), c, 'year1');
     expect(currentStep(l, c, 'm')).toBe('M12');
     expect(mathsLift(l, c)).toBeNull();
@@ -74,6 +76,45 @@ describe('mathsLift', () => {
     expect(mathsLift(l0, c)).not.toBeNull();
     expect(currentStep(l, c, 'm')).toBe('M09');
     expect(mathsLift(l, c)).toBeNull();
+  });
+
+  it('never lifts a placement that ended under 1.0.1, which already searched the new steps (review 2026-10-13)', () => {
+    expect(WAVE_A_PLACED_BEFORE).toBe(Date.UTC(2026, 9, 13, 5, 52, 0));
+    for (const s of ['M09', 'M10', 'M11', 'M12']) {
+      expect(mathsLift(foldLearner(placedAt(s, [], WAVE_A_PLACED_BEFORE - 60_000), c, 'year1'), c), `${s} before`).not.toBeNull();
+      const l = foldLearner(placedAt(s, [], WAVE_A_PLACED_BEFORE), c, 'year1');
+      expect(currentStep(l, c, 'm'), s).toBe(s);
+      expect(mathsLift(l, c), `${s} after`).toBeNull();
+      expect(lifts(pendingLearnFacts(l, c)), s).toEqual([]);
+    }
+  });
+
+  it('leaves a new 1.0.1 player who misses the probes above her where her placement put her', () => {
+    // A real placement through the egg planner: first tries below `missFrom`, misses from there up, facts recorded as
+    // the store does (one more round after placement.done, where the lift used to come). Missing M11 ends at M10 and
+    // missing M12 ends at M11, both without an M12A probe: the old guard lifted these to M12A.
+    for (const [missFrom, ends] of [['M11', 'M10'], ['M12', 'M11']]) {
+      for (let seed = 1; seed <= 5; seed++) {
+        resetSeq();
+        const evs: LearnEvent[] = [visitStart(T0)];
+        let t = T0 + 60_000;
+        const rng = mulberry32(seed);
+        const record = () => { for (const f of pendingLearnFacts(foldLearner(evs, c, 'year1'), c)) evs.push(stamp((t += 1), f) as LearnEvent); };
+        for (let i = 0; i < 40 && !foldLearner(evs, c, 'year1').placement.m.done; i++) {
+          const p = nextEgg({ c, l: foldLearner(evs, c, 'year1'), now: t, assets: { clip: () => true, picture: () => true } }, rng).pick!;
+          const high = p.probe && c.steps[p.step!].index >= c.steps[missFrom].index;
+          evs.push(stamp((t += 60_000), learnResultPayload(p, { result: high ? 'miss' : 'first', ms: 2000, place: 'nest' })));
+          record();
+          if (i % 6 === 5) evs.push(visitStart((t += DAY)));
+        }
+        record();
+        const where = `${missFrom} seed ${seed}`;
+        const l = foldLearner(evs, c, 'year1');
+        expect(l.placement.m.done, where).toBe(true);
+        expect(evs.filter((e) => e.type === 'learn.override'), where).toEqual([]);
+        expect(currentStep(l, c, 'm'), where).toBe(ends);
+      }
+    }
   });
 
   it('never lifts another profile', () => {
@@ -99,8 +140,8 @@ describe('mathsLift', () => {
 describe('the lift through the store (3.3)', () => {
   type St = CoreState & { learner: Learner };
   const folder = createGameFolder([createLearnerSlice(c)]);
-  const open = (backend = memoryBackend()) => {
-    let t = T0;
+  const open = (backend = memoryBackend(), t0 = WAVE_A_T0) => {
+    let t = t0;
     return openGameData<St>({
       folder, contentHash: 'lift-test', codeVersion: 't', backend, now: () => (t += 1000), schedule: () => {},
       reconcile: (s) => pendingLearnFacts(s.learner, c) as GameEventDraft[],
@@ -123,6 +164,13 @@ describe('the lift through the store (3.3)', () => {
     const again = await open(backend);
     expect(overrides(again.allEvents())).toHaveLength(1);
     expect(currentStep(again.folded().state.learner, c, 'm')).toBe('M12A');
+  });
+
+  it('writes no lift for a placement that ends after 1.0.1 reached her', async () => {
+    const d = await open(memoryBackend(), T0);
+    d.commit([{ type: 'placement.done', strand: 'm', current: 'M10', placed: BELOW_M10, side: [] } as GameEventDraft]);
+    expect(overrides(d.allEvents())).toEqual([]);
+    expect(currentStep(d.folded().state.learner, c, 'm')).toBe('M10');
   });
 
   it('writes the re-probe landing once, after the lift (review 2026-10-13)', async () => {

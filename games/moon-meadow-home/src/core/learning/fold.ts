@@ -19,7 +19,7 @@ import { localDay } from './time.ts';
 import { mathsTotal } from './egg-visit.ts';
 
 /** Part of the snapshot key: change it whenever the fold logic changes. */
-export const LEARNER_FOLD_VERSION = 4;   // 2: recent results keep the pair of a Dutch-tagged error; 3: visit eggs, overridden; 4: re-probe
+export const LEARNER_FOLD_VERSION = 5;   // 2: recent results keep the pair of a Dutch-tagged error; 3: visit eggs, overridden; 4: re-probe; 5: placement doneT
 
 const RECENT_MAX = 300;
 const FLUENCY_TYPES: readonly FluencyType[] = ['grapheme', 'tricky', 'bond', 'fact', 'table'];
@@ -241,6 +241,7 @@ function onPlacementDone(l: Learner, e: PlacementDoneEvent, c: Content): void {
   const p = l.placement[e.strand];
   if (!p || p.done || !c.steps[e.current]) return;
   endPlacement(l, c, e.strand, e.current, stepList(e.placed), stepList(e.side), e.t, false);
+  p.doneT = e.t;
 }
 
 function onOverride(l: Learner, e: LearnOverrideEvent, c: Content): void {

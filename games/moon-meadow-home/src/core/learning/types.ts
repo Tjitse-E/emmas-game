@@ -84,6 +84,8 @@ export type PlacementState = {
   listed: StepId[];
   /** A set-current override ended or moved this placement (a parent, a flow or the 1.0.1 maths lift). */
   overridden?: boolean;
+  /** The time of the placement.done that ended this placement (not set by a set-current). The lift reads it. */
+  doneT?: number;
   /**
    * Maths only: the short re-probe after the 1.0.1 lift (review 2026-10-13). Two first tries a step climb from M12A
    * through M12F; the first step with two tries that are not first, or M12F, is where she lands. `closed` once any later
