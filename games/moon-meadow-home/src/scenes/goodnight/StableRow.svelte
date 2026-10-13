@@ -13,6 +13,7 @@
   import ArtImg from '../heartbeat/ArtImg.svelte';
   import Backdrop from '../heartbeat/Backdrop.svelte';
   import { stallBox } from './geometry.ts';
+  import { refusal } from '../feed/refusal.svelte.ts';
 
   let { stage, doors, byId, order, doorOpen, closed, poked, tucked, camp, ontapstall, ontuck }: {
     stage: 'herd-in' | 'manger' | 'free' | 'bed';
@@ -61,7 +62,7 @@
       {#if b}
         <!-- In bed the pen clips the baby at the stall floor, so it sinks into the straw instead of into the row below. -->
         <div class="pen">
-          <div class="who" class:asleep={bed} class:poke={poked === d.number} style:--tilt="{bed ? 3 : 0}deg"
+          <div class="who" class:asleep={bed} class:poke={poked === d.number} class:no={!bed && refusal.door === d.number} style:--tilt="{bed ? 3 : 0}deg"
             use:walkIn={{ from: box.x + 260, delay: 120 * rank(b.id), on: walking }}>
             <Unicorn breed={b.breed} stage={b.stage} colours={b.colours} traits={b.traits} height={170} seed={i} label=""
               pose={bed ? 'sleep' : 'idle'} />
@@ -116,6 +117,8 @@
      post, so the whole head and back show above the straw. */
   .who.asleep { transform: translate(-16px, 20%) scale(0.86) rotate(var(--tilt)); }
   .who.poke { animation: sr-poke calc(600ms * var(--speed, 1)) 2; }
+  /* Free feeding, a food it does not want: a small head shake (the baby rocks on its hooves). */
+  .who.no { animation: sr-no calc(320ms * var(--speed, 1)) ease-in-out 2; }
   .straw { position: absolute; left: 6px; bottom: -58px; pointer-events: none; z-index: 4; }
   /* The blanket lies over the back, never over the head. */
   .blanket { position: absolute; left: 14px; bottom: 36px; pointer-events: none; z-index: 5; animation: sr-lay calc(500ms * var(--speed, 1)) ease-out; }
@@ -131,6 +134,7 @@
   .tent-head { position: absolute; left: 28px; top: 46px; width: 42px; height: 42px; overflow: hidden; border-radius: 40%; pointer-events: none; }
   .tent-head.asleep { filter: brightness(0.8); }
   @keyframes sr-poke { 50% { translate: 0 -10px; } }
+  @keyframes sr-no { 25% { rotate: -4deg; } 75% { rotate: 4deg; } }
   @keyframes sr-lay { from { transform: translateY(-30px); opacity: 0; } }
   @keyframes sr-z { 0%, 100% { transform: translate(0, 0); opacity: 0.4; } 50% { transform: translate(6px, -14px); opacity: 1; } }
   @keyframes sr-door { from { transform: translateX(-120%); } }

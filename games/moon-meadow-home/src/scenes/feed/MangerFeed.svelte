@@ -25,6 +25,7 @@
   import { MangerCtrl, TOP_ROW_MAX_Y, WISH_BUBBLE_MIN_W, bubbleBox, chooseSpot } from './manger.ctrl.ts';
   import { RackCtrl } from './rack.ctrl.ts';
   import { feedFlags, feedState } from './flags.ts';
+  import { refusal } from './refusal.svelte.ts';
   import { pickTray, trayRng, trayWordMap } from './tray.ts';
   import FoodTray from './FoodTray.svelte';
   import HayRack from './HayRack.svelte';
@@ -148,9 +149,17 @@
     if (!s || order === null) return;
     const want = wants[order];
     if (want !== undefined && want !== word) {
-      // A gentle shake of the bubble; the food floats back to the tray. Nothing is logged.
+      // A gentle shake of the bubble and of the baby's head, and the baby's want is said again, so the reason is
+      // heard (Elizabeth's clip of the printed word). The food floats back to the tray. Nothing is logged.
       refused = order;
-      void sleep(700).then(() => { if (refused === order) refused = null; });
+      refusal.door = order;
+      refusal.n++;
+      const n = refusal.n;
+      void sleep(700).then(() => {
+        if (refused === order) refused = null;
+        if (refusal.n === n) refusal.door = null;
+      });
+      await sayWant(want);
       return;
     }
     if (want !== undefined) {
@@ -162,6 +171,15 @@
     showMunch(order, trayWords.get(word)?.picture ?? word);
     await audio.sfx('munch');
     await audio.say(FOAL_LINE.treat);
+  }
+
+  /** The wanted word, said once at a time (a second refusal while it plays only shakes). */
+  let sayingWant = false;
+  async function sayWant(want: string): Promise<void> {
+    const clip = trayWords.get(want)?.clip;
+    if (!clip || sayingWant || destroyed) return;
+    sayingWant = true;
+    try { await audio.say(clip as Parameters<typeof audio.say>[0]); } finally { sayingWant = false; }
   }
 
   // ---- the ghost hand for the level 3 hint

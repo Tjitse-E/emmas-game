@@ -90,6 +90,8 @@ wait_for "() => window.__game.state().lastLog && window.__game.state().lastLog.p
 until_stage free
 wait_for "() => window.__game.said().includes('g-feed-free')"
 expect_eq "$(fs 's.manger')" free 'free feeding'
+# Babies in neighbouring stalls (side by side, or one above the other) want different foods.
+expect_eq "$(fs "Object.entries(s.wants).filter(([k, f]) => { const d = Number(k), i = (d - 1) % 10; return (i % 5 < 4 && s.wants[String(d + 1)] === f) || (i < 5 && s.wants[String(d + 5)] === f); }).map(([k]) => k).join(',')")" '' 'neighbours want different foods'
 
 # ---- free feeding: a refused food, then the wanted one
 door="$(fs 'Object.keys(s.wants)[0] ?? ""')"
@@ -100,6 +102,8 @@ before="$(treats)"
 if [ -n "$other" ]; then
   drag_to "tray food $other" "manger $door"
   expect_eq "$(treats)" "$before" 'a refused food writes nothing'
+  # The baby says again what it wants (the printed word's clip), so the reason is heard.
+  wait_for "() => window.__game.said().includes($(jsq "word-$want"))"
 fi
 drag_to "tray food $want" "manger $door"
 expect_eq "$(treats)" "$((before + 1))" 'the wanted food is eaten'
