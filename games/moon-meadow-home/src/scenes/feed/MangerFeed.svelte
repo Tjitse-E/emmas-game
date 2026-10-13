@@ -13,7 +13,7 @@
   import { hasPicture } from '../../art/manifest.ts';
   import Heap from '../../art/Heap.svelte';
   import PrintWithDots from '../../ui/PrintWithDots.svelte';
-  import { buildWish, soundedGraphemes, type WishTask } from '../../core/heartbeat/wish.ts';
+  import { buildWish, printUnits, soundedGraphemes, type WishTask } from '../../core/heartbeat/wish.ts';
   import { foodPool, mangerPlan, mangerWants, withoutLookAlikes } from '../../core/heartbeat/feed.ts';
   import { CARE_OF_TOOL, FOAL_LINE } from '../../core/heartbeat/meadow.ts';
   import type { Served } from '../../core/heartbeat/types.ts';
@@ -61,10 +61,19 @@
     });
     return built.task !== null && built.task.kind === 'basket';
   };
-  /** Test builds: feed.word forces the wish word, served without a planner pick (nothing is logged). */
-  const forcedServed = (w: string): Served => ({
-    strand: 'r', step: words.get(w)?.one ? 'R19' : 'R05', id: w, carrier: w, items: [], scaffold: 1, probe: false, source: 'current',
-  });
+  /**
+   * Test builds: feed.word forces the wish word, served without a planner pick (nothing is logged). Words before the
+   * last one are display words (R36): 'the plum' prints and says "the" before "plum".
+   */
+  const forcedServed = (text: string): Served => {
+    const parts = text.split(' ').filter(Boolean);
+    const w = parts[parts.length - 1] ?? text;
+    const display = parts.slice(0, -1).filter((d) => words.has(d));
+    return {
+      strand: 'r', step: words.get(w)?.one ? 'R19' : 'R05', id: w, carrier: w, items: [], scaffold: 1, probe: false, source: 'current',
+      ...(display.length ? { display } : {}),
+    };
+  };
   const forced = feedFlags.word && wishBaby && spot ? forcedServed(feedFlags.word) : null;
   const wishServed = forced && makeFood(forced) ? forced : wishBaby && spot ? bridge.serve('manger', rng, makeFood) : null;
   const wishTask = wishServed ? built.task : null;
@@ -90,7 +99,7 @@
 
   const wv = $derived.by(() => {
     void tick;
-    return mctrl ? { units: mctrl.wish.units, glow: mctrl.wish.glow, done: mctrl.wish.done } : null;
+    return mctrl ? { units: mctrl.wish.units, glow: mctrl.wish.glow, done: mctrl.wish.done, display: mctrl.wish.display } : null;
   });
   const rv = $derived.by(() => { void tick; return rctrl ? rctrl.view() : null; });
 
@@ -274,6 +283,11 @@
 
   {#if stage === 'wish' && mctrl && wv && spot}
     <div class="bubble" bind:offsetWidth={bubbleW} style:left="{bubbleAt.left}px" style:top="{bubbleAt.top}px" style:--tail="{bubbleAt.tail}px">
+      <!-- R36: display words ('the') print before the wish word, as in the meadow wish, because the success line says them. -->
+      {#each wv.display as w (w)}
+        {@const e = words.get(w)}
+        {#if e}<PrintWithDots units={printUnits(e.gr, () => false)} heart={e.heart} dotsMs={mctrl.wish.task.dotsMs} label="word {w}" onsound={playUnit} />{/if}
+      {/each}
       <PrintWithDots units={wv.units} dotsMs={mctrl.wish.task.dotsMs} glow={wv.glow} label="wish" onsound={playUnit} />
     </div>
     <div class="drawer" class:top={drawerTop}>
@@ -305,7 +319,7 @@
   .zone { position: absolute; width: 120px; height: 100px; border-radius: 30px; pointer-events: auto; }
   .zone.wishing { box-shadow: 0 0 0 5px #ffe08a, 0 0 28px 8px #ffd45e; animation: glow calc(1400ms * var(--speed, 1)) ease-in-out infinite; }
   @keyframes glow { 50% { box-shadow: 0 0 0 5px #ffe08a99, 0 0 16px 4px #ffd45e88; } }
-  .bubble { position: absolute; width: max-content; min-width: 284px; display: flex; justify-content: center; pointer-events: auto; }
+  .bubble { position: absolute; width: max-content; min-width: 284px; display: flex; gap: 14px; align-items: flex-end; justify-content: center; pointer-events: auto; }
   .bubble::after { content: ''; position: absolute; left: var(--tail, 50%); bottom: -16px; margin-left: -14px; border: 14px solid transparent; border-top-color: #c9b8ff; border-bottom: 0; }
   .drawer { position: absolute; left: 0; right: 0; bottom: 0; height: 260px; display: flex; gap: 16px; align-items: center; justify-content: center;
     pointer-events: auto; background: linear-gradient(#a8743ccc, #6e4520ee); border-top: 6px solid #5a3818; }

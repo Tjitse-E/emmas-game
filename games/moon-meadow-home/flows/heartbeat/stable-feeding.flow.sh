@@ -70,6 +70,14 @@ for word in marshmallows strawberry; do
     shot "bubble-$word-$d"
   done
 done
+# R36 (review 2026-10-13): the display word 'the' prints before the wish word, as in the meadow wish, and the
+# bubble still clears the Home button at door 5.
+hook "call('feed.word', 'the plum')" >/dev/null
+hook "call('feed.preview', { doors: [5] })" >/dev/null
+wait_for "() => !!document.querySelector('.bubble [aria-label=\"word the\"]')"
+sleep 0.3
+expect_eq "$(bubble_fits)" ok 'the plum bubble at door 5'
+shot bubble-the-plum-5
 hook "call('feed.preview', null)" >/dev/null
 hook "call('feed.word', null)" >/dev/null
 hook "call('feed.manger', null)" >/dev/null
