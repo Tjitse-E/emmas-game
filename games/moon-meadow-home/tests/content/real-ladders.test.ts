@@ -97,7 +97,8 @@ describe('the 1.0.1 maths steps (docs/v3/next/plan.md 3.2)', () => {
   // Review 2026-10-13: a first day of 2+5, 2+6, 2+7 was all "count on two".
   it('starts each step with three items that share no part', () => {
     for (const id of NEW) {
-      const first = c.steps[id].items.slice(0, 3).map((it) => c.items[it.id].task!);
+      type Part = { op: string; a?: number; b?: number; whole?: number; part?: number };
+      const first = c.steps[id].items.slice(0, 3).map((it) => c.items[it.id].task as Part);
       if (first[0].op === 'pair') {
         const parts = first.flatMap((t) => [...new Set([t.a!, t.b!])]);
         expect(new Set(parts).size, `${id} ${JSON.stringify(first)}`).toBe(parts.length);
