@@ -6,15 +6,18 @@
   import { artManifest, artUrl, findUnicornEntry, picture, type BreedId, type OutfitSlot, type Stage } from './manifest.ts';
   import { resolveColours, type Colours, type Traits } from './palette.ts';
   import { colourForTint, patternLayerStyle, plainLayerStyle, tintLayerStyle } from './tint.ts';
-  import { anchorCss, animDelay, headCrop, layoutUnicorn, outfitPlacement } from './unicornParts.ts';
+  import { anchorCss, animDelay, FALLBACK_MOUTH, headCrop, layoutUnicorn, mouthCss, MUNCH_SIZE, outfitPlacement } from './unicornParts.ts';
+  import type { Snippet } from 'svelte';
   import { liteCached, liteKey, liteSprite } from './lite.ts';
   import type { UnicornPose } from '../types/contracts.ts';
 
   let { breed, stage, colours, traits = {}, height, pose = 'idle', facing = 'right', outfit = {}, headOnly = false, seed = 0,
-    label = 'unicorn', lite = false }:
+    label = 'unicorn', lite = false, mouth = undefined }:
     { breed: BreedId; stage: Stage; colours: Partial<Colours> | null | undefined; traits?: Traits; height: number; pose?: UnicornPose;
       facing?: 'left' | 'right'; outfit?: Partial<Record<OutfitSlot, string>>; headOnly?: boolean; seed?: number; label?: string;
-      lite?: boolean } = $props();
+      lite?: boolean;
+      /** Drawn at the mouth (food while munching), moving with the hop, breath and facing. Gets the food's side in px. */
+      mouth?: Snippet<[number]> } = $props();
 
   const dpr = typeof devicePixelRatio === 'number' ? Math.min(Math.max(devicePixelRatio, 1), 2) : 2;
   const t = $derived(traits ?? {});
@@ -31,6 +34,7 @@
     .filter((o) => o.box) : []);
   const star = $derived(entry && t.founder ? outfitPlacement(entry, picture('pin-founder-star'), 'flank', drawH) : null);
   const flank = $derived(entry ? anchorCss(entry, 'flank', drawH) : { x: 0, y: 0 });
+  const mouthAt = $derived(entry ? mouthCss(entry, drawH) : { x: (FALLBACK_MOUTH[0] * height) / 330, y: (FALLBACK_MOUTH[1] * height) / 330 });
 
   // Lite: undefined while the tinted picture is being made, null when it cannot be made (then the flat file).
   const key = $derived(entry && lay && lite ? liteKey(entry, lay.rendition, c, speckle) : '');
@@ -87,6 +91,7 @@
               style="left:{flank.x + (i - 1) * lay.width * 0.22}px;top:{flank.y - lay.height * (0.35 + 0.12 * i)}px;animation-delay:{-i * 0.5}s" />
           {/each}
         {/if}
+        {#if mouth}<div class="mouth-at" style="left:{mouthAt.x}px;top:{mouthAt.y}px">{@render mouth(MUNCH_SIZE * drawH)}</div>{/if}
       </div></div></div>
     </div>
   </div>
@@ -110,6 +115,7 @@
             <circle cx="304" cy="88" r="9" fill="#3a2650" stroke="none" />
           </g>
         </svg>
+        {#if mouth && !headOnly}<div class="mouth-at" style="left:{mouthAt.x}px;top:{mouthAt.y}px">{@render mouth(MUNCH_SIZE * height)}</div>{/if}
       </div></div></div>
     </div>
   </div>

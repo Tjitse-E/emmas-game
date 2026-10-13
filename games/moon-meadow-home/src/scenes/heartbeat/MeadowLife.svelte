@@ -80,6 +80,11 @@
   }
 </script>
 
+<!-- The food sits at the baby's mouth for every breed and stage (the Unicorn's mouth point) and hops with it. -->
+{#snippet eating(size: number)}
+  {#if munch}{#key munch.n}<Munch picture={munch.picture} {size} left={-size / 2} top={-size / 2} />{/key}{/if}
+{/snippet}
+
 <div class="life">
   <Moonflowers count={game.world.flowers} />
   <button class="nest" data-touch aria-label="nest" use:press={() => void heartbeat.start()}>
@@ -91,9 +96,9 @@
       style:left="{SPOTS[i][0]}px" style:top="{SPOTS[i][1]}px"
       use:dropTarget={{ id: `meadow-baby-${b.id}` }} use:press={() => void tapBaby(b.id)}>
       <Unicorn breed={b.breed} stage={b.stage} colours={b.colours} traits={b.traits} height={130}
-        pose={happy === b.id ? 'happy' : trick === b.id ? 'hop' : 'idle'} seed={i} {lite} label="" />
+        pose={happy === b.id ? 'happy' : trick === b.id ? 'hop' : 'idle'} seed={i} {lite} label=""
+        mouth={munch?.baby === b.id ? eating : undefined} />
       {#if ribbons[b.id]}<span class="ribbon" aria-hidden="true"></span>{/if}
-      {#if munch?.baby === b.id}{#key munch.n}<Munch picture={munch.picture} size={50} left={98} top={22} />{/key}{/if}
     </button>
   {/each}
   {#if babies.length}

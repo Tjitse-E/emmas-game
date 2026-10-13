@@ -1,4 +1,4 @@
-import type { AnchorName, OutfitSlot, PartAnim, PartId, PictureEntry, Tint, UnicornEntry } from './manifest.ts';
+import type { AnchorName, OutfitSlot, PartAnim, PartId, PictureEntry, Point, Stage, Tint, UnicornEntry } from './manifest.ts';
 
 export type LayerLayout = { src: string; tint: Tint; left: number; top: number; width: number; height: number };
 export type PartLayout = { id: PartId; left: number; top: number; width: number; height: number; originX: number; originY: number; anim: PartAnim; hidden: boolean; layers: LayerLayout[] };
@@ -31,6 +31,26 @@ export function anchorCss(entry: UnicornEntry, name: AnchorName, heightCss: numb
   const k = heightCss / entry.h;
   const [x, y] = entry.anchors[name];
   return { x: x * k, y: y * k };
+}
+
+/**
+ * Where food sits while a baby munches (docs/v3/next/plan.md N24), as a fraction of the frame height from the eye
+ * anchor. The art has no mouth anchor; the muzzle tip and the chin were measured on every sprite (2026-10-13) and
+ * sit at the same place relative to the eye within a few pixels per stage. The food is centred just in front of
+ * the muzzle at the mouth line, so its bitten (left) side is at the mouth and it never covers the eye.
+ */
+export const MOUTH_FROM_EYE: Record<Stage, Point> = { baby: [160 / 720, 92 / 720], foal: [145 / 720, 76 / 720] };
+/** The food's side as a fraction of the unicorn's drawn height. */
+export const MUNCH_SIZE = 0.32;
+/** The drawn fallback unicorn's mouth, in its 400 x 330 frame (just in front of the muzzle ellipse). */
+export const FALLBACK_MOUTH: Point = [356, 128];
+
+/** The centre of the munched food, in CSS px from the unicorn's top-left corner (facing right). */
+export function mouthCss(entry: UnicornEntry, heightCss: number): { x: number; y: number } {
+  const k = heightCss / entry.h;
+  const [ex, ey] = entry.anchors.eye;
+  const [fx, fy] = MOUTH_FROM_EYE[entry.stage] ?? MOUTH_FROM_EYE.baby;
+  return { x: (ex + fx * entry.h) * k, y: (ey + fy * entry.h) * k };
 }
 
 export function outfitPlacement(entry: UnicornEntry, pic: PictureEntry | undefined, slot: OutfitSlot, heightCss: number): Box | null {

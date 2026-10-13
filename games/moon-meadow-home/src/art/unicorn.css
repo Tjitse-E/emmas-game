@@ -9,6 +9,7 @@
 .uni .outfit { position: absolute; }
 .uni .flat { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 .uni .fallback { position: absolute; left: 0; top: 0; overflow: visible; }
+.uni .mouth-at { position: absolute; width: 0; height: 0; }
 .uni .sparkle { position: absolute; width: 18%; opacity: 0; animation: uni-twinkle 1.6s ease-in-out infinite; }
 
 .uni.pose-idle .breath, .uni.pose-walk .breath, .uni.pose-happy .breath, .uni.pose-drag .breath { animation: uni-breath 3.2s ease-in-out infinite; }

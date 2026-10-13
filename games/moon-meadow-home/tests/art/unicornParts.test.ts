@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ANIM_PERIOD, anchorCss, animDelay, chooseRendition, headCrop, layoutUnicorn, outfitPlacement } from '../../src/art/unicornParts.ts';
+import { readFileSync } from 'node:fs';
+import { ANIM_PERIOD, anchorCss, animDelay, chooseRendition, FALLBACK_MOUTH, headCrop, layoutUnicorn, MUNCH_SIZE, mouthCss, outfitPlacement } from '../../src/art/unicornParts.ts';
+import type { ArtManifest } from '../../src/art/manifest.ts';
 import { manifestFixture, unicornFixture } from './fixture.ts';
 
 const e = unicornFixture();
@@ -60,5 +62,43 @@ describe('unicorn layout', () => {
     }
     expect(animDelay(3, 'blink')).toBe(animDelay(3, 'blink'));
     expect(animDelay(3, 'none')).toBe(0);
+  });
+});
+
+describe('the mouth (food while a baby munches)', () => {
+  const real = JSON.parse(readFileSync(new URL('../../public/art/manifest.json', import.meta.url), 'utf8')) as ArtManifest;
+  const entries = Object.entries(real.unicorns);
+
+  it('has every breed and stage of the real art', () => {
+    expect(entries.length).toBeGreaterThanOrEqual(18);
+  });
+
+  // The muzzle tip and the chin, measured on each sprite (the frontmost and lowest edge of the head, 2026-10-13),
+  // lie 97 to 129 frame px in front of the eye and 84 to 104 below it. The food sits on the mouth, in front of
+  // the muzzle, and never covers the eye (the bug: a melon on the eye).
+  it.each(entries)('%s: the food is at the mouth, clear of the eye', (_key, u) => {
+    const h = 130;
+    const k = h / u.h;
+    const m = mouthCss(u, h);
+    const eye = anchorCss(u, 'eye', h);
+    const half = (MUNCH_SIZE * h) / 2;
+    expect(m.x - eye.x).toBeGreaterThan(97 * k);              // in front of the muzzle's middle
+    expect(m.y - eye.y).toBeGreaterThan(60 * k);              // down at the mouth line
+    expect(m.y - eye.y).toBeLessThan(104 * k);                // above the chin
+    expect(m.x - half).toBeGreaterThan(eye.x + 25 * k);       // the food's left edge is clear of the eye
+    expect(m.y + half).toBeLessThan(u.h * k);                 // and it stays on the picture
+  });
+
+  it('scales with the drawn height', () => {
+    const u = unicornFixture();
+    const a = mouthCss(u, 150);
+    const b = mouthCss(u, 300);
+    expect(b.x).toBeCloseTo(a.x * 2, 5);
+    expect(b.y).toBeCloseTo(a.y * 2, 5);
+  });
+
+  it('has a mouth for the drawn fallback unicorn, in front of its muzzle', () => {
+    expect(FALLBACK_MOUTH[0]).toBeGreaterThan(334);
+    expect(FALLBACK_MOUTH[1]).toBeGreaterThan(110);
   });
 });
