@@ -61,4 +61,8 @@ Notes:
 
 ## Deployment
 
-- Later: `odin.vendic.cloud` over HTTPS at `/unicorns/`. Agents do not deploy there. The deploy note will be `docs/v3/deploy-odin.md` (Wave C).
+- Online: https://emmas-games.vendic.cloud, its own hosting account (`emmasgames@odin.vendic.cloud`, SSH port 2222, web root `~/httpdocs`). No other app shares this domain, so no other service worker can take over its pages.
+- `bash scripts/deploy.sh` uploads the picture menu (the game chooser at `/`), `menu-audio/`, `shared/`, the three v2 games in `ideas/` and the promoted Moon Meadow Home build (`dist-emma`) at `/games/moon-meadow-home/`. It never uploads dot files. Run it outside the sandbox, and only when Tjitse asks for a deploy.
+- A new game gets a card in `index.html` and a line in `scripts/deploy.sh`. A game that adds a service worker limits it to its own folder, caches only its own files and never sends pages outside its folder to its own start page.
+- The vhost ignores `.htaccess`. Pages are served with `no-cache`.
+- Saves live in the browser per domain. Progress made on the home server (port 8765) does not carry over to the online site.
