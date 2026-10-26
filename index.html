@@ -90,6 +90,7 @@ svg{display:block}
 
 #sparks{position:absolute;inset:0;pointer-events:none;z-index:40}
 .spark{position:absolute;font-size:34px;color:#ffe27a;pointer-events:none;text-shadow:0 0 10px #fff2a8}
+#version{position:fixed;right:14px;bottom:10px;z-index:5;font:700 17px/1 system-ui,sans-serif;color:rgba(80,50,120,.7);pointer-events:none}
 </style>
 </head>
 <body>
@@ -465,6 +466,13 @@ addEventListener('pageshow', e => {
   document.getElementById('cards').classList.remove('cards-busy');
   cards.forEach(c => c.classList.remove('chosen', 'down'));
 });
+
+/* the release version, from the newest entry in CHANGELOG.md */
+fetch('CHANGELOG.md',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(t=>{
+  const m=/^## \[(\d+\.\d+\.\d+)\]/m.exec(t);
+  if(m) document.getElementById('version').textContent='v'+m[1];
+}).catch(()=>{});
 </script>
+<div id="version" aria-hidden="true"></div>
 </body>
 </html>

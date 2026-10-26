@@ -64,6 +64,7 @@ Notes:
 
 - Online: https://emmas-games.vendic.cloud, its own hosting account (`emmasgames@odin.vendic.cloud`, SSH port 2222, web root `~/httpdocs`). No other app shares this domain, so no other service worker can take over its pages.
 - `bash scripts/deploy.sh` uploads the picture menu (the game chooser at `/`), `menu-audio/`, `shared/`, the three v2 games in `ideas/` and the promoted Moon Meadow Home build (`dist-emma`) at `/games/moon-meadow-home/`. It never uploads dot files. Run it outside the sandbox, and only when Tjitse asks for a deploy.
+- Every deploy is a new version in [CHANGELOG.md](CHANGELOG.md), which agents keep by hand: a new game bumps the major version, new levels or features the minor version, bug fixes the patch version. Add the entry at the top, commit, build, then deploy. `deploy.sh` reads the newest version, refuses one that was deployed before or uncommitted changes, uploads, and tags `v<version>`. The menu and the Moon Meadow World start screen show the version, bottom right.
 - A new game gets a card in `index.html` and a line in `scripts/deploy.sh`. A game that adds a service worker limits it to its own folder, caches only its own files and never sends pages outside its folder to its own start page.
 - The vhost ignores `.htaccess`. Pages are served with `no-cache`.
 - Saves live in the browser per domain. Progress made on the home server (port 8765) does not carry over to the online site.
