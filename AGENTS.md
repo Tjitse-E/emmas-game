@@ -23,3 +23,4 @@ Read these first:
 - Use our own characters. No trademarked characters (for example, real Furbies or Disney princesses).
 - The app is fully British English. There is no Dutch anywhere in the app: no Dutch words, text, audio, names spoken the Dutch way or Dutch help. Emma's Dutch background only decides which English sounds and words get extra practice.
 - Code, comments, docs and commit messages are in English.
+- Every deploy gets a new version in CHANGELOG.md (new game: major, new levels or features: minor, bug fixes: patch). See STACK.md.
