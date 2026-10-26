@@ -2,6 +2,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { join, normalize, resolve } from 'node:path';
+import { execSync } from 'node:child_process';
 
 const repo = resolve(import.meta.dirname, '../..');
 const v3Public = join(repo, 'games/moon-meadow-home/public');
@@ -35,8 +36,20 @@ function v3Assets(): Plugin {
   };
 }
 
+/** The commit the build comes from, shown on the start screen. "+" means the build has uncommitted changes. */
+function version(): string {
+  try {
+    const hash = execSync('git rev-parse --short HEAD', { cwd: repo }).toString().trim();
+    const dirty = execSync('git status --porcelain -- games/moon-meadow-world shared', { cwd: repo }).toString().trim();
+    return hash + (dirty ? '+' : '');
+  } catch {
+    return 'dev';
+  }
+}
+
 export default defineConfig({
   base: './',
+  define: { __MMW_VERSION__: JSON.stringify(version()) },
   // Parallel lanes each run their own dev server; MMW_VITE_CACHE keeps their dependency caches apart.
   cacheDir: process.env.MMW_VITE_CACHE ?? 'node_modules/.vite',
   plugins: [v3Assets()],

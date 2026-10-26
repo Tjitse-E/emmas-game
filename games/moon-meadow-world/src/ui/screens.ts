@@ -38,6 +38,7 @@ export function startScreen(parent: HTMLElement, onTap: () => void): Promise<voi
   img(PIC.babySnow, 'title-baby small right', title);
   img(PIC.baby, 'title-baby main', title);
   img(PIC.crown, 'title-crown', title);
+  el('div', 'start-version', v).textContent = __MMW_VERSION__;
   html(SPARKLE_SVG, 'title-spark a', title, 'span');
   html(SPARKLE_SVG, 'title-spark b', title, 'span');
   const play = html(PLAY_SVG, 'play touch', v);
