@@ -1,0 +1,71 @@
+{
+  "note": "Made by tools/build-content.ts from v3 content, clips and pictures. Do not edit by hand.",
+  "herd": [
+    {"name":"Luna","clip":"name-luna"},
+    {"name":"Rosie","clip":"name-rosie"},
+    {"name":"Daisy","clip":"name-daisy"},
+    {"name":"Ivy","clip":"name-ivy"},
+    {"name":"Ruby","clip":"name-ruby"},
+    {"name":"Poppy","clip":"name-poppy"},
+    {"name":"Willow","clip":"name-willow"},
+    {"name":"Bonnie","clip":"name-bonnie"},
+    {"name":"Lily","clip":"name-lily"},
+    {"name":"Mia","clip":"name-mia"},
+    {"name":"Isla","clip":"name-isla"},
+    {"name":"Evie","clip":"name-evie"}
+  ],
+  "bells": [
+    {"name":"Pip","gpcs":["p","i","p"],"clip":"name-pip"},
+    {"name":"Meg","gpcs":["m","e","g"],"clip":"name-meg"},
+    {"name":"Beth","gpcs":["b","e","th"],"clip":"name-beth"},
+    {"name":"Nell","gpcs":["n","e","ll"],"clip":"name-nell"},
+    {"name":"Jess","gpcs":["j","e","ss"],"clip":"name-jess"},
+    {"name":"Tess","gpcs":["t","e","ss"],"clip":"name-tess"},
+    {"name":"Gwen","gpcs":["g","w","e","n"],"clip":"name-gwen"},
+    {"name":"Kit","gpcs":["k","i","t"],"clip":"name-kit"},
+    {"name":"Fran","gpcs":["f","r","a","n"],"clip":"name-fran"},
+    {"name":"Dot","gpcs":["d","o","t"],"clip":"name-dot"},
+    {"name":"Bess","gpcs":["b","e","ss"],"clip":"name-bess"},
+    {"name":"Mel","gpcs":["m","e","l"],"clip":"name-mel"},
+    {"name":"Viv","gpcs":["v","i","v"],"clip":"name-viv"},
+    {"name":"Kim","gpcs":["k","i","m"],"clip":"name-kim"},
+    {"name":"Cass","gpcs":["c","a","ss"],"clip":"name-cass"},
+    {"name":"Jen","gpcs":["j","e","n"],"clip":"name-jen"},
+    {"name":"Clem","gpcs":["c","l","e","m"],"clip":"name-clem"},
+    {"name":"Tash","gpcs":["t","a","sh"],"clip":"name-tash"},
+    {"name":"Mim","gpcs":["m","i","m"],"clip":"name-mim"},
+    {"name":"Peg","gpcs":["p","e","g"],"clip":"name-peg"},
+    {"name":"Jill","gpcs":["j","i","ll"],"clip":"name-jill"},
+    {"name":"Ben","gpcs":["b","e","n"],"clip":"name-ben"},
+    {"name":"Tig","gpcs":["t","i","g"],"clip":"name-tig"},
+    {"name":"Bud","gpcs":["b","u","d"],"clip":"name-bud"}
+  ],
+  "food": [
+    {"word":"plum","gpcs":["p","l","u","m"],"pic":"plum","clip":"word-plum","group":"plum"},
+    {"word":"corn","gpcs":["c","or","n"],"pic":"corn","clip":"word-corn","group":"corn"},
+    {"word":"bun","gpcs":["b","u","n"],"pic":"bun","clip":"word-bun","group":"cake"},
+    {"word":"cake","gpcs":["c","a-e","k"],"pic":"cake","clip":"word-cake","group":"cake"},
+    {"word":"peach","gpcs":["p","ea","ch"],"pic":"peach","clip":"word-peach","group":"lemon"},
+    {"word":"grape","gpcs":["g","r","a-e","p"],"pic":"grape","clip":"word-grape","group":"pea"},
+    {"word":"bean","gpcs":["b","ea","n"],"pic":"bean","clip":"word-bean","group":"pea"},
+    {"word":"pie","gpcs":["p","ie"],"pic":"pie","clip":"word-pie","group":"cake"},
+    {"word":"toast","gpcs":["t","oa","s","t"],"pic":"toast","clip":"word-toast","group":"toast"},
+    {"word":"leek","gpcs":["l","ee","k"],"pic":"leek","clip":"word-leek","group":"leek"}
+  ],
+  "bath": [
+    {"word":"duck","gpcs":["d","u","ck"],"pic":"duck","clip":"word-duck","group":"duck"},
+    {"word":"ship","gpcs":["sh","i","p"],"pic":"ship","clip":"word-ship","group":"ship"},
+    {"word":"fish","gpcs":["f","i","sh"],"pic":"fish","clip":"word-fish","group":"fish"},
+    {"word":"boat","gpcs":["b","oa","t"],"pic":"boat","clip":"word-boat","group":"ship"},
+    {"word":"shell","gpcs":["sh","e","ll"],"pic":"shell","clip":"word-shell","group":"shell"},
+    {"word":"crab","gpcs":["c","r","a","b"],"pic":"crab","clip":"word-crab","group":"crab"},
+    {"word":"frog","gpcs":["f","r","o","g"],"pic":"frog","clip":"word-frog","group":"frog"},
+    {"word":"seal","gpcs":["s","ea","l"],"pic":"seal","clip":"word-seal","group":"seal"}
+  ],
+  "freeFoods": [
+    "plum",
+    "corn",
+    "cake",
+    "peach"
+  ]
+}

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The audio module's own pack path (audio/v4demo/) is relative to the game page at the root. -->
+<base href="../">
+<title>Content check</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --ink: #5a4a6e; --card: #fffaf3; --line: #eadcf2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px 20px 40px; background: linear-gradient(#eaf6ff, #fdf2fa); color: var(--ink);
+    font: 15px/1.35 'Andika', system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 18px 0 8px; }
+  #status { font-size: 14px; padding: 6px 10px; border-radius: 10px; background: #fff; display: inline-block; }
+  #status.bad { background: #ffe0e0; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .card { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 8px 10px; min-width: 64px;
+    touch-action: manipulation; cursor: pointer; }
+  .uni { width: 132px; text-align: center; }
+  .uni svg { display: block; margin: 0 auto; }
+  .tag { display: inline-block; background: #fff; border-radius: 10px; padding: 1px 10px; font-weight: 700; font-size: 17px; }
+  .small { font-size: 12px; opacity: 0.75; }
+  .stone { display: inline-flex; width: 34px; height: 34px; border-radius: 50%; align-items: center; justify-content: center;
+    background: #d9d2e9; font-weight: 700; margin-right: 4px; }
+  .stone.right { background: #ffd36e; }
+  .gem { display: inline-flex; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 8px; align-items: center;
+    justify-content: center; background: #cfe8ff; font-weight: 700; margin: 2px; }
+  .gem.v { background: #ffc6e3; }
+  .gem.x { outline: 2px dashed #b48ad6; }
+  .basket img { width: 64px; height: 64px; object-fit: contain; display: block; margin: 0 auto; }
+  .basket .item { display: inline-block; text-align: center; margin: 0 4px; }
+  .basket .item.target { outline: 3px solid #ffbf3f; border-radius: 10px; }
+  code { font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>Content check</h1>
+<div id="status">Checking clips...</div>
+<h2>The herd (doors 1 to 12)</h2>
+<div class="row" id="herd"></div>
+<h2>Newborns (warm egg, then snow egg)</h2>
+<div class="row" id="babies"></div>
+<h2>Eggs</h2>
+<div class="row" id="eggs"></div>
+<h2>Name bells</h2>
+<div class="row" id="bells"></div>
+<h2>Wishes</h2>
+<div class="row" id="wishes"></div>
+<h2>Doors</h2>
+<div class="row" id="doors"></div>
+<script type="module">
+  import * as C from '/src/content/index.ts';
+  import { audio } from '/src/audio/index.ts';
+  import { V3 } from '/src/assets.ts';
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
+  let unlocked = false;
+  /** A tap plays the card's clips (the first tap also unlocks audio). */
+  function playable(node, clips) {
+    node.addEventListener('pointerdown', () => {
+      if (!unlocked) { audio.unlock(); unlocked = true; }
+      audio.sayAll(clips);
+    });
+    node.title = clips.join(' ');
+    return node;
+  }
+
+  // A flat picture-book unicorn: body, head, curly mane and tail, golden horn and hooves. Foals stand taller.
+  function unicornSvg(look) {
+    const s = look.stage === 'foal' ? 1 : 0.84;
+    const curls = (cx, cy, n, r, dx, dy) => Array.from({ length: n }, (_, i) =>
+      `<circle cx="${cx + dx * i}" cy="${cy + dy * i}" r="${r}" fill="${i % 2 ? look.mane2 : look.mane}"/>`).join('');
+    return `<svg width="124" height="112" viewBox="0 0 124 112"><g transform="translate(62 108) scale(${s}) translate(-62 -108)">
+      <ellipse cx="62" cy="106" rx="34" ry="5" fill="#000" opacity="0.08"/>
+      ${curls(24, 58, 4, 7, -3, 8)}
+      <rect x="38" y="70" width="10" height="34" rx="5" fill="${look.body}" stroke="#d8c6e6"/>
+      <rect x="72" y="70" width="10" height="34" rx="5" fill="${look.body}" stroke="#d8c6e6"/>
+      <rect x="38" y="98" width="10" height="7" rx="3" fill="#f2c94c"/><rect x="72" y="98" width="10" height="7" rx="3" fill="#f2c94c"/>
+      <ellipse cx="60" cy="66" rx="34" ry="22" fill="${look.body}" stroke="#d8c6e6" stroke-width="1.5"/>
+      <circle cx="86" cy="38" r="22" fill="${look.body}" stroke="#d8c6e6" stroke-width="1.5"/>
+      <path d="M92 18 L100 -2 L102 20 Z" fill="#f2c94c" stroke="#d9a92e" stroke-width="1"/>
+      ${curls(70, 20, 5, 8, -3, 9)}
+      <circle cx="92" cy="36" r="6" fill="#4a3a5a"/><circle cx="94" cy="33.5" r="2.2" fill="#fff"/><circle cx="90.5" cy="38" r="1.1" fill="#fff"/>
+      <ellipse cx="97" cy="47" rx="5" ry="3" fill="#ff9fc4" opacity="0.6"/>
+      ${look.breed === 'snow' ? '<circle cx="50" cy="60" r="3" fill="#fff"/><circle cx="62" cy="70" r="2.5" fill="#fff"/><circle cx="72" cy="58" r="2" fill="#fff"/>' : ''}
+    </g></svg>`;
+  }
+
+  function uniCard(name, look, extra, clips) {
+    const c = el('div', 'card uni', `${unicornSvg(look)}<span class="tag">${name}</span><div class="small">${extra}</div>`);
+    return playable(c, clips);
+  }
+
+  for (const h of C.herd()) $('herd').append(uniCard(h.name, h.look, `door ${h.door} · ${h.look.stage} · ${h.look.breed}`, [h.clip]));
+  for (let s = 1; s <= 4; s++) {
+    const r = C.seeded(s);
+    const warm = C.babyLook('warm', r);
+    const snow = C.babyLook('snow', r, [warm]);
+    $('babies').append(uniCard('', warm, warm.breed, ['lumi-baby']), uniCard('', snow, snow.breed, ['lumi-baby']));
+  }
+
+  for (const [kind, seed] of [['warm', 1], ['warm', 2], ['warm', 3], ['snow', 1], ['snow', 2], ['snow', 3]]) {
+    const e = C.eggSpec(kind, C.seeded(seed * 17), { first: seed === 1 });
+    const stones = e.stones.map((n) => `<span class="stone ${n === e.answer ? 'right' : ''}">${n}</span>`).join('');
+    const c = el('div', 'card', `<b>${kind}</b> need ${e.need}, have ${e.have}, answer ${e.answer}<br>${stones}<br><code>${e.clips.goal.join(' ')}</code>`);
+    $('eggs').append(playable(c, [...e.clips.intro, ...e.clips.goal, ...e.clips.right]));
+  }
+
+  const first = C.namingSpec(C.seeded(5), []);
+  const second = C.namingSpec(C.seeded(6), [first.bells[0].name]);
+  for (const spec of [first, second]) {
+    for (const b of spec.bells) {
+      const gems = [...b.gpcs.map((g, i) => `<span class="gem ${/^[aeiou]/.test(g) ? 'v' : ''}">${i ? g : g[0].toUpperCase() + g.slice(1)}</span>`),
+        ...b.distractors.map((g) => `<span class="gem x ${/^[aeiou]/.test(g) ? 'v' : ''}">${g}</span>`)].join('');
+      $('bells').append(playable(el('div', 'card', `<span class="tag">${b.name}</span><br>${gems}`), [b.clip]));
+    }
+  }
+
+  for (const [kind, seed] of [['food', 1], ['food', 2], ['bath', 1], ['bath', 2]]) {
+    const w = C.wishSpec(kind, C.seeded(seed * 31));
+    const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}"><img src="${i.pic}" alt=""><b>${i.word}</b></span>`).join('');
+    $('wishes').append(playable(el('div', 'card basket', `<b>${kind}</b> wants <span class="tag">${w.target.word}</span><br>${items}`), [...w.clips.intro, w.target.clip]));
+  }
+  const foods = C.foods().map((i) => `<span class="item"><img src="${i.pic}" alt=""><b>${i.word}</b></span>`).join('');
+  $('wishes').append(playable(el('div', 'card basket', `<b>free play</b><br>${foods}`), ['g4-basket', ...C.foods().map((f) => f.clip)]));
+
+  const herd = C.herd();
+  const pip = C.newborn(first.bells[0], C.babyLook('warm', C.seeded(1)), 13);
+  const r = C.seeded(9);
+  const visit = C.doorVisit(pip, [...herd.map((h) => h.door), 13], r);
+  const calls = C.rollCall(herd.map((h) => h.door), r, 2, [visit.door]);
+  $('doors').append(playable(el('div', 'card', `move in: <code>${C.moveIn(pip).join(' ')}</code>`), C.moveIn(pip)));
+  for (const d of [visit, ...calls]) $('doors').append(playable(el('div', 'card', `door <b>${d.door}</b>: <code>${d.goal.join(' ')}</code>`), [...d.goal, ...d.wrong(d.door - 1)]));
+
+  // Every clip and letter sound the level can use, through the real audio packs (v4demo first, then v3's).
+  async function check() {
+    const ids = C.allClipIds();
+    const has = await Promise.all(ids.map((id) => audio.has(id)));
+    const missing = ids.filter((_, i) => !has[i]);
+    const index = await fetch(V3 + 'audio/phonics/index.json').then((res) => res.json());
+    const soundsMissing = C.allGraphemes().filter((g) => !index.sounds[g]);
+    const pics = [...document.querySelectorAll('img')];
+    await Promise.all(pics.map((img) => img.complete ? null : new Promise((ok) => { img.onload = img.onerror = ok; })));
+    const picsMissing = pics.filter((img) => !img.naturalWidth).map((img) => img.src);
+    const s = $('status');
+    s.textContent = `${ids.length} clips: ${ids.length - missing.length} found, ${missing.length} missing. `
+      + `${C.allGraphemes().length} letter sounds, ${soundsMissing.length} missing. ${pics.length} pictures, ${picsMissing.length} missing.`;
+    if (missing.length || soundsMissing.length || picsMissing.length) s.classList.add('bad');
+    return { clips: ids.length, missing, soundsMissing, picsMissing };
+  }
+  window.__content = { result: check() };
+</script>
+</body>
+</html>

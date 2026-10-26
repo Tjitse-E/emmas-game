@@ -1,0 +1,27 @@
+{
+  "name": "moon-meadow-world",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "engines": {
+    "node": ">=24.19.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "serve:test": "cd ../.. && PORT=${MMW_PORT:-8780} HOST=127.0.0.1 MOON_DIST=${MOON_DIST:-dist-test-gate} node games/moon-meadow-home/server/serve.ts"
+  },
+  "dependencies": {
+    "@fontsource/andika": "5.3.0",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "@types/three": "0.186.0",
+    "typescript": "6.0.3",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  }
+}

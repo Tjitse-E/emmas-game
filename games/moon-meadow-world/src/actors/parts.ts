@@ -1,0 +1,268 @@
+// The parts renderer. Every character is drawn from a fixed set of instanced meshes (one per shape), so Princess
+// Emma, the whole herd and the egg's face cost the same small number of draw calls however many there are. Each
+// character writes its parts (shape, matrix, colour) into its own PartList when it poses; once a frame the lists of the
+// visible characters are copied into the instanced meshes.
+import * as THREE from 'three';
+import * as S from './shapes';
+
+/** The shapes. Lit ones use MeshLambertMaterial with a soft rim; flat ones are unlit (eyes, lines). */
+export const B = {
+  Hi: 0, // smooth sphere: bodies, heads, hair
+  Mid: 1, // medium sphere: snouts, chests, eye whites, ponytail links
+  Lo: 2, // small sphere: mane and tail puffs, bows, hands, gems
+  Cone: 3, // ears, the nightcap
+  Limb: 4, // legs, arms, hooves
+  Horn: 5, // the golden spiral horn
+  Iris: 6, // unlit disc with a dark pupil gradient
+  Dot: 7, // unlit disc: eye highlights, lashes, open mouths
+  Arc: 8, // unlit half ring: lash lines, closed eyes, smiles
+  Soft: 9, // transparent soft disc: blob shadows, rosy cheeks
+  Ripple: 10, // transparent ring on the water
+  Beam: 11, // transparent moonbeam column
+  Straw: 12, // lit soft mound: the straw bed in a stall
+  Fine: 13, // finer sphere for Princess Emma's head and hair, always close to the camera
+} as const;
+export type BatchId = (typeof B)[keyof typeof B];
+
+/** Max instances per shape: Princess Emma, 20 unicorns and the egg with room to spare. */
+const CAPACITY: Record<BatchId, number> = {
+  [B.Hi]: 64, [B.Mid]: 160, [B.Lo]: 480, [B.Cone]: 64, [B.Limb]: 200, [B.Horn]: 24, [B.Iris]: 56,
+  [B.Dot]: 220, [B.Arc]: 90, [B.Soft]: 90, [B.Ripple]: 48, [B.Beam]: 8, [B.Straw]: 24, [B.Fine]: 8,
+};
+
+/**
+ * Character shading: the light is pulled part of the way towards the plain colour, so the shade side stays clean and
+ * bright (no grey-green faces under the meadow's sky light) while the top-left light still models the shapes; a soft
+ * light rim gives the plush, picture-book look. `instanceExtra` adds a stronger sheen for shiny unicorns. A plain Mesh
+ * (no instancing) uses the fixed `sheen` value instead.
+ */
+export function rimLambert(o: THREE.MeshLambertMaterialParameters, sheen: number | 'instanced' = 0): THREE.MeshLambertMaterial {
+  const m = new THREE.MeshLambertMaterial(o);
+  const inst = sheen === 'instanced';
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', `#include <common>\n${inst ? 'attribute float instanceExtra;' : ''}\nvarying float vSheen;`)
+      .replace('#include <color_vertex>', `#include <color_vertex>\nvSheen = ${inst ? 'instanceExtra' : (sheen as number).toFixed(3)};`);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vSheen;')
+      .replace(
+        '#include <opaque_fragment>',
+        `outgoingLight = mix( outgoingLight, diffuseColor.rgb, 0.4 );
+        float rimF = 1.0 - saturate( dot( normal, normalize( vViewPosition ) ) );
+        outgoingLight += diffuseColor.rgb * pow( rimF, 2.5 ) * 0.18 + vec3( 1.0, 0.97, 0.99 ) * pow( rimF, 1.8 ) * 0.45 * vSheen;
+        #include <opaque_fragment>`,
+      );
+  };
+  m.customProgramCacheKey = () => 'rim-' + (inst ? 'i' : String(sheen));
+  return m;
+}
+
+/** An unlit material whose instances each carry their own opacity in `instanceExtra`. */
+function alphaBasic(o: THREE.MeshBasicMaterialParameters): THREE.MeshBasicMaterial {
+  const m = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, ...o });
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute float instanceExtra;\nvarying float vInstAlpha;')
+      .replace('#include <color_vertex>', '#include <color_vertex>\nvInstAlpha = instanceExtra;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vInstAlpha;')
+      .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= vInstAlpha;');
+  };
+  m.customProgramCacheKey = () => 'inst-alpha';
+  return m;
+}
+
+class Batch {
+  readonly mesh: THREE.InstancedMesh;
+  private readonly mat: Float32Array;
+  private readonly col: Float32Array;
+  private readonly ext: Float32Array;
+  private readonly extAttr: THREE.InstancedBufferAttribute;
+  /** The three per-instance attributes and their item sizes, uploaded up to n each frame. */
+  private readonly uploads: readonly (readonly [THREE.BufferAttribute, number])[];
+  private readonly capacity: number;
+  n = 0;
+
+  constructor(geometry: THREE.BufferGeometry, material: THREE.Material, capacity: number) {
+    this.capacity = capacity;
+    this.extAttr = new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1);
+    this.extAttr.setUsage(THREE.DynamicDrawUsage);
+    geometry.setAttribute('instanceExtra', this.extAttr);
+    this.mesh = new THREE.InstancedMesh(geometry, material, capacity);
+    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(capacity * 3), 3);
+    this.mesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
+    // Instances spread over the whole meadow; the characters are culled one by one on the CPU instead.
+    this.mesh.frustumCulled = false;
+    this.mat = this.mesh.instanceMatrix.array as Float32Array;
+    this.col = this.mesh.instanceColor.array as Float32Array;
+    this.ext = this.extAttr.array as Float32Array;
+    this.uploads = [[this.mesh.instanceMatrix, 16], [this.mesh.instanceColor!, 3], [this.extAttr, 1]];
+  }
+
+  add(src: PartList, i: number): void {
+    if (this.n >= this.capacity) return;
+    const k = this.n++;
+    // A plain loop: no subarray views to collect every frame.
+    const from = i * 16;
+    const to = k * 16;
+    for (let j = 0; j < 16; j++) this.mat[to + j] = src.mat[from + j];
+    this.col[k * 3] = src.col[i * 3];
+    this.col[k * 3 + 1] = src.col[i * 3 + 1];
+    this.col[k * 3 + 2] = src.col[i * 3 + 2];
+    this.ext[k] = src.ext[i];
+  }
+
+  commit(): void {
+    const m = this.mesh;
+    m.count = this.n;
+    m.visible = this.n > 0;
+    if (!this.n) return;
+    for (const [a, size] of this.uploads) {
+      a.clearUpdateRanges();
+      a.addUpdateRange(0, this.n * size);
+      a.needsUpdate = true;
+    }
+  }
+}
+
+/** One character's parts for this frame, written when it poses and copied into the batches while it is visible. */
+export class PartList {
+  readonly id: Uint8Array;
+  readonly mat: Float32Array;
+  readonly col: Float32Array;
+  readonly ext: Float32Array;
+  n = 0;
+
+  constructor(capacity: number) {
+    this.id = new Uint8Array(capacity);
+    this.mat = new Float32Array(capacity * 16);
+    this.col = new Float32Array(capacity * 3);
+    this.ext = new Float32Array(capacity);
+  }
+
+  clear(): void {
+    this.n = 0;
+  }
+
+  /** Add a part. `extra` is the sheen for lit shapes and the opacity for transparent ones. */
+  push(id: BatchId, m: THREE.Matrix4, c: THREE.Color, extra = 0): void {
+    if (this.n >= this.id.length) return;
+    const k = this.n++;
+    this.id[k] = id;
+    const e = m.elements;
+    for (let j = 0; j < 16; j++) this.mat[k * 16 + j] = e[j];
+    this.col[k * 3] = c.r;
+    this.col[k * 3 + 1] = c.g;
+    this.col[k * 3 + 2] = c.b;
+    this.ext[k] = extra;
+  }
+}
+
+export class Parts {
+  readonly group = new THREE.Group();
+  private readonly batches: Batch[] = [];
+  /** The camera that drew the last frame, for culling (captured in onBeforeRender, so nobody has to pass it in). */
+  camera: THREE.Camera | null = null;
+  /** The canvas size in CSS pixels at the last frame (for the herd's minimum tap size on screen). */
+  readonly viewSize = new THREE.Vector2(1024, 768);
+
+  constructor() {
+    this.group.name = 'actors-parts';
+    const lit = rimLambert({}, 'instanced');
+    const flat = new THREE.MeshBasicMaterial({ vertexColors: true });
+    const soft = alphaBasic({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    const ripple = alphaBasic({ vertexColors: true, side: THREE.DoubleSide });
+    const beam = alphaBasic({ vertexColors: true, side: THREE.DoubleSide });
+    const geos: Record<BatchId, [THREE.BufferGeometry, THREE.Material]> = {
+      [B.Hi]: [S.sphere(4), lit],
+      [B.Mid]: [S.sphere(3), lit],
+      [B.Lo]: [S.sphere(2), lit],
+      [B.Cone]: [S.ear(), lit],
+      [B.Limb]: [S.limb(), lit],
+      [B.Horn]: [S.horn(), lit],
+      [B.Iris]: [S.iris(), flat],
+      [B.Dot]: [S.disc(7), flat],
+      [B.Arc]: [S.arc(), flat],
+      [B.Soft]: [S.softDisc(), soft],
+      [B.Ripple]: [S.ring(), ripple],
+      [B.Beam]: [S.beam(), beam],
+      [B.Straw]: [S.straw(), lit],
+      [B.Fine]: [S.sphere(6), lit],
+    };
+    for (const k of Object.keys(geos).map(Number) as BatchId[]) {
+      const [g, m] = geos[k];
+      const b = new Batch(g, m, CAPACITY[k]);
+      b.mesh.name = 'actors-' + Object.entries(B).find(([, v]) => v === k)![0];
+      // Shadows, cheeks and ripples draw after the world's own transparent things (the pond water).
+      if (k === B.Soft || k === B.Ripple) b.mesh.renderOrder = 2;
+      if (k === B.Beam) b.mesh.renderOrder = 3;
+      this.batches[k] = b;
+      this.group.add(b.mesh);
+    }
+    // The soft batch always holds Princess Emma's shadow, so it is drawn every frame and sees the camera.
+    this.batches[B.Soft].mesh.onBeforeRender = (renderer, _s, cam) => {
+      this.camera = cam;
+      renderer.getSize(this.viewSize);
+    };
+  }
+
+  /** Copy the visible characters' parts into the instanced meshes. Call once a frame after every character posed. */
+  flush(lists: Iterable<PartList>): void {
+    for (const b of this.batches) b.n = 0;
+    for (const l of lists) for (let i = 0; i < l.n; i++) this.batches[l.id[i]].add(l, i);
+    for (const b of this.batches) b.commit();
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Posing helpers: a reusable matrix with chainable local moves, and colour helpers.
+// ---------------------------------------------------------------------------------------------------------------
+
+const _t = new THREE.Matrix4();
+const _v = new THREE.Vector3();
+
+/** A matrix with chainable local transforms: m.from(parent).at(x, y, z).turn(yaw).tilt(pitch).size(sx, sy, sz). */
+export class Xf extends THREE.Matrix4 {
+  from(m: THREE.Matrix4): this {
+    return this.copy(m);
+  }
+  at(x: number, y: number, z: number): this {
+    return this.multiply(_t.makeTranslation(x, y, z));
+  }
+  /** Rotation about the local y axis (yaw). */
+  turn(a: number): this {
+    return a ? this.multiply(_t.makeRotationY(a)) : this;
+  }
+  /** Rotation about the local x axis (pitch; positive tips the +z end down). */
+  tilt(a: number): this {
+    return a ? this.multiply(_t.makeRotationX(a)) : this;
+  }
+  /** Rotation about the local z axis (roll). */
+  roll(a: number): this {
+    return a ? this.multiply(_t.makeRotationZ(a)) : this;
+  }
+  size(x: number, y = x, z = x): this {
+    return this.scale(_v.set(x, y, z));
+  }
+  /**
+   * From the centre of a sphere of radius `r`, move onto its surface at (u, v) in radii (u to the right, v up, on the
+   * +z side), facing out along the surface, `depth` metres in front of it. Faces, eyes and cheeks sit on heads this way.
+   */
+  onSphere(r: number, u: number, v: number, depth = 0): this {
+    const w = Math.sqrt(Math.max(0, 1 - u * u - v * v));
+    const d = r + depth;
+    return this.at(u * d, v * d, w * d).turn(Math.atan2(u, w)).tilt(-Math.asin(v));
+  }
+}
+
+/** A linear colour from a CSS hex string. */
+export function col(hex: string): THREE.Color {
+  return new THREE.Color(hex);
+}
+
+/** Mix two colours (t = 0 gives a). */
+export function mix(a: string | THREE.Color, b: string | THREE.Color, t: number): THREE.Color {
+  const ca = typeof a === 'string' ? new THREE.Color(a) : a.clone();
+  return ca.lerp(typeof b === 'string' ? new THREE.Color(b) : b, t);
+}

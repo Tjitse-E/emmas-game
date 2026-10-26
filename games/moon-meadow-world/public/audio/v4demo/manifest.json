@@ -1,0 +1,1195 @@
+{
+ "clips": {
+  "g4-walk": {
+   "hash": "357dce5797ee36c0ef34109ce41d87a32b82996456c60548468233f1e2544dd7",
+   "speaker": "narrator",
+   "text": "Tap the grass to walk.",
+   "file": "g4-walk.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1597,
+   "generated": "2026-10-25T20:12:47",
+   "ok": true,
+   "stt": {
+    "hash": "357dce5797ee36c0ef34109ce41d87a32b82996456c60548468233f1e2544dd7",
+    "text": "Tap the grass to walk",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-snow-egg": {
+   "hash": "4d70a2422e3c0ed815d171a190e86904cd378c05b19a822a2647cd094e8ab872",
+   "speaker": "narrator",
+   "text": "A snow egg! It hatches when it is just right.",
+   "file": "g4-snow-egg.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3617,
+   "generated": "2026-10-25T20:12:47",
+   "ok": true,
+   "stt": {
+    "hash": "4d70a2422e3c0ed815d171a190e86904cd378c05b19a822a2647cd094e8ab872",
+    "text": "A snow egg. It hatches when it is just right",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-snow": {
+   "hash": "a1b623a15664225298e0acee35a601caaff75db8cd86a065278d6517845d2cca",
+   "speaker": "narrator",
+   "text": "Drag the snow stone that cools the extra cups.",
+   "file": "g4-snow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3041,
+   "generated": "2026-10-25T20:12:49",
+   "ok": true,
+   "stt": {
+    "hash": "a1b623a15664225298e0acee35a601caaff75db8cd86a065278d6517845d2cca",
+    "text": "Drag the snow stone that cools the extra cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb4-just-right": {
+   "hash": "46212f92a0c2fbc62133b133f915246bd5d5cc592bb9c3632aaa9a0ece989711",
+   "speaker": "narrator",
+   "text": "Just right!",
+   "file": "fb4-just-right.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1283,
+   "generated": "2026-10-25T20:12:47",
+   "ok": true,
+   "stt": {
+    "hash": "46212f92a0c2fbc62133b133f915246bd5d5cc592bb9c3632aaa9a0ece989711",
+    "text": "Just right",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h4-count-extra": {
+   "hash": "8bde3275044bea1502677b9b85f11b57340c3ec9152b8b7967f66d2db0b0bdca",
+   "speaker": "narrator",
+   "text": "Let's count the extra cups.",
+   "file": "h4-count-extra.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1760,
+   "generated": "2026-10-25T20:12:48",
+   "ok": true,
+   "stt": {
+    "hash": "8bde3275044bea1502677b9b85f11b57340c3ec9152b8b7967f66d2db0b0bdca",
+    "text": "Let's count the extra cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-give": {
+   "hash": "bc037c56cfc5b0635765edec5fbb571e864dc19c83b8bbcd7905eaae3489a1b5",
+   "speaker": "narrator",
+   "text": "Read the wish. Then give it to your baby.",
+   "file": "g4-give.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2834,
+   "generated": "2026-10-25T20:12:48",
+   "ok": true,
+   "stt": {
+    "hash": "bc037c56cfc5b0635765edec5fbb571e864dc19c83b8bbcd7905eaae3489a1b5",
+    "text": "Read the wish, then give it to your baby",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-pond": {
+   "hash": "484a9b11ee8eb26cd90ed71071dcf1f349a95ce95161d923a53f8b6d8b5ec941",
+   "speaker": "narrator",
+   "text": "Let's go to the pond!",
+   "file": "g4-pond.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1238,
+   "generated": "2026-10-25T20:12:48",
+   "ok": true,
+   "stt": {
+    "hash": "484a9b11ee8eb26cd90ed71071dcf1f349a95ce95161d923a53f8b6d8b5ec941",
+    "text": "Let's go to the pond",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-follow": {
+   "hash": "f2673fc048d4c68cbfc81714db1ce14891a5806fc601abb515e2eedb30b1d901",
+   "speaker": "narrator",
+   "text": "Tap a unicorn, and it will follow you.",
+   "file": "g4-follow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2462,
+   "generated": "2026-10-25T20:12:49",
+   "ok": true,
+   "stt": {
+    "hash": "f2673fc048d4c68cbfc81714db1ce14891a5806fc601abb515e2eedb30b1d901",
+    "text": "Tap a unicorn and it will follow you",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-slide-drag": {
+   "hash": "5d07ad05e3f76c08031906d0ed2eddc58ff777799a035dc18484b6ae440dbef2",
+   "speaker": "narrator",
+   "text": "Drag a unicorn to the top of the slide.",
+   "file": "g4-slide-drag.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2479,
+   "generated": "2026-10-25T20:12:49",
+   "ok": true,
+   "stt": {
+    "hash": "5d07ad05e3f76c08031906d0ed2eddc58ff777799a035dc18484b6ae440dbef2",
+    "text": "Drag a unicorn to the top of the slide",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-slide-tap": {
+   "hash": "57e67086d281d6da9fee31dcd0b6b3b96054c53b2ec08e9d63a27e44eb915a3d",
+   "speaker": "narrator",
+   "text": "Tap the slide, and slide down too!",
+   "file": "g4-slide-tap.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2474,
+   "generated": "2026-10-25T20:12:56",
+   "ok": true,
+   "stt": {
+    "hash": "57e67086d281d6da9fee31dcd0b6b3b96054c53b2ec08e9d63a27e44eb915a3d",
+    "text": "Tap the slide and slide down too",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-basket": {
+   "hash": "fd21dfa1c606b44e585a184afbab322a039446f062a5c94d3ad36e75907920ae",
+   "speaker": "narrator",
+   "text": "Tap the basket, and feed your unicorns.",
+   "file": "g4-basket.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2724,
+   "generated": "2026-10-25T20:12:50",
+   "ok": true,
+   "stt": {
+    "hash": "fd21dfa1c606b44e585a184afbab322a039446f062a5c94d3ad36e75907920ae",
+    "text": "Tap the basket and feed your unicorns",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-nest": {
+   "hash": "f292a7c67009ba4334e49e5eea8dc0e2af514c55df3da5a7263442922f84b76f",
+   "speaker": "narrator",
+   "text": "The nest is this way.",
+   "file": "g4-way-nest.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1285,
+   "generated": "2026-10-25T20:12:50",
+   "ok": true,
+   "stt": {
+    "hash": "f292a7c67009ba4334e49e5eea8dc0e2af514c55df3da5a7263442922f84b76f",
+    "text": "The nest is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-pond": {
+   "hash": "d8a6eced0f05edd7b558b8940af70790c21198985bc4be7e2827844b1c9d0ecd",
+   "speaker": "narrator",
+   "text": "The pond is this way.",
+   "file": "g4-way-pond.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1567,
+   "generated": "2026-10-25T20:12:50",
+   "ok": true,
+   "stt": {
+    "hash": "d8a6eced0f05edd7b558b8940af70790c21198985bc4be7e2827844b1c9d0ecd",
+    "text": "The pond is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-slide": {
+   "hash": "fa5361bee2be52c43554246ffc1dfd21fbf5f5c4822e874258a7c3b884983a39",
+   "speaker": "narrator",
+   "text": "The slide is this way.",
+   "file": "g4-way-slide.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1574,
+   "generated": "2026-10-25T20:12:51",
+   "ok": true,
+   "stt": {
+    "hash": "fa5361bee2be52c43554246ffc1dfd21fbf5f5c4822e874258a7c3b884983a39",
+    "text": "The slide is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-wildegg": {
+   "hash": "9971bdf744750868d9329d8ed6d8f51e0ffa40f70efbffd78a869bf01623e67a",
+   "speaker": "narrator",
+   "text": "The egg is this way.",
+   "file": "g4-way-wildegg.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1528,
+   "generated": "2026-10-25T20:12:51",
+   "ok": true,
+   "stt": {
+    "hash": "9971bdf744750868d9329d8ed6d8f51e0ffa40f70efbffd78a869bf01623e67a",
+    "text": "The egg is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-stable": {
+   "hash": "c64d5bb86d7bad55515366085fb18b43e8bb03efd6421a90ad4b024fa19904a9",
+   "speaker": "narrator",
+   "text": "The stable is this way.",
+   "file": "g4-way-stable.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1510,
+   "generated": "2026-10-25T20:12:51",
+   "ok": true,
+   "stt": {
+    "hash": "c64d5bb86d7bad55515366085fb18b43e8bb03efd6421a90ad4b024fa19904a9",
+    "text": "The stable is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-to-stable": {
+   "hash": "c586c6fafa269e9d9b6acf68f5a2f742e4294bf2e2edaa2b9bd4dbd52e54cfb9",
+   "speaker": "narrator",
+   "text": "Walk to the stable with your babies.",
+   "file": "g4-to-stable.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2103,
+   "generated": "2026-10-25T20:12:52",
+   "ok": true,
+   "stt": {
+    "hash": "c586c6fafa269e9d9b6acf68f5a2f742e4294bf2e2edaa2b9bd4dbd52e54cfb9",
+    "text": "Walk to the stable with your babies",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h4-doors": {
+   "hash": "0d19b59b72135a1ed878c58b95f705f942dc3abac143caa2446d069b87547d3a",
+   "speaker": "narrator",
+   "text": "Look at the numbers on the doors.",
+   "file": "h4-doors.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1810,
+   "generated": "2026-10-25T20:12:52",
+   "ok": true,
+   "stt": {
+    "hash": "0d19b59b72135a1ed878c58b95f705f942dc3abac143caa2446d069b87547d3a",
+    "text": "Look at the numbers on the doors",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-another-egg": {
+   "hash": "87494e52e65e6fd69438fc2155d60c2cbd3303f96b44d26bf33ca258367417dd",
+   "speaker": "queen",
+   "text": "Oh! Another egg!",
+   "file": "lumi4-another-egg.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1437,
+   "generated": "2026-10-25T20:12:53",
+   "ok": true,
+   "stt": {
+    "hash": "87494e52e65e6fd69438fc2155d60c2cbd3303f96b44d26bf33ca258367417dd",
+    "text": "Oh, another egg",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-ribbons": {
+   "hash": "df8cd8358f0c51606270764c64e204a1dd30bf373667c6352f534cd395c33610",
+   "speaker": "queen",
+   "text": "You did so well today, Emma! Here are new ribbons for your hair.",
+   "file": "lumi4-ribbons.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 3155,
+   "generated": "2026-10-25T20:12:53",
+   "ok": true,
+   "stt": {
+    "hash": "df8cd8358f0c51606270764c64e204a1dd30bf373667c6352f534cd395c33610",
+    "text": "You did so well today, Emma. Here are new ribbons for your hair",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-add-10-3": {
+   "hash": "44d078313e8780223132c889b0baeaf16b52ef5899cef58189d22b0f350dae50",
+   "speaker": "narrator",
+   "text": "Ten and three make thirteen!",
+   "file": "num-add-10-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2278,
+   "generated": "2026-10-25T20:12:53",
+   "ok": true,
+   "stt": {
+    "hash": "44d078313e8780223132c889b0baeaf16b52ef5899cef58189d22b0f350dae50",
+    "text": "10 and three make 13",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-add-10-4": {
+   "hash": "b6621384fd569b68474b7e908d6e2e67de6fa5e3b652fe82eeb40b3816fba50c",
+   "speaker": "narrator",
+   "text": "Ten and four make fourteen!",
+   "file": "num-add-10-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2238,
+   "generated": "2026-10-25T20:12:54",
+   "ok": true,
+   "stt": {
+    "hash": "b6621384fd569b68474b7e908d6e2e67de6fa5e3b652fe82eeb40b3816fba50c",
+    "text": "10 and 4 make 14",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-add-10-5": {
+   "hash": "905856868d61482e3fc6bbbae8a1b0aa62fc29a250fe8bee1be09fce1ef79d6e",
+   "speaker": "narrator",
+   "text": "Ten and five make fifteen!",
+   "file": "num-add-10-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2326,
+   "generated": "2026-10-25T20:12:55",
+   "ok": true,
+   "stt": {
+    "hash": "905856868d61482e3fc6bbbae8a1b0aa62fc29a250fe8bee1be09fce1ef79d6e",
+    "text": "10 and 5 make 15",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-still-warm-1": {
+   "hash": "6ba5529c1b57b8b74beb7468f9a66e66423e9136a3c39e4697b0ab70f19a027a",
+   "speaker": "narrator",
+   "text": "One cup is still too warm.",
+   "file": "num-still-warm-1.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2089,
+   "generated": "2026-10-25T20:12:55",
+   "ok": true,
+   "stt": {
+    "hash": "6ba5529c1b57b8b74beb7468f9a66e66423e9136a3c39e4697b0ab70f19a027a",
+    "text": "One cup is still too warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-still-warm-2": {
+   "hash": "0cec1d3858272624614c85b3cad38606dde59b8acfcb159fa05789793e80d9d0",
+   "speaker": "narrator",
+   "text": "Two cups are still too warm.",
+   "file": "num-still-warm-2.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2175,
+   "generated": "2026-10-25T20:12:55",
+   "ok": true,
+   "stt": {
+    "hash": "0cec1d3858272624614c85b3cad38606dde59b8acfcb159fa05789793e80d9d0",
+    "text": "Two cups are still too warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-still-warm-3": {
+   "hash": "ebb17bf52134f61087cfef483b6e2b95ad8ab2e6ed34a33093256b8b7a47ba4d",
+   "speaker": "narrator",
+   "text": "Three cups are still too warm.",
+   "file": "num-still-warm-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2210,
+   "generated": "2026-10-25T20:12:56",
+   "ok": true,
+   "stt": {
+    "hash": "ebb17bf52134f61087cfef483b6e2b95ad8ab2e6ed34a33093256b8b7a47ba4d",
+    "text": "Three cups are still too warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-still-warm-4": {
+   "hash": "2fac632367e955be4718d1774330631f23426a4e619f506aa7b2b51d6be3b561",
+   "speaker": "narrator",
+   "text": "Four cups are still too warm.",
+   "file": "num-still-warm-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2164,
+   "generated": "2026-10-25T20:12:56",
+   "ok": true,
+   "stt": {
+    "hash": "2fac632367e955be4718d1774330631f23426a4e619f506aa7b2b51d6be3b561",
+    "text": "Four cups are still too warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-still-warm-5": {
+   "hash": "dd3e2ccd36a2ee8faf2f9c4c1e7c954199ce4c5b2f50d78f3b2d8b4a814ffc90",
+   "speaker": "narrator",
+   "text": "Five cups are still too warm.",
+   "file": "num-still-warm-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2274,
+   "generated": "2026-10-25T20:13:02",
+   "ok": true,
+   "stt": {
+    "hash": "dd3e2ccd36a2ee8faf2f9c4c1e7c954199ce4c5b2f50d78f3b2d8b4a814ffc90",
+    "text": "Five cups are still too warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-still-warm-6": {
+   "hash": "538c2dd0f26e961edcd172a92e3ce668bff33451f2ce92a0bd6a7bffa0ff5874",
+   "speaker": "narrator",
+   "text": "Six cups are still too warm.",
+   "file": "num-still-warm-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2184,
+   "generated": "2026-10-25T20:12:57",
+   "ok": true,
+   "stt": {
+    "hash": "538c2dd0f26e961edcd172a92e3ce668bff33451f2ce92a0bd6a7bffa0ff5874",
+    "text": "Six cups are still too warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-11-3": {
+   "hash": "9e6d22c5a1aa4e7e0d22395b6fa142e8f9252e6e9647418097e1d895a0e79ef9",
+   "speaker": "narrator",
+   "text": "Eleven take away three is eight!",
+   "file": "num-take-11-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2528,
+   "generated": "2026-10-25T20:12:57",
+   "ok": true,
+   "stt": {
+    "hash": "9e6d22c5a1aa4e7e0d22395b6fa142e8f9252e6e9647418097e1d895a0e79ef9",
+    "text": "11 take away three is eight",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-11-4": {
+   "hash": "d09b9313cf6894db4c15099a5c52691e651ecb6f68cc9aae4225ba5305fcbd99",
+   "speaker": "narrator",
+   "text": "Eleven take away four is seven!",
+   "file": "num-take-11-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2408,
+   "generated": "2026-10-25T20:12:57",
+   "ok": true,
+   "stt": {
+    "hash": "d09b9313cf6894db4c15099a5c52691e651ecb6f68cc9aae4225ba5305fcbd99",
+    "text": "11 take away four is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-12-3": {
+   "hash": "9d869deb2b2322249984edd41b34655315b2cb327eb13df431b8235a0a72247b",
+   "speaker": "narrator",
+   "text": "Twelve take away three is nine!",
+   "file": "num-take-12-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2393,
+   "generated": "2026-10-25T20:12:58",
+   "ok": true,
+   "stt": {
+    "hash": "9d869deb2b2322249984edd41b34655315b2cb327eb13df431b8235a0a72247b",
+    "text": "12 take away three is nine",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-12-4": {
+   "hash": "77595073b23839bdcf105917e94fd9ab2e1e2c1d73c91688d3ae5d6227680938",
+   "speaker": "narrator",
+   "text": "Twelve take away four is eight!",
+   "file": "num-take-12-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2363,
+   "generated": "2026-10-25T20:12:58",
+   "ok": true,
+   "stt": {
+    "hash": "77595073b23839bdcf105917e94fd9ab2e1e2c1d73c91688d3ae5d6227680938",
+    "text": "12 take away four is eight",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-12-5": {
+   "hash": "9155776e055342e7c5912cb2510d74431ebe414164a46180a615a048fdbf0823",
+   "speaker": "narrator",
+   "text": "Twelve take away five is seven!",
+   "file": "num-take-12-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2385,
+   "generated": "2026-10-25T20:12:58",
+   "ok": true,
+   "stt": {
+    "hash": "9155776e055342e7c5912cb2510d74431ebe414164a46180a615a048fdbf0823",
+    "text": "12 take away five is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-13-3": {
+   "hash": "cddbfb0afbe56b1d10781e020fd57f8bb849dff508bab147f39514b84a9ffe1c",
+   "speaker": "narrator",
+   "text": "Thirteen take away three is ten!",
+   "file": "num-take-13-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2541,
+   "generated": "2026-10-25T20:12:59",
+   "ok": true,
+   "stt": {
+    "hash": "cddbfb0afbe56b1d10781e020fd57f8bb849dff508bab147f39514b84a9ffe1c",
+    "text": "13 take away three is 10",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-13-4": {
+   "hash": "db813fc77cf8cab4ab53e0eb74fa57f4684e33d60935cc4d4c82f5af4ba75cf7",
+   "speaker": "narrator",
+   "text": "Thirteen take away four is nine!",
+   "file": "num-take-13-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2475,
+   "generated": "2026-10-25T20:12:59",
+   "ok": true,
+   "stt": {
+    "hash": "db813fc77cf8cab4ab53e0eb74fa57f4684e33d60935cc4d4c82f5af4ba75cf7",
+    "text": "Thirteen take away four is nine",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-13-5": {
+   "hash": "78508b01bbb30a4efbe53eebc67cfae35ab385480b3e1a247d7f4e95b1d6fa69",
+   "speaker": "narrator",
+   "text": "Thirteen take away five is eight!",
+   "file": "num-take-13-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2520,
+   "generated": "2026-10-25T20:12:59",
+   "ok": true,
+   "stt": {
+    "hash": "78508b01bbb30a4efbe53eebc67cfae35ab385480b3e1a247d7f4e95b1d6fa69",
+    "text": "13 take away five is eight",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-13-6": {
+   "hash": "630b91f84882a7f3574aed3963360e28cc89f911eadb382b9d1352f9dd3b5f56",
+   "speaker": "narrator",
+   "text": "Thirteen take away six is seven!",
+   "file": "num-take-13-6.mp3",
+   "model": "eleven_v4",
+   "seed": 1011,
+   "duration_ms": 2591,
+   "generated": "2026-10-25T20:13:27",
+   "ok": true,
+   "stt": {
+    "hash": "630b91f84882a7f3574aed3963360e28cc89f911eadb382b9d1352f9dd3b5f56",
+    "text": "13 take away six is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-14-4": {
+   "hash": "a77883e04e7f409e74586c6dd818b36de01b8b2bec3d013b9212c7aa4e06271f",
+   "speaker": "narrator",
+   "text": "Fourteen take away four is ten!",
+   "file": "num-take-14-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2598,
+   "generated": "2026-10-25T20:13:00",
+   "ok": true,
+   "stt": {
+    "hash": "a77883e04e7f409e74586c6dd818b36de01b8b2bec3d013b9212c7aa4e06271f",
+    "text": "14 take away four is 10",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-14-5": {
+   "hash": "bb469f62882920efa4a3889db8b06655f0d935f89c3eb363d095fd4be8b83c37",
+   "speaker": "narrator",
+   "text": "Fourteen take away five is nine!",
+   "file": "num-take-14-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2600,
+   "generated": "2026-10-25T20:13:00",
+   "ok": true,
+   "stt": {
+    "hash": "bb469f62882920efa4a3889db8b06655f0d935f89c3eb363d095fd4be8b83c37",
+    "text": "Fourteen take away five is nine",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-14-6": {
+   "hash": "7d317c2ebebe10ad3c7aca851cb20eb9527fdd10a6a8cc201bfe6fcf4c9627a6",
+   "speaker": "narrator",
+   "text": "Fourteen take away six is eight!",
+   "file": "num-take-14-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2613,
+   "generated": "2026-10-25T20:13:01",
+   "ok": true,
+   "stt": {
+    "hash": "7d317c2ebebe10ad3c7aca851cb20eb9527fdd10a6a8cc201bfe6fcf4c9627a6",
+    "text": "14 take away six is eight",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-15-5": {
+   "hash": "551745fcbaa74ee44f325c78c46a0e435395e5dfcdc7bdec5450704ae883c5ea",
+   "speaker": "narrator",
+   "text": "Fifteen take away five is ten!",
+   "file": "num-take-15-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2447,
+   "generated": "2026-10-25T20:13:01",
+   "ok": true,
+   "stt": {
+    "hash": "551745fcbaa74ee44f325c78c46a0e435395e5dfcdc7bdec5450704ae883c5ea",
+    "text": "15 take away five is 10",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-15-6": {
+   "hash": "cddcaeb0f7f54f08b01da741ca20d6b9d76f88b3a6f073d765d2f707dd55dd2c",
+   "speaker": "narrator",
+   "text": "Fifteen take away six is nine!",
+   "file": "num-take-15-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2548,
+   "generated": "2026-10-25T20:13:02",
+   "ok": true,
+   "stt": {
+    "hash": "cddcaeb0f7f54f08b01da741ca20d6b9d76f88b3a6f073d765d2f707dd55dd2c",
+    "text": "15 take away six is nine",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-16-6": {
+   "hash": "33df6081c5cdee235e4f80d9b0a541264f0b008ec4655e3b44b4b8c717e9bcd7",
+   "speaker": "narrator",
+   "text": "Sixteen take away six is ten!",
+   "file": "num-take-16-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2571,
+   "generated": "2026-10-25T20:13:03",
+   "ok": true,
+   "stt": {
+    "hash": "33df6081c5cdee235e4f80d9b0a541264f0b008ec4655e3b44b4b8c717e9bcd7",
+    "text": "16 take away six is 10",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-1": {
+   "hash": "1880c43ca2018ad7182ea2d0851fc348de7a75a49e7bc558cc07c2abd4138968",
+   "speaker": "narrator",
+   "text": "That is one.",
+   "file": "num-that-1.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1118,
+   "generated": "2026-10-25T20:13:02",
+   "ok": true,
+   "stt": {
+    "hash": "1880c43ca2018ad7182ea2d0851fc348de7a75a49e7bc558cc07c2abd4138968",
+    "text": "That is one",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-2": {
+   "hash": "23460bff2c1cd605a1e26a7ded107579833186a48e7a3f53bd70fc1f978b416a",
+   "speaker": "narrator",
+   "text": "That is two.",
+   "file": "num-that-2.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1250,
+   "generated": "2026-10-25T20:13:05",
+   "ok": true,
+   "stt": {
+    "hash": "23460bff2c1cd605a1e26a7ded107579833186a48e7a3f53bd70fc1f978b416a",
+    "text": "That is two",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-3": {
+   "hash": "469bab53c0123922ffe0e5c8350a8926209f4b2b0bba487fb566c559b7189624",
+   "speaker": "narrator",
+   "text": "That is three.",
+   "file": "num-that-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1323,
+   "generated": "2026-10-25T20:13:03",
+   "ok": true,
+   "stt": {
+    "hash": "469bab53c0123922ffe0e5c8350a8926209f4b2b0bba487fb566c559b7189624",
+    "text": "That is three",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-4": {
+   "hash": "76d303784eb5dc23e3299d28e7276b8f6c1e28834abaac2305a5eac511d41e38",
+   "speaker": "narrator",
+   "text": "That is four.",
+   "file": "num-that-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1268,
+   "generated": "2026-10-25T20:13:03",
+   "ok": true,
+   "stt": {
+    "hash": "76d303784eb5dc23e3299d28e7276b8f6c1e28834abaac2305a5eac511d41e38",
+    "text": "That is four",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-5": {
+   "hash": "d27416eaeba1eadd184dc3ff4aebf64845c324397c226d135df938697bbd050d",
+   "speaker": "narrator",
+   "text": "That is five.",
+   "file": "num-that-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1390,
+   "generated": "2026-10-25T20:13:03",
+   "ok": true,
+   "stt": {
+    "hash": "d27416eaeba1eadd184dc3ff4aebf64845c324397c226d135df938697bbd050d",
+    "text": "That is five",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-6": {
+   "hash": "e2db82f4c171471c88199f62ffde81ba6cddcaf9d8a56d6267ef654e8e8a711e",
+   "speaker": "narrator",
+   "text": "That is six.",
+   "file": "num-that-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1353,
+   "generated": "2026-10-25T20:13:04",
+   "ok": true,
+   "stt": {
+    "hash": "e2db82f4c171471c88199f62ffde81ba6cddcaf9d8a56d6267ef654e8e8a711e",
+    "text": "That is six",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-7": {
+   "hash": "b73d02b29361db86a862f87c318bb5c2e15ac862e60fbf80fd6e1910124ec3c7",
+   "speaker": "narrator",
+   "text": "That is seven.",
+   "file": "num-that-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1296,
+   "generated": "2026-10-25T20:13:04",
+   "ok": true,
+   "stt": {
+    "hash": "b73d02b29361db86a862f87c318bb5c2e15ac862e60fbf80fd6e1910124ec3c7",
+    "text": "That is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-8": {
+   "hash": "ff676b6dad894a63a4d1ef36f9530e316ac948a42af7bcf59aec485df339175b",
+   "speaker": "narrator",
+   "text": "That is eight.",
+   "file": "num-that-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1338,
+   "generated": "2026-10-25T20:13:04",
+   "ok": true,
+   "stt": {
+    "hash": "ff676b6dad894a63a4d1ef36f9530e316ac948a42af7bcf59aec485df339175b",
+    "text": "That is eight",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-9": {
+   "hash": "e91077c45430249fa54d6b38a58ed89afd2cad44898b27847bd0e97e720e2747",
+   "speaker": "narrator",
+   "text": "That is nine.",
+   "file": "num-that-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1350,
+   "generated": "2026-10-25T20:13:05",
+   "ok": true,
+   "stt": {
+    "hash": "e91077c45430249fa54d6b38a58ed89afd2cad44898b27847bd0e97e720e2747",
+    "text": "That is nine",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-10": {
+   "hash": "86456ae8981e2a592769edf7cafb228faa4e552a5abb013ac8a4212872b3967e",
+   "speaker": "narrator",
+   "text": "That is ten.",
+   "file": "num-that-10.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1285,
+   "generated": "2026-10-25T20:13:05",
+   "ok": true,
+   "stt": {
+    "hash": "86456ae8981e2a592769edf7cafb228faa4e552a5abb013ac8a4212872b3967e",
+    "text": "That is 10",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-11": {
+   "hash": "c1884b66f045a12e598a0d9cb0d75d67cdf1fa1fbbfbeb46eaa80de26666f5b9",
+   "speaker": "narrator",
+   "text": "That is eleven.",
+   "file": "num-that-11.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1579,
+   "generated": "2026-10-25T20:13:07",
+   "ok": true,
+   "stt": {
+    "hash": "c1884b66f045a12e598a0d9cb0d75d67cdf1fa1fbbfbeb46eaa80de26666f5b9",
+    "text": "That is 11",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-12": {
+   "hash": "aaa1168126e5f96841ffa9855c43305751ab42a7d0f213437a1458c43d22137c",
+   "speaker": "narrator",
+   "text": "That is twelve.",
+   "file": "num-that-12.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1350,
+   "generated": "2026-10-25T20:13:06",
+   "ok": true,
+   "stt": {
+    "hash": "aaa1168126e5f96841ffa9855c43305751ab42a7d0f213437a1458c43d22137c",
+    "text": "That is twelve",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-13": {
+   "hash": "1f816b6da03d23282e94331e7c9abd6b73d9ad69196ed6c89bcf1f1fc0403ea8",
+   "speaker": "narrator",
+   "text": "That is thirteen.",
+   "file": "num-that-13.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1680,
+   "generated": "2026-10-25T20:13:06",
+   "ok": true,
+   "stt": {
+    "hash": "1f816b6da03d23282e94331e7c9abd6b73d9ad69196ed6c89bcf1f1fc0403ea8",
+    "text": "That is 13",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-14": {
+   "hash": "f69247d94e382cc77c46ca0bd87b4df7dbc0a514484ed1d1a41d3b5dac6f907c",
+   "speaker": "narrator",
+   "text": "That is fourteen.",
+   "file": "num-that-14.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1429,
+   "generated": "2026-10-25T20:13:06",
+   "ok": true,
+   "stt": {
+    "hash": "f69247d94e382cc77c46ca0bd87b4df7dbc0a514484ed1d1a41d3b5dac6f907c",
+    "text": "That is 14",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-15": {
+   "hash": "6c2864d05f343ebfc30cfd9347aa2c05a85e6c6a797624c5391348c1409de9bf",
+   "speaker": "narrator",
+   "text": "That is fifteen.",
+   "file": "num-that-15.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1440,
+   "generated": "2026-10-25T20:13:07",
+   "ok": true,
+   "stt": {
+    "hash": "6c2864d05f343ebfc30cfd9347aa2c05a85e6c6a797624c5391348c1409de9bf",
+    "text": "That is 15",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-16": {
+   "hash": "14fb910e3f2d409ac6391ae3ed2ac339d5827fd284b5a1cef8370ece53181db3",
+   "speaker": "narrator",
+   "text": "That is sixteen.",
+   "file": "num-that-16.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1533,
+   "generated": "2026-10-25T20:13:07",
+   "ok": true,
+   "stt": {
+    "hash": "14fb910e3f2d409ac6391ae3ed2ac339d5827fd284b5a1cef8370ece53181db3",
+    "text": "That is 16",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-17": {
+   "hash": "91fd7bdc72ac8c8fccf6c5d632fb230735bb4bce8fd7f8f00c5f80f66056248a",
+   "speaker": "narrator",
+   "text": "That is seventeen.",
+   "file": "num-that-17.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1547,
+   "generated": "2026-10-25T20:13:07",
+   "ok": true,
+   "stt": {
+    "hash": "91fd7bdc72ac8c8fccf6c5d632fb230735bb4bce8fd7f8f00c5f80f66056248a",
+    "text": "That is 17",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-18": {
+   "hash": "ba2bdb5f88b6215725287a2b004539c28e2721d78c5c3aaa355abaabcd0f08d7",
+   "speaker": "narrator",
+   "text": "That is eighteen.",
+   "file": "num-that-18.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1453,
+   "generated": "2026-10-25T20:13:08",
+   "ok": true,
+   "stt": {
+    "hash": "ba2bdb5f88b6215725287a2b004539c28e2721d78c5c3aaa355abaabcd0f08d7",
+    "text": "That is 18",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-19": {
+   "hash": "0ac07b9be7a6ebc00a6d00f195751e2a7fd1024080bcb4a8d8d3f67e1d24276c",
+   "speaker": "narrator",
+   "text": "That is nineteen.",
+   "file": "num-that-19.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1490,
+   "generated": "2026-10-25T20:13:08",
+   "ok": true,
+   "stt": {
+    "hash": "0ac07b9be7a6ebc00a6d00f195751e2a7fd1024080bcb4a8d8d3f67e1d24276c",
+    "text": "That is 19",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-that-20": {
+   "hash": "e190f6454537d1314e3b90b035a5b7d4d79c027efe0398e35cb583df94f8a01d",
+   "speaker": "narrator",
+   "text": "That is twenty.",
+   "file": "num-that-20.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1390,
+   "generated": "2026-10-25T20:13:14",
+   "ok": true,
+   "stt": {
+    "hash": "e190f6454537d1314e3b90b035a5b7d4d79c027efe0398e35cb583df94f8a01d",
+    "text": "That is 20",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-11": {
+   "hash": "6bed990784dda0fae18bf04c61dbeb2fef22414ae72e842815799a9bc65fbb52",
+   "speaker": "narrator",
+   "text": "But eleven cups are warm!",
+   "file": "num-toowarm-11.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2187,
+   "generated": "2026-10-25T20:13:09",
+   "ok": true,
+   "stt": {
+    "hash": "6bed990784dda0fae18bf04c61dbeb2fef22414ae72e842815799a9bc65fbb52",
+    "text": "But 11 cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-12": {
+   "hash": "f1e918efbb4a28beaf920457aa72f51be4b0a38c87ac25f1c7aa3bc13484ad09",
+   "speaker": "narrator",
+   "text": "But twelve cups are warm!",
+   "file": "num-toowarm-12.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1947,
+   "generated": "2026-10-25T20:13:09",
+   "ok": true,
+   "stt": {
+    "hash": "f1e918efbb4a28beaf920457aa72f51be4b0a38c87ac25f1c7aa3bc13484ad09",
+    "text": "But 12 cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-13": {
+   "hash": "6eb37c0fa30f8e964ece1633471db5634359c4f02042645405acb9a0f616f709",
+   "speaker": "narrator",
+   "text": "But thirteen cups are warm!",
+   "file": "num-toowarm-13.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2214,
+   "generated": "2026-10-25T20:13:09",
+   "ok": true,
+   "stt": {
+    "hash": "6eb37c0fa30f8e964ece1633471db5634359c4f02042645405acb9a0f616f709",
+    "text": "But 13 cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-14": {
+   "hash": "b963b6e2eeaba11ed85e27b6af24817c4b6e950ac236e3b03d50933e9e6cf7e6",
+   "speaker": "narrator",
+   "text": "But fourteen cups are warm!",
+   "file": "num-toowarm-14.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2264,
+   "generated": "2026-10-25T20:13:10",
+   "ok": true,
+   "stt": {
+    "hash": "b963b6e2eeaba11ed85e27b6af24817c4b6e950ac236e3b03d50933e9e6cf7e6",
+    "text": "But 14 cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-15": {
+   "hash": "2cd4f872b84177c701b748ade46909c42d3d75a60acf630c1c0c40eb63fbe763",
+   "speaker": "narrator",
+   "text": "But fifteen cups are warm!",
+   "file": "num-toowarm-15.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2301,
+   "generated": "2026-10-25T20:13:10",
+   "ok": true,
+   "stt": {
+    "hash": "2cd4f872b84177c701b748ade46909c42d3d75a60acf630c1c0c40eb63fbe763",
+    "text": "But 15 cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-16": {
+   "hash": "b530b0a8e50f2f0f31d21e095719057973eb3fc7d5176355367902b24d1132cb",
+   "speaker": "narrator",
+   "text": "But sixteen cups are warm!",
+   "file": "num-toowarm-16.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2359,
+   "generated": "2026-10-25T20:13:10",
+   "ok": true,
+   "stt": {
+    "hash": "b530b0a8e50f2f0f31d21e095719057973eb3fc7d5176355367902b24d1132cb",
+    "text": "But 16 cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  }
+ },
+ "updated": "2026-10-25T20:13:28"
+}

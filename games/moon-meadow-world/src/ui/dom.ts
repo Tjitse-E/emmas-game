@@ -1,0 +1,118 @@
+// Small DOM helpers for the 2D layer: element builders, the design unit, a frame ticker and promise timing.
+import type { Box, Point } from './geometry';
+
+/** One design pixel in CSS pixels (see geometry.unitFor). Set by the layer on every resize. */
+let unit = 1;
+export function setUnit(v: number): void {
+  unit = v;
+}
+/** Design pixels to CSS pixels. */
+export function u(n: number): number {
+  return n * unit;
+}
+
+export function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', parent?: Element | null): HTMLElementTagNameMap[K] {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  parent?.appendChild(e);
+  return e;
+}
+
+/** A picture that never starts a native drag, a callout or a selection. */
+export function img(src: string, cls = '', parent?: Element | null): HTMLImageElement {
+  const i = el('img', cls, parent);
+  i.src = src;
+  i.alt = '';
+  i.draggable = false;
+  i.decoding = 'async';
+  return i;
+}
+
+/** An element from a trusted SVG or HTML string written in this folder. */
+export function html(markup: string, cls = '', parent?: Element | null, tag: 'div' | 'span' = 'div'): HTMLElement {
+  const e = el(tag, cls, parent);
+  e.innerHTML = markup;
+  return e;
+}
+
+export function boxOf(e: Element): Box {
+  const r = e.getBoundingClientRect();
+  return { x: r.left, y: r.top, w: r.width, h: r.height };
+}
+
+export function centreOf(e: Element): Point {
+  const r = e.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
+export const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+export const nextFrame = (): Promise<void> => new Promise((r) => requestAnimationFrame(() => r()));
+
+/** Web Animations with a promise that also resolves when the animation is cancelled or the element is gone. */
+export function play(e: Element, frames: Keyframe[], o: KeyframeAnimationOptions): Promise<void> {
+  const a = e.animate(frames, o);
+  return new Promise((r) => {
+    a.onfinish = () => r();
+    a.oncancel = () => r();
+  });
+}
+
+/** Fade an element in or out with a CSS opacity transition, then resolve. */
+export async function fade(e: HTMLElement, on: boolean, ms = 400): Promise<void> {
+  e.style.transition = `opacity ${ms}ms ease`;
+  await nextFrame();
+  e.style.opacity = on ? '1' : '0';
+  await sleep(ms);
+}
+
+// ------------------------------------------------------------------------------------------------ ticker
+
+const tickers = new Set<() => void>();
+let rafId = 0;
+
+function loop(): void {
+  rafId = 0;
+  for (const fn of [...tickers]) fn();
+  if (tickers.size) rafId = requestAnimationFrame(loop);
+}
+
+/** Run fn every frame until the returned function is called. Only runs while something needs it. */
+export function onTick(fn: () => void): () => void {
+  tickers.add(fn);
+  if (!rafId) rafId = requestAnimationFrame(loop);
+  return () => {
+    tickers.delete(fn);
+  };
+}
+
+/** A tap that only fires when the finger lifts on the element it went down on (no tap on a stray slide). */
+export function onPress(e: HTMLElement, fn: (ev: PointerEvent) => void, o: { down?: (ev: PointerEvent) => void } = {}): () => void {
+  let id = -1;
+  const down = (ev: PointerEvent) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    id = ev.pointerId;
+    e.classList.add('down');
+    o.down?.(ev);
+  };
+  const up = (ev: PointerEvent) => {
+    if (ev.pointerId !== id) return;
+    id = -1;
+    e.classList.remove('down');
+    const r = e.getBoundingClientRect();
+    if (ev.clientX >= r.left - 12 && ev.clientX <= r.right + 12 && ev.clientY >= r.top - 12 && ev.clientY <= r.bottom + 12) fn(ev);
+  };
+  const cancel = () => {
+    id = -1;
+    e.classList.remove('down');
+  };
+  e.addEventListener('pointerdown', down);
+  e.addEventListener('pointerup', up);
+  e.addEventListener('pointercancel', cancel);
+  return () => {
+    e.removeEventListener('pointerdown', down);
+    e.removeEventListener('pointerup', up);
+    e.removeEventListener('pointercancel', cancel);
+  };
+}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#bfe6ff">
+<title>Moon Meadow World</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #bfe6ff; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+  #world { position: fixed; inset: 0; }
+  #ui { position: fixed; inset: 0; pointer-events: none; }
+  #mmw-fallback { position: fixed; inset: 0; z-index: 2147483647; display: block; background: radial-gradient(ellipse at 50% 30%, #3c3696, #16184a 70%); }
+  #mmw-fallback .pic { position: absolute; left: 50%; top: 50%; width: min(70vw, 70vh); height: min(70vw, 70vh); transform: translate(-50%, -50%); }
+  #mmw-fallback .home { position: absolute; right: 16px; top: 16px; width: 84px; height: 84px; border-radius: 50%; background: #fff; border: 5px solid #f2c14e; box-sizing: border-box; box-shadow: 0 5px 0 #d9a23a; display: flex; align-items: center; justify-content: center; }
+  #mmw-fallback .home svg { width: 58%; height: 58%; }
+</style>
+<script>
+  // The fallback picture: when WebGL 2 does not start (main.ts calls it) or the game script has not started after
+  // 10 s (an old Safari, a script that does not load), a quiet night picture and the home button back to the picture menu. A tap
+  // anywhere on it goes home. No text: Emma cannot read yet.
+  (function () {
+    function menuUrl() {
+      var p = location.pathname;
+      var at = p.indexOf('/games/moon-meadow-world/');
+      return at >= 0 ? p.slice(0, at) + '/index.html' : '/';
+    }
+    function fallback() {
+      if (document.getElementById('mmw-fallback') || !document.body) return;
+      var a = document.createElement('a');
+      a.id = 'mmw-fallback';
+      a.href = menuUrl();
+      a.setAttribute('aria-label', 'Home');
+      a.innerHTML =
+        '<svg class="pic" viewBox="0 0 200 200" aria-hidden="true">' +
+        '<circle cx="40" cy="36" r="2.5" fill="#fffbe0"/><circle cx="160" cy="28" r="2" fill="#fffbe0"/><circle cx="176" cy="84" r="2.5" fill="#fffbe0"/><circle cx="22" cy="104" r="2" fill="#fffbe0"/>' +
+        '<path d="M118 30 A54 54 0 1 0 156 118 A44 44 0 1 1 118 30 Z" fill="#fff3c4"/>' +
+        '<ellipse cx="100" cy="176" rx="64" ry="14" fill="#8a6a3c"/>' +
+        '<ellipse cx="100" cy="146" rx="30" ry="38" fill="#fff3d6" stroke="#e0b96a" stroke-width="4"/>' +
+        '<circle cx="90" cy="138" r="5" fill="#f5a3c7"/><circle cx="110" cy="154" r="4" fill="#a9d8ff"/></svg>' +
+        '<span class="home"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6 L44 23 L38 23 L38 42 L10 42 L10 23 L4 23 Z" fill="#ff8fc7" stroke="#c2468a" stroke-width="3" stroke-linejoin="round"/><rect x="19" y="28" width="10" height="14" rx="3" fill="#fff6dd" stroke="#c2468a" stroke-width="2.5"/><circle cx="24" cy="19" r="3.2" fill="#ffd25e"/></svg></span>';
+      document.body.appendChild(a);
+    }
+    window.__mmwFallback = fallback;
+    setTimeout(function () { if (!window.__game && !window.__mmwStarted) fallback(); }, 10000);
+  })();
+</script>
+</head>
+<body>
+<div id="world"></div>
+<div id="ui"></div>
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>
