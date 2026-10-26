@@ -141,7 +141,16 @@ export function draggable(source: HTMLElement, layer: HTMLElement, o: DragOpts):
   source.addEventListener('pointermove', move);
   source.addEventListener('pointerup', up);
   source.addEventListener('pointercancel', cancel);
+  // On the iPad the release does not always reach the source (it lost the capture, or the touch ended over another
+  // layer). Without it the bell or stone stays lifted and every other drag is locked, so the window also ends it.
+  const lost = (e: PointerEvent) => end(e, e.type !== 'pointerup');
+  window.addEventListener('pointerup', up, true);
+  window.addEventListener('pointercancel', cancel, true);
+  source.addEventListener('lostpointercapture', lost);
   return () => {
+    window.removeEventListener('pointerup', up, true);
+    window.removeEventListener('pointercancel', cancel, true);
+    source.removeEventListener('lostpointercapture', lost);
     source.removeEventListener('pointerdown', down);
     source.removeEventListener('pointermove', move);
     source.removeEventListener('pointerup', up);
