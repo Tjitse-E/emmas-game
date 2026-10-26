@@ -47,6 +47,12 @@
 (function () {
   // Paths are relative to this page (shared/review.html). The repo root is served over HTTP.
   var KNOWN = ['opus-5-5-unicorn-egg-nest-v2', 'opus-5-5-pippas-word-wand-v2', 'opus-5-5-fluffle-nursery-v2'];
+  // Built games keep their own clip pack. The first folder that has one wins: public/ when the
+  // repo is served, dist/ on the deployed site (only the build is uploaded there).
+  var PACKS = {
+    'moon-meadow-world': ['../games/moon-meadow-world/public/audio/v4demo/', '../games/moon-meadow-world/dist/audio/v4demo/']
+  };
+  var bases = {};
   EmmaAudio.init({ base: '', phonics: 'audio/phonics/' });
   var unlocked = false;
   function unlock() { if (!unlocked) { EmmaAudio.unlock(); unlocked = true; } }
@@ -80,7 +86,19 @@
   }
 
   // The picture menu keeps its clips in menu-audio/ in the repo root. Games keep theirs in ideas/<dir>/audio/.
-  function clipBase(dir) { return dir === 'menu' ? '../menu-audio/' : '../ideas/' + dir + '/audio/'; }
+  function clipBase(dir) { return bases[dir] || (dir === 'menu' ? '../menu-audio/' : '../ideas/' + dir + '/audio/'); }
+
+  function loadPack(dir) {
+    var tries = PACKS[dir] || [clipBase(dir)];
+    return (function next(i) {
+      if (i >= tries.length) return Promise.resolve({ dir: dir, lines: null, manifest: null });
+      return Promise.all([getJSON(tries[i] + 'lines.json'), getJSON(tries[i] + 'manifest.json')]).then(function (x) {
+        if (!x[0] && !x[1]) return next(i + 1);
+        bases[dir] = tries[i];
+        return { dir: dir, lines: x[0], manifest: x[1] };
+      });
+    })(0);
+  }
 
   // Find game folders: the directory listing of ideas/ when the server gives one, plus the known names.
   function findGames() {
@@ -90,7 +108,7 @@
         var re = /href="([^"\/]+-v2)\/?"/g, m;
         while ((m = re.exec(html))) if (found.indexOf(m[1]) < 0) found.push(decodeURIComponent(m[1]));
         KNOWN.forEach(function (k) { if (found.indexOf(k) < 0) found.push(k); });
-        return ['menu'].concat(found.sort());
+        return ['menu'].concat(found.sort(), Object.keys(PACKS));
       });
   }
 
@@ -175,10 +193,7 @@
 
   Promise.all([findGames(), getJSON('audio/phonics/index.json')]).then(function (r) {
     var games = r[0], index = r[1];
-    return Promise.all(games.map(function (dir) {
-      return Promise.all([getJSON(clipBase(dir) + 'lines.json'), getJSON(clipBase(dir) + 'manifest.json')])
-        .then(function (x) { return { dir: dir, lines: x[0], manifest: x[1] }; });
-    })).then(function (gs) {
+    return Promise.all(games.map(loadPack)).then(function (gs) {
       var root = document.getElementById('groups');
       var nav = document.getElementById('nav');
       root.textContent = '';

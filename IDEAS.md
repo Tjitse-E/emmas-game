@@ -35,6 +35,7 @@ Each `README.md` covers:
 | opus-5-5: Pippa's Word Wand v2 | [opus-5-5-pippas-word-wand-v2](ideas/opus-5-5-pippas-word-wand-v2/) | Spell the word a visitor says, read notes and a tea-party sentence | Counting on and bonds to 10 with number stones | mockup | |
 | opus-5-5: Fluffle Nursery v2 | [opus-5-5-fluffle-nursery-v2](ideas/opus-5-5-fluffle-nursery-v2/) | Read the baby's written wishes, build its name | Exact plates to fill a ten-frame tummy, bath-jug bonds to 10 | mockup | |
 | opus-5-5: Moon Meadow Home (v3) | [games/moon-meadow-home](games/moon-meadow-home/) | Spell the babies' names, read wishes (with plurals), label jars | Warm eggs with number stones (totals 7 to 15), door numbers, hay rack bundles | building (1.0.1 live: harder maths to 15, feeding, lantern walk to bed; waiting for her feedback) | |
+| opus-5-5: Moon Meadow World (v4 demo) | [games/moon-meadow-world](games/moon-meadow-world/) | Read the babies' wish words (one syllable, short), spell their names, door numerals | Warm eggs with number stones (totals 11 to 15), cool a snow egg (take away across ten), door numbers | demo ready for Emma's first test (one level, see [docs/v4/demo.md](docs/v4/demo.md)) | |
 
 Status values: `idea`, `mockup`, `chosen`, `rejected`, `building`.
 

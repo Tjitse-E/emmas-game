@@ -12,6 +12,11 @@
       "text": "Moon Meadow Home!"
     },
     {
+      "id": "menu-moon-meadow-world",
+      "speaker": "narrator",
+      "text": "Moon Meadow World!"
+    },
+    {
       "id": "menu-unicorn-egg-nest",
       "speaker": "narrator",
       "text": "Unicorn Egg Nest!"

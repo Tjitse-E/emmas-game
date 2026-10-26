@@ -32,6 +32,23 @@
     "how": "exact"
    }
   },
+  "menu-moon-meadow-world": {
+   "hash": "b990510f8452c8a2bbd03315d23adbb601381963a5cc9f7773e783c1465def01",
+   "speaker": "narrator",
+   "text": "Moon Meadow World!",
+   "file": "menu-moon-meadow-world.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1460,
+   "generated": "2026-10-25T20:13:50",
+   "ok": true,
+   "stt": {
+    "hash": "b990510f8452c8a2bbd03315d23adbb601381963a5cc9f7773e783c1465def01",
+    "text": "Moon Meadow World",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "menu-unicorn-egg-nest": {
    "hash": "b97cbe7594bcf6b4e3ae0ab1c00355b7a5bc3d23db338f4115c5f5d6f28eaee7",
    "speaker": "narrator",
@@ -78,5 +95,5 @@
    }
   }
  },
- "updated": "2026-10-12T13:29:12"
+ "updated": "2026-10-25T20:13:51"
 }
