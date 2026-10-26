@@ -17,6 +17,32 @@ import { installHook } from './test-hook';
 // load). A slow boot on the Air 2 must not be covered by the night picture.
 (window as unknown as { __mmwStarted?: boolean }).__mmwStarted = true;
 
+/**
+ * Loading failures on the iPad: a picture that fails is tried again twice, and every failure (pictures and clips)
+ * is reported as a request to diag.txt next to the page. That file does not exist; the request only shows up in
+ * the server's log (Emma's home server logs every request), so a play-through on the iPad shows what failed and why.
+ */
+function report(kind: string, what: string, why = ''): void {
+  console.warn(`[mmw] ${kind} failed`, what, why);
+  try {
+    const q = new URLSearchParams({ kind, what: what.slice(-120), why: why.slice(0, 120), t: String(Math.round(performance.now())) });
+    void fetch(`diag.txt?${q}`, { cache: 'no-store' }).catch(() => undefined);
+  } catch {
+    /* reporting must never break the game */
+  }
+}
+(window as unknown as { EmmaAudioFailed?: (url: string, why: string) => void }).EmmaAudioFailed = (url, why) => report('clip', url, why);
+const tries = new WeakMap<HTMLImageElement, number>();
+window.addEventListener('error', (e) => {
+  const i = e.target;
+  if (!(i instanceof HTMLImageElement) || !i.src || i.src.startsWith('data:')) return;
+  const n = (tries.get(i) ?? 0) + 1;
+  tries.set(i, n);
+  const src = i.src.replace(/[?&]retry=\d+$/, '');
+  report('img', src, `try ${n}`);
+  if (n <= 2) setTimeout(() => { i.src = `${src}${src.includes('?') ? '&' : '?'}retry=${n}`; }, 400 * n);
+}, true);
+
 const params = new URLSearchParams(location.search);
 const seed = Number(params.get('seed')) || Date.now();
 const at = params.get('at');
@@ -37,6 +63,7 @@ function hasWebGL2(): boolean {
 
 function boot(): void {
   audio.setup();
+  audio.onMissing((id) => report('missing', id));
   const world = createWorld(document.getElementById('world')!);
   const actors = createActors(world.scene, {
     route: (a, b) => world.route(a, b),

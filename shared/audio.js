@@ -94,14 +94,22 @@
     if (buffers[url]) return buffers[url];
     ensureContext();
     if (!ctx) return Promise.resolve(null);
-    buffers[url] = fetch(url).then(function (r) {
-      if (!r.ok) return null;
+    var p = fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.arrayBuffer().then(decode);
     }).catch(function (e) {
-      console.warn('[audio] cannot load ' + url + ': ' + (e && e.message ? e.message : e));
+      var why = e && e.message ? e.message : String(e);
+      console.warn('[audio] cannot load ' + url + ': ' + why);
+      // A failed load (a network hiccup, a decode under memory pressure on an old iPad) is not remembered, so the
+      // next say() of this clip tries again instead of staying silent for the rest of the session.
+      if (buffers[url] === p) delete buffers[url];
+      if (typeof window.EmmaAudioFailed === 'function') {
+        try { window.EmmaAudioFailed(url, why); } catch (err) { /* reporting must not break playback */ }
+      }
       return null;
     });
-    return buffers[url];
+    buffers[url] = p;
+    return p;
   }
 
   function clipUrl(id) { return opts.base + id + '.mp3'; }

@@ -9,7 +9,8 @@
 ## Target device: iPad
 
 - Emma plays on an iPad in Safari, touch only, mostly landscape.
-- Design for landscape `1180 x 820` CSS pixels (iPad 10th gen / iPad Air). Check portrait `820 x 1180` and the smaller `1080 x 810` (older iPads) as well.
+- Her iPad is an **iPad 8th generation (2020), 32 GB, iPadOS 26.5.2**: A12 chip, 3 GB memory, a 2160 x 1620 screen (2x). This is the device we build for.
+- Design for landscape `1080 x 810` CSS pixels (her iPad), and about `1080 x 740` with Safari's bars showing. Check portrait `810 x 1080` and the larger `1180 x 820` (iPad 10th gen / iPad Air) as well.
 - Touch targets at least 64 x 64 px. No hover states, no keyboard input, no double tap.
 - Disable page zoom, text selection and pull-to-refresh during play.
 - Audio on iOS only starts after a user tap, so every game starts with a big "Play" button.
