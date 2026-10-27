@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BOUNDS, GAZEBO, GRAZE_HOMES, NEST, OBSTACLES, PLACES, POND, SLIDE, STABLE, START, WILD_EGG,
+  BOUNDS, GAZEBO, GRAZE_HOMES, HAY_RACK, NEST, OBSTACLES, PICNIC, PLACES, POND, SLIDE, STABLE, START, WILD_EGG,
   doorFront, inPond, inStableBuilding, v2, type Vec2,
 } from '../src/layout';
 import { BEHIND_Z, SLIDE_BLOCK, STABLE_BLOCK, isWalkable, lineOfSight, nearestWalkable, route } from '../src/world/route';
@@ -191,5 +191,61 @@ describe('route', () => {
     const r = route(v2(-24, 13), v2(24, -20));
     for (let i = 1; i < r.length; i++) expect(lineOfSight(r[i - 1], r[i])).toBe(true);
     expect(ms).toBeLessThan(25);
+  });
+});
+
+describe('the 2.2.0 places: the hay rack and the picnic', () => {
+  const straight = (a: Vec2, b: Vec2): number => Math.hypot(a.x - b.x, a.z - b.z);
+  const doors = Array.from({ length: 20 }, (_, i) => doorFront(i + 1));
+
+  it('lets her and the herd stand at the rack, the eat spots, her picnic spot and on the rug', () => {
+    expect(isWalkable(HAY_RACK.center)).toBe(false);
+    const { center, halfX, halfZ } = PICNIC.rug;
+    const spots = [HAY_RACK.stand, ...HAY_RACK.eat, PICNIC.stand, ...PICNIC.seats, PICNIC.hamper, center];
+    for (let x = center.x - halfX; x <= center.x + halfX; x += 0.3) {
+      for (let z = center.z - halfZ; z <= center.z + halfZ; z += 0.3) spots.push(v2(x, z));
+    }
+    for (const p of spots) expect(isWalkable(p), `${p.x},${p.z}`).toBe(true);
+  });
+
+  it('reaches the rack stand and the picnic spot from all over the meadow, on short routes', () => {
+    const from = [START, STABLE.emmaStand, NEST.stand, SLIDE.ladderBase, WILD_EGG.stand, ...GRAZE_HOMES, doorFront(1), doorFront(15)];
+    for (const to of [HAY_RACK.stand, PICNIC.stand, ...HAY_RACK.eat, ...PICNIC.seats]) {
+      for (const a of from) {
+        const r = route(a, to);
+        expectClear(r);
+        expect(near(r[r.length - 1], to), `${a.x},${a.z} to ${to.x},${to.z}`).toBe(true);
+        // The pond is the only thing worth a long way round.
+        if (a.x < 3) expect(len(r), `${a.x},${a.z} to ${to.x},${to.z}`).toBeLessThan(straight(a, to) * 1.15 + 1);
+      }
+    }
+  });
+
+  it('never blocks the way to the doors, the stable stand or the gazebo', () => {
+    const from = [HAY_RACK.stand, ...HAY_RACK.eat, PICNIC.stand, ...PICNIC.seats, v2(-16, -12), v2(-18, -10), v2(-13, -13.5)];
+    for (const a of from) {
+      for (const to of [...doors, STABLE.emmaStand, nearestWalkable(GAZEBO.center)]) {
+        const r = route(a, to);
+        expectClear(r);
+        expect(near(r[r.length - 1], to), `${a.x},${a.z} to ${to.x},${to.z}`).toBe(true);
+        expect(len(r), `${a.x},${a.z} to ${to.x},${to.z}`).toBeLessThan(straight(a, to) * 1.25 + 1.5);
+      }
+    }
+  });
+
+  it('walks straight across the rug, which is not an obstacle', () => {
+    const { center, halfZ } = PICNIC.rug;
+    const north = v2(center.x, GAZEBO.center.z + GAZEBO.radius + 0.6);
+    const south = v2(center.x, center.z + halfZ + 1.5);
+    expect(route(north, south)).toHaveLength(2);
+    expect(route(v2(center.x - 2, center.z), v2(center.x + 2, center.z))).toHaveLength(2);
+  });
+
+  it('keeps the gap between the rack and the stable open', () => {
+    const west = v2(-16, -11.6);
+    const r = route(west, doorFront(1));
+    expectClear(r);
+    expect(len(r)).toBeLessThan(straight(west, doorFront(1)) + 0.8);
+    expect(isWalkable(v2(-10.3, -11.6))).toBe(true);
   });
 });

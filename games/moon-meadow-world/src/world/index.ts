@@ -7,7 +7,7 @@ import { buildGlows } from './beacon';
 import { CameraRig, FOV } from './camera';
 import { Scenery } from './geo';
 import { buildPicker } from './pick';
-import { buildGazebo, buildNest, buildPond, buildSlide, nestFlowerSpots } from './places';
+import { buildGazebo, buildNest, buildPicnic, buildPond, buildSlide, nestFlowerSpots, picnicHeight } from './places';
 import { isWalkable, nearestWalkable, route } from './route';
 import { FOG_FAR, buildSky } from './sky';
 import { buildStable } from './stable';
@@ -25,8 +25,13 @@ export interface WorldExtras {
   frame(center: Vec2, width: number, o?: { ms?: number; shiftY?: number; pitch?: number }): Promise<void>;
   /** The current time of day (0 day, 0.5 sunset, 1 night). */
   readonly timeOfDay: number;
-  /** Ground height under p: 0 on the meadow, up to 0.3 m on the nest mound, below 0 on the pond's bank. */
+  /**
+   * Ground height under p: 0 on the meadow, up to 0.3 m on the nest mound, below 0 on the pond's bank, 2 cm on the
+   * picnic rug and about 10 cm on its two cushions (so the babies sit on them).
+   */
   heightAt(p: Vec2): number;
+  /** The hay rack's current fill (0 empty to 1 full), eased by stable.hay(). For flows and the harness. */
+  readonly hayFill: number;
 }
 
 export type WorldWithExtras = World & WorldExtras;
@@ -75,6 +80,7 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
   const hedgeFlowers: HedgeFlowers = { at: [] };
   buildHedges(scenery, hedgeFlowers);
   buildGazebo(scenery);
+  buildPicnic(scenery);
   buildNest(scenery);
   buildSlide(scenery);
   const pond = buildPond(scenery, material);
@@ -204,6 +210,9 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
     get timeOfDay() {
       return tod;
     },
+    get hayFill() {
+      return stable.hayFill;
+    },
     onFrame(fn) {
       callbacks.add(fn);
       return () => void callbacks.delete(fn);
@@ -250,7 +259,7 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
     isWalkable,
     nearestWalkable,
     heightAt(p) {
-      return Math.max(groundHeight(p.x, p.z), moundHeight(p.x, p.z));
+      return Math.max(groundHeight(p.x, p.z), moundHeight(p.x, p.z), picnicHeight(p.x, p.z));
     },
     stable: stable.api,
     nestGlow(on) {

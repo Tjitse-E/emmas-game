@@ -1,12 +1,14 @@
 // The two stable rows: cream walls with stone-trimmed arches, a coral tiled roof, a narrow balcony with a ramp, dark
 // cosy stalls with straw, half doors that swing, gold number plaques and lanterns. The doors are one instanced mesh
-// and the plaques one merged mesh, so twenty doors cost two draw calls.
+// and the plaques one merged mesh, so twenty doors cost two draw calls. West of the yard stands the hay rack: its
+// wood is stable scenery, its hay one small mesh that is only drawn while there is hay in it.
 import '@fontsource/andika/700.css';
 import * as THREE from 'three';
-import { STABLE, doorCenter, doorColumn, doorIsUpper, doorRow } from '../layout';
+import { HAY_RACK, STABLE, doorCenter, doorColumn, doorIsUpper, doorRow } from '../layout';
 import type { StableApi } from '../contracts';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Scenery, canvasTexture, matrixOf, merge, paint, paintBy, paintY, place, softDotTexture, type Geo } from './geo';
+import { CRIB, RACK_YAW, hayDepth, hayGeometry, rackGeometry } from './hayrack';
 
 const ROW_HALF = 3.9;
 const STOREY = STABLE.upperFloorY;
@@ -332,6 +334,8 @@ export interface Stable {
   ready: Promise<void>;
   /** Plaques glow a little at night so the numerals stay clear. */
   setNight(n: number): void;
+  /** The hay rack's current (eased) fill, 0 to 1. */
+  readonly hayFill: number;
   update(dt: number, t: number): void;
 }
 
@@ -344,6 +348,21 @@ export function buildStable(scene: THREE.Scene, scenery: Scenery, material: THRE
     for (const g of rowGeometry(i === 0 ? -1 : 1, inside)) scenery.add(place(g, { x: r.centerX, z: STABLE.frontZ }), 'stable');
     for (const g of inside.slice(before)) place(g, { x: r.centerX, z: STABLE.frontZ });
   });
+  // The hay rack's wood goes with the stable scenery (no draw call of its own). Its hay is one mesh with the shared
+  // material, scaled up from the crib's bottom: hidden at 0, so it costs a draw call only while there is hay.
+  for (const g of rackGeometry()) scenery.add(place(g, { x: HAY_RACK.center.x, z: HAY_RACK.center.z, ry: RACK_YAW }), 'stable');
+  const hay = new THREE.Mesh(hayGeometry(), material);
+  hay.name = 'hay';
+  hay.position.set(HAY_RACK.center.x, CRIB.y0 + 0.01, HAY_RACK.center.z);
+  hay.rotation.y = RACK_YAW;
+  hay.visible = false;
+  let hayFill = 0;
+  let hayTween: { from: number; to: number; ms: number; t: number } | null = null;
+  const setHay = (f: number): void => {
+    hayFill = f;
+    hay.visible = f > 0.001;
+    hay.scale.set(1, Math.max(f, 1e-3), hayDepth(Math.max(f, 1e-3)));
+  };
   // The stalls: their own material, so they can glow warm inside when the lanterns are lit.
   const stallMat = new THREE.MeshLambertMaterial({ vertexColors: true, emissive: '#b8661c', emissiveIntensity: 0 });
   const stalls = new THREE.Mesh(merge(inside), stallMat);
@@ -485,7 +504,7 @@ export function buildStable(scene: THREE.Scene, scenery: Scenery, material: THRE
   let litFade = 0;
   let night = 0;
 
-  scene.add(stalls, doors, plaques, doorGlow, rowGlow, lanternGlass, halos, lightPools);
+  scene.add(stalls, doors, plaques, doorGlow, rowGlow, lanternGlass, halos, lightPools, hay);
 
   const anims = new Map<number, Anim>();
   const animate = (n: number, a: Omit<Anim, 't' | 'done'>): Promise<void> =>
@@ -526,15 +545,27 @@ export function buildStable(scene: THREE.Scene, scenery: Scenery, material: THRE
     lanterns(on) {
       lit = on;
     },
-    // The hay rack comes with the 2.2.0 side quest; until then there is no hay to show.
-    hay() {},
+    hay(fill, ms = 900) {
+      const to = Number.isFinite(fill) ? THREE.MathUtils.clamp(fill, 0, 1) : 0;
+      if (ms <= 0 || to === hayFill) {
+        hayTween = null;
+        setHay(to);
+        return;
+      }
+      hayTween = { from: hayFill, to, ms, t: 0 };
+    },
   };
 
   const ease = (x: number): number => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  /** Hay going in rises a little past the goal and settles: a soft, happy plop. */
+  const easeBack = (x: number): number => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2);
 
   return {
     api,
     ready,
+    get hayFill() {
+      return hayFill;
+    },
     setNight(n) {
       night = n;
       plaqueMat.emissiveIntensity = 0.38 * n;
@@ -556,6 +587,16 @@ export function buildStable(scene: THREE.Scene, scenery: Scenery, material: THRE
           pose(n);
           anims.delete(n);
           a.done();
+        }
+      }
+      if (hayTween) {
+        const h = hayTween;
+        h.t += dt * 1000;
+        const k = Math.min(1, h.t / h.ms);
+        setHay(h.from + (h.to - h.from) * (h.to > h.from ? easeBack(k) : ease(k)));
+        if (k >= 1) {
+          hayTween = null;
+          setHay(h.to);
         }
       }
       if (moved) {

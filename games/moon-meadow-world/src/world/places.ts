@@ -1,7 +1,7 @@
-// Lumi's gazebo, the nest on its mound, the pond with its toys and the slide. Static parts go into the merged
-// scenery; the water, the ducks and the boat are their own small meshes because they move.
+// Lumi's gazebo, the royal picnic, the nest on its mound, the pond with its toys and the slide. Static parts go into
+// the merged scenery; the water, the ducks and the boat are their own small meshes because they move.
 import * as THREE from 'three';
-import { GAZEBO, NEST, POND, SLIDE, SLIDE_CURVE } from '../layout';
+import { GAZEBO, NEST, PICNIC, POND, SLIDE, SLIDE_CURVE } from '../layout';
 import { Scenery, blob, canvasTexture, faceUp, merge, paint, paintBy, paintY, place, rng, type Geo } from './geo';
 import { MOUND, grassColour, groundHeight, moundHeight } from './terrain';
 
@@ -107,6 +107,165 @@ export function buildGazebo(scenery: Scenery): void {
     at(paintBy(blob(0.32, 1), (_x, y, _z, out) => out.set(y > 0.12 ? '#ff9cc8' : '#7fc77d')), { x: px, y: 0.5, z: pz });
   }
   for (const g of parts) scenery.add(g);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The royal picnic
+// ---------------------------------------------------------------------------------------------------------------
+
+/** The rug's top, and the round-cornered square cushions on its two seats. */
+const RUG_Y = 0.022;
+const CUSHION = { half: 0.3, height: 0.12 } as const;
+/** How far a superellipse of power 4 reaches at angle a (1 on the axes, 1.19 at the corners): a soft square. */
+const squircle = (a: number): number => 1 / Math.pow(Math.cos(a) ** 4 + Math.sin(a) ** 4, 0.25);
+
+/**
+ * The ground under a picnic guest: the rug's top on the rug and a soft dome on each cushion (a little lower than the
+ * cushion itself, as feet sink in), so the babies sit on their cushions. 0 elsewhere.
+ */
+export function picnicHeight(x: number, z: number): number {
+  const { center, halfX, halfZ } = PICNIC.rug;
+  if (Math.abs(x - center.x) > halfX || Math.abs(z - center.z) > halfZ) return 0;
+  let h = RUG_Y;
+  for (const s of PICNIC.seats) {
+    const dx = x - s.x;
+    const dz = z - s.z;
+    const r = Math.hypot(dx, dz) / (CUSHION.half * squircle(Math.atan2(dz, dx)));
+    if (r < 1) h = Math.max(h, RUG_Y + CUSHION.height * 0.85 * Math.sqrt(1 - r * r));
+  }
+  return h;
+}
+
+const UP = new THREE.Vector3(0, 1, 0);
+const dir = new THREE.Vector3();
+const turn = new THREE.Quaternion();
+/** Turn a part built along +y (a cone, a strand) so it points along (x, y, z). */
+export function aim(g: Geo, x: number, y: number, z: number): Geo {
+  return g.applyQuaternion(turn.setFromUnitVectors(UP, dir.set(x, y, z).normalize()));
+}
+
+/** Colour every triangle of a non-indexed part by its centre (crisp checks and weaves). */
+function paintFaces(g: Geo, fn: (x: number, y: number, z: number, out: THREE.Color) => void): Geo {
+  const p = g.attributes.position;
+  const c = g.attributes.color;
+  for (let i = 0; i < p.count; i += 3) {
+    const x = (p.getX(i) + p.getX(i + 1) + p.getX(i + 2)) / 3;
+    const y = (p.getY(i) + p.getY(i + 1) + p.getY(i + 2)) / 3;
+    const z = (p.getZ(i) + p.getZ(i + 1) + p.getZ(i + 2)) / 3;
+    fn(x, y, z, tmp);
+    for (let k = 0; k < 3; k++) c.setXYZ(i + k, tmp.r, tmp.g, tmp.b);
+  }
+  return g;
+}
+
+/** Pink gingham, nx by nz checks: white, light pink where one stripe runs, deep pink where two cross. */
+const GINGHAM = ['#fff8fb', '#ffc4dc', '#ff8fbd'];
+function gingham(w: number, d: number, nx: number, nz: number): Geo {
+  const g = paint(new THREE.PlaneGeometry(w, d, nx, nz).rotateX(-Math.PI / 2).toNonIndexed(), GINGHAM[0]);
+  return paintFaces(g, (x, _y, z, out) => {
+    const i = Math.floor(((x + w / 2) / w) * nx);
+    const j = Math.floor(((z + d / 2) / d) * nz);
+    out.set(GINGHAM[(i % 2) + (j % 2)]);
+  });
+}
+
+/** A plump cushion with a soft square outline, a button and a gold pompom on each corner. */
+function cushion(colour: string, light: string, button: string): Geo[] {
+  const g = new THREE.SphereGeometry(1, 16, 3, 0, Math.PI * 2, 0, Math.PI / 2);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i);
+    const z = p.getZ(i);
+    const k = Math.hypot(x, z) > 1e-6 ? squircle(Math.atan2(z, x)) : 1;
+    p.setXYZ(i, x * k, p.getY(i), z * k);
+  }
+  g.computeVertexNormals();
+  const parts = [place(paintY(g, colour, light, 0, 1), { y: RUG_Y, sx: CUSHION.half, sy: CUSHION.height, sz: CUSHION.half })];
+  parts.push(place(paint(new THREE.SphereGeometry(0.035, 5, 3), button), { y: RUG_Y + CUSHION.height - 0.005, sy: 0.6 }));
+  const corner = CUSHION.half * squircle(Math.PI / 4) * Math.SQRT1_2 * 0.96;
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    // A gold pompom on each corner.
+    parts.push(place(paint(new THREE.SphereGeometry(0.04, 5, 3), '#f5c84e'), { x: sx * (corner + 0.02), y: RUG_Y + 0.04, z: sz * (corner + 0.02) }));
+  }
+  return parts;
+}
+
+/** A wicker hamper like v3's hamper picture: woven sides, a lid, an arched handle and a pink napkin. */
+function hamper(): Geo[] {
+  const W = 0.5;
+  const H = 0.28;
+  const D = 0.34;
+  const parts: Geo[] = [];
+  const body = paint(new THREE.BoxGeometry(W, H, D, 5, 3, 3).toNonIndexed(), '#e3a256');
+  parts.push(place(paintFaces(body, (x, y, z, out) => {
+    // A basket weave: strands that swap over and under from cell to cell, a little darker at the bottom.
+    const across = Math.abs(x) > W / 2 - 1e-3 ? Math.floor((z + D / 2) / (D / 3)) : Math.floor((x + W / 2) / (W / 5));
+    const row = Math.floor((y + H / 2) / (H / 3));
+    out.set((across + row) % 2 === 0 ? '#eab06a' : '#cf8b40');
+    if (row === 0) out.multiplyScalar(0.92);
+  }), { y: H / 2 }));
+  parts.push(place(paintY(new THREE.BoxGeometry(W + 0.04, 0.05, D + 0.04), '#c98538', '#f0bb72', -0.025, 0.025), { y: H + 0.025 }));
+  // The handle: an arch from side to side over the lid.
+  parts.push(place(paint(new THREE.TorusGeometry(0.17, 0.022, 4, 10, Math.PI), '#c98538'), { y: H + 0.05 }));
+  // A gold clasp and a pink gingham napkin peeking out under the lid at the front.
+  parts.push(place(paint(new THREE.BoxGeometry(0.06, 0.07, 0.02), '#f5c84e'), { y: H - 0.01, z: D / 2 + 0.012 }));
+  const napkin = paint(new THREE.PlaneGeometry(0.2, 0.12, 2, 2).toNonIndexed(), GINGHAM[0]);
+  paintFaces(napkin, (x, y, _z, out) => out.set(GINGHAM[(x > 0 ? 1 : 0) + (y > 0 ? 0 : 1)]));
+  parts.push(place(napkin, { x: -0.12, y: H - 0.04, z: D / 2 + 0.012, rz: 0.12 }));
+  return parts;
+}
+
+/** A flat gold crown sewn on the rug: Lumi's royal sign. */
+function crownMotif(): Geo[] {
+  const s = new THREE.Shape();
+  s.moveTo(-0.17, 0);
+  s.lineTo(0.17, 0);
+  s.lineTo(0.2, 0.22);
+  s.lineTo(0.09, 0.11);
+  s.lineTo(0, 0.26);
+  s.lineTo(-0.09, 0.11);
+  s.lineTo(-0.2, 0.22);
+  s.closePath();
+  // Lying flat with its points to the north, so it stands upright on screen.
+  const parts = [place(paint(new THREE.ShapeGeometry(s), '#f5c84e'), { rx: -Math.PI / 2 })];
+  for (const [x, y, c] of [[-0.2, 0.22, '#ff8fbd'], [0, 0.26, '#b9a0ff'], [0.2, 0.22, '#ff8fbd']] as const) {
+    parts.push(place(paint(new THREE.CircleGeometry(0.035, 6), c), { x, y: 0.002, z: -y, rx: -Math.PI / 2 }));
+  }
+  return parts;
+}
+
+/**
+ * The royal picnic south of Lumi's gazebo: a pink gingham rug with a gold border, tassels and a gold crown, two plump
+ * cushions for the babies and a wicker hamper by her spot. Merged into the meadow's south-west region.
+ */
+export function buildPicnic(scenery: Scenery): void {
+  const { center, halfX, halfZ } = PICNIC.rug;
+  const region = Scenery.regionOf(center.x, center.z);
+  const add = (g: Geo, o: Parameters<typeof place>[1], ox = center.x, oz = center.z): void =>
+    scenery.add(place(g, { ...o, x: ox + (o.x ?? 0), z: oz + (o.z ?? 0) }), region);
+
+  // The rug: 8 x 6 checks of 30 cm, a gold border a little above it and a tassel at each corner.
+  add(gingham(halfX * 2, halfZ * 2, 8, 6), { y: RUG_Y });
+  const BORDER = 0.06;
+  for (const sz of [-1, 1]) add(paintY(new THREE.BoxGeometry(halfX * 2 + BORDER, 0.03, BORDER), '#e9b543', '#f8d778', -0.015, 0.015), { y: 0.016, z: sz * halfZ });
+  for (const sx of [-1, 1]) add(paintY(new THREE.BoxGeometry(BORDER, 0.03, halfZ * 2 - BORDER), '#e9b543', '#f8d778', -0.015, 0.015), { x: sx * halfX, y: 0.016 });
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    // A tassel on each corner: a gold knot and a skirt fanning out on the grass.
+    add(paint(new THREE.SphereGeometry(0.05, 5, 3), '#f8d778'), { x: sx * (halfX + 0.03), y: 0.04, z: sz * (halfZ + 0.03) });
+    add(aim(paint(new THREE.ConeGeometry(0.06, 0.14, 5), '#f0c24f'), -sx, 0.3, -sz), { x: sx * (halfX + 0.11), y: 0.045, z: sz * (halfZ + 0.11) });
+  }
+  // The crown, in front between the two cushions.
+  const crownZ = PICNIC.seats[0].z + CUSHION.half + 0.42 - center.z;
+  for (const g of crownMotif()) add(g, { y: RUG_Y + 0.002, z: crownZ });
+
+  // The cushions: lilac on the left, mint on the right.
+  const looks: [string, string, string][] = [['#c4a8f5', '#e6dbff', '#f5c84e'], ['#93dcc0', '#d2f5e6', '#f5c84e']];
+  PICNIC.seats.forEach((s, i) => {
+    for (const g of cushion(...looks[i])) add(g, { ry: (i ? 1 : -1) * 0.12 }, s.x, s.z);
+  });
+
+  // The hamper, turned a little towards her spot.
+  for (const g of hamper()) add(g, { ry: 0.35 }, PICNIC.hamper.x, PICNIC.hamper.z);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
