@@ -68,6 +68,9 @@ expect_eq "$(item_count)" 5 'items at level 3'
 # The pond: the slide, the followers near her, and the bath wish after the first slide.
 start_at pond
 wait_for "() => window.__game.state().goal === 'pond'" 30
+# World touches whose release never reached the canvas (as on her iPad): one released only on the window, one never
+# released at all. Neither may block the taps that follow (walk_to_goal taps the world).
+stale_touches
 walk_to_goal
 sleep 2
 shot smoke-pond

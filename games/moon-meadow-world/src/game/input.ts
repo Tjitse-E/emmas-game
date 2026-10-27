@@ -4,11 +4,15 @@
 // moment a door counts as the answer, and a waiting unicorn only hops and looks at its own door.
 // A tap never cuts the speech that plays: names wait their turn (sayAside).
 // In free play a tap on the picnic rug or the hay rack starts that side quest when it is offered (quests.ts).
+// A touch is a press() (ui/press.ts): it also ends on a release only the window hears, a cancel, a lost capture or the
+// next touch. On her iPad the release does not always reach the canvas, and a touch waiting for it blocked every later
+// world tap. Only a real release taps; the other ends set a carried unicorn down where the finger last was.
 import * as THREE from 'three';
 import type { Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { HAY_RACK, NEST, PICNIC, SLIDE, STABLE, WILD_EGG, dist2 } from '../layout';
 import { audio } from '../audio';
+import { press as pressable, type PressEnd } from '../ui/press';
 import { type Game, GOALS, doorPoint, flat, memberOf, princessAt, sayAside, walkTo } from './game';
 import { peekDoor } from './doors';
 import { askQuest } from './quests';
@@ -25,7 +29,17 @@ export function installInput(g: Game): void {
   const canvas = world.canvas;
   const carryPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -CARRY_Y);
   const hit = new THREE.Vector3();
-  let press: { id: number; x: number; y: number; t: number; unicorn: UnicornActor | null; carrying: boolean; hold: ReturnType<typeof setTimeout> | null } | null = null;
+  let press: {
+    x: number;
+    y: number;
+    t: number;
+    /** The finger's last point: a lost capture or a cancel may come without one (0, 0). */
+    lastX: number;
+    lastY: number;
+    unicorn: UnicornActor | null;
+    carrying: boolean;
+    hold: ReturnType<typeof setTimeout> | null;
+  } | null = null;
   let lastWalk: { at: Vec2; t: number } | null = null;
 
   const momentOpen = (): boolean => layer.snapshot().moment !== null;
@@ -67,47 +81,45 @@ export function installInput(g: Game): void {
   // Any touch, on the world or on the 2D layer, counts as play (free play prompts wait for a quiet while).
   document.addEventListener('pointerdown', () => (g.lastTouch = performance.now()), { capture: true });
 
-  canvas.addEventListener('pointerdown', (e) => {
-    if (press) return;
+  const down = (e: PointerEvent) => {
     const allowUnicorn = g.free && !g.door && !momentOpen();
     press = {
-      id: e.pointerId,
       x: e.clientX,
       y: e.clientY,
       t: performance.now(),
+      lastX: e.clientX,
+      lastY: e.clientY,
       unicorn: allowUnicorn ? actors.herd.pick(world.ray(e.clientX, e.clientY)) : null,
       carrying: false,
       hold: null,
     };
     // Holding still on a unicorn lifts it too.
     if (press.unicorn) press.hold = setTimeout(startCarry, TAP_MS);
-    try {
-      canvas.setPointerCapture(e.pointerId);
-    } catch {
-      // Not supported: moves outside the canvas are lost, which is harmless.
-    }
-  });
+  };
 
-  canvas.addEventListener('pointermove', (e) => {
-    if (!press || e.pointerId !== press.id) return;
+  const move = (e: PointerEvent) => {
+    if (!press) return;
+    press.lastX = e.clientX;
+    press.lastY = e.clientY;
     if (!press.carrying && Math.hypot(e.clientX - press.x, e.clientY - press.y) > TAP_PX) startCarry();
     if (press.carrying && press.unicorn) {
       const p = carryPoint(e.clientX, e.clientY);
       if (p) press.unicorn.carryTo(p);
     }
-  });
+  };
 
-  const end = (e: PointerEvent, cancelled: boolean) => {
-    if (!press || e.pointerId !== press.id) return;
+  const end = (e: PointerEvent, how: PressEnd) => {
+    if (!press) return;
     if (press.hold) clearTimeout(press.hold);
-    if (press.carrying) drop(e.clientX, e.clientY);
-    else if (!cancelled && Math.hypot(e.clientX - press.x, e.clientY - press.y) <= TAP_PX && performance.now() - press.t <= TAP_MS) {
-      tap(e.clientX, e.clientY);
-    }
+    // 'other': `e` is the next touch, not this finger. A cancel or a lost capture has no point to trust either.
+    const up = how === 'up';
+    const x = up ? e.clientX : press.lastX;
+    const y = up ? e.clientY : press.lastY;
+    if (press.carrying) drop(x, y);
+    else if (up && Math.hypot(x - press.x, y - press.y) <= TAP_PX && performance.now() - press.t <= TAP_MS) tap(x, y);
     press = null;
   };
-  canvas.addEventListener('pointerup', (e) => end(e, false));
-  canvas.addEventListener('pointercancel', (e) => end(e, true));
+  pressable(canvas, { down, move, end });
 
   function tap(x: number, y: number): void {
     if (momentOpen()) return;

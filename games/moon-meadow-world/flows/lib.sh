@@ -105,6 +105,12 @@ tap_ground() {
   tap_xy "${xy%,*}" "${xy#*,}"
 }
 
+# Two world touches whose release missed the canvas: one the window alone hears released (a tap low in the middle),
+# then one never released. The next real tap on the world must still work.
+stale_touches() {
+  raw_eval "() => { const c = document.querySelector('#world canvas'); const at = { clientX: innerWidth / 2, clientY: innerHeight * 0.85, bubbles: true, pointerType: 'touch', isPrimary: true }; c.dispatchEvent(new PointerEvent('pointerdown', { ...at, pointerId: 41 })); window.dispatchEvent(new PointerEvent('pointerup', { ...at, pointerId: 41 })); c.dispatchEvent(new PointerEvent('pointerdown', { ...at, pointerId: 42 })); return 'ok'; }" >/dev/null || fail "stale world touches"
+}
+
 # Drag from one target to another, in steps, as a finger.
 drag() {
   run_code "async page => { const f = await page.evaluate((n) => window.__game.targets().find((x) => x.name === n) || null, $(jsq "$1")); const t = await page.evaluate((n) => window.__game.targets().find((x) => x.name === n) || null, $(jsq "$2")); if (!f) throw new Error('no target $1'); if (!t) throw new Error('no target $2'); await page.mouse.move(f.x, f.y); await page.mouse.down(); await page.waitForTimeout(80); await page.mouse.move(t.x, t.y, { steps: 16 }); await page.waitForTimeout(80); await page.mouse.up(); }" || fail "cannot drag $1 to $2"
