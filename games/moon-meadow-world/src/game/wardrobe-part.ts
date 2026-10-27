@@ -27,7 +27,7 @@ const REACTION: Record<LookRow, PrincessEmote> = { hair: 'toss', eyes: 'blink', 
 const PART_OF: Record<LookRow, 'head' | 'eyes' | 'thing' | 'dress'> = { hair: 'head', eyes: 'eyes', gown: 'dress', style: 'head', thing: 'thing' };
 /** A released pick is saved this long after the release (a quick second pick saves once). */
 const SAVE_AFTER_MS = 300;
-/** The preview drag: 1 degree per 2 px, at most 170 degrees either way. */
+/** The preview drag: 1 degree per 2 px, at most 170 degrees either way from facing the camera. */
 const TURN_PER_PX = Math.PI / 360;
 const TURN_MAX = (170 * Math.PI) / 180;
 /** For hair things and styles she turns this far, so a side clip or a ponytail shows. */
@@ -188,12 +188,13 @@ export async function wardrobe(g: Game): Promise<void> {
         }
       },
       onTurn(dxPx, ended) {
+        // dxPx is the finger's horizontal move since the last call; at the end she turns back by herself.
         if (ended) {
           turned = 0;
           restFace();
           return;
         }
-        const want = Math.max(-TURN_MAX, Math.min(TURN_MAX, dxPx * TURN_PER_PX));
+        const want = Math.max(-TURN_MAX, Math.min(TURN_MAX, turned + dxPx * TURN_PER_PX));
         her.turnBy(want - turned);
         turned = want;
       },

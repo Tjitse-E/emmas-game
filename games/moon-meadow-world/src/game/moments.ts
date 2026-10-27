@@ -146,10 +146,10 @@ export function frameWish(g: Game, u: UnicornActor): Promise<void> {
 // ---- wishes --------------------------------------------------------------------------------------------------------
 
 /**
- * The reading lane's wishSpec with the reading level (docs/v4/2.2.md 3.1): kind, the moment's stream, the words to
- * keep out of the target, the level.
+ * The reading lane's wishSpec with the reading level (docs/v4/2.2.md 3.1): kind, the moment's stream, the words that
+ * cannot be the wish, then the level and the miss rule. The step-0 content takes only the first three.
  */
-type PlanWishSpec = (kind: WishSpec['kind'], rand: Rand, exclude: string[], level: ReadingLevel) => WishSpec;
+type PlanWishSpec = (kind: WishSpec['kind'], rand: Rand, exclude: readonly string[], o: { level: ReadingLevel; contrast: boolean }) => WishSpec;
 const planWishSpec = wishSpec as unknown as PlanWishSpec;
 
 /** How the baby takes an item: its own reaction, or the kind's (food and picnic munch, dress-up wears, the rest play). */
@@ -169,9 +169,10 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   if (o.wish) g.today.wishes++;
   const exclude = [...new Set([...g.save.data.last.words, ...g.today.words])];
   const rand = g.randFor(label);
-  let spec = planWishSpec(kind, rand, exclude, level);
+  const opts = { level, contrast: g.options.contrast };
+  let spec = planWishSpec(kind, rand, exclude, opts);
   // The step-0 content knows only the food and bath words; the reading lane adds dress and picnic.
-  if (!spec.clips) spec = planWishSpec(kind === 'picnic' ? 'food' : 'bath', rand, exclude, level);
+  if (!spec.clips) spec = planWishSpec(kind === 'picnic' ? 'food' : 'bath', rand, exclude, opts);
   if (!g.options.contrast && spec.clips.again) {
     const { again: _again, ...clips } = spec.clips;
     spec = { ...spec, clips };
@@ -232,11 +233,12 @@ export interface EggAsk {
   /** Totals and answers asked earlier this play: never again while other sums are left. */
   used: { totals: number[]; answers: number[] };
   /** The last play's totals, left out while other sums are left. */
-  avoid: number[];
+  lastTotals: number[];
 }
 
 export function eggAsk(g: Game, first = false): EggAsk {
-  return { first, band: g.maths.band, used: { totals: [...g.maths.used.totals], answers: [...g.maths.used.answers] }, avoid: [...g.save.data.last.totals] };
+  const used = { totals: [...g.maths.used.totals], answers: [...g.maths.used.answers] };
+  return { first, band: g.maths.band, used, lastTotals: [...g.save.data.last.totals] };
 }
 
 /** An egg from the stream `label` in the current band; its sum is then used for this play. */

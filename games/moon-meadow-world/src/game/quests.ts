@@ -333,9 +333,11 @@ async function rackQuest(g: Game): Promise<void> {
     anchor: () => world.toScreen(top),
     react: (k) => {
       // Too many: the extra bundles tumble off while a helper munches them. Too few: the helpers look at the rack.
-      if (k === 'hot') void helpers[0]?.emote('munch');
-      else if (k === 'cold') for (const u of helpers) void u.emote('look');
-      else if (k === 'warm' || k === 'right') fill();
+      // Right: the bundles land and the rack fills (the hay skin says 'munch', 'look' and 'right'; an egg panel would
+      // say 'hot', 'cold' and 'warm').
+      if (k === 'munch' || k === 'hot') void helpers[0]?.emote('munch');
+      else if (k === 'look' || k === 'cold') for (const u of helpers) void u.emote('look');
+      else if (k === 'right' || k === 'warm') fill();
     },
     log: t.log,
   };
