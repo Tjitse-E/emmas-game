@@ -66,7 +66,6 @@
     {"word":"dress","gpcs":["d","r","e","ss"],"pic":"dress","clip":"word-dress","tier":2,"alike":["robe","gown"]},
     {"word":"cap","gpcs":["c","a","p"],"pic":"cap","clip":"word-cap","tier":1,"twins":["cup","cape"]},
     {"word":"hat","gpcs":["h","a","t"],"pic":"hat","clip":"word-hat","tier":1},
-    {"word":"vest","gpcs":["v","e","s","t"],"pic":"vest","clip":"word-vest","tier":2},
     {"word":"ship","gpcs":["sh","i","p"],"pic":"ship","clip":"word-ship","tier":1,"alike":["sail","raft","boat"]},
     {"word":"frog","gpcs":["f","r","o","g"],"pic":"frog","clip":"word-frog","tier":2},
     {"word":"seal","gpcs":["s","ea","l"],"pic":"seal","clip":"word-seal","tier":3,"twins":["sail"]},
@@ -125,7 +124,7 @@
     {"word":"tray","gpcs":["t","r","ay"],"pic":"tray","clip":"word-tray","tier":3}
   ],
   "kinds": {
-    "dress": {"pool":["crown","ring","curl","bell","shell","cape","cloak","robe","belt","rose","boot","sock","coat","band","clip","bead","braid","star","frill","wing","gown","sash","dress","cap","hat","vest"],"targets":["ring","bell","shell","cape","cloak","robe","belt","rose","boot","sock","coat"],"level1":["ring","bell","shell","cloak","belt","boot","sock","coat"],"level3":["cape","robe","belt","rose","boot"]},
+    "dress": {"pool":["crown","ring","curl","bell","shell","cape","cloak","robe","belt","rose","boot","sock","coat","band","clip","bead","braid","star","frill","wing","gown","sash","dress","cap","hat"],"targets":["ring","bell","shell","cape","cloak","robe","belt","rose","boot","sock","coat"],"level1":["ring","bell","shell","cloak","belt","boot","sock","coat"],"level3":["cape","robe","belt","rose","boot"]},
     "bath": {"pool":["ship","shell","frog","seal","sail","pail","soap","raft","float","pool","plug","shark","sand","rock","reed","duck","fish","boat","crab","tub","cup","whale","wave","hose","dock","net","boot"],"targets":["ship","shell","frog","seal","sail","soap","raft","pool","plug","shark","sand","rock"],"level1":["ship","shell","frog","sail","soap","raft","pool","plug","shark","sand","rock"],"level3":["ship","shell","seal","sail","soap","pool"]},
     "picnic": {"pool":["plum","corn","cake","peach","pie","toast","leek","treat","milk","mint","tart","cream","lime","mug","plate","mat","pan","pot","bun","grape","bean","jam","loaf","nut","cup","jug","dish","spoon","fork","flask","rug","tray"],"targets":["plum","corn","cake","peach","pie","toast","leek","milk","mint","tart","lime","mug","plate","mat","pan"],"level1":["plum","corn","toast","leek","milk","mint","tart","mug","mat","pan"],"level3":["pie","toast","mint","tart","plate","mat"]}
   },
