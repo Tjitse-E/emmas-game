@@ -4,7 +4,7 @@ import type { ScreenPoint, WishItem } from '../contracts';
 import { audio } from '../audio';
 import { menuUrl } from './geometry';
 import { draggable } from './drag';
-import { el, html, img, onPress, onTick, play, sleep } from './dom';
+import { el, html, img, onPress, onTick, play, sleep, wordPicEl } from './dom';
 import { press } from './press';
 import { CROWN_SVG, PIC } from './parts';
 
@@ -83,7 +83,7 @@ export function createFoodBasket(parent: HTMLElement, dragLayer: HTMLElement) {
     for (const f of foods) {
       const cell = el('div', 'food touch', tray);
       cell.setAttribute('aria-label', `food ${f.word}`);
-      img(f.pic, 'food-pic', cell);
+      wordPicEl(f, 'food-pic', cell);
       el('span', 'food-word', cell).textContent = f.word.toLowerCase();
       detach.push(draggable(cell, dragLayer, {
         // Free play may say names: a tap says the food's word.

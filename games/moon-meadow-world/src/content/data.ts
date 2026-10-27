@@ -13,6 +13,8 @@ export interface WordData {
   gpcs: string[];
   /** Picture name in v3's art/words/ (made into a URL with wordPic() at call time). */
   pic: string;
+  /** A greyscale picture's colour (v3's tint.default, multiplied over it), as v3 shows it. */
+  tint?: string;
   clip: string;
   /** Grapheme tier of v3's word pack: 1 phase2, 2 phase3-4, 3 year1. */
   tier: number;

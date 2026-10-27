@@ -11,7 +11,7 @@ import { audio } from '../audio';
 import { bubbleBox, inBox, printUnits, type Box, type Point } from './geometry';
 import { HintRunner } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
-import { boxOf, centreOf, el, img, onTick, play, sleep, u } from './dom';
+import { boxOf, centreOf, el, img, onTick, play, sleep, u, wordPicEl } from './dom';
 import { Life, QUICK_MS, leave, target, type LayerCtx, type OpenMoment } from './moment';
 import { PIC, printEl } from './parts';
 import { diffUnits } from './contrast';
@@ -84,7 +84,7 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
     const items = spec.basket.map((it) => {
       const cell = el('div', 'item touch', basket);
       cell.setAttribute('aria-label', `item ${it.word}`);
-      img(it.pic, 'item-pic', cell);
+      wordPicEl(it, 'item-pic', cell);
       return { it, cell, tag: null as HTMLElement | null };
     });
     const right = items.find((x) => x.it.word === spec.target.word);

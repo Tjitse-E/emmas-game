@@ -30,7 +30,7 @@
     justify-content: center; background: #cfe8ff; font-weight: 700; margin: 2px; }
   .gem.v { background: #ffc6e3; }
   .gem.x { outline: 2px dashed #b48ad6; }
-  .basket img { width: 64px; height: 64px; object-fit: contain; display: block; margin: 0 auto; }
+  .basket img, .basket .pic { width: 64px; height: 64px; object-fit: contain; display: block; margin: 0 auto; }
   .basket .item { display: inline-block; text-align: center; margin: 0 4px; }
   .basket .item.target { outline: 3px solid #ffbf3f; border-radius: 10px; }
   code { font-size: 12px; }
@@ -38,7 +38,7 @@
   /* The picture check: one card per wish word with its picture, verdict and reason (2.2.md section 0 and 3.2). */
   .sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .word { text-align: center; padding: 8px 8px 10px; }
-  .word img { width: 112px; height: 112px; object-fit: contain; display: block; margin: 0 auto 4px; }
+  .word img, .word .pic { width: 112px; height: 112px; object-fit: contain; display: block; margin: 0 auto 4px; }
   .word .w { font-size: 24px; font-weight: 700; }
   .word .why { font-size: 11.5px; line-height: 1.3; opacity: 0.8; margin-top: 4px; text-align: left; }
   .badge { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 1px 7px; margin: 1px 2px; }
@@ -74,6 +74,7 @@
   import { V3 } from '/src/assets.ts';
   import { DATA } from '/src/content/data.ts';
   import checks from '/tools/picture-check.json';
+  import { tintedPicStyle } from '/src/ui/geometry.ts';
 
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
@@ -140,6 +141,12 @@
     }
   }
 
+  // A word picture as the game shows it: a greyscale picture with a tint in its colour (v3's multiply and mask), the
+  // rest as a plain img. A tinted one keeps its address in data-src for the missing-picture check.
+  const picHtml = (url, tint) => (tint
+    ? `<div class="pic" data-src="${url}" style="${tintedPicStyle(url, tint).replaceAll('"', '&quot;')}"></div>`
+    : `<img src="${url}" alt="">`);
+
   // The contact sheets: per wish kind, every pool word with its picture and verdict; then the words left out.
   const KIND_NAMES = { dress: 'Dress-up (wish 1)', bath: 'Pond (the pond wish)', picnic: 'Picnic (wish 2 and the royal picnic)' };
   const card = (word, d) => {
@@ -152,7 +159,7 @@
       badges.push(`<span class="badge wish">wish ${kind} ${levels}</span>`);
     }
     const pic = d ? d.pic : word;
-    return playable(el('div', `card word ${verdict}`, `<img src="${V3}art/words/${pic}.webp" alt=""><div class="w">${word}</div>`
+    return playable(el('div', `card word ${verdict}`, `${picHtml(`${V3}art/words/${pic}.webp`, d?.tint)}<div class="w">${word}</div>`
       + `<div>${badges.join('')}</div><div class="why">${c ? c.why : 'No picture check yet: left out.'}${d ? ` <i>tier ${d.tier}</i>` : ''}</div>`), [`word-${word}`]);
   };
   const byWord = new Map(DATA.words.map((w) => [w.word, w]));
@@ -173,11 +180,11 @@
   for (const kind of ['dress', 'bath', 'picnic', 'food']) {
     for (const level of [1, 2, 3]) {
       const w = C.wishSpec(kind, C.seeded(level * 31 + kind.length), [], { level });
-      const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}"><img src="${i.pic}" alt=""><b>${i.word}</b><small>${w.decoys[i.word] ?? i.react}</small></span>`).join('');
+      const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}">${picHtml(i.pic, i.tint)}<b>${i.word}</b><small>${w.decoys[i.word] ?? i.react}</small></span>`).join('');
       $('wishes').append(playable(el('div', 'card basket', `<b>${kind}</b> level ${w.level} wants <span class="tag">${w.target.word}</span><br>${items}`), [...w.clips.intro, w.target.clip]));
     }
   }
-  const foods = C.foods().map((i) => `<span class="item"><img src="${i.pic}" alt=""><b>${i.word}</b></span>`).join('');
+  const foods = C.foods().map((i) => `<span class="item">${picHtml(i.pic, i.tint)}<b>${i.word}</b></span>`).join('');
   $('wishes').append(playable(el('div', 'card basket', `<b>free play</b><br>${foods}`), ['g4-basket', ...C.foods().map((f) => f.clip)]));
 
   const herd = C.herd();
@@ -195,7 +202,8 @@
     const missing = ids.filter((_, i) => !has[i]);
     const index = await fetch(V3 + 'audio/phonics/index.json').then((res) => res.json());
     const soundsMissing = C.allGraphemes().filter((g) => !index.sounds[g]);
-    const pics = [...document.querySelectorAll('img')];
+    const tinted = [...document.querySelectorAll('[data-src]')].map((e) => Object.assign(new Image(), { src: e.dataset.src }));
+    const pics = [...document.querySelectorAll('img'), ...tinted];
     await Promise.all(pics.map((img) => img.complete ? null : new Promise((ok) => { img.onload = img.onerror = ok; })));
     const picsMissing = pics.filter((img) => !img.naturalWidth).map((img) => img.src);
     const s = $('status');

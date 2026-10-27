@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   CUP_GRID, blanketPatches, bubbleBox, capitalOf, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
-  menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, unitFor,
+  menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, tintedPicStyle,
+  unitFor,
 } from '../src/ui/geometry';
 import { HintRunner, bellIdleDelay, onIdle, onMiss, onTouch, openLadder, outcomeOf, idleDelay } from '../src/ui/ladder';
 
@@ -354,5 +355,17 @@ describe('colour', () => {
     expect(safeTint('pink', 0.25, '#ff7fbf')).toBe('#ff7fbf');
     expect(mixWhite('#000000', 0.5)).toBe('#808080');
     expect(mixWhite('#ff7fbf', 0)).toBe('#ff7fbf');
+  });
+
+  it('colours a greyscale picture as v3 does: multiplied, masked by itself, contained, with the Safari names', () => {
+    const s = tintedPicStyle('/v3/art/words/cup.webp', '#5aa9e6');
+    for (const d of [
+      'background-image:url("/v3/art/words/cup.webp")', 'background-color:#5aa9e6', 'background-blend-mode:multiply', 'background-size:contain',
+      '-webkit-mask-image:url("/v3/art/words/cup.webp")', 'mask-image:url("/v3/art/words/cup.webp")', '-webkit-mask-size:contain',
+      'mask-size:contain', '-webkit-mask-repeat:no-repeat', 'pointer-events:none',
+    ]) expect(s.split(';')).toContain(d);
+    // Nothing can close the url or add a declaration.
+    expect(tintedPicStyle('/a".webp', 'red;x:y')).toContain('background-color:#ffffff');
+    expect(tintedPicStyle('/a".webp', '#ffffff')).toContain('url("/a%22.webp")');
   });
 });

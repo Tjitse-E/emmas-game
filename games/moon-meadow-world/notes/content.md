@@ -40,6 +40,8 @@
 
 Claude looked at every candidate picture as a 6-year-old Dutch girl learning English would, and recorded it in `tools/picture-check.json` with `"by": "claude"`. Emma and Tjitse confirm it with the contact sheets in `dev/content.html`. To change a word, edit its entry and run `node tools/build-content.ts`.
 
+v3 draws some word pictures greyscale and colours them at runtime (cape, coat, dress, hat, sock, bead, cup, mug). `build-content.ts` copies their `tint.default` from v3's `public/art/manifest.json` into `words[].tint`, and `WishItem.tint` carries it.
+
 Seven design targets became decoys only:
 
 | Word | Why |

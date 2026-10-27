@@ -10,6 +10,7 @@ import {
 import { DEFAULT_LOOK, GIFT_ORDER, LOOK_ROWS } from '../wardrobe';
 import { audio } from '../audio';
 import { v3Art } from '../assets';
+import { DATA } from '../content/data';
 import { createActors } from './index';
 import type { UnicornActor } from './unicorn';
 
@@ -367,7 +368,9 @@ section('Selected unicorn', [
   ['nightcap', () => selected.nightcap(!selected.pose.nightcap)],
   ['toy', () => selected.showToy(v3Art('words/duck.webp'))],
   ['wear', () => selected.showToy(v3Art('words/crown.webp'), { on: 'head' })],
-  ['wear cape', () => selected.showToy(v3Art('words/cape.webp'), { on: 'head' })],
+  // The cape is a greyscale picture: it shows in v3's tint, as in the game.
+  ['wear cape', () => selected.showToy(v3Art('words/cape.webp'), { on: 'head', tint: DATA.words.find((w) => w.word === 'cape')?.tint })],
+  ['toy mug', () => selected.showToy(v3Art('words/mug.webp'), { tint: DATA.words.find((w) => w.word === 'mug')?.tint })],
   ['no toy', () => selected.showToy(null)],
   ['look at Emma', () => selected.lookAt(princess.position)],
 ]);

@@ -124,6 +124,7 @@ describe('wishes', () => {
           const d = pool.find((w) => w.word === b.word)!;
           expect(d).toBeDefined();
           expect(b.pic).toBe(`/v3/art/words/${d.pic}.webp`);
+          expect(b.tint).toBe(d.tint);
           expect(b.tier).toBe(d.tier);
           for (const o of spec.basket) if (o !== b) expect(d.alike ?? []).not.toContain(o.word);
         }
@@ -151,6 +152,14 @@ describe('wishes', () => {
     }
     for (const w of ['plum', 'milk', 'tart', 'jam']) expect(W.reactOf('picnic', w)).toBe('munch');
     for (const w of ['mug', 'plate', 'mat', 'pan', 'spoon']) expect(W.reactOf('picnic', w)).toBe('play');
+  });
+
+  it('a picture v3 draws greyscale carries v3\'s tint, the others none', () => {
+    const art = (JSON.parse(readFileSync(join(v3, 'public/art/manifest.json'), 'utf8')) as { pictures: Record<string, { src: string; tint?: { default: string } }> }).pictures;
+    const tintOf = new Map(Object.values(art).filter((p) => p.tint).map((p) => [p.src, p.tint!.default.toLowerCase()]));
+    for (const w of poolWords) expect(w.tint, w.word).toBe(tintOf.get(`words/${w.pic}.webp`));
+    // The grey pictures 2.2.0 showed grey next to coloured ones.
+    for (const w of ['cape', 'coat', 'dress', 'hat', 'sock', 'bead', 'cup', 'mug']) expect(poolWords.find((x) => x.word === w)?.tint, w).toMatch(/^#[0-9a-f]{6}$/);
   });
 
   it('the free-play basket has four foods that look nothing alike', () => {

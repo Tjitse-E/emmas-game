@@ -123,7 +123,13 @@ export class UnicornActor implements Unicorn {
   private depth = 0;
   private bed = 0;
   private tuck = 0;
+  /** The toy on show, or null. */
   private toy: THREE.Sprite | null = null;
+  /**
+   * Its toy sprite, kept between toys: disposing the material would let three.js delete the sprite's shader program,
+   * and the next toy would link it again (main.ts compiles it once at boot).
+   */
+  private toySprite: THREE.Sprite | null = null;
   /** Where the toy is: on the grass (or bobbing in the water) or worn on its head. */
   private toyOn: 'ground' | 'head' = 'ground';
   /** A command given in the water, done once it has climbed out. */
@@ -323,20 +329,24 @@ export class UnicornActor implements Unicorn {
    * A picture next to it on the grass or in the water (the bath wish), or with `on: 'head'` worn on top of its head
    * (the dress-up wish's 'wear'): it sits on the head between the ears, behind the horn, and moves with every nod.
    */
-  showToy(url: string | null, o: { on?: 'ground' | 'head' } = {}): void {
-    if (this.toy) {
-      this.ctx.scene.remove(this.toy);
-      this.toy.material.dispose();
-      this.toy = null;
-    }
+  showToy(url: string | null, o: { on?: 'ground' | 'head'; tint?: string } = {}): void {
+    if (this.toy) this.ctx.scene.remove(this.toy);
+    this.toy = null;
     if (!url) return;
     this.toyOn = o.on ?? 'ground';
-    const mat = new THREE.SpriteMaterial({ map: this.ctx.toyTexture(url), transparent: true, depthWrite: false });
-    this.toy = new THREE.Sprite(mat);
-    this.toy.name = 'actors-toy';
-    this.toy.renderOrder = 3;
-    this.toy.scale.setScalar(this.toyOn === 'head' ? WEAR_SIZE : TOY_SIZE);
-    this.ctx.scene.add(this.toy);
+    if (!this.toySprite) {
+      this.toySprite = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false }));
+      this.toySprite.name = 'actors-toy';
+      this.toySprite.renderOrder = 3;
+    }
+    const toy = this.toySprite;
+    toy.material.map = this.ctx.toyTexture(url);
+    // A greyscale picture's tint is the material colour, which the sprite shader multiplies with the picture (as v3's
+    // multiply in CSS). Colour and map are uniforms: every toy, tinted or not, uses the one sprite program.
+    toy.material.color.set(o.tint ?? '#ffffff');
+    toy.scale.setScalar(this.toyOn === 'head' ? WEAR_SIZE : TOY_SIZE);
+    this.toy = toy;
+    this.ctx.scene.add(toy);
   }
 
   // --- task plumbing ---------------------------------------------------------------------------------------------
@@ -1051,6 +1061,8 @@ export class UnicornActor implements Unicorn {
     this.afterSwim = null;
     this.ctx.queue.leave(this);
     this.showToy(null);
+    this.toySprite?.material.dispose();
+    this.toySprite = null;
   }
 
   /** Put it somewhere at once (jump() in the level script). */

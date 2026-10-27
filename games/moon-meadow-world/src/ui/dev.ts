@@ -6,6 +6,7 @@ import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
 import { DEFAULT_LOOK } from '../wardrobe';
 import { eggSpec, rackSpec, seeded } from '../content';
+import { DATA } from '../content/data';
 import { createLayer } from './index';
 import { wardrobeLayout } from './geometry';
 import { gownBody, headBody, thingBody } from './swatches';
@@ -175,7 +176,11 @@ const naming: NamingSpec = {
   bells,
   clips: { bells: ['g-bells'], drag: ['g-bell-drag'], spell: ['g-spell'], gems: ['g-gems'], slide: ['g-slide'], done: ['fb-spelled'], again: ['fb-listen'] },
 };
-const item = (word: string, gpcs: string[]): WishItem => ({ word, gpcs, pic: wordPic(word), clip: `word-${word}`, tier: 1 });
+/** A wish item; a greyscale picture (cup, hat, coat...) gets its tint from the content data, as in the game. */
+const item = (word: string, gpcs: string[]): WishItem => {
+  const tint = DATA.words.find((w) => w.word === word)?.tint;
+  return { word, gpcs, pic: wordPic(word), ...(tint ? { tint } : {}), clip: `word-${word}`, tier: 1 };
+};
 const foodWish: WishSpec = {
   kind: 'food', target: item('plum', ['p', 'l', 'u', 'm']),
   basket: [item('corn', ['c', 'or', 'n']), item('plum', ['p', 'l', 'u', 'm']), item('cake', ['c', 'a-e', 'k'])],
@@ -188,7 +193,14 @@ const bathWish: WishSpec = {
   level: 1, decoys: { boat: 'other', shell: 'other' },
   clips: { intro: ['g-wish', 'v4-bath-wish'], goal: ['v4-bath-wish'], right: ['fb-yes'], hint: ['h-sounds'] },
 };
-const foods = ['plum', 'corn', 'cake', 'bun', 'apple'].map((w) => item(w, [...w]));
+/** The dress-up wish with five greyscale pictures, all in their tints. */
+const dressWish: WishSpec = {
+  kind: 'dress', target: item('coat', ['c', 'oa', 't']),
+  basket: [item('hat', ['h', 'a', 't']), item('coat', ['c', 'oa', 't']), item('dress', ['d', 'r', 'e', 'ss']), item('sock', ['s', 'o', 'ck']), item('bead', ['b', 'ea', 'd'])],
+  level: 2, decoys: { hat: 'ending', dress: 'other', sock: 'other', bead: 'other' },
+  clips: { intro: ['g-wish', 'g4-dress-up'], goal: ['g4-dress-up'], right: ['fb-yes'], hint: ['h-sounds'], again: ['fb-letters'] },
+};
+const foods = ['plum', 'corn', 'cake', 'bun', 'apple', 'cup'].map((w) => item(w, [...w]));
 /** The goodnight herd: her two new babies among twelve, in v3's coat and mane colours. */
 const BODIES = ['#ffe0ef', '#e6dcff', '#d6f1ff', '#fff3c4', '#dcffe8', '#ffe2cf', '#ffffff', '#f5d9ff'];
 const MANES = ['#ff7fbf', '#9d7bff', '#4fc3ff', '#ffbf3f', '#3fd69a', '#ff8f6b', '#c46bff', '#ff5f8f'];
@@ -261,6 +273,7 @@ const runs: Record<string, () => Promise<unknown> | void> = {
     layer.tag(r.name.name, () => ({ ...anchor(), y: anchor().y - 14 }), 3000);
   },
   'wish food': async () => { show('baby', { x: 0.5, y: 0.42 }); const r = await layer.wish(foodWish, hooks); results.push({ wish: 'food', ...r }); log(`wish food ${JSON.stringify(r)}`); },
+  'wish dress': async () => { show('baby', { x: 0.5, y: 0.42 }); const r = await layer.wish(dressWish, hooks); results.push({ wish: 'dress', ...r }); log(`wish dress ${JSON.stringify(r)}`); },
   'wish bath': async () => { show('baby', { x: 0.42, y: 0.4 }); const r = await layer.wish(bathWish, hooks); results.push({ wish: 'bath', ...r }); log(`wish bath ${JSON.stringify(r)}`); },
   'ghost tap': () => layer.ghost.tap(() => ({ x: innerWidth * 0.3, y: innerHeight * 0.6, visible: true })),
   'ghost drag': () => layer.ghost.drag(() => ({ x: innerWidth * 0.3, y: innerHeight * 0.7, visible: true }), anchor),

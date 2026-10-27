@@ -192,9 +192,10 @@ export interface Unicorn {
   emote(kind: UnicornEmote): Promise<void>;
   /**
    * Show a small toy next to it in the water or on the grass (the bath wish), as a 3D floating picture, or with
-   * `on: 'head'` on top of its head (the dress-up wish's 'wear'). null takes it away.
+   * `on: 'head'` on top of its head (the dress-up wish's 'wear'). `tint` colours a greyscale picture (WishItem.tint).
+   * null takes it away.
    */
-  showToy(pictureUrl: string | null, o?: { on?: 'ground' | 'head' }): void;
+  showToy(pictureUrl: string | null, o?: { on?: 'ground' | 'head'; tint?: string }): void;
 }
 
 export interface Herd {
@@ -389,6 +390,8 @@ export interface WishItem {
   word: string; // "plum"
   gpcs: string[]; // ["p", "l", "u", "m"]
   pic: string; // picture URL (v3 word art)
+  /** A greyscale picture's colour, multiplied over it (v3's tint.default): cup, mug, hat, dress... */
+  tint?: string;
   clip: string; // "word-plum"
   /** Grapheme tier of v3's word pack: 1 phase2, 2 phase3-4, 3 year1. */
   tier: 1 | 2 | 3;

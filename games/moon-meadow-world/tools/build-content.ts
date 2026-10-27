@@ -5,7 +5,8 @@
 // is there), every grapheme has a letter sound, and a word has its picture. A wish word also needs an entry in
 // tools/picture-check.json: 'ok' (target or decoy), 'decoy' (decoy only) or 'drop' (never used); a word without an
 // entry is left out. The script stops with a list of every problem, so a broken choice never reaches the game, and
-// it stops when a wish kind has fewer than 6 strong targets (docs/v4/2.2.md 3.1).
+// it stops when a wish kind has fewer than 6 strong targets (docs/v4/2.2.md 3.1). A picture that v3 draws greyscale
+// and colours at runtime carries v3's default tint (its art manifest's tint.default), so the game colours it too.
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { LOOK_ALIKE, UNICORN_FOODS } from '../../moon-meadow-home/src/core/heartbeat/feed.ts';
@@ -100,6 +101,10 @@ function usableClip(pack: string, clips: Record<string, Clip>, id: string): Clip
 
 const phonics = new Set(Object.keys(readJson<{ sounds: Record<string, unknown> }>(join(repo, 'shared/audio/phonics/index.json')).sounds));
 const pictures = new Set(readdirSync(join(v3, 'public/art/words')).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)));
+/** v3's tint of each greyscale word picture, by picture name (art/manifest.json: the multiply colour, tint.default). */
+const tints = new Map(Object.values(readJson<{ pictures: Record<string, { src: string; tint?: { default?: string } }> }>(join(v3, 'public/art/manifest.json')).pictures)
+  .filter((p) => p.src.startsWith('words/') && p.tint)
+  .map((p) => [p.src.slice('words/'.length, -'.webp'.length), p.tint!.default ?? ''] as const));
 
 /** One vowel grapheme means one syllable for these short words and names. */
 const isVowel = (g: string): boolean => /^[aeiou]/.test(g) || g === 'yoo';
@@ -182,7 +187,9 @@ function wishWord(word: string) {
   if (!oneSyllable(entry.gpcs)) problems.push(`${word} is not one syllable (spec 4.3)`);
   if (word.length > MAX_LETTERS) problems.push(`${word} has more than ${MAX_LETTERS} letters (spec 4.3)`);
   if (missingSounds(entry.gpcs).length) problems.push(`${word} has graphemes without a letter sound: ${missingSounds(entry.gpcs).join(' ')}`);
-  return { word, gpcs: entry.gpcs, pic, clip, tier: TIER[pack], verdict: check.verdict };
+  const tint = tints.get(pic);
+  if (tint !== undefined && !/^#[0-9a-f]{6}$/i.test(tint)) problems.push(`${word}: v3's tint '${tint}' is not a #rrggbb colour`);
+  return { word, gpcs: entry.gpcs, pic, clip, tier: TIER[pack], verdict: check.verdict, tint };
 }
 
 const usable = new Map(allPoolWords.map((w) => [w, wishWord(w)] as const).filter((x) => x[1] !== null).map(([w, d]) => [w, d!]));
@@ -250,7 +257,10 @@ const words = used.map((w) => {
   const d = usable.get(w)!;
   const alike = used.filter((o) => o !== w && clash(o, w));
   const twins = twinsOf(w);
-  return { word: d.word, gpcs: d.gpcs, pic: d.pic, clip: d.clip, tier: d.tier, ...(alike.length ? { alike } : {}), ...(twins.length ? { twins } : {}) };
+  return {
+    word: d.word, gpcs: d.gpcs, pic: d.pic, clip: d.clip, tier: d.tier, ...(d.tint ? { tint: d.tint.toLowerCase() } : {}),
+    ...(alike.length ? { alike } : {}), ...(twins.length ? { twins } : {}),
+  };
 });
 
 const data = {

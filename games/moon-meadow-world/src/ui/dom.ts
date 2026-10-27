@@ -1,5 +1,5 @@
 // Small DOM helpers for the 2D layer: element builders, the design unit, a frame ticker and promise timing.
-import type { Box, Point } from './geometry';
+import { type Box, type Point, tintedPicStyle } from './geometry';
 import { press } from './press';
 
 /** One design pixel in CSS pixels (see geometry.unitFor). Set by the layer on every resize. */
@@ -27,6 +27,17 @@ export function img(src: string, cls = '', parent?: Element | null): HTMLImageEl
   i.draggable = false;
   i.decoding = 'async';
   return i;
+}
+
+/**
+ * A word picture: a plain img, or for a greyscale picture with a tint (WishItem.tint) a box that shows it in its
+ * colour, as v3 does (tintedPicStyle). The class sizes either one.
+ */
+export function wordPicEl(it: { pic: string; tint?: string }, cls = '', parent?: Element | null): HTMLElement {
+  if (!it.tint) return img(it.pic, cls, parent);
+  const d = el('div', cls ? `${cls} tinted` : 'tinted', parent);
+  d.setAttribute('style', tintedPicStyle(it.pic, it.tint));
+  return d;
 }
 
 /** An element from a trusted SVG or HTML string written in this folder. */

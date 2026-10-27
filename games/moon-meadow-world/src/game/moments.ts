@@ -46,12 +46,15 @@ export function momentLog(): MomentLog {
 
 // ---- babies --------------------------------------------------------------------------------------------------------
 
-/** A picture shown by a baby, taken away after `ms` unless another one replaced it meanwhile. */
+/**
+ * A picture shown by a baby (in its colour when it is a greyscale picture with a tint), taken away after `ms` unless
+ * another one replaced it meanwhile.
+ */
 const toys = new WeakMap<UnicornActor, number>();
-export function showToy(u: UnicornActor, pic: string | null, o: { on?: 'ground' | 'head'; ms?: number } = {}): void {
+export function showToy(u: UnicornActor, pic: string | null, o: { on?: 'ground' | 'head'; ms?: number; tint?: string } = {}): void {
   const token = (toys.get(u) ?? 0) + 1;
   toys.set(u, token);
-  u.showToy(pic, pic ? { on: o.on ?? 'ground' } : undefined);
+  u.showToy(pic, pic ? { on: o.on ?? 'ground', tint: o.tint } : undefined);
   if (pic && o.ms) setTimeout(() => toys.get(u) === token && u.showToy(null), o.ms);
 }
 
@@ -62,10 +65,10 @@ export function dropToyAfter(u: UnicornActor, ms: number): void {
 }
 
 /**
- * How a baby shows the reactions a naming or wish moment asks for. `toy` is the wish's picture; a played-with toy is
- * taken away after `playMs` (none: it stays until someone takes it away, as bathSwim does).
+ * How a baby shows the reactions a naming or wish moment asks for. `toy` is the wish's item (its picture and tint); a
+ * played-with toy is taken away after `playMs` (none: it stays until someone takes it away, as bathSwim does).
  */
-export function babyReact(g: Game, u: UnicornActor, toy?: string, playMs?: number): MomentHooks['react'] {
+export function babyReact(g: Game, u: UnicornActor, toy?: Pick<WishItem, 'pic' | 'tint'>, playMs?: number): MomentHooks['react'] {
   return (k) => {
     const heart = () => g.actors.fx.hearts(u.headTop().setY(u.headTop().y - 0.1));
     switch (k) {
@@ -74,13 +77,13 @@ export function babyReact(g: Game, u: UnicornActor, toy?: string, playMs?: numbe
         heart();
         return;
       case 'play':
-        showToy(u, toy ?? null, { ms: playMs });
+        showToy(u, toy?.pic ?? null, { ms: playMs, tint: toy?.tint });
         void u.emote('hop');
         heart();
         return;
       case 'wear':
         // The picture on its head for a while, a happy wiggle and a sparkle.
-        showToy(u, toy ?? null, { on: 'head', ms: WEAR_MS });
+        showToy(u, toy?.pic ?? null, { on: 'head', ms: WEAR_MS, tint: toy?.tint });
         void u.emote('happy');
         g.actors.fx.sparkle(u.headTop().setY(u.headTop().y + 0.15), { count: 14, colour: '#fff1b8' });
         return;
@@ -200,7 +203,7 @@ export async function runWish(g: Game, u: UnicornActor, spec: WishSpec, part: st
   const r: MomentResult = await g.run.w(
     layer.wish(spec, {
       anchor: () => world.toScreen(u.headTop()),
-      react: babyReact(g, u, spec.target.pic, spec.kind === 'bath' ? undefined : PLAY_MS),
+      react: babyReact(g, u, spec.target, spec.kind === 'bath' ? undefined : PLAY_MS),
       log: t.log,
     }),
   );

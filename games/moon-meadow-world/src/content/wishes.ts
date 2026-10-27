@@ -173,7 +173,10 @@ export function planBasket(target: WordData, pool: readonly WordData[], level: R
 }
 
 function item(kind: WishKind, w: WordData): WishItem {
-  return { word: w.word, gpcs: w.gpcs, pic: wordPic(w.pic), clip: w.clip, tier: w.tier as WishItem['tier'], react: reactOf(kind, w.word) };
+  return {
+    word: w.word, gpcs: w.gpcs, pic: wordPic(w.pic), ...(w.tint ? { tint: w.tint } : {}), clip: w.clip, tier: w.tier as WishItem['tier'],
+    react: reactOf(kind, w.word),
+  };
 }
 
 const isList = (x: readonly string[] | WishOpts): x is readonly string[] => Array.isArray(x);

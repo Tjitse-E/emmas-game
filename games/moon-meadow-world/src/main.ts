@@ -11,6 +11,7 @@ import { createLayer } from './ui';
 import { audio } from './audio';
 import { CLIPS, herd as startingHerd } from './content';
 import { GRAZE_HOMES } from './layout';
+import { wordPic } from './assets';
 import { createGame, isPart, sayWay } from './game/game';
 import { installInput } from './game/input';
 import { begin, installSlideWatch, installWayHelper } from './game/level';
@@ -86,8 +87,12 @@ function boot(): void {
   const save = createSave(() => window.localStorage, options.fresh);
   actors.princess.setLook(save.data.look);
   // Every shader program now, behind the start screen: three.js would otherwise compile each one the first time it
-  // draws it (the crown, the egg, the glows, the night), a stall on the Air 2 just as the moment starts.
+  // draws it (the crown, the egg, the glows, the night), a stall on the Air 2 just as the moment starts. A herd
+  // unicorn holds a toy meanwhile, so the toy sprite's program is ready for every wish's picture (it keeps its sprite).
+  const keeper = actors.herd.all()[0];
+  keeper?.showToy(wordPic('cup'), { tint: '#5aa9e6' });
   world.renderer.compile(world.scene, world.camera);
+  keeper?.showToy(null);
 
   const game = createGame({ world, actors, layer, options, save, herd });
   // The play starts with the customiser: the unicorns grazing near her step behind the camera before anything shows.

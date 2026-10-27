@@ -332,6 +332,21 @@ export function safeTint(hex: string | undefined, min: number, fallback: string)
   return '#ffffff';
 }
 
+/**
+ * Inline CSS for a greyscale word picture in its colour, as v3 draws it (art/tint.ts tintLayerStyle): the colour
+ * multiplied over the picture and cut to the picture's shape by a mask of the same picture, both contained and
+ * centred like an img with object-fit contain. Safari 15 needs the -webkit-mask-* names. A colour that is not
+ * '#rrggbb' becomes white, which multiply leaves unchanged.
+ */
+export function tintedPicStyle(url: string, colour: string): string {
+  const src = `url("${url.replace(/["\\\n\r]/g, (ch) => encodeURIComponent(ch))}")`;
+  const fit = (p: string) => [`${p}-size:contain`, `${p}-position:center`, `${p}-repeat:no-repeat`];
+  return [
+    `background-image:${src}`, ...fit('background'), `background-color:${HEX.test(colour) ? colour : '#ffffff'}`, 'background-blend-mode:multiply',
+    `-webkit-mask-image:${src}`, `mask-image:${src}`, ...fit('-webkit-mask'), ...fit('mask'), 'pointer-events:none',
+  ].join(';');
+}
+
 // ------------------------------------------------------------------------------------------------ home
 
 /**
