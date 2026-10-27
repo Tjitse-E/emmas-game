@@ -51,11 +51,56 @@ world.follow(() => ({ x: actors.princess.position.x, z: actors.princess.position
 - `headTop()` is just above the horn tip, for bubbles and name tags.
 - `herd.pick(ray)`: a sphere of 0.56 m (baby) or 0.66 m (foal) around a point between the body and the head, or a tap within 32 CSS px of that point on screen, whichever is bigger (so far unicorns are never under 64 px). The one the finger is most squarely on wins, then the nearer one. The screen test needs a ray from `setFromCamera` (`world.ray` gives one); the canvas size comes from the renderer each frame.
 - `emote()` plays on top of whatever it does and resolves at the end. `happy` and `nuzzle` send up hearts.
-- `showToy(url)`: a small picture (1 draw call each while shown). On land it lies on the grass at its front feet, a little to the side; while it swims it bobs beside it at head height. Textures are cached per URL.
+- `showToy(url)`: a small picture (1 draw call each while shown). On land it lies on the grass at its front feet, a little to the side; while it swims it bobs beside it at head height. Textures are cached per URL. `showToy(url, { on: 'head' })` (the dress-up wish's `wear`): a 0.4 m picture worn on top of its head, a little behind the horn, following every nod, walk and swim until `showToy(null)` or another picture.
 - The egg: `place(at, kind)` takes the egg's centre (`NEST.eggY` in the nest). A point with y below 0.3 (the egg is 0.6 m tall) is lifted so it rests on the ground, so the wild egg can be placed with y = 0. `hatch()` cracks (3 stages), wobbles hard, pops the top and bursts in sparkles and hearts after about 1.9 s; it resolves at the burst and the egg hides itself 0.9 s later.
 - `fx.starfall` resolves when the stars have landed (about 1.3 s). `fx.moonbeam` resolves after `ms`; it is warm (`#fff1c4`) with a soft glow and a breathing gold ring on the ground.
 - The too-hot steam is 5 big, slightly warm white puffs per burst. The snow egg has a deeper blue edge so it shows on the sand.
-- Princess Emma: a pale blonde (`#ffdf86`) with a deep warm gold crown (`#f5a623`, a light rim) about 1.3 times her first one. Her ponytails are tubes up to 8.5 cm thick that hang from close to the head; the chain keeps them out of her head and dress. The ribbon bows are 1.5 times bigger, with a light knot and two streamers, so `ribbons(colour)` reads at a glance at a 9 m frame.
+- Princess Emma: by default a pale blonde (`#ffdf86`) with a deep warm gold crown (`#f5a623`, a light rim) about 1.3 times her first one. Her ponytails are tubes up to 8.5 cm thick that hang from close to the head; the chain keeps them out of her head and dress. The ribbon bows are 1.5 times bigger, with a light knot and two streamers, so a new ribbon colour reads at a glance at a 9 m frame. Her wardrobe is below.
+
+## The wardrobe on Princess Emma (2.2.0, docs/v4/2.2.md 2.4 to 2.6)
+
+Files: `src/actors/princess.ts` (the actor), `hair.ts` (colours and styles: chains, tubes, plaits, bun), `looks3d.ts` (gown colours by dress role, sit squash, skirt tables, the six hair things, ribbon tails, wings, back bow, rose), `shapes.ts` (the three dress shapes by role), `ponytail.ts` (HairTubes: recolour, draw range, 12 sides; `chainPoint`), `parts.ts` (capacities, the overflow warning, `shapeTriangles`). Ids and swatch colours stay in `src/wardrobe.ts`.
+
+### The API (src/contracts.ts Princess)
+
+- `setLook(partial)`: missing fields keep what she wears; unknown ids fall back (normaliseLook). Colours change at once (cap, fringe, side locks, nape, tubes, plait lobes, bun, iris, ribbon). A gown swaps the dress mesh's geometry to its shape (built once, the first time a shape is worn) and repaints its vertex colours; same material, colour item size 3, so no program compiles. A style builds new chains and covers the pop with a sparkle in the hair colour (only after her first drawn frame, so setting the saved look at boot sparkles nowhere). Goodnight: `setLook({ ribbon })`.
+- `emote(kind)`: the wardrobe's reactions are `toss` (1.0 s), `blink` (1.6 s), `show` (1.6 s), `tilt` (1.2 s) and `curtsy` (1.2 s), as the table in 2.4. The actor makes these sparkles itself, so the game should not add its own for them: `toss` in the hair colour at her head and halfway down each chain, `tilt` in her ribbon colour at her hair thing, `twirl` in the gown's main colour. `blink` and `show` have no sparkle. `blink` never draws the happy arcs (the slow blink is the closed lid); `toss`, `blink`, `show` and `tilt` keep her eyes open with a wide smile; `curtsy` closes them happily at the bottom of the bow.
+- `hold(true)`: no random look-around (the idle breathing sway stays). Call it for the whole wardrobe part, `hold(false)` after Done.
+- `turnBy(rad)`: turns from her current heading at once and stays there (the preview drag). It does not clamp: the game clamps to ±170°. The next `face(p)` then eases her back in about 1.5 s instead of turning at the walking speed. A walk or `place()` ends it.
+- `point(part, out?)`: from the last drawn frame. `head` is her head's centre, `eyes` the point between her eyes on the face, `thing` the hair thing on her left (x > 0 when she faces south; the unicorn clip sits there), `dress` 0.45 m above her feet.
+- `extra('rose')`: the picnic rose, tucked in just under the hair thing on her right. Not part of `look`, never saved; `extra(null)` removes it.
+- `portrait(true)`: her Mid parts draw as Fine (while the Fine batch, hers only, has room: 48) and her Lo parts as Mid. Measured, see the budget below: it fits, so it can ship. Call `portrait(false)` when the wardrobe closes.
+- To show a side clip or a ponytail (2.4: she turns 25° for hair things and styles): `turnBy(-0.44)` turns her left side (the unicorn clip) towards a camera in the south, then `face(camera)`.
+
+### What each option draws
+
+- Hair: six colours from `HAIR_HEX`. Rainbow: cream cap and nape, fringe puffs pink, lilac, sky, mint, both side locks pink, the tubes fade through the six bands, plait lobes and bun twists cycle them.
+- Eyes: the iris colour only.
+- Gowns (`GOWN_3D` in looks3d.ts): party (rose, rainbow graded tiers, fairy), ball (lilac with white gloves and a back bow in its deep colour, moon with a pink back bow; no legs or shoes, sleeves 1.2 times), tutu (four scalloped ruffles, white tights, blue slippers, a leotard part in the bodice colour under the ruffles). Fairy wings: four feathers a side, white with the outer two in mint, flapping 1.5 Hz idle and 5 Hz running or sliding, folding flat while she swims.
+- Styles: ponytails (today's), high (one tube, the crown 1.5 cm forward), plaits (no tubes; 9 flattened lobes a plait, rolled left and right, base and light colours, a small bow at each tip), bun (a Fine bun low at the back with 7 twists round its base, and two short curly ringlets in the tube slots).
+- Hair things on both side anchors (`onHead(±0.8, 0.45)`), each with two ribbon tails in her ribbon colour: bows (today's), unicorn (a white unicorn head in profile on her left with a gold horn, ears, a mane in her ribbon colour, a closed eye and a pink cheek, about 0.17 m; a small bow on her right), flowers (five petals in the ribbon colour, a yellow centre, two leaves), stars (three gold stars of 0.10, 0.08 and 0.07 m, twinkling at 2 Hz), butterflies (upper wings in the ribbon colour, light lower wings, a thin body and two feelers; 2.5 Hz idle, 6 Hz on the move), hearts.
+- Nothing sits on top of her head: with the crown on, every thing and style stays clear of it (checked in the harness).
+- The back of her head: a hair part at the nape (new in every look, also the default) so she has no bald patch when she turns round.
+
+### Hair against head and gown
+
+`collide()` keeps every free chain point outside her head sphere (0.29 m plus how much thicker the style's hair is than the first build) and outside the dress: a 32-entry radius table over y 0 to 0.9 built from the shape's rows (widest row within 4 cm, scallops included, plus 3 cm; at least 0.2 m above y 0.58 for her arms). The ball gown's table starts at y 0.02, so the hair hangs outside it. The table follows the dress's flare, twirl and sit squash each frame. A unit test checks every option and 20 random looks walking, running, sliding and swimming (within 2 cm).
+
+### Sitting in the slide
+
+The dress narrows in x and z while she sits: 1.0 (party, which also flares a little as before), 0.80 (ball), 0.88 (tutu). The ball gown also folds up more (y 0.66, lifted 0.25 in dress space), so its hem sits where the party dress's lace does instead of poking through the slide.
+
+### Budget
+
+- Her parts: the default look without the crown is 47 parts (today's 46 plus the nape) and 5,450 triangles (the 12-sided tubes add 368, the nape 108). The busiest look (rainbow plaits, fairy wings, star clips, the rose, the crown): 121 parts, 7,846 triangles. Every option and 20 random looks stay under 8,000 triangles and 192 parts (unit test).
+- No new draw calls: everything is in the existing batches, the dress mesh and the hair tubes. The tubes draw 0, 1 or 2 tails with setDrawRange.
+- The wardrobe frames at 1080 x 740, measured in `dev/world.html` (today's world, before the hay rack and the picnic rug) with the frames of 2.4: body frame 37 calls and 60,000 to 62,000 triangles, face frame 37 to 38 calls and 57,700 to 59,700, with `portrait(true)` 36 to 37 calls and at most 70,700 triangles (busiest look). Well inside 80 and 100,000, so the portrait detail ships. Run `budget wardrobe` in the flows to confirm with the whole 2.2.0 world.
+- Follow view with 14 unicorns gathered round her in the busiest look: actors 13 calls, 29,600 triangles (harness).
+- Capacities (parts.ts `CAPACITY`): Mid 224, Lo 640, Cone 112, Fine 48. A unit test draws the busiest look (with and without the portrait) plus 20 unicorns as the herd draws them (5 in full detail) under every capacity. A batch or a part list that is full now logs `[mmw] actors: … is full, parts are dropped` once (console.warn, also in the build).
+
+### The harness
+
+`dev/actors.html` has a look panel: every option of every row (each plays its reaction; `react on/off`), the ribbon colours, `default`, `random`, the five new reactions, `hold`, `turn +/-`, `face cam`, `rose`, `portrait`, the wardrobe's `body` and `face` frames (2.4, she stands left of where the panel would be), and `run`. The selected unicorn has `wear` and `wear cape` (a picture on its head). `window.__actors` adds `setLook(partial)`, `portraitView('body' | 'face')` and `emma()` (parts, triangles, look, mode).
 
 ## Look
 
@@ -80,3 +125,6 @@ world.follow(() => ({ x: actors.princess.position.x, z: actors.princess.position
 - Culling uses the camera of the previous frame (with a 1.4 m margin). A camera cut can show a missing unicorn for one frame.
 - A command given while a unicorn is in the middle of its 0.7 s hop into the pond applies at once.
 - Toy pictures that fail to load show nothing (the TextureLoader logs the error).
+- Hair is kept out of her head and dress only: it can pass through the fairy wings and through an arm raised in a wave.
+- The dress hem shows a little under the slide's top platform while she sits there before sliding (the party dress did this before 2.2.0; the ball gown now does no more than that).
+- `dev/world.html` has its own stand-in princess (a cone and a sphere at START) that draws over her head when both stand there; it is only in that harness.

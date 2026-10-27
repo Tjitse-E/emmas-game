@@ -68,6 +68,8 @@ const PEEK_FORWARD_LOWER = 0.45;
 const PEEK_LIFT_LOWER = 0.18;
 /** The bath toy picture's size in metres. */
 const TOY_SIZE = 0.5;
+/** A picture it wears on its head (the dress-up wish): a little smaller, so its face stays clear. */
+const WEAR_SIZE = 0.4;
 
 export type Speeds = { readonly graze: number; readonly walk: number; readonly trot: number; readonly gallop: number; readonly swim: number };
 /** Walking speeds in m/s; foals are a little quicker. */
@@ -122,6 +124,8 @@ export class UnicornActor implements Unicorn {
   private bed = 0;
   private tuck = 0;
   private toy: THREE.Sprite | null = null;
+  /** Where the toy is: on the grass (or bobbing in the water) or worn on its head. */
+  private toyOn: 'ground' | 'head' = 'ground';
   /** A command given in the water, done once it has climbed out. */
   private afterSwim: Task | null = null;
 
@@ -315,18 +319,23 @@ export class UnicornActor implements Unicorn {
     return new Promise((resolve) => (this.emoteNow = { kind, t: 0, resolve }));
   }
 
-  showToy(url: string | null): void {
+  /**
+   * A picture next to it on the grass or in the water (the bath wish), or with `on: 'head'` worn on top of its head
+   * (the dress-up wish's 'wear'): it sits on the head between the ears, behind the horn, and moves with every nod.
+   */
+  showToy(url: string | null, o: { on?: 'ground' | 'head' } = {}): void {
     if (this.toy) {
       this.ctx.scene.remove(this.toy);
       this.toy.material.dispose();
       this.toy = null;
     }
     if (!url) return;
+    this.toyOn = o.on ?? 'ground';
     const mat = new THREE.SpriteMaterial({ map: this.ctx.toyTexture(url), transparent: true, depthWrite: false });
     this.toy = new THREE.Sprite(mat);
     this.toy.name = 'actors-toy';
     this.toy.renderOrder = 3;
-    this.toy.scale.setScalar(TOY_SIZE);
+    this.toy.scale.setScalar(this.toyOn === 'head' ? WEAR_SIZE : TOY_SIZE);
     this.ctx.scene.add(this.toy);
   }
 
@@ -996,7 +1005,12 @@ export class UnicornActor implements Unicorn {
     p.chew = t * 14;
     p.nightcap = this.cap;
 
-    if (this.toy) {
+    if (this.toy && this.toyOn === 'head') {
+      // Worn: its lower edge rests on the top of the head, a little behind the horn.
+      headMatrix(p, b, _hm);
+      const R = b.headR;
+      this.toy.position.set(0, R * 0.95 + WEAR_SIZE * 0.36, -R * 0.2).applyMatrix4(_hm);
+    } else if (this.toy) {
       if (swimming) {
         // In the water the toy bobs beside it at head height.
         const top = this.headTop(_v);

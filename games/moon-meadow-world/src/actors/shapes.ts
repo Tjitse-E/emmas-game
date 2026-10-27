@@ -66,6 +66,8 @@ export function lathe(
   radial: number,
   /** Radius change per row and angle (frills, the horn's spiral). */
   wobble?: (row: number, theta: number) => number,
+  /** Height change per row and angle (a draped edge). */
+  lift?: (row: number, theta: number) => number,
 ): THREE.BufferGeometry {
   const pos: number[] = [];
   const colour: number[] = [];
@@ -74,7 +76,7 @@ export function lathe(
     for (let k = 0; k < radial; k++) {
       const th = (k / radial) * Math.PI * 2;
       const r = row.r * (1 + (wobble ? wobble(i, th) : 0));
-      pos.push(Math.sin(th) * r, row.y, Math.cos(th) * r);
+      pos.push(Math.sin(th) * r, row.y + (lift ? lift(i, th) : 0), Math.cos(th) * r);
       const c = row.c ?? WHITE;
       colour.push(c.r, c.g, c.b);
       if (withAlpha) colour.push(row.a ?? 1);
@@ -263,39 +265,129 @@ export function straw(): THREE.BufferGeometry {
   );
 }
 
-/** Princess Emma's layered dress: lace hem, two pink tiers with scalloped edges, a sash and the bodice. Feet at y = 0. */
-export function dress(): THREE.BufferGeometry {
-  const lace = new THREE.Color('#fff4f9');
-  const pinkA = new THREE.Color('#ffb7d8');
-  const pinkB = new THREE.Color('#ff92c6');
-  const sash = new THREE.Color('#f0609f');
-  const rows: { r: number; y: number; c: THREE.Color; wave?: number }[] = [
-    { r: 0.0, y: 0.17, c: lace },
-    { r: 0.3, y: 0.162, c: lace },
-    { r: 0.372, y: 0.172, c: lace, wave: 0.045 },
-    { r: 0.374, y: 0.2, c: lace, wave: 0.045 },
-    { r: 0.35, y: 0.21, c: pinkA, wave: 0.03 },
-    { r: 0.352, y: 0.232, c: pinkA, wave: 0.03 },
-    { r: 0.322, y: 0.31, c: pinkA },
-    { r: 0.282, y: 0.39, c: pinkA },
-    { r: 0.27, y: 0.4, c: pinkB },
-    { r: 0.322, y: 0.385, c: pinkB, wave: 0.04 },
-    { r: 0.32, y: 0.41, c: pinkB, wave: 0.04 },
-    { r: 0.262, y: 0.5, c: pinkB },
-    { r: 0.19, y: 0.585, c: pinkB },
-    { r: 0.158, y: 0.6, c: sash },
-    { r: 0.162, y: 0.625, c: sash },
-    { r: 0.152, y: 0.655, c: sash },
-    { r: 0.15, y: 0.66, c: pinkB },
-    { r: 0.162, y: 0.73, c: pinkB },
-    { r: 0.158, y: 0.79, c: pinkB },
-    { r: 0.125, y: 0.85, c: pinkB },
-    { r: 0.07, y: 0.88, c: pinkB },
-    { r: 0.0, y: 0.885, c: pinkB },
-  ];
-  // Scallops: rounded bumps all round the edge of each tier.
-  return lathe(rows, 24, (i, th) => (rows[i].wave ?? 0) * (Math.abs(Math.cos(th * 6)) - 0.5));
+/** The parts of a dress that take their own colour: the hem lace, the lower and upper tiers, the sash and the bodice. */
+export type DressRole = 'trim' | 'main' | 'deep' | 'sash' | 'bodice';
+export type DressShape = 'party' | 'ball' | 'tutu';
+
+export interface DressRow {
+  r: number;
+  y: number;
+  role: DressRole;
+  /** Scallops: rounded bumps all round the edge (12 per turn), as a fraction of r. */
+  wave?: number;
+  /** Turns the scallops half a bump, so stacked ruffles interleave. */
+  shift?: boolean;
+  /** A draped edge: the hem rises at six gathers and hangs between them, in metres. */
+  drape?: number;
 }
+
+/** The sash and the bodice, the same in every shape (feet at y = 0). */
+const TOP: DressRow[] = [
+  { r: 0.158, y: 0.6, role: 'sash' },
+  { r: 0.162, y: 0.625, role: 'sash' },
+  { r: 0.152, y: 0.655, role: 'sash' },
+  { r: 0.15, y: 0.66, role: 'bodice' },
+  { r: 0.162, y: 0.73, role: 'bodice' },
+  { r: 0.158, y: 0.79, role: 'bodice' },
+  { r: 0.125, y: 0.85, role: 'bodice' },
+  { r: 0.07, y: 0.88, role: 'bodice' },
+  { r: 0.0, y: 0.885, role: 'bodice' },
+];
+
+/**
+ * The three dress shapes, 22 rows each (2.5). Party: today's lace hem, two scalloped tiers, sash and bodice. Ball:
+ * floor length with a lace hem, an underskirt and a draped overskirt edge at 0.40. Tutu: four ruffles from 0.58 down
+ * to 0.43, closed underneath at 0.41, so the legs show.
+ */
+export const DRESS_ROWS: Record<DressShape, readonly DressRow[]> = {
+  party: [
+    { r: 0.0, y: 0.17, role: 'trim' },
+    { r: 0.3, y: 0.162, role: 'trim' },
+    { r: 0.372, y: 0.172, role: 'trim', wave: 0.045 },
+    { r: 0.374, y: 0.2, role: 'trim', wave: 0.045 },
+    { r: 0.35, y: 0.21, role: 'main', wave: 0.03 },
+    { r: 0.352, y: 0.232, role: 'main', wave: 0.03 },
+    { r: 0.322, y: 0.31, role: 'main' },
+    { r: 0.282, y: 0.39, role: 'main' },
+    { r: 0.27, y: 0.4, role: 'deep' },
+    { r: 0.322, y: 0.385, role: 'deep', wave: 0.04 },
+    { r: 0.32, y: 0.41, role: 'deep', wave: 0.04 },
+    { r: 0.262, y: 0.5, role: 'deep' },
+    { r: 0.19, y: 0.585, role: 'deep' },
+    ...TOP,
+  ],
+  ball: [
+    { r: 0.0, y: 0.045, role: 'trim' },
+    { r: 0.4, y: 0.035, role: 'trim' },
+    { r: 0.44, y: 0.04, role: 'trim', wave: 0.04 },
+    { r: 0.44, y: 0.09, role: 'trim', wave: 0.04 },
+    { r: 0.425, y: 0.095, role: 'main' },
+    { r: 0.395, y: 0.19, role: 'main' },
+    { r: 0.36, y: 0.29, role: 'main' },
+    { r: 0.325, y: 0.38, role: 'main' },
+    { r: 0.3, y: 0.425, role: 'deep' },
+    { r: 0.36, y: 0.39, role: 'deep', drape: 0.06 },
+    { r: 0.355, y: 0.43, role: 'deep', drape: 0.05 },
+    { r: 0.28, y: 0.51, role: 'deep' },
+    { r: 0.19, y: 0.587, role: 'deep' },
+    ...TOP,
+  ],
+  tutu: [
+    { r: 0.0, y: 0.41, role: 'deep' },
+    { r: 0.27, y: 0.405, role: 'deep' },
+    { r: 0.41, y: 0.43, role: 'trim', wave: 0.06 },
+    { r: 0.395, y: 0.452, role: 'main', wave: 0.06 },
+    { r: 0.26, y: 0.47, role: 'deep' },
+    { r: 0.38, y: 0.48, role: 'trim', wave: 0.06, shift: true },
+    { r: 0.365, y: 0.502, role: 'main', wave: 0.06, shift: true },
+    { r: 0.23, y: 0.52, role: 'deep' },
+    { r: 0.34, y: 0.53, role: 'trim', wave: 0.06 },
+    { r: 0.325, y: 0.552, role: 'main', wave: 0.06 },
+    { r: 0.2, y: 0.57, role: 'deep' },
+    { r: 0.3, y: 0.58, role: 'trim', wave: 0.06, shift: true },
+    { r: 0.285, y: 0.598, role: 'main', wave: 0.06, shift: true },
+    ...TOP,
+  ],
+};
+
+/** Radial segments of every dress. */
+export const DRESS_RADIAL = 24;
+
+/**
+ * One dress shape with white vertex colours (item size 3, so swapping shapes never compiles a new program); paint it
+ * with `paintDress`. Scallops are rounded bumps all round the edge of a tier.
+ */
+export function dressGeometry(shape: DressShape): THREE.BufferGeometry {
+  const rows = DRESS_ROWS[shape];
+  return lathe(
+    rows.map((r) => ({ r: r.r, y: r.y })),
+    DRESS_RADIAL,
+    (i, th) => (rows[i].wave ?? 0) * (Math.abs(Math.cos(th * 6 + (rows[i].shift ? Math.PI / 12 : 0))) - 0.5),
+    (i, th) => (rows[i].drape ?? 0) * Math.pow(Math.abs(Math.cos(th * 3)), 3),
+  );
+}
+
+/**
+ * Write a dress's vertex colours row by row. `colourOf` gets the row's role and its place inside that role from 0 (the
+ * lowest row) to 1 (the highest), for graded tiers.
+ */
+export function paintDress(g: THREE.BufferGeometry, shape: DressShape, colourOf: (role: DressRole, k: number, out: THREE.Color) => THREE.Color): void {
+  const rows = DRESS_ROWS[shape];
+  const a = g.getAttribute('color') as THREE.BufferAttribute;
+  const span = new Map<DressRole, [number, number]>();
+  for (const r of rows) {
+    const s = span.get(r.role);
+    span.set(r.role, s ? [Math.min(s[0], r.y), Math.max(s[1], r.y)] : [r.y, r.y]);
+  }
+  rows.forEach((r, i) => {
+    const [lo, hi] = span.get(r.role)!;
+    colourOf(r.role, hi > lo ? (r.y - lo) / (hi - lo) : 0, _c);
+    for (let k = 0; k < DRESS_RADIAL; k++) a.setXYZ(i * DRESS_RADIAL + k, _c.r, _c.g, _c.b);
+  });
+  a.needsUpdate = true;
+}
+
+const _c = new THREE.Color();
 
 /** A small crown: a band with five points, base at y = 0, radius 1 (it is scaled to the head). Double sided. */
 export function crown(): THREE.BufferGeometry {

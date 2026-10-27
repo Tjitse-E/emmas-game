@@ -24,11 +24,55 @@ export const B = {
 } as const;
 export type BatchId = (typeof B)[keyof typeof B];
 
-/** Max instances per shape: Princess Emma, 20 unicorns and the egg with room to spare. */
-const CAPACITY: Record<BatchId, number> = {
-  [B.Hi]: 64, [B.Mid]: 160, [B.Lo]: 480, [B.Cone]: 64, [B.Limb]: 200, [B.Horn]: 24, [B.Iris]: 56,
-  [B.Dot]: 220, [B.Arc]: 90, [B.Soft]: 90, [B.Ripple]: 48, [B.Beam]: 8, [B.Straw]: 24, [B.Fine]: 8,
+/**
+ * Max instances per shape: Princess Emma in her busiest look (plaits, fairy wings, star clips and the rose), 20
+ * unicorns and the egg with room to spare. Fine is only hers: her head, the bun and, in the portrait, her Mid parts.
+ */
+export const CAPACITY: Record<BatchId, number> = {
+  [B.Hi]: 64, [B.Mid]: 224, [B.Lo]: 640, [B.Cone]: 112, [B.Limb]: 200, [B.Horn]: 24, [B.Iris]: 56,
+  [B.Dot]: 220, [B.Arc]: 90, [B.Soft]: 90, [B.Ripple]: 48, [B.Beam]: 8, [B.Straw]: 24, [B.Fine]: 48,
 };
+
+/** The geometry of each shape (built by the Parts renderer, and once more by `shapeTriangles`). */
+const GEOMETRY: Record<BatchId, () => THREE.BufferGeometry> = {
+  [B.Hi]: () => S.sphere(4),
+  [B.Mid]: () => S.sphere(3),
+  [B.Lo]: () => S.sphere(2),
+  [B.Cone]: S.ear,
+  [B.Limb]: S.limb,
+  [B.Horn]: S.horn,
+  [B.Iris]: S.iris,
+  [B.Dot]: () => S.disc(7),
+  [B.Arc]: S.arc,
+  [B.Soft]: S.softDisc,
+  [B.Ripple]: S.ring,
+  [B.Beam]: S.beam,
+  [B.Straw]: S.straw,
+  [B.Fine]: () => S.sphere(6),
+};
+
+const triangleCache = new Map<BatchId, number>();
+/** Triangles of one instance of a shape (for the budget helpers and the tests). */
+export function shapeTriangles(id: BatchId): number {
+  let n = triangleCache.get(id);
+  if (n === undefined) {
+    const g = GEOMETRY[id]();
+    n = (g.index ? g.index.count : g.getAttribute('position').count) / 3;
+    g.dispose();
+    triangleCache.set(id, n);
+  }
+  return n;
+}
+
+/** Names of the shapes, for warnings. */
+const NAMES = Object.fromEntries(Object.entries(B).map(([k, v]) => [v, k])) as Record<BatchId, string>;
+
+/** A dropped part is a bug (a missing bow, or herd parts that vanish): say so once per batch or list. */
+function warnOnce(owner: { warned: boolean }, what: string): void {
+  if (owner.warned) return;
+  owner.warned = true;
+  console.warn(`[mmw] actors: ${what} is full, parts are dropped`);
+}
 
 /**
  * Character shading: the light is pulled part of the way towards the plain colour, so the shade side stays clean and
@@ -81,10 +125,13 @@ class Batch {
   /** The three per-instance attributes and their item sizes, uploaded up to n each frame. */
   private readonly uploads: readonly (readonly [THREE.BufferAttribute, number])[];
   private readonly capacity: number;
+  private readonly name: string;
   n = 0;
+  warned = false;
 
-  constructor(geometry: THREE.BufferGeometry, material: THREE.Material, capacity: number) {
+  constructor(geometry: THREE.BufferGeometry, material: THREE.Material, capacity: number, name: string) {
     this.capacity = capacity;
+    this.name = name;
     this.extAttr = new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1);
     this.extAttr.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('instanceExtra', this.extAttr);
@@ -101,7 +148,7 @@ class Batch {
   }
 
   add(src: PartList, i: number): void {
-    if (this.n >= this.capacity) return;
+    if (this.n >= this.capacity) return warnOnce(this, `the ${this.name} batch (${this.capacity})`);
     const k = this.n++;
     // A plain loop: no subarray views to collect every frame.
     const from = i * 16;
@@ -133,6 +180,7 @@ export class PartList {
   readonly col: Float32Array;
   readonly ext: Float32Array;
   n = 0;
+  warned = false;
 
   constructor(capacity: number) {
     this.id = new Uint8Array(capacity);
@@ -147,7 +195,7 @@ export class PartList {
 
   /** Add a part. `extra` is the sheen for lit shapes and the opacity for transparent ones. */
   push(id: BatchId, m: THREE.Matrix4, c: THREE.Color, extra = 0): void {
-    if (this.n >= this.id.length) return;
+    if (this.n >= this.id.length) return warnOnce(this, `a part list (${this.id.length})`);
     const k = this.n++;
     this.id[k] = id;
     const e = m.elements;
@@ -174,26 +222,15 @@ export class Parts {
     const soft = alphaBasic({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const ripple = alphaBasic({ vertexColors: true, side: THREE.DoubleSide });
     const beam = alphaBasic({ vertexColors: true, side: THREE.DoubleSide });
-    const geos: Record<BatchId, [THREE.BufferGeometry, THREE.Material]> = {
-      [B.Hi]: [S.sphere(4), lit],
-      [B.Mid]: [S.sphere(3), lit],
-      [B.Lo]: [S.sphere(2), lit],
-      [B.Cone]: [S.ear(), lit],
-      [B.Limb]: [S.limb(), lit],
-      [B.Horn]: [S.horn(), lit],
-      [B.Iris]: [S.iris(), flat],
-      [B.Dot]: [S.disc(7), flat],
-      [B.Arc]: [S.arc(), flat],
-      [B.Soft]: [S.softDisc(), soft],
-      [B.Ripple]: [S.ring(), ripple],
-      [B.Beam]: [S.beam(), beam],
-      [B.Straw]: [S.straw(), lit],
-      [B.Fine]: [S.sphere(6), lit],
+    const mats: Record<BatchId, THREE.Material> = {
+      [B.Hi]: lit, [B.Mid]: lit, [B.Lo]: lit, [B.Cone]: lit, [B.Limb]: lit, [B.Horn]: lit, [B.Iris]: flat, [B.Dot]: flat,
+      [B.Arc]: flat, [B.Soft]: soft, [B.Ripple]: ripple, [B.Beam]: beam, [B.Straw]: lit, [B.Fine]: lit,
     };
-    for (const k of Object.keys(geos).map(Number) as BatchId[]) {
-      const [g, m] = geos[k];
-      const b = new Batch(g, m, CAPACITY[k]);
-      b.mesh.name = 'actors-' + Object.entries(B).find(([, v]) => v === k)![0];
+    for (const k of Object.keys(mats).map(Number) as BatchId[]) {
+      const g = GEOMETRY[k]();
+      const m = mats[k];
+      const b = new Batch(g, m, CAPACITY[k], NAMES[k]);
+      b.mesh.name = 'actors-' + NAMES[k];
       // Shadows, cheeks and ripples draw after the world's own transparent things (the pond water).
       if (k === B.Soft || k === B.Ripple) b.mesh.renderOrder = 2;
       if (k === B.Beam) b.mesh.renderOrder = 3;

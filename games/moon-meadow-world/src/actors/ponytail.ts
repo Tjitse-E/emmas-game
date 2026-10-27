@@ -98,8 +98,10 @@ export class Ponytail {
 }
 
 /**
- * The ponytails drawn as smooth tubes through their chains (one mesh for both), rebuilt every frame: a Catmull-Rom
- * curve through the points, tapering to a soft tip, with gentle bulges and light bands so they read as curly hair.
+ * The ponytails drawn as smooth tubes through their chains (one mesh for all of them), rebuilt every frame: a
+ * Catmull-Rom curve through the points, tapering to a soft tip, with gentle bulges and light bands so they read as curly
+ * hair. Built once for the most tails a style needs; `show(n)` draws only the first n (setDrawRange), and `recolour`
+ * repaints a tail in place, so a new hair colour or style never builds a geometry or a program.
  */
 export class HairTubes {
   readonly mesh: THREE.Mesh;
@@ -107,6 +109,9 @@ export class HairTubes {
   private readonly radial: number;
   private readonly pos: THREE.BufferAttribute;
   private readonly nor: THREE.BufferAttribute;
+  private readonly colour: THREE.BufferAttribute;
+  /** Index count of one tail. */
+  private readonly perTail: number;
 
   constructor(tails: number, material: THREE.Material, dark: THREE.Color, light: THREE.Color, rings = 24, radial = 8) {
     this.rings = rings;
@@ -115,15 +120,10 @@ export class HairTubes {
     const g = new THREE.BufferGeometry();
     this.pos = new THREE.BufferAttribute(new Float32Array(n * 3), 3).setUsage(THREE.DynamicDrawUsage);
     this.nor = new THREE.BufferAttribute(new Float32Array(n * 3), 3).setUsage(THREE.DynamicDrawUsage);
-    const colour = new Float32Array(n * 3);
-    const c = new THREE.Color();
+    this.colour = new THREE.BufferAttribute(new Float32Array(n * 3), 3);
     const index: number[] = [];
     for (let k = 0; k < tails; k++) {
-      for (let i = 0; i < rings; i++) {
-        const t = i / (rings - 1);
-        c.copy(dark).lerp(light, 0.3 + 0.35 * t + 0.25 * Math.sin(t * Math.PI * 2 * 5));
-        for (let j = 0; j < radial; j++) c.toArray(colour, ((k * rings + i) * radial + j) * 3);
-        if (i === rings - 1) continue;
+      for (let i = 0; i < rings - 1; i++) {
         for (let j = 0; j < radial; j++) {
           const a = (k * rings + i) * radial + j;
           const b = (k * rings + i) * radial + ((j + 1) % radial);
@@ -131,24 +131,58 @@ export class HairTubes {
         }
       }
     }
+    this.perTail = (rings - 1) * radial * 6;
     g.setAttribute('position', this.pos);
     g.setAttribute('normal', this.nor);
-    g.setAttribute('color', new THREE.BufferAttribute(colour, 3));
+    g.setAttribute('color', this.colour);
     g.setIndex(index);
     this.mesh = new THREE.Mesh(g, material);
     this.mesh.frustumCulled = false;
+    for (let k = 0; k < tails; k++) this.recolour(k, dark, light);
   }
 
-  /** Rebuild tail k through `pts`, radius r(t) from the tie (t = 0) to the tip (t = 1). */
-  set(k: number, pts: THREE.Vector3[], r: (t: number) => number): void {
+  /**
+   * Paint tail k: light bands over the hair colour, `waves` of them along its length. With `bands` (rainbow hair) the
+   * colour fades through them from the tie to the tip instead, with softer light bands.
+   */
+  recolour(k: number, dark: THREE.Color, light: THREE.Color, bands: readonly THREE.Color[] | null = null, waves = 5): void {
     const { rings, radial } = this;
-    const last = pts.length - 1;
+    const a = this.colour.array as Float32Array;
     for (let i = 0; i < rings; i++) {
       const t = i / (rings - 1);
-      const f = t * last;
-      const s = Math.min(last - 1, Math.floor(f));
-      catmull(pts[Math.max(0, s - 1)], pts[s], pts[s + 1], pts[Math.min(last, s + 2)], f - s, _p, _tan);
-      _tan.normalize();
+      const wave = Math.sin(t * Math.PI * 2 * waves);
+      if (bands) {
+        const f = t * (bands.length - 1);
+        const s = Math.min(bands.length - 2, Math.floor(f));
+        _c.copy(bands[s]).lerp(bands[s + 1], f - s).lerp(_white, 0.12 + 0.12 * wave);
+      } else {
+        _c.copy(dark).lerp(light, 0.3 + 0.35 * t + 0.25 * wave);
+      }
+      for (let j = 0; j < radial; j++) _c.toArray(a, ((k * rings + i) * radial + j) * 3);
+    }
+    this.colour.needsUpdate = true;
+  }
+
+  /** Draw only the first n tails. */
+  show(n: number): void {
+    this.mesh.geometry.setDrawRange(0, n * this.perTail);
+    this.mesh.visible = n > 0;
+  }
+
+  /** Triangles drawn now. */
+  get triangles(): number {
+    return this.mesh.visible ? Math.min(this.mesh.geometry.drawRange.count, this.mesh.geometry.index!.count) / 3 : 0;
+  }
+
+  /**
+   * Rebuild tail k through `pts`, radius r(t) from the tie (t = 0) to the tip (t = 1), with `waves` bulges of `bulge`
+   * (a fraction of the radius) along it.
+   */
+  set(k: number, pts: THREE.Vector3[], r: (t: number) => number, bulge = 0.13, waves = 5): void {
+    const { rings, radial } = this;
+    for (let i = 0; i < rings; i++) {
+      const t = i / (rings - 1);
+      chainPoint(pts, t, _p, _tan);
       // Parallel transport keeps the tube from twisting.
       if (i === 0) {
         _n.set(0, 1, 0).cross(_tan);
@@ -158,7 +192,7 @@ export class HairTubes {
         _n.addScaledVector(_tan, -_n.dot(_tan)).normalize();
       }
       _b.crossVectors(_tan, _n);
-      const radius = r(t) * (1 + 0.13 * Math.sin(t * Math.PI * 2 * 5));
+      const radius = r(t) * (1 + bulge * Math.sin(t * Math.PI * 2 * waves));
       for (let j = 0; j < radial; j++) {
         const a = (j / radial) * Math.PI * 2;
         _d.copy(_n).multiplyScalar(Math.cos(a)).addScaledVector(_b, Math.sin(a));
@@ -172,6 +206,20 @@ export class HairTubes {
   }
 }
 
+/**
+ * The point and the unit tangent at t (0 at the tie, 1 at the tip) of a smooth Catmull-Rom curve through a chain. Used
+ * for the tubes and for anything laid along a chain (the plait lobes, sparkles).
+ */
+export function chainPoint(pts: readonly THREE.Vector3[], t: number, out: THREE.Vector3, tan: THREE.Vector3): void {
+  const last = pts.length - 1;
+  const f = Math.min(1, Math.max(0, t)) * last;
+  const s = Math.min(last - 1, Math.floor(f));
+  catmull(pts[Math.max(0, s - 1)], pts[s], pts[s + 1], pts[Math.min(last, s + 2)], f - s, out, tan);
+  tan.normalize();
+}
+
+const _c = new THREE.Color();
+const _white = new THREE.Color(1, 1, 1);
 const _p = new THREE.Vector3();
 const _tan = new THREE.Vector3();
 const _n = new THREE.Vector3();
