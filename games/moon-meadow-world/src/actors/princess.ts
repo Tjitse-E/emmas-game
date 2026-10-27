@@ -1,15 +1,18 @@
-// Princess Emma: a chibi princess built from smooth shapes, with two long blonde ponytails on verlet chains.
-// She walks and runs routes, waves, claps, jumps and twirls, and rides the slide into the pond and swims out.
+// Princess Emma: a chibi princess built from smooth shapes, with long hair on verlet chains. She walks and runs
+// routes, waves, claps, jumps and twirls, rides the slide into the pond and swims out, and wears the look Emma picks in
+// the wardrobe (docs/v4/2.2.md 2.5 and 2.6): hair colour and style, eyes, gown and hair things, all from the shared
+// shapes, so a new look costs no draw call, no material and no shader program.
 import * as THREE from 'three';
-import type { Princess, PrincessEmote, PrincessLook, PrincessMode, Ribbon, Vec2 } from '../contracts';
+import type { HairThing, Princess, PrincessEmote, PrincessLook, PrincessMode, Ribbon, Vec2 } from '../contracts';
 import { POND, SLIDE } from '../layout';
-import { DEFAULT_LOOK, RIBBON_HEX, normaliseLook } from '../wardrobe';
+import { DEFAULT_LOOK, EYE_HEX, HAIR_HEX, RIBBON_HEX, normaliseLook } from '../wardrobe';
 import { audio } from '../audio';
-import { B, PartList, Xf, col, rimLambert } from './parts';
+import { B, CAPACITY, PartList, Xf, col, rimLambert, shapeTriangles, type BatchId } from './parts';
 import * as S from './shapes';
-import { HairTubes, Ponytail } from './ponytail';
+import { Hair, hairExtra } from './hair';
+import { GOWN_3D, SIT_SQUASH, THING_SIDE, backBow, drawRose, drawThing, gownRowColour, skirtAt, skirtTable, wings, type Gown3D } from './looks3d';
 import type { FxImpl } from './fx';
-import { RouteWalker, SlideQueue, damp, exitLanding, headingOf, nearestExit, turnTowards, type ActorDepsPlus } from './motion';
+import { RouteWalker, SlideQueue, damp, exitLanding, headingOf, nearestExit, turnTowards, wrap, type ActorDepsPlus } from './motion';
 import { CLIMB_SPEED, CURVE_LEN, SEAT_U, SLIDE_V0, slideAt, slideDir, slideStep } from './ride';
 
 export const WALK_SPEED = 2.6;
@@ -40,7 +43,7 @@ export interface PrincessCtx {
 }
 
 type Emote = PrincessEmote;
-/** The wardrobe's reactions (toss to curtsy) only take their time for now: she stands still. */
+/** Seconds per emote. toss, blink, show, tilt and curtsy are the wardrobe's reactions (2.4). */
 const EMOTE_TIME: Record<Emote, number> = {
   wave: 1.7, clap: 1.5, jump: 0.95, twirl: 1.4, toss: 1.0, blink: 1.6, show: 1.6, tilt: 1.2, curtsy: 1.2,
 };
@@ -59,22 +62,20 @@ interface Ride {
 }
 
 const SKIN = '#ffe2d0';
-/** A pale blonde, so the deeper gold crown stands out against it. */
-const HAIR = '#ffdf86';
-const HAIR_LIGHT = '#fff0b8';
 /** The crown: a deep warm gold with a light rim, about 1.3 times her old crown. */
 const CROWN = '#f5a623';
 const CROWN_SIZE = 1.3;
-/** Ponytail tube radius: thickest just below the tie, a soft rounded tip. */
-const TAIL_PEAK = 0.085;
-const TAIL_TIP = 0.025;
-/** How much thicker the tubes are than the first build, so the chain keeps them out of her head and dress. */
-const TAIL_EXTRA = TAIL_PEAK - 0.052;
+/** With one high ponytail the crown sits this much further forward, clear of the tie. */
+const CROWN_FORWARD_HIGH = 0.015;
+/** How fast her heading eases back after the preview drag (about 1.5 s to settle). */
+const EASE_BACK = 3;
 const ease = (k: number) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
+/** Up, hold, down: 0 to 1 over the first `a` of an emote, back to 0 over the last `a`. */
+const swell = (k: number, a: number) => ease(Math.min(1, k / a, (1 - k) / a));
 
 export class PrincessActor implements Princess {
   readonly position = new THREE.Vector3();
-  readonly parts = new PartList(120);
+  readonly parts = new PartList(192);
   mode: PrincessMode = 'idle';
   heading = 0;
   moveHeading = Math.PI;
@@ -88,15 +89,37 @@ export class PrincessActor implements Princess {
   private walkDone: ((ok: boolean) => void) | null = null;
   private ride: Ride | null = null;
   private pending: { to: Vec2; run: boolean; resolve: (ok: boolean) => void } | null = null;
-  private emoteNow: { kind: Emote; t: number; resolve: () => void } | null = null;
-  private readonly tails = [new Ponytail(8, 0.145), new Ponytail(8, 0.145)];
+  private emoteNow: { kind: Emote; t: number; side: number; resolve: () => void } | null = null;
   private crownOn = false;
   private crownScale = 0;
   private readonly ribbon = col('#ff5c9d');
   private readonly ribbonLight = col('#ff8fbd');
   private current: PrincessLook = { ...DEFAULT_LOOK };
-  /** Her head's centre in world space, from the last drawn frame. */
+  private gown: Gown3D = GOWN_3D.rose;
+  /** Each dress shape's geometry, built the first time a gown needs it, and its radius table for the hair. */
+  private readonly dresses = new Map<S.DressShape, { g: THREE.BufferGeometry; skirt: Float32Array }>();
+  private skirt: Float32Array;
+  /** The dress's scale and lift in root space this frame (the hair keeps out of it). */
+  private readonly dressScale = new THREE.Vector4(1, 1, 1, 0);
+  /** How much thicker than the first build's tubes her hair is (the chains keep this much further out). */
+  private extraR = hairExtra('ponytails');
+  private holding = false;
+  /** Turned by the preview drag; the next face() then eases back slowly (easeBack) instead of snapping round. */
+  private turned = false;
+  private easeBack = false;
+  private rose = false;
+  private portraitOn = false;
+  private drawn = false;
+  private wingPhase = 0;
+  private flutter = 0;
+  private fold = 0;
+  /** Her head's centre, the point between her eyes, her hair thing (on her left) and her dress, from the last frame. */
   private readonly headAt = new THREE.Vector3();
+  private readonly eyesAt = new THREE.Vector3();
+  private readonly thingAt = new THREE.Vector3();
+  private readonly dressAt = new THREE.Vector3();
+  private readonly colours = { ribbon: this.ribbon, ribbonLight: this.ribbonLight };
+  private readonly collideFn = (q: THREE.Vector3): void => this.collide(q);
 
   // Pose, recomputed every frame.
   private phase = 0;
@@ -111,11 +134,9 @@ export class PrincessActor implements Princess {
 
   private readonly dress: THREE.Mesh;
   private readonly crownMesh: THREE.Mesh;
-  private readonly hair: HairTubes;
+  readonly hair: Hair;
   private readonly c = {
     skin: col(SKIN),
-    hair: col(HAIR),
-    hairLight: col(HAIR_LIGHT),
     white: col('#ffffff'),
     iris: col('#4f8fe0'),
     lash: col('#4a2a35'),
@@ -123,6 +144,11 @@ export class PrincessActor implements Princess {
     mouth: col('#d9466f'),
     sleeve: col('#ffc6e1'),
     shoe: col('#ff6fa8'),
+    legs: col(SKIN),
+    hand: col(SKIN),
+    leotard: col('#ffffff'),
+    gownMain: col('#ffb7d8'),
+    backBow: col('#ffffff'),
     gold: col('#ffb62e'),
     gem: col('#ff4f9a'),
     shadow: col('#2e4a2b'),
@@ -133,16 +159,19 @@ export class PrincessActor implements Princess {
     this.ctx = ctx;
     this.position.set(at.x, 0, at.z);
     this.headAt.set(at.x, 1.08, at.z);
-    this.dress = new THREE.Mesh(S.dress(), rimLambert({ vertexColors: true }, 0.15));
+    const party = this.dressFor('party');
+    this.skirt = party.skirt;
+    this.dress = new THREE.Mesh(party.g, rimLambert({ vertexColors: true }, 0.15));
+    this.paintGown();
     this.dress.name = 'actors-dress';
     this.crownMesh = new THREE.Mesh(
       S.crown(),
       rimLambert({ color: CROWN, emissive: '#8a4b00', emissiveIntensity: 0.45, side: THREE.DoubleSide }, 1.1),
     );
     this.crownMesh.name = 'actors-crown';
-    this.hair = new HairTubes(2, rimLambert({ vertexColors: true }, 0.3), col(HAIR), col(HAIR_LIGHT));
-    this.hair.mesh.name = 'actors-ponytails';
-    scene.add(this.hair.mesh);
+    this.hair = new Hair(rimLambert({ vertexColors: true }, 0.3));
+    this.hair.tubes.mesh.name = 'actors-ponytails';
+    scene.add(this.hair.tubes.mesh);
     for (const m of [this.dress, this.crownMesh]) {
       m.matrixAutoUpdate = false;
       m.frustumCulled = false;
@@ -162,6 +191,7 @@ export class PrincessActor implements Princess {
     }
     this.cancelRide();
     this.endWalk(false);
+    this.turned = this.easeBack = false;
     this.walker = new RouteWalker(route, this.flat());
     this.run = !!o.run;
     if (this.walker.done) {
@@ -194,14 +224,29 @@ export class PrincessActor implements Princess {
 
   emote(kind: Emote): Promise<void> {
     this.emoteNow?.resolve();
-    if (kind === 'twirl') this.ctx.fx.sparkle(this.position.clone().setY(this.position.y + 0.7), { count: 10, colour: '#ffb3df' });
-    return new Promise((resolve) => (this.emoteNow = { kind, t: 0, resolve }));
+    const fx = this.ctx.fx;
+    const side = THING_SIDE[this.current.thing];
+    if (kind === 'twirl') fx.sparkle(this.position.clone().setY(this.position.y + 0.7), { count: 10, colour: this.gown.main[0] });
+    if (kind === 'toss') {
+      // Sparkles in the hair colour at her head and halfway down each tail.
+      const h = HAIR_HEX[this.current.hair];
+      fx.sparkle(_sp.copy(this.headAt).setY(this.headAt.y + 0.12), { count: 9, colour: h.bands?.[0] ?? h.base });
+      for (let i = 0; i < 2; i++) {
+        if (this.hair.mid(i, _sp)) fx.sparkle(_sp, { count: 6, colour: h.bands?.[3 + i] ?? h.light });
+      }
+    }
+    if (kind === 'tilt') fx.sparkle(this.thingAt, { count: 8, colour: RIBBON_HEX[this.current.ribbon] });
+    return new Promise((resolve) => (this.emoteNow = { kind, t: 0, side, resolve }));
   }
 
   face(p: Vec2): void {
     const dx = p.x - this.position.x;
     const dz = p.z - this.position.z;
     if (Math.hypot(dx, dz) > 0.05) this.targetHeading = headingOf(dx, dz);
+    if (this.turned) {
+      this.turned = false;
+      this.easeBack = true;
+    }
   }
 
   crown(on: boolean): void {
@@ -212,25 +257,90 @@ export class PrincessActor implements Princess {
     return this.current;
   }
 
-  /** For now only the ribbon colour shows; the rest of the look is stored. */
+  /**
+   * Wear a look; missing fields keep what she wears. Colours change at once, a gown swaps to its cached shape and
+   * repaints it, a style builds new chains (with a sparkle over the pop). Nothing compiles a program.
+   */
   setLook(look: Partial<PrincessLook>): void {
-    const next = normaliseLook({ ...this.current, ...look }, this.current);
-    if (next.ribbon !== this.current.ribbon) this.paintRibbons(next.ribbon);
+    const was = this.current;
+    const next = normaliseLook({ ...was, ...look }, was);
     this.current = next;
+    if (next.ribbon !== was.ribbon) this.paintRibbons(next.ribbon);
+    if (next.eyes !== was.eyes) this.c.iris.set(EYE_HEX[next.eyes]);
+    if (next.hair !== was.hair) this.hair.setColour(next.hair);
+    if (next.gown !== was.gown) this.wearGown();
+    if (next.style !== was.style) {
+      this.hair.setStyle(next.style);
+      this.extraR = hairExtra(next.style);
+      if (this.drawn) this.ctx.fx.sparkle(_sp.copy(this.headAt).setY(this.headAt.y - 0.1), { count: 12, colour: HAIR_HEX[next.hair].light });
+    }
   }
 
-  hold(_on: boolean): void {}
-
-  turnBy(_rad: number): void {}
-
-  /** For now every part gives her head. */
-  point(_part: 'head' | 'eyes' | 'thing' | 'dress', out = new THREE.Vector3()): THREE.Vector3 {
-    return out.copy(this.headAt);
+  /** Stand still for the portrait: no random look-around. */
+  hold(on: boolean): void {
+    this.holding = on;
   }
 
-  extra(_kind: 'rose' | null): void {}
+  /** Turn from the current heading and stay there (the preview drag); the next face() eases back in about 1.5 s. */
+  turnBy(rad: number): void {
+    this.heading = this.targetHeading = wrap(this.heading + rad);
+    this.turned = true;
+    this.easeBack = false;
+  }
 
-  portrait(_on: boolean): void {}
+  /** World points for sparkles and framing, from the last drawn frame. `thing` is the hair thing on her left. */
+  point(part: 'head' | 'eyes' | 'thing' | 'dress', out = new THREE.Vector3()): THREE.Vector3 {
+    switch (part) {
+      case 'head':
+        return out.copy(this.headAt);
+      case 'eyes':
+        return out.copy(this.eyesAt);
+      case 'thing':
+        return out.copy(this.thingAt);
+      case 'dress':
+        return out.copy(this.dressAt);
+    }
+  }
+
+  /** The picnic rose behind her right ear, beside her hair thing, for the day. Never part of her look. */
+  extra(kind: 'rose' | null): void {
+    this.rose = kind === 'rose';
+  }
+
+  /** Finer shapes while the camera is close (the wardrobe): her Mid parts as Fine, her Lo parts as Mid. */
+  portrait(on: boolean): void {
+    this.portraitOn = on;
+  }
+
+  private dressFor(shape: S.DressShape): { g: THREE.BufferGeometry; skirt: Float32Array } {
+    let d = this.dresses.get(shape);
+    if (!d) {
+      d = { g: S.dressGeometry(shape), skirt: skirtTable(shape, S.DRESS_ROWS[shape]) };
+      this.dresses.set(shape, d);
+    }
+    return d;
+  }
+
+  private wearGown(): void {
+    this.gown = GOWN_3D[this.current.gown];
+    const d = this.dressFor(this.gown.shape);
+    this.dress.geometry = d.g;
+    this.skirt = d.skirt;
+    this.paintGown();
+  }
+
+  private paintGown(): void {
+    const g = this.gown;
+    S.paintDress(this.dressFor(g.shape).g, g.shape, (role, k, out) => gownRowColour(g, role, k, out));
+    const c = this.c;
+    c.sleeve.set(g.sleeve);
+    if (g.shoe) c.shoe.set(g.shoe);
+    c.legs.set(g.legs === 'skin' ? SKIN : g.legs);
+    c.hand.set(g.gloves ? '#ffffff' : SKIN);
+    c.gownMain.set(g.main[0]);
+    c.leotard.set(g.bodice);
+    if (g.backBow) c.backBow.set(g.backBow);
+  }
 
   private paintRibbons(r: Ribbon): void {
     const colour = RIBBON_HEX[r];
@@ -257,7 +367,8 @@ export class PrincessActor implements Princess {
     this.heading = this.targetHeading = this.moveHeading = heading;
     this.mode = 'idle';
     this.sit = this.depth = 0;
-    for (const t of this.tails) t.reset();
+    this.turned = this.easeBack = false;
+    this.hair.reset();
   }
 
   private flat(): Vec2 {
@@ -298,7 +409,15 @@ export class PrincessActor implements Princess {
   update(dt: number, t: number): void {
     if (this.ride) this.updateRide(dt);
     else this.updateWalk(dt);
-    this.heading = turnTowards(this.heading, this.targetHeading, 10 * dt);
+    if (this.easeBack && !this.walker && !this.ride) {
+      // After the preview drag she eases back to face the camera instead of snapping round.
+      const d = wrap(this.targetHeading - this.heading);
+      this.heading = wrap(this.heading + d * (1 - Math.exp(-EASE_BACK * dt)));
+      if (Math.abs(d) < 0.004) this.easeBack = false;
+    } else {
+      this.easeBack = false;
+      this.heading = turnTowards(this.heading, this.targetHeading, 10 * dt);
+    }
     this.still = !this.ride && !this.walker && !this.emoteNow ? this.still + dt : 0;
     this.crownScale = damp(this.crownScale, this.crownOn ? 1 : 0, 9, dt);
     this.pose(dt, t);
@@ -468,7 +587,13 @@ export class PrincessActor implements Princess {
       this.lookYaw = Math.random() < 0.4 ? 0 : (Math.random() - 0.5) * 0.9;
     }
     const idle = this.mode === 'idle' && !this.walker;
-    this.headYaw = damp(this.headYaw, idle && !this.emoteNow ? this.lookYaw : 0, 4, dt);
+    this.headYaw = damp(this.headYaw, idle && !this.emoteNow && !this.holding ? this.lookYaw : 0, 4, dt);
+
+    // Wings flap faster when she runs or slides and fold flat while she swims; butterflies flutter faster on the move.
+    const fast = this.mode === 'run' || this.mode === 'slide';
+    this.wingPhase += dt * Math.PI * 2 * (fast ? 5 : 1.5);
+    this.flutter += dt * Math.PI * 2 * (this.moving || fast ? 6 : 2.5);
+    this.fold = damp(this.fold, this.depth > 0.2 ? 1 : 0, 6, dt);
 
     const e = this.emoteNow;
     if (e) {
@@ -485,6 +610,7 @@ export class PrincessActor implements Princess {
     const L = this.parts;
     L.clear();
     const c = this.c;
+    const g = this.gown;
     const m = _m;
     const e = this.emoteNow;
     const ek = e ? e.t / EMOTE_TIME[e.kind] : 0;
@@ -507,6 +633,13 @@ export class PrincessActor implements Princess {
     let headRoll = roll * 1.5;
     let happy = 0;
     let open = 0;
+    /** A wide smile with open eyes (the wardrobe's reactions show her eyes). */
+    let grin = 0;
+    /** Eyes a little wider (the blink reaction) and how closed they are in its slow blink. */
+    let wide = 1;
+    let shut = 0;
+    /** Knees bent this far (the curtsy): her feet stay on the ground. */
+    let knees = 0;
 
     if (stage === 'climb' || stage === 'top') {
       const cs = Math.sin(this.phase);
@@ -588,12 +721,49 @@ export class PrincessActor implements Princess {
         headRoll = 0.15 * out;
         bob += out * 0.05;
         happy = 1;
+      } else if (e.kind === 'toss') {
+        // A hair toss: the head rolls 0.25, then -0.15, then back, and the tails swing with it.
+        headRoll = k < 0.3 ? 0.25 * ease(k / 0.3) : k < 0.65 ? THREE.MathUtils.lerp(0.25, -0.15, ease((k - 0.3) / 0.35)) : -0.15 * (1 - ease((k - 0.65) / 0.35));
+        roll += headRoll * 0.2;
+        headPitch = -0.08 * swell(k, 0.3);
+        grin = 1;
+      } else if (e.kind === 'blink') {
+        // Eyes a little wider for a second, then one slow blink. Never the happy arcs: they would hide the eyes.
+        wide = 1 + 0.1 * swell(Math.min(1, k / 0.62), 0.25);
+        shut = k > 0.62 ? Math.sin(Math.PI * ((k - 0.62) / 0.38)) : 0;
+        grin = 1;
+      } else if (e.kind === 'show') {
+        // Turn one way, hold, the other way, hold, back: the back of her hair shows.
+        const a = k < 0.22 ? ease(k / 0.22) : k < 0.4 ? 1 : k < 0.62 ? 1 - 2 * ease((k - 0.4) / 0.22) : k < 0.78 ? -1 : -1 + ease((k - 0.78) / 0.22);
+        spin = 0.6 * a;
+        grin = 1;
+      } else if (e.kind === 'tilt') {
+        // The head leans towards the side of her hair thing (its top goes that way).
+        headRoll = -e.side * 0.22 * swell(k, 0.25);
+        roll -= e.side * 0.03 * swell(k, 0.25);
+        grin = 1;
+      } else if (e.kind === 'curtsy') {
+        // Knees bend, the dress flares, the head bows and her hands hold the skirt out.
+        const up = swell(k, 0.3);
+        knees = 0.08 * up;
+        flare = 1 + 0.1 * up;
+        headPitch = 0.25 * up;
+        lean = 0.08 * up;
+        hip[0] = THREE.MathUtils.lerp(hip[0], -0.12, up);
+        hip[1] = THREE.MathUtils.lerp(hip[1], 0.42, up);
+        for (let i = 0; i < 2; i++) {
+          armRoll[i] = THREE.MathUtils.lerp(armRoll[i], sg[i] * 0.78, up);
+          armPitch[i] = THREE.MathUtils.lerp(armPitch[i], -0.3, up);
+        }
+        happy = up > 0.5 ? 1 : 0;
       }
     }
+    // The blink reaction owns her eyelids.
+    const blinking = e?.kind === 'blink';
 
     const p = this.position;
     const groundY = stage === 'swim' || stage === 'out' ? POND.waterY : stage === 'sit' || stage === 'slide' || stage === 'top' ? p.y : 0;
-    const rootY = p.y + bob - this.sit * 0.27 - this.depth;
+    const rootY = p.y + bob - knees - this.sit * 0.27 - this.depth;
 
     // Shadow: on the grass, the slide or (fainter) the water. Smaller while she is in the air.
     const air = Math.max(0, rootY - groundY);
@@ -603,75 +773,94 @@ export class PrincessActor implements Princess {
 
     const root = _root.identity().at(p.x, rootY, p.z).turn(this.heading + spin).tilt(lean).roll(roll);
 
-    // Legs and shoes (mostly under the dress).
-    for (let i = 0; i < 2; i++) {
-      const x = i ? 0.072 : -0.072;
-      const legM = _k.from(root).at(x, 0.3, 0).tilt(hip[i]);
-      m.from(legM).at(0, -0.255, 0).size(0.036, 0.25, 0.036);
-      L.push(B.Limb, m, c.skin, 0);
-      m.from(legM).at(0, -0.255, 0.03).size(0.052, 0.042, 0.082);
-      L.push(B.Lo, m, c.shoe, 0.2);
+    // Legs and shoes (mostly under the dress). A floor-length gown hides them: she glides.
+    if (g.shoe) {
+      for (let i = 0; i < 2; i++) {
+        const x = i ? 0.072 : -0.072;
+        const legM = _k.from(root).at(x, 0.3, 0).tilt(hip[i]);
+        m.from(legM).at(0, -0.255 + knees, 0).size(0.036, 0.25 - knees, 0.036);
+        L.push(B.Limb, m, c.legs, 0);
+        m.from(legM).at(0, -0.255 + knees, 0.03).size(0.052, 0.042, 0.082);
+        L.push(B.Lo, m, c.shoe, 0.2);
+      }
+      // Under a tutu the legs show up to the ruffles: the leotard (the bodice colour) covers the top of them.
+      if (g.shape === 'tutu') {
+        m.from(root).at(0, 0.365, 0).size(0.112, 0.07, 0.092);
+        L.push(B.Lo, m, c.leotard, 0.2);
+      }
     }
 
-    // The dress (its own mesh) follows her root, flaring in a twirl and folding up when she sits.
-    this.dress.matrix
-      .copy(root)
-      .multiply(_t.makeScale(flare + this.sit * 0.08, 1 - this.sit * 0.22, flare + this.sit * 0.1))
-      .multiply(_t.makeTranslation(0, this.sit * 0.07, 0));
+    // The dress (its own mesh) follows her root, flaring in a twirl and folding up when she sits. In the slide chute a
+    // gown or a tutu is narrowed so it sits inside the chute.
+    const sq = SIT_SQUASH[g.shape];
+    const sxz = THREE.MathUtils.lerp(1, sq.xz, this.sit);
+    const ds = this.dressScale.set(flare * sxz + this.sit * 0.08 * sq.flare, 1 - this.sit * sq.y, flare * sxz + this.sit * 0.1 * sq.flare, this.sit * sq.lift);
+    this.dress.matrix.copy(root).multiply(_t.makeScale(ds.x, ds.y, ds.z)).multiply(_t.makeTranslation(0, ds.w, 0));
     this.dress.matrixWorldNeedsUpdate = true;
 
-    // Arms with puff sleeves.
+    // Arms with puff sleeves (bigger on a ball gown) and white gloves with the lilac gown.
+    const puff = g.shape === 'ball' ? 1.2 : 1;
     for (let i = 0; i < 2; i++) {
       const x = i ? 0.158 : -0.158;
       const sh = _k.from(root).at(x, 0.78, 0).roll(armRoll[i]).tilt(armPitch[i]);
       m.from(sh).at(0, -0.25, 0).size(0.034, 0.25, 0.034);
       L.push(B.Limb, m, c.skin, 0);
-      m.from(sh).at(0, -0.262, 0).size(0.044);
-      L.push(B.Lo, m, c.skin, 0);
-      m.from(root).at(x * 1.02, 0.79, 0).size(0.088, 0.078, 0.084);
+      m.from(sh).at(0, -0.262, 0).size(g.gloves ? 0.05 : 0.044);
+      L.push(B.Lo, m, c.hand, 0);
+      m.from(root).at(x * 1.02, 0.79, 0).size(0.088 * puff, 0.078 * puff, 0.084 * puff);
       L.push(B.Mid, m, c.sleeve, 0.15);
     }
 
+    // The gown's extras: fairy wings, a bow at the back of a ball gown.
+    if (g.wings) wings(L, root, Math.sin(this.wingPhase) * 0.25, this.fold, c.white, c.gownMain);
+    if (g.backBow) backBow(L, root, c.backBow, t);
+
     // Head: a big round head with the hair as a cap, a soft fringe and side locks.
+    const hair = this.hair;
     const neck = _n.from(root).at(0, 0.86, 0).turn(this.headYaw).tilt(headPitch).roll(headRoll);
     const head = _h.from(neck).at(0, 0.22, 0);
     this.headAt.setFromMatrixPosition(head);
     m.from(head).size(HR * 1.02, HR * 0.98, HR);
     L.push(B.Fine, m, c.skin, 0);
     m.from(head).at(0, 0.036, -0.032).size(0.266, 0.258, 0.262);
-    L.push(B.Fine, m, c.hair, 0.2);
+    L.push(B.Fine, m, hair.base, 0.2);
+    // The hair at her nape, so the back of her head is hair when she turns round (the cap sits high at the back).
+    m.from(head).at(0, -0.05, -0.075).size(0.244, 0.214, 0.232);
+    L.push(B.Mid, m, hair.base, 0.15);
     // A soft scalloped fringe over the forehead and a lock in front of each ear.
     for (let k = 0; k < 4; k++) {
       const u = (k - 1.5) * 0.25;
       onHead(m.from(head), u, 0.54 - u * u * 0.5, -0.028).roll(u * -0.9).size(0.078, 0.062, 0.045);
-      L.push(B.Mid, m, c.hair, 0.15);
+      L.push(B.Mid, m, hair.fringe[k], 0.15);
     }
     for (const sg of [-1, 1]) {
       onHead(m.from(head), sg * 0.84, 0.08, -0.035).roll(sg * -0.2).size(0.06, 0.105, 0.05);
-      L.push(B.Mid, m, c.hair, 0.15);
+      L.push(B.Mid, m, hair.locks[sg > 0 ? 1 : 0], 0.15);
     }
 
     // Face: big eyes with two highlights and lashes, rosy cheeks, a small smile.
-    const closed = this.blink > 0 && !happy;
+    const closed = blinking ? shut > 0.55 : this.blink > 0 && !happy;
     for (let i = 0; i < 2; i++) {
       const sg = i ? 1 : -1;
       const eye = onHead(_k.from(head), sg * 0.36, -0.1, -0.004);
-      if (happy) {
+      if (happy && !blinking) {
         m.from(eye).at(0, -0.006, 0.008).size(0.05, 0.042, 1);
         L.push(B.Arc, m, c.lash, 0);
       } else if (closed) {
         m.from(eye).at(0, -0.004, 0.008).roll(Math.PI).size(0.05, 0.03, 1);
         L.push(B.Arc, m, c.lash, 0);
       } else {
-        m.from(eye).size(0.056, 0.07, 0.012);
+        // In the slow blink the eye narrows before it closes.
+        const h = wide * (1 - shut * 0.6);
+        m.from(eye).size(0.056 * wide, 0.07 * h, 0.012);
         L.push(B.Mid, m, c.white, 0);
-        m.from(eye).at(0, -0.006, 0.0125).size(0.045, 0.053, 1);
+        m.from(eye).at(0, -0.006, 0.0125).size(0.045 * wide, 0.053 * h, 1);
         L.push(B.Iris, m, c.iris, 0);
-        m.from(eye).at(-0.016, 0.019, 0.0132).size(0.016, 0.019, 1);
+        m.from(eye).at(-0.016, 0.019 * h, 0.0132).size(0.016, 0.019, 1);
         L.push(B.Dot, m, c.white, 0);
-        m.from(eye).at(0.015, -0.025, 0.0132).size(0.008);
+        m.from(eye).at(0.015, -0.025 * h, 0.0132).size(0.008);
         L.push(B.Dot, m, c.white, 0);
-        m.from(eye).at(0, 0, 0.009).size(0.057, 0.07, 1);
+        m.from(eye).at(0, 0, 0.009).size(0.057 * wide, 0.07 * h, 1);
         L.push(B.Arc, m, c.lash, 0);
         m.from(eye).at(sg * 0.056, 0.042, 0.009).roll(sg * -0.8).size(0.02, 0.0065, 1);
         L.push(B.Dot, m, c.lash, 0);
@@ -685,9 +874,11 @@ export class PrincessActor implements Princess {
       onHead(m.from(head), 0, -0.5, 0.004).size(0.024, 0.028, 1);
       L.push(B.Dot, m, c.mouth, 0);
     } else {
-      onHead(m.from(head), 0, -0.45, 0.004).roll(Math.PI).size(happy ? 0.034 : 0.027, happy ? 0.026 : 0.018, 1);
+      const big = happy || grin;
+      onHead(m.from(head), 0, -0.45, 0.004).roll(Math.PI).size(big ? 0.034 : 0.027, big ? 0.026 : 0.018, 1);
       L.push(B.Arc, m, c.mouth, 0);
     }
+    onHead(_k.from(head), 0, -0.1, 0).decompose(this.eyesAt, _q, _sc);
 
     // Crown with a pink gem and gold balls on its points.
     const cs = this.crownScale;
@@ -696,7 +887,8 @@ export class PrincessActor implements Princess {
       const pop = cs * (1 + 0.25 * Math.sin(Math.PI * Math.min(1, cs)) * (this.crownOn ? 1 : 0));
       const z = CROWN_SIZE * pop;
       // The band rests on her hair a little lower than before, as it is wider now.
-      const cm = _k.from(head).at(0, 0.212, -0.02).tilt(-0.2).size(0.115 * z, 0.1 * z, 0.115 * z);
+      const fwd = this.current.style === 'high' ? CROWN_FORWARD_HIGH : 0;
+      const cm = _k.from(head).at(0, 0.212, -0.02 + fwd).tilt(-0.2).size(0.115 * z, 0.1 * z, 0.115 * z);
       this.crownMesh.matrix.copy(cm);
       this.crownMesh.matrixWorldNeedsUpdate = true;
       m.from(cm).at(0, 0.3, 1.1).size(0.2, 0.24, 0.1);
@@ -707,53 +899,95 @@ export class PrincessActor implements Princess {
       }
     }
 
-    // Ponytails, tied high at the sides with bows. The second pinned point sits close to the head and below the tie,
-    // so the tails hang down past her shoulders instead of splaying out sideways.
+    // The hanging hair: chains from the style's ties, kept out of her head and dress, drawn as tubes or plaits.
     const water = wet || this.depth > 0.2 ? POND.waterY : null;
     _inv.copy(root).invert();
-    for (let i = 0; i < 2; i++) {
-      const sg = i ? 1 : -1;
-      _tie.set(sg * 0.21, 0.11, -0.085).applyMatrix4(head);
-      _flare.set(sg * 0.27, 0.0, -0.13).applyMatrix4(head);
-      const tail = this.tails[i];
-      tail.update(dt, _tie, _flare, (q) => this.collide(q, root, head), groundY, water);
-      this.hair.set(i, tail.p, tailRadius);
-      // The bow faces out and forward: two big loops, a light knot and two streamers, so a new colour reads at once.
-      const bow = onHead(_k.from(head), sg * 0.8, 0.45, 0.02).turn(sg * -0.25);
-      for (const lx of [-1, 1]) {
-        m.from(bow).at(lx * 0.075, 0.018, 0).roll(lx * 0.4).size(0.084, 0.054, 0.036);
-        L.push(B.Mid, m, this.ribbon, 0.35);
-      }
-      m.from(bow).at(0, 0, 0.016).size(0.038, 0.036, 0.03);
-      L.push(B.Lo, m, this.ribbonLight, 0.4);
-      for (const lx of [-1, 1]) {
-        const sway = Math.sin(t * 2.6 + lx + sg) * 0.06;
-        m.from(bow).at(lx * 0.03, -0.012, -0.004).roll(lx * 0.32 + sway).at(0, -0.075, 0).size(0.024, 0.078, 0.014);
-        L.push(B.Lo, m, this.ribbon, 0.35);
-      }
+    hair.update(dt, head, this.collideFn, groundY, water);
+
+    // The hair thing on both sides (today's bow spots), each with two ribbon tails in her ribbon colour.
+    const thing: HairThing = this.current.thing;
+    for (const sg of [-1, 1]) {
+      const at = onHead(_a.from(head), sg * 0.8, 0.45, 0.02).turn(sg * -0.25);
+      if (sg > 0) this.thingAt.setFromMatrixPosition(at);
+      else _r.from(at);
+      drawThing(L, thing, at, sg, t, this.flutter, this.colours);
     }
+    hair.draw(L, head, this.colours);
+    // The picnic rose, tucked in just under her hair thing on her right, where it shows from the front and the side.
+    if (this.rose) drawRose(L, _r.at(0.012, -0.075, 0.03));
+
+    m.from(root).at(0, 0.45, 0).decompose(this.dressAt, _q, _sc);
+    if (this.portraitOn) finer(L);
+    this.drawn = true;
   }
 
-  /** Keep a ponytail point out of her head and her dress (`_inv` holds the inverse of `root` this frame). */
-  private collide(q: THREE.Vector3, root: THREE.Matrix4, head: THREE.Matrix4): void {
-    _hc.setFromMatrixPosition(head);
+  /** Keep a hair chain point out of her head and her dress (this frame's root, its inverse `_inv`, and head). */
+  private collide(q: THREE.Vector3): void {
+    _hc.setFromMatrixPosition(_h);
     _d.subVectors(q, _hc);
     const dh = _d.length();
-    const headR = 0.29 + TAIL_EXTRA;
+    const headR = 0.29 + this.extraR;
     if (dh < headR && dh > 1e-5) q.copy(_hc).addScaledVector(_d, headR / dh);
     _l.copy(q).applyMatrix4(_inv);
-    if (_l.y > 0.12 && _l.y < 0.9) {
-      const y = _l.y;
-      const r =
-        (y < 0.4 ? THREE.MathUtils.lerp(0.4, 0.31, (y - 0.12) / 0.28) : y < 0.62 ? THREE.MathUtils.lerp(0.34, 0.2, (y - 0.4) / 0.22) : 0.2) +
-        TAIL_EXTRA +
-        (this.sit > 0.5 ? 0.05 : 0);
+    const r = this.skirtRadius(_l.y);
+    if (r > 0) {
       const d = Math.hypot(_l.x, _l.z);
       if (d < r && d > 1e-5) {
         _l.x *= r / d;
         _l.z *= r / d;
-        q.copy(_l.applyMatrix4(root));
+        q.copy(_l.applyMatrix4(_root));
       }
+    }
+  }
+
+  /** The dress radius the hair keeps outside at height y in root space (0 where there is no dress), this frame. */
+  private skirtRadius(y: number): number {
+    const ds = this.dressScale;
+    const r = skirtAt(this.skirt, y / ds.y - ds.w);
+    return r > 0 ? r * Math.max(ds.x, ds.z) + this.extraR : 0;
+  }
+
+  /**
+   * For the tests: how far the deepest free hair chain point is inside her head sphere or her dress this frame, in
+   * metres (0 when all are outside).
+   */
+  hairPenetration(): number {
+    let worst = 0;
+    _hc.setFromMatrixPosition(_h);
+    for (const ch of this.hair.chains) {
+      for (let i = 2; i < ch.p.length; i++) {
+        const q = ch.p[i];
+        worst = Math.max(worst, 0.29 + this.extraR - q.distanceTo(_hc));
+        _l.copy(q).applyMatrix4(_inv);
+        const r = this.skirtRadius(_l.y);
+        if (r > 0) worst = Math.max(worst, r - Math.hypot(_l.x, _l.z));
+      }
+    }
+    return worst;
+  }
+
+  /** Triangles she draws now: her parts, the dress, the crown and the hair tubes (the budget helper). */
+  triangles(): number {
+    const L = this.parts;
+    let n = 0;
+    for (let i = 0; i < L.n; i++) n += shapeTriangles(L.id[i] as BatchId);
+    const g = this.dress.geometry;
+    n += g.index!.count / 3;
+    if (this.crownMesh.visible) n += this.crownMesh.geometry.index!.count / 3;
+    return n + this.hair.tubes.triangles;
+  }
+}
+
+/** The portrait: her Mid parts as Fine (while the Fine batch has room, it is only hers) and her Lo parts as Mid. */
+function finer(L: PartList): void {
+  let fine = 0;
+  for (let i = 0; i < L.n; i++) if (L.id[i] === B.Fine) fine++;
+  for (let i = 0; i < L.n; i++) {
+    if (L.id[i] === B.Mid && fine < CAPACITY[B.Fine]) {
+      L.id[i] = B.Fine;
+      fine++;
+    } else if (L.id[i] === B.Lo) {
+      L.id[i] = B.Mid;
     }
   }
 }
@@ -780,12 +1014,6 @@ function rideMode(stage: RideStage, current: PrincessMode): PrincessMode {
 /** Head radius. */
 const HR = 0.25;
 
-/** Ponytail radius from the tie (t = 0) to the tip (t = 1). */
-function tailRadius(t: number): number {
-  if (t < 0.1) return TAIL_PEAK * (0.6 + 4 * t);
-  return (TAIL_PEAK - TAIL_TIP) * Math.pow(1 - (t - 0.1) / 0.9, 0.6) + TAIL_TIP;
-}
-
 /** Onto the surface of her head at (u, v) in head radii. */
 function onHead(m: Xf, u: number, v: number, depth: number): Xf {
   return m.onSphere(HR, u, v, depth);
@@ -795,12 +1023,15 @@ const CROWN_TIPS = S.crownTips();
 const _m = new Xf();
 const _root = new Xf();
 const _k = new Xf();
+const _a = new Xf();
+const _r = new Xf();
 const _n = new Xf();
 const _h = new Xf();
 const _t = new THREE.Matrix4();
 const _inv = new THREE.Matrix4();
-const _tie = new THREE.Vector3();
-const _flare = new THREE.Vector3();
 const _hc = new THREE.Vector3();
 const _d = new THREE.Vector3();
 const _l = new THREE.Vector3();
+const _sp = new THREE.Vector3();
+const _q = new THREE.Quaternion();
+const _sc = new THREE.Vector3();

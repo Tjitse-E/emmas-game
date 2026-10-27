@@ -1,12 +1,13 @@
 // Harness for the actors lane (dev/actors.html): a plain stage with the level's places, the shared lights, a game-like
-// follow camera and a close-up camera, a straight-line stub for routes, and buttons for everything the actors do.
+// follow camera, a close-up camera and the wardrobe's body and face frames, a straight-line stub for routes, buttons for
+// everything the actors do, and a look panel with every wardrobe option.
 import * as THREE from 'three';
-import type { ActorDeps, Ribbon, UnicornEmote, UnicornLook, Vec2 } from '../contracts';
+import type { ActorDeps, LookRow, PrincessEmote, PrincessLook, Ribbon, UnicornEmote, UnicornLook, Vec2 } from '../contracts';
 import {
   BOUNDS, GAZEBO, GRAZE_HOMES, NEST, OBSTACLES, POND, SLIDE, SLIDE_CURVE, STABLE, TREES, WILD_EGG, doorCenter, doorFront, doorIsUpper, inPond,
   inStableBuilding, v2,
 } from '../layout';
-import { GIFT_ORDER } from '../wardrobe';
+import { DEFAULT_LOOK, GIFT_ORDER, LOOK_ROWS } from '../wardrobe';
 import { audio } from '../audio';
 import { v3Art } from '../assets';
 import { createActors } from './index';
@@ -187,7 +188,22 @@ HERD.forEach(([name, stage, breed, extra], i) => {
 
 // --- cameras ---------------------------------------------------------------------------------------------------------
 
-type View = { kind: 'game' } | { kind: 'close'; subject: string; angle: number; dist: number; height: number };
+type View =
+  | { kind: 'game' }
+  | { kind: 'close'; subject: string; angle: number; dist: number; height: number }
+  | { kind: 'portrait'; frame: 'body' | 'face' };
+
+/**
+ * The wardrobe's frames (2.4): the camera looks through a point lookY above her from a pitch, so the visible height
+ * at her is hvis, and she stands at xFrac of the screen width (left of the panel).
+ */
+const FRAMES = {
+  body: { hvis: 2.08, lookY: 0.58, pitch: 8 },
+  face: { hvis: 1.05, lookY: 1.08, pitch: 6 },
+} as const;
+const PORTRAIT_FOV = 38;
+/** Where she stands across the screen in the wardrobe: half the panel's left edge (491 of 1080 at 1080 x 810). */
+const X_FRAC = 245 / 1080;
 let view: View = { kind: 'game' };
 const camTarget = new THREE.Vector3(princess.position.x, 0, princess.position.z);
 
@@ -208,6 +224,17 @@ function placeCamera(dt: number): void {
     const want = new THREE.Vector3(princess.position.x, 0, princess.position.z);
     camTarget.lerp(want, 1 - Math.exp(-4 * dt));
     camera.position.set(camTarget.x, camTarget.y + 11.9, camTarget.z + 11.0);
+    camera.lookAt(camTarget);
+  } else if (view.kind === 'portrait') {
+    camera.fov = PORTRAIT_FOV;
+    const f = FRAMES[view.frame];
+    const tan = Math.tan(THREE.MathUtils.degToRad(PORTRAIT_FOV / 2));
+    const d = f.hvis / (2 * tan);
+    const ox = (1 - 2 * X_FRAC) * d * tan * camera.aspect;
+    const p = THREE.MathUtils.degToRad(f.pitch);
+    const look = new THREE.Vector3(princess.position.x + ox, f.lookY, princess.position.z);
+    camTarget.lerp(look, 1 - Math.exp(-6 * dt));
+    camera.position.set(camTarget.x, camTarget.y + d * Math.sin(p), camTarget.z + d * Math.cos(p));
     camera.lookAt(camTarget);
   } else {
     camera.fov = 30;
@@ -339,9 +366,49 @@ section('Selected unicorn', [
   ['peek off', () => selected.peek(false)],
   ['nightcap', () => selected.nightcap(!selected.pose.nightcap)],
   ['toy', () => selected.showToy(v3Art('words/duck.webp'))],
+  ['wear', () => selected.showToy(v3Art('words/crown.webp'), { on: 'head' })],
+  ['wear cape', () => selected.showToy(v3Art('words/cape.webp'), { on: 'head' })],
   ['no toy', () => selected.showToy(null)],
   ['look at Emma', () => selected.lookAt(princess.position)],
 ]);
+// The wardrobe: every option of every row, the ribbon colours, the reactions and the portrait.
+const REACTION: Record<LookRow, PrincessEmote> = { hair: 'toss', eyes: 'blink', gown: 'twirl', style: 'show', thing: 'tilt' };
+let held = false;
+let portraitOn = false;
+let rose = false;
+let react = true;
+function pick(row: LookRow, id: string): void {
+  princess.setLook({ [row]: id } as Partial<PrincessLook>);
+  if (react) void princess.emote(REACTION[row]);
+}
+for (const r of LOOK_ROWS) {
+  section('Look: ' + r.row, r.options.map((o) => [o.id, () => pick(r.row, o.id)] as [string, () => void]));
+}
+section('Look: ribbon and more', [
+  ...RIBBONS.map((r) => [r, () => princess.setLook({ ribbon: r })] as [string, () => void]),
+  ['default', () => princess.setLook({ ...DEFAULT_LOOK })],
+  ['random', () => {
+    const ids = LOOK_ROWS.map((r): [LookRow, string[]] => [r.row, r.options.map((o) => o.id)]);
+    princess.setLook(Object.fromEntries(ids.map(([row, a]) => [row, a[Math.floor(Math.random() * a.length)]])) as Partial<PrincessLook>);
+  }],
+  ['react on/off', () => (react = !react)],
+  ...(['toss', 'blink', 'show', 'tilt', 'curtsy'] as PrincessEmote[]).map((k) => [k, () => void princess.emote(k)] as [string, () => void]),
+  ['hold', () => princess.hold((held = !held))],
+  ['turn +', () => princess.turnBy(0.5)],
+  ['turn -', () => princess.turnBy(-0.5)],
+  ['face cam', () => princess.face({ x: princess.position.x, z: princess.position.z + 5 })],
+  ['rose', () => princess.extra((rose = !rose) ? 'rose' : null)],
+  ['portrait', () => princess.portrait((portraitOn = !portraitOn))],
+  ['body', () => portraitView('body')],
+  ['face', () => portraitView('face')],
+  ['run', () => void princess.walkTo(deps.route(princess.position, v2(princess.position.x > -6 ? -12 : 2, 5)), { run: true })],
+]);
+/** Stand her facing the camera in a wardrobe frame. */
+function portraitView(frame: 'body' | 'face'): void {
+  princess.stop();
+  princess.face({ x: princess.position.x, z: princess.position.z + 5 });
+  view = { kind: 'portrait', frame };
+}
 section('Egg', [
   ['warm in nest', () => egg.place(new THREE.Vector3(NEST.center.x, NEST.eggY, NEST.center.z), 'warm')],
   ['snow on grass', () => egg.place(new THREE.Vector3(WILD_EGG.at.x, 0, WILD_EGG.at.z), 'snow')],
@@ -488,5 +555,15 @@ const hook = {
     });
   },
   doorFront,
+  /** Wear a look (missing fields keep what she wears). */
+  setLook(l: Partial<PrincessLook>) {
+    princess.setLook(l);
+    return princess.look;
+  },
+  portraitView,
+  /** The triangles and parts Princess Emma draws now. */
+  emma() {
+    return { parts: princess.parts.n, triangles: princess.triangles(), look: princess.look, mode: princess.mode };
+  },
 };
 (window as unknown as { __actors: typeof hook }).__actors = hook;
