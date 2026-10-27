@@ -1,4 +1,6 @@
 // Pure layout and rule helpers for the 2D layer. No DOM here, so tests/ui.test.ts can check them in node.
+import type { LookRow } from '../contracts';
+import { LOOK_ROWS } from '../wardrobe';
 
 export type Point = { x: number; y: number };
 export type Box = { x: number; y: number; w: number; h: number };
@@ -339,4 +341,122 @@ export function safeTint(hex: string | undefined, min: number, fallback: string)
 export function menuUrl(pathname: string): string {
   const at = pathname.indexOf('/games/moon-meadow-world/');
   return at >= 0 ? pathname.slice(0, at) + '/index.html' : '/';
+}
+
+// ------------------------------------------------------------------------------------------------ wardrobe
+
+/**
+ * The customiser's sizes in design px (docs/v4/2.2.md 2.2). The panel hangs from the right edge under the home
+ * button; each row has a picture tile and a rail of swatches. A rail box starts half a gap before its first swatch
+ * and is `pitch` wide per cell, so the cell under a finger is a plain division (cellAt).
+ */
+export const WARDROBE = {
+  panel: { right: 16, top: 112, w: 628, h: 550, border: 5, pad: 20 },
+  rowH: 100,
+  /**
+   * The row's picture tile, from the panel's outer left edge. 78 instead of the design's 72, so it is a 64 CSS px
+   * target at 1024 x 690 too.
+   */
+  icon: { x: 12, size: 78 },
+  /** The rail box, from the panel's outer left edge (its first swatch starts at 100). */
+  rail: { x: 96, pitch: 86, track: 88 },
+  swatch: 78,
+  knob: 92,
+  done: { size: 140, bottom: 18 },
+  preview: { gap: 12, top: 112, bottom: 180 },
+  pill: { top: 14, h: 60 },
+  /** The home button (hud.ts): right 16, top 16, 80 round, and its hold ring 17 beyond that. */
+  home: { right: 16, top: 16, size: 80 },
+} as const;
+
+export interface WardrobeRowBox {
+  row: LookRow;
+  /** The whole row inside the panel. */
+  box: Box;
+  /** The picture tile (a tap frames the row). */
+  icon: Box;
+  /** The rail: the touch target, the full row height, `pitch` wide per cell. */
+  rail: Box;
+  /** Each swatch. */
+  cells: Box[];
+}
+
+export interface WardrobeLayout {
+  /** One design px in CSS px. */
+  unit: number;
+  panel: Box;
+  rows: WardrobeRowBox[];
+  /** Cell pitch, swatch and knob sizes in CSS px. */
+  pitch: number;
+  swatch: number;
+  knob: number;
+  /** The round Done button, centred under Princess Emma. */
+  done: Box;
+  /** Where a drag turns her and a tap makes her wave. */
+  preview: Box;
+  /** The printed word's pill: its centre x, top and height. */
+  pill: { x: number; y: number; h: number };
+  /** The home button (without its hold ring). */
+  home: Box;
+}
+
+/**
+ * Every box of the customiser for a screen of w x h CSS px, in CSS px. The game uses it to place Princess Emma (she
+ * stands at x = panel.x / 2) and the tests check it at every iPad size. `counts` is the number of options per row.
+ */
+export function wardrobeLayout(w: number, h: number, counts: readonly number[] = LOOK_ROWS.map((r) => r.options.length)): WardrobeLayout {
+  const W = WARDROBE;
+  const k = unitFor(Math.max(w, h), Math.min(w, h));
+  const px = (n: number) => n * k;
+  const panel: Box = { x: w - px(W.panel.right + W.panel.w), y: px(W.panel.top), w: px(W.panel.w), h: px(W.panel.h) };
+  const top = panel.y + px(W.panel.border + W.panel.pad);
+  const rows = LOOK_ROWS.map((spec, i): WardrobeRowBox => {
+    const y = top + px(i * W.rowH);
+    const n = counts[i] ?? spec.options.length;
+    const rail: Box = { x: panel.x + px(W.rail.x), y, w: px(n * W.rail.pitch), h: px(W.rowH) };
+    const inset = (W.rail.pitch - W.swatch) / 2;
+    return {
+      row: spec.row,
+      box: { x: panel.x + px(W.panel.border), y, w: panel.w - px(2 * W.panel.border), h: px(W.rowH) },
+      icon: { x: panel.x + px(W.icon.x), y: y + px((W.rowH - W.icon.size) / 2), w: px(W.icon.size), h: px(W.icon.size) },
+      rail,
+      cells: Array.from({ length: n }, (_, c) => ({
+        x: rail.x + px(c * W.rail.pitch + inset),
+        y: y + px((W.rowH - W.swatch) / 2),
+        w: px(W.swatch),
+        h: px(W.swatch),
+      })),
+    };
+  });
+  const done: Box = { x: panel.x / 2 - px(W.done.size / 2), y: h - px(W.done.bottom + W.done.size), w: px(W.done.size), h: px(W.done.size) };
+  const previewTop = px(W.preview.top);
+  const preview: Box = { x: 0, y: previewTop, w: Math.max(0, panel.x - px(W.preview.gap)), h: Math.max(0, h - px(W.preview.bottom) - previewTop) };
+  return {
+    unit: k,
+    panel,
+    rows,
+    pitch: px(W.rail.pitch),
+    swatch: px(W.swatch),
+    knob: px(W.knob),
+    done,
+    preview,
+    pill: { x: preview.w / 2, y: px(W.pill.top), h: px(W.pill.h) },
+    home: { x: w - px(W.home.right + W.home.size), y: px(W.home.top), w: px(W.home.size), h: px(W.home.size) },
+  };
+}
+
+/**
+ * The cell of a rail under a finger at clientX, from the rail's own box (never elementFromPoint, so a finger that
+ * drifts onto the next row stays on this rail): floor((x - left) / pitch), clamped to 0 to n - 1.
+ */
+export function cellAt(x: number, rail: { x: number; w: number }, n: number, pitch = rail.w / Math.max(1, n)): number {
+  if (n < 1) return -1;
+  const c = Math.floor((x - rail.x) / pitch);
+  if (!Number.isFinite(c)) return 0;
+  return Math.max(0, Math.min(n - 1, c));
+}
+
+/** True when two boxes share any area. */
+export function overlaps(a: Box, b: Box): boolean {
+  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }

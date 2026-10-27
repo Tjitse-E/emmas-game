@@ -1,10 +1,13 @@
 // The ui lane's harness (dev/ui.html): a pastel stand-in for the 3D world with a drifting fake baby and egg as
 // anchors, and dev buttons that run every part of the layer with real specs on v3 clip ids. Dev only; the
 // buttons carry text because Tjitse and the flows use them, never Emma.
-import type { EggSpec, EndMember, MomentHooks, NameChoice, NamingSpec, Place, ScreenPoint, WishItem, WishSpec } from '../contracts';
+import type { EggSpec, EndMember, LookRow, MomentHooks, NameChoice, NamingSpec, Place, PrincessLook, Ribbon, ScreenPoint, WishItem, WishSpec } from '../contracts';
 import { audio } from '../audio';
-import { wordPic } from '../assets';
+import { v3Art, wordPic } from '../assets';
+import { DEFAULT_LOOK } from '../wardrobe';
 import { createLayer } from './index';
+import { wardrobeLayout } from './geometry';
+import { gownBody, headBody, thingBody } from './swatches';
 
 const STYLE = `
 html, body { margin: 0; height: 100%; overflow: hidden; background: #cfe8ff; }
@@ -31,6 +34,25 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #cfe8ff; }
 #dev button { padding: 4px 7px; border-radius: 6px; border: 1px solid #8a7ab8; background: #fffd; }
 #dev pre { width: 100%; max-height: 90px; overflow: auto; margin: 0; background: #fffc; font-size: 10px; }
 body.clean #dev { display: none; }
+/* The customiser's stand-in for Princess Emma in 3D: a flat picture of her look, framed like the body or face frame. */
+.fake-her { position: absolute; left: 0; top: 0; pointer-events: none; transform-origin: 50% 0; transition: transform 500ms ease-in-out; }
+.fake-her.hidden { display: none; }
+.fake-her .her-turn { width: 100%; height: 100%; transition: transform 300ms ease-out; }
+.fake-her .her-turn.back { transition: transform 1500ms ease-in-out; }
+.fake-her svg { display: block; width: 100%; height: 100%; }
+.fake-her .pose { width: 100%; height: 100%; transform-origin: 50% 90%; }
+.fake-her .pose.toss { animation: her-toss 1s ease-in-out; }
+.fake-her .pose.blink { animation: her-blink 1.6s ease-in-out; }
+.fake-her .pose.twirl { animation: her-twirl 1s ease-in-out; }
+.fake-her .pose.show { animation: her-show 1.6s ease-in-out; }
+.fake-her .pose.tilt { animation: her-tilt 1.2s ease-in-out; }
+.fake-her .pose.wave, .fake-her .pose.curtsy { animation: her-hop 0.6s ease-in-out 2; }
+@keyframes her-toss { 30% { rotate: 6deg; } 65% { rotate: -4deg; } }
+@keyframes her-blink { 60% { scale: 1 0.96; } }
+@keyframes her-twirl { 50% { transform: perspective(600px) rotateY(180deg); } 100% { transform: perspective(600px) rotateY(360deg); } }
+@keyframes her-show { 25%, 45% { transform: perspective(600px) rotateY(60deg); } 70%, 85% { transform: perspective(600px) rotateY(-60deg); } }
+@keyframes her-tilt { 40%, 70% { rotate: -7deg; } }
+@keyframes her-hop { 50% { translate: 0 -4%; } }
 `;
 
 const style = document.createElement('style');
@@ -85,6 +107,48 @@ function react(kind: string) {
   setTimeout(() => target.classList.remove(cls), 1400);
   log(`react ${kind}`);
 }
+
+// ---- the customiser's fake Princess Emma: head, hair things and gown pictures from swatches.ts in one tall picture
+const her = document.createElement('div');
+her.className = 'fake-her hidden';
+her.innerHTML = '<div class="her-turn"><div class="pose"></div></div>';
+world.appendChild(her);
+const herTurn = her.querySelector('.her-turn') as HTMLElement;
+const herPose = her.querySelector('.pose') as HTMLElement;
+let herLook: PrincessLook = { ...DEFAULT_LOOK };
+let herHeading = 0;
+let herFocus: LookRow | null = null;
+function drawHer(look: PrincessLook) {
+  herLook = look;
+  const legs = look.gown === 'lilac' || look.gown === 'moon' ? '' : '<path d="M45 150 L45 178 M55 150 L55 178" stroke="#ffe2d0" stroke-width="7" stroke-linecap="round"/><ellipse cx="44" cy="182" rx="7" ry="4.5" fill="#ff6fa8"/><ellipse cx="56" cy="182" rx="7" ry="4.5" fill="#ff6fa8"/>';
+  herPose.innerHTML =
+    '<svg viewBox="0 0 100 200" aria-hidden="true">' + legs +
+    `<g transform="translate(0 62)">${gownBody(look.gown)}</g>` +
+    '<rect x="45" y="64" width="10" height="22" rx="4" fill="#ffe2d0"/>' +
+    `<g>${headBody(look.style, look.hair, { eyes: look.eyes })}</g>` +
+    `<g transform="translate(14 36) scale(0.2)">${thingBody(look.thing, look.ribbon)}</g>` +
+    `<g transform="translate(66 36) scale(0.2)">${thingBody(look.thing, look.ribbon)}</g>` +
+    '</svg>';
+}
+/** The body frame: feet at 77% and head top at 11% of the screen, at x = panel left / 2. The face frame zooms in. */
+function frameHer() {
+  const L = wardrobeLayout(innerWidth, innerHeight);
+  const h = innerHeight * 0.66;
+  her.style.width = `${h / 2}px`;
+  her.style.height = `${h}px`;
+  const face = herFocus === 'eyes' || herFocus === 'thing';
+  const k = face ? 2.6 : 1;
+  const x = L.panel.x / 2 - (h / 2) / 2;
+  const y = face ? innerHeight * 0.2 - h * 0.14 * k : innerHeight * 0.11;
+  her.style.transform = `translate(${x}px, ${y}px) scale(${k})`;
+}
+function poseHer(kind: string) {
+  herPose.classList.remove('toss', 'blink', 'twirl', 'show', 'tilt', 'wave', 'curtsy');
+  void herPose.offsetWidth;
+  herPose.classList.add(kind);
+}
+const REACT: Record<LookRow, string> = { hair: 'toss', eyes: 'blink', gown: 'twirl', style: 'show', thing: 'tilt' };
+addEventListener('resize', () => { if (!her.classList.contains('hidden')) frameHer(); });
 
 // ---- the layer
 const layer = createLayer(document.getElementById('ui')!);
@@ -145,6 +209,51 @@ const members: EndMember[] = [
   { name: 'Nell', body: '#ffffff', mane: '#4fc3ff', isNew: true },
 ];
 
+async function dress(firstTime: boolean, ribbons: Ribbon[]) {
+  // As in the game: no Lumi and no crown until the welcome.
+  show(null);
+  layer.lumi.show(false);
+  drawHer(herLook);
+  herFocus = null;
+  frameHer();
+  her.classList.remove('hidden');
+  const look = await layer.wardrobe({
+    look: herLook, ribbons, firstTime,
+    clips: { ready: ['g4-ready'], firstTime: ['g4-look-tap'], idle: ['g4-ready-play'], done: ['fb-lovely'] },
+    onLook: (l, row) => { drawHer(l); log(`look ${row} ${l[row]} ${l.ribbon}`); },
+    onPicked: (l, row) => { poseHer(REACT[row]); log(`picked ${row} ${JSON.stringify(l)}`); },
+    onFocus: (row) => { herFocus = row; frameHer(); log(`focus ${row}`); },
+    onTurn: (dx, ended) => {
+      herHeading = ended ? 0 : herHeading + dx / 2;
+      herTurn.classList.toggle('back', ended);
+      herTurn.style.transform = `perspective(600px) rotateY(${herHeading}deg)`;
+      if (ended) log('turn ended');
+    },
+    onPreviewTap: () => { poseHer('wave'); log('preview tap'); },
+  });
+  results.push({ wardrobe: look });
+  log(`wardrobe done ${JSON.stringify(look)}`);
+  poseHer('curtsy');
+  herFocus = null;
+  frameHer();
+  setTimeout(() => {
+    her.classList.add('hidden');
+    layer.lumi.show(true);
+  }, 1400);
+}
+
+/** Two offer bubbles over drifting points, as over the picnic rug and the hay rack. */
+function offers(on: boolean) {
+  if (!on) {
+    layer.offer('picnic', null);
+    layer.offer('rack', null);
+    return;
+  }
+  const drift = (fx: number, fy: number) => () => ({ x: innerWidth * fx + Math.sin(performance.now() / 1500) * 40, y: innerHeight * fy + Math.cos(performance.now() / 1100) * 10, visible: true });
+  layer.offer('picnic', { pic: wordPic('picnic'), at: drift(0.3, 0.6), onTap: () => log('offer picnic') });
+  layer.offer('rack', { pic: v3Art('items/item-hay-bundle.webp'), at: drift(0.7, 0.5), onTap: () => log('offer rack') });
+}
+
 // ---- the dev buttons
 const places: Place[] = ['nest', 'pond', 'slide', 'wildEgg', 'stable', 'gazebo'];
 let placeIx = 0;
@@ -177,6 +286,11 @@ const runs: Record<string, () => Promise<unknown> | void> = {
     layer.foodBasket({ show: true, foods, drop: (f, x, y) => { const a = anchor(); const hit = Math.hypot(x - a.x, y - a.y - 60) < 160; log(`drop ${f.word} ${hit}`); if (hit) react('munch'); return hit; } });
   },
   'food off': () => layer.foodBasket({ show: false }),
+  wardrobe: () => dress(false, []),
+  'wardrobe first': () => dress(true, []),
+  'wardrobe gifts': () => dress(false, ['lilac', 'sky', 'mint']),
+  offers: () => offers(true),
+  'offers off': () => offers(false),
   'the end': async () => { await layer.theEnd({ herd: 14, members }); log('play again'); },
   'the end plain': async () => { await layer.theEnd({ herd: 14 }); log('play again'); },
   day: () => layer.sky(0),
@@ -186,7 +300,7 @@ const runs: Record<string, () => Promise<unknown> | void> = {
   perf: () => layer.perf('60 fps  42 calls  61k tris'),
   replay: () => log(`replay ${layer.replay()}`),
   idle: () => log(`idle ${layer.idleNow()}`),
-  reset: () => { layer.reset(); layer.sky(0); show(null); },
+  reset: () => { layer.reset(); layer.sky(0); show(null); her.classList.add('hidden'); },
   clean: () => { document.body.classList.toggle('clean'); },
 };
 const dev = document.getElementById('dev')!;
@@ -198,5 +312,5 @@ for (const name of Object.keys(runs)) {
 }
 dev.appendChild(logEl);
 
-Object.assign(window, { __ui: layer, __dev: { run: (n: string) => runs[n](), results, show, anchor } });
+Object.assign(window, { __ui: layer, __dev: { run: (n: string) => runs[n](), results, show, anchor, look: () => herLook } });
 void runs.start();

@@ -17,16 +17,25 @@ import { createCurtain, createTurn, endScreen, startScreen } from './screens';
 import { runEgg } from './egg';
 import { runNaming } from './naming';
 import { runWish } from './wish';
+import { runWardrobe, type WardrobeHandle, type WardrobeSnapshot } from './wardrobe';
+import { createOffers } from './offer';
 import type { LayerCtx, MomentSnapshot, OpenMoment, UiTarget } from './moment';
 import { target } from './moment';
 
 export type { MomentSnapshot, UiTarget } from './moment';
+export type { WardrobeSnapshot } from './wardrobe';
 
 /** Extras beyond the contract, for the game's test hook and the flows. */
 export interface LayerExtras {
-  /** The open moment (kind, phase, hint level, misses, the answer's name) and every touchable thing on screen. */
-  snapshot(): { moment: MomentSnapshot | null; targets: UiTarget[] };
-  /** Run the open moment's next idle step now, instead of waiting 15 s (10 s for reading). */
+  /**
+   * The open moment (kind, phase, hint level, misses, the answer's name), the customiser (open while it takes
+   * touches, and the framed row; it is not a moment) and every touchable thing on screen.
+   */
+  snapshot(): { moment: MomentSnapshot | null; wardrobe: WardrobeSnapshot | null; targets: UiTarget[] };
+  /**
+   * Run the open moment's next idle step now, instead of waiting 15 s (10 s for reading). In the customiser: the
+   * first-visit ghost slide, then the idle line.
+   */
   idleNow(): boolean;
 }
 
@@ -77,6 +86,9 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
   const tags = createTags(tagsLayer);
   const food = createFoodBasket(hudLayer, dragLayer);
   const home = createHome(hudLayer);
+  // Offer bubbles follow places in the world like the name tags, under the moment panels.
+  const offers = createOffers(tagsLayer, screen);
+  let wardrobe: WardrobeHandle | null = null;
   const curtain = createCurtain(screens);
   const turn = createTurn(screens);
 
@@ -140,9 +152,13 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
     },
     arrow: (goal, onTap) => arrow.set(goal, onTap),
     tag: (name, at, ms) => tags.show(name, at, ms),
-    // Stubs until the 2.2.0 customiser and offer bubbles are built: the look stays as it is, no bubble shows.
-    wardrobe: (o) => Promise.resolve(o.look),
-    offer: () => {},
+    wardrobe: (o) => {
+      wardrobe?.close();
+      return runWardrobe({ parent: moments, ghost, screen }, o, (h) => {
+        wardrobe = h;
+      });
+    },
+    offer: (id, o) => offers.set(id, o),
     foodBasket: (o) => food.set(o),
     theEnd: (o) => endScreen(screens, o),
     sky: (t) => {
@@ -157,6 +173,9 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
     reset: () => {
       open?.close();
       open = null;
+      wardrobe?.close();
+      wardrobe = null;
+      offers.reset();
       ghost.hide();
       releaseDrags();
       dragLayer.innerHTML = '';
@@ -185,11 +204,12 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       hudLayer.querySelectorAll('.food-tray.open .food').forEach((f) => add(f.getAttribute('aria-label') ?? 'food', f));
       add('play', screens.querySelector('.screen.start .play'));
       add('play again', screens.querySelector('.screen.end .end-moon'));
-      return { moment: m, targets };
+      targets.push(...(wardrobe?.targets() ?? []), ...offers.targets());
+      return { moment: m, wardrobe: wardrobe?.snapshot() ?? null, targets };
     },
     idleNow: () => {
       const l = open?.ladder;
-      if (!l) return false;
+      if (!l) return wardrobe?.idleNow() ?? false;
       l.idleNow();
       return true;
     },
