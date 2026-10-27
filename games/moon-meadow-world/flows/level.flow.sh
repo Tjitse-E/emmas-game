@@ -99,7 +99,7 @@ shot 08-pond
 walk_to_goal
 sleep 6
 wait_target 'unicorn baby-13' 20
-check_targets "$(near_unicorns 6)"
+check_near_unicorns 6
 drag 'unicorn baby-13' 'slide top'
 wait_for "() => window.__game.state().herd.find((h) => h.id === 'baby-13').mode === 'slide'" 5
 sleep 0.6
@@ -167,7 +167,7 @@ herd1="$(val "() => { const t = window.__game.targets().find((x) => /^unicorn (?
 if [ -n "$herd1" ]; then tap "$herd1"; sleep 1; say "called $herd1"; fi
 shot 16-free
 sleep 3
-check_targets "$(near_unicorns 6)"
+check_near_unicorns 6
 # No leak: geometries and textures stay flat over a minute of play (followers playing, swimming, tags).
 if [ -z "${MMW_NO_LEAK_CHECK:-}" ]; then
   before="$(val "() => { const p = window.__game.perf(); return p.geometries + '/' + p.textures; }")"

@@ -128,10 +128,13 @@ check_targets() {
   [ -z "$bad" ] || fail "targets: $bad"
 }
 
-# The 3D unicorns on screen within $1 metres of Princess Emma (not in a stall), as a JS array literal of target names.
-# These are the ones she taps most (followers, the baby beside her), so they must be at least 64 px too.
-near_unicorns() {
-  val "() => { const s = window.__game.state(); const p = s.princess; const on = new Set(window.__game.targets().map((t) => t.name)); return JSON.stringify(s.herd.filter((h) => h.mode !== 'stall' && Math.hypot(h.x - p.x, h.z - p.z) <= ${1:-6}).map((h) => 'unicorn ' + h.id).filter((n) => on.has(n))); }"
+# Every 3D unicorn on screen within $1 metres of Princess Emma (not in a stall) is at least 64 px: these are the ones
+# she taps most (followers, the baby beside her). Found and measured in one call, as a grazing unicorn at the screen
+# edge can step off it between two calls.
+check_near_unicorns() {
+  local bad
+  bad="$(val "() => { const s = window.__game.state(); const p = s.princess; const ts = window.__game.targets(); const out = []; for (const h of s.herd) { if (h.mode === 'stall' || Math.hypot(h.x - p.x, h.z - p.z) > ${1:-6}) continue; const t = ts.find((x) => x.name === 'unicorn ' + h.id); if (t && Math.min(t.w, t.h) < 64) out.push(t.name + ' ' + t.w + 'x' + t.h); } return out.join('; '); }")"
+  [ -z "$bad" ] || fail "near unicorns: $bad"
 }
 
 # The touchable names of the open ui moment (stones, bells, gems, items), as a JS array literal.

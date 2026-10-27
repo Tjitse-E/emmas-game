@@ -75,7 +75,7 @@ walk_to_goal
 sleep 2
 shot smoke-pond
 check_targets '["slide","slide top","unicorn baby-13"]'
-check_targets "$(near_unicorns 6)"
+check_near_unicorns 6
 drag 'unicorn baby-13' 'slide top'
 wait_moment wish 60
 sleep 1.5
