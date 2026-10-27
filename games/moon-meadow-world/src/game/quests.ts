@@ -34,8 +34,16 @@ const WALK_MS = 12_000;
 const SEAT_MS = 4000;
 /** The picnic frame: the rug's centre a little east, 5.5 m across, the babies' head tops at 45%. */
 const PICNIC_FRAME = { east: 0.6, width: 5.5, frac: 0.45 };
-/** The hay rack frame: the rack, 6 m across, its top high on the screen above the egg panel. */
-const RACK_FRAME = { width: 6, top: 1.5, frac: 0.28 };
+/**
+ * The hay rack frame: 6 m across, centred a little west of the rack so the stone tray on the right stays clear, the
+ * rack's top high on the screen above the hay panel.
+ */
+const RACK_FRAME = { west: 0.3, width: 6, top: 1.5, frac: 0.28 };
+/**
+ * Her spot for the hay rack moment: beside the rack on the west (the left of the screen), clear of the eat spots. At
+ * HAY_RACK.stand she would stand between the camera and the rack, hidden behind the hay panel.
+ */
+const RACK_SIDE: Vec2 = { x: HAY_RACK.center.x - 2.2, z: HAY_RACK.center.z + 0.4 };
 /** After a full rack, the herd and her babies munch with hearts this long before going home. */
 const MUNCH_MS = 3000;
 
@@ -304,12 +312,13 @@ function rackHelpers(g: Game): UnicornActor[] {
 async function rackQuest(g: Game): Promise<void> {
   const { actors, layer, world } = g;
   g.free = false;
-  await walkThere(g, HAY_RACK.stand);
-  actors.princess.face(HAY_RACK.center);
+  await walkThere(g, world.nearestWalkable(RACK_SIDE));
+  // Half towards the rack, half towards the camera, as at the picnic.
+  actors.princess.face({ x: HAY_RACK.center.x, z: HAY_RACK.center.z + 3 });
   const spec = planRack(g);
   await preload(g, eggClipIds(spec));
   const top = v3(HAY_RACK.center, RACK_FRAME.top);
-  await frameAt(g, HAY_RACK.center, RACK_FRAME.width, top, RACK_FRAME.frac);
+  await frameAt(g, { x: HAY_RACK.center.x - RACK_FRAME.west, z: HAY_RACK.center.z }, RACK_FRAME.width, top, RACK_FRAME.frac);
   const helpers = rackHelpers(g);
   const eaters = () => [...rackHelpers(g), ...guests(g)];
   let filled = false;

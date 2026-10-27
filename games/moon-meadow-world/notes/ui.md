@@ -70,7 +70,7 @@ Files: `src/ui/wardrobe.ts` (the DOM), `src/ui/wardrobe-ctl.ts` (the rules witho
 
 ## Offer bubbles (2.2.0, `layer.offer`)
 
-`layer.offer(id, { pic, at, onTap })` shows a round picture bubble that follows `at()` every frame, above the point, kept on screen and out of the top corners. It hides while `at().visible` is false. It acts on pointerdown, then pops away by itself, so `offer(id, null)` after a tap is not needed (and does nothing). Calling `offer(id, …)` again replaces it. The bubbles sit under the moment panels; `reset()` removes them. Pictures used in the harness: `wordPic('picnic')` and `v3Art('items/item-hay-bundle.webp')`.
+`layer.offer(id, { pic, at, onTap })` shows a round picture bubble that follows `at()` every frame, above the point, kept on screen and out of the top corners. While the point is off screen (or behind the camera) the bubble waits at the screen edge in the point's direction, without its tail and clear of the food basket, so a waiting quest always shows (integration fix: from free play's first spot both places are off screen). It acts on pointerdown, then pops away by itself, so `offer(id, null)` after a tap is not needed (and does nothing). Calling `offer(id, …)` again replaces it. The bubbles sit under the moment panels; `reset()` removes them. Pictures used in the harness: `wordPic('picnic')` and `v3Art('items/item-hay-bundle.webp')`.
 
 ## Extras for the test hook (optional members on the returned object)
 

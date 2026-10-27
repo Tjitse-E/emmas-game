@@ -74,6 +74,7 @@
   display: flex; align-items: center; justify-content: center; z-index: 1;
 }
 .offer.on .offer-ball { animation: mmw-glow-ring 2.2s ease-in-out infinite; }
+.offer.edge .offer-tail { display: none; }
 .offer-pic { width: 76%; height: 76%; object-fit: contain; }
 .offer-spark { position: absolute; right: calc(-4 * var(--u)); top: calc(-6 * var(--u)); width: calc(38 * var(--u)); animation: mmw-twinkle 1.6s ease-in-out infinite; }
 .offer-tail {

@@ -1,10 +1,11 @@
 // The side quests' offer bubbles (docs/v4/2.2.md 5, Layer.offer): a picture in a round bubble over a place in the
-// world (the picnic rug, the hay rack), following its point every frame and bobbing gently. It acts on pointerdown,
-// because it moves with the camera and a release could land beside it. A tapped bubble pops away by itself.
+// world (the picnic rug, the hay rack), following its point every frame and bobbing gently. While the place is off
+// screen the bubble waits at the screen edge in its direction. It acts on pointerdown, because it moves with the
+// camera and a release could land beside it. A tapped bubble pops away by itself.
 import './wardrobe.css';
 import type { ScreenPoint } from '../contracts';
 import { audio } from '../audio';
-import { bubbleBox } from './geometry';
+import { bubbleBox, edgeArrow } from './geometry';
 import { el, img, onTick, play, u } from './dom';
 import { press } from './press';
 import { PIC } from './parts';
@@ -38,19 +39,33 @@ export function createOffers(parent: HTMLElement, screen: () => { w: number; h: 
     let taken = false;
     let shown = false;
 
+    let edge = false;
     const follow = () => {
       const a = o.at();
       const scr = screen();
       const s = u(SIZE);
-      const b = bubbleBox(a, s, s + u(TAIL), scr, {
-        gap: u(10),
-        margin: u(12),
+      const margin = u(12);
+      const gap = u(10);
+      // A place off screen keeps its bubble at the screen edge, in its direction and without the tail, so she can
+      // always see it is waiting (a tap walks her there). The head point is set so the ball centres on that edge point.
+      const out = edgeArrow(a, a.visible, scr, margin + s / 2, 0);
+      const head = out ? { x: out.x, y: out.y + s / 2 + u(TAIL) + gap } : a;
+      const b = bubbleBox(head, s, s + u(TAIL), scr, {
+        gap,
+        margin,
         topLeft: { x: 0, y: 0, w: u(160), h: u(160) },
         topRight: { x: scr.w - u(112), y: 0, w: u(112), h: u(112) },
       });
+      // Never over the food basket in the bottom right corner.
+      const basket = { x: scr.w - u(150), y: scr.h - u(150) };
+      if (b.x + s > basket.x && b.y + s > basket.y) b.x = Math.max(margin, basket.x - s);
       box.style.transform = `translate(${b.x}px, ${b.y}px)`;
       box.style.setProperty('--tail-x', `${b.tailX}px`);
-      const on = a.visible && !taken;
+      if (!!out !== edge) {
+        edge = !!out;
+        box.classList.toggle('edge', edge);
+      }
+      const on = !taken;
       if (on !== shown) {
         shown = on;
         box.classList.toggle('on', on);
