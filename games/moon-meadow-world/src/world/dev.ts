@@ -1,7 +1,7 @@
 // The world lane's harness (dev/world.html): the whole world, a cone that walks routes to taps, buttons for every
 // world call and a stats box. window.__world and window.__dev are there for playwright-cli.
 import * as THREE from 'three';
-import { NEST, PLACES, POND, SLIDE, STABLE, START, type Place, type Vec2 } from '../layout';
+import { HAY_RACK, NEST, PICNIC, PLACES, POND, SLIDE, STABLE, START, type Place, type Vec2 } from '../layout';
 import { createWorld } from './index';
 import { createActors, type ActorsImpl } from '../actors';
 import type { UnicornLook } from '../contracts';
@@ -57,6 +57,8 @@ world.canvas.addEventListener('pointerup', (e) => {
   const hit = world.pick(e.clientX, e.clientY);
   lastPick = hit;
   if (hit && (hit.kind === 'ground' || hit.kind === 'pond')) walkTo(hit.at);
+  if (hit?.kind === 'rack') walkTo(HAY_RACK.stand);
+  if (hit?.kind === 'picnic') walkTo(PICNIC.stand);
   if (hit?.kind === 'door') {
     world.stable.glow(hit.door);
     void world.stable.rattle(hit.door);
@@ -77,12 +79,70 @@ const button = (label: string, fn: () => void): void => {
   panel.append(b);
 };
 const STABLE_FRAME: Vec2 = { x: 0, z: -11.8 };
+
+/**
+ * The game's frameAt (src/game/game.ts): frame `center` at `width` metres so that `point` shows at `frac` of the
+ * screen height from the top.
+ */
+function frameAt(center: Vec2, width: number, point: THREE.Vector3, frac: number, ms = 900): Promise<void> {
+  const cam = world.camera;
+  const probe = new THREE.PerspectiveCamera(cam.fov, cam.aspect, cam.near, cam.far);
+  const dist = width / (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.aspect);
+  const pitch = THREE.MathUtils.degToRad(46);
+  probe.position.set(center.x, Math.sin(pitch) * dist, center.z + Math.cos(pitch) * dist);
+  probe.lookAt(center.x, 0, center.z);
+  probe.updateMatrixWorld();
+  const shiftY = THREE.MathUtils.clamp(frac - (1 - point.clone().project(probe).y) / 2, -0.35, 0.35);
+  return world.frame(center, width, { ms, shiftY });
+}
+/** The picnic moment (design 2.2 section 5): the rug 0.6 m east of centre, 5.5 m wide, the babies' heads at 45%. */
+const picnicFrame = (ms?: number): Promise<void> =>
+  frameAt({ x: PICNIC.rug.center.x + 0.6, z: PICNIC.rug.center.z }, 5.5, new THREE.Vector3(PICNIC.seats[0].x, 0.9, PICNIC.seats[0].z), 0.45, ms);
+/** The hay rack moment: 6 m wide, the top of the heap at 28% so the rack stays above the hay panel. */
+const rackFrame = (ms?: number): Promise<void> =>
+  frameAt(HAY_RACK.center, 6, new THREE.Vector3(HAY_RACK.center.x, 1.25, HAY_RACK.center.z), 0.28, ms);
+
+/**
+ * The customiser's portrait camera (design 2.2 section 2.4) with Princess Emma at `her`: a low camera that looks
+ * through a point `lookY` above her, with her at the middle of the space left of the wardrobe panel.
+ */
+const PORTRAIT = { body: { hvis: 2.08, lookY: 0.58, pitch: 8 }, face: { hvis: 1.05, lookY: 1.08, pitch: 6 } } as const;
+function portrait(kind: keyof typeof PORTRAIT, her: Vec2 = START, ms = 900): Promise<void> {
+  const { hvis, lookY, pitch } = PORTRAIT[kind];
+  const w = innerWidth;
+  const h = innerHeight;
+  const unit = Math.min(w / 1180, h / 820);
+  const panelLeft = w - (16 + 628) * unit;
+  const xFrac = panelLeft / 2 / w;
+  const tan = Math.tan(THREE.MathUtils.degToRad(19));
+  const aspect = w / h;
+  const p = THREE.MathUtils.degToRad(pitch);
+  const d = hvis / (2 * tan);
+  const ox = (1 - 2 * xFrac) * d * tan * aspect;
+  const center = { x: her.x + ox, z: her.z - lookY / Math.tan(p) };
+  const width = (d + lookY / Math.sin(p)) * 2 * tan * aspect;
+  return world.frame(center, width, { pitch, shiftY: 0, ms });
+}
+
 section('Camera');
 button('nest', () => void world.frame(NEST.center, 7, { shiftY: 0.08 }));
 button('pond', () => void world.frame({ x: POND.center.x - 2, z: POND.center.z - 0.5 }, 17));
 button('stable', () => void world.frame(STABLE_FRAME, 18));
+button('picnic', () => void picnicFrame());
+button('rack', () => void rackFrame());
+button('portrait body', () => void portrait('body'));
+button('portrait face', () => void portrait('face'));
 button('release', () => world.releaseFrame());
 button('intro', () => void world.introSweep(4500));
+section('Walk to');
+button('picnic spot', () => void walkTo(PICNIC.stand));
+button('rack stand', () => void walkTo(HAY_RACK.stand));
+button('start', () => void walkTo(START));
+section('Hay rack');
+button('hay 0', () => world.stable.hay(0));
+button('hay ½', () => world.stable.hay(0.5));
+button('hay 1', () => world.stable.hay(1));
+button('fill slowly', () => (world.stable.hay(0, 0), world.stable.hay(1, 2500)));
 section('Time of day');
 for (const t of [0, 0.5, 1]) button(String(t), () => void world.setTimeOfDay(t, 2000));
 section('Stable');
@@ -162,7 +222,7 @@ button('clean', () => document.body.classList.add('clean'));
 const stats = document.getElementById('stats')!;
 setInterval(() => {
   const p = world.perf();
-  stats.textContent = `fps ${p.fps}  calls ${p.calls}  tris ${p.triangles}\ngeo ${p.geometries}  tex ${p.textures}  tod ${world.timeOfDay.toFixed(2)}\npr ${p.pixelRatio}  quality ${p.quality}  onSlow ${slowLevel}\npick ${JSON.stringify(lastPick)}`;
+  stats.textContent = `fps ${p.fps}  calls ${p.calls}  tris ${p.triangles}\ngeo ${p.geometries}  tex ${p.textures}  tod ${world.timeOfDay.toFixed(2)}  hay ${world.hayFill.toFixed(2)}\npr ${p.pixelRatio}  quality ${p.quality}  onSlow ${slowLevel}\npick ${JSON.stringify(lastPick)}`;
 }, 500);
 
 /** Render once now and read the frame's cost. */
@@ -178,8 +238,17 @@ function measure(): Record<string, unknown> {
     marker.position.set(p.x, 0, p.z);
     path = [];
   };
+  // The worst case: a full hay rack (one more mesh).
+  const hayWas = world.hayFill;
+  world.stable.hay(1, 0);
   const poses: [string, () => void][] = [
     ['start', () => (at(START), world.releaseFrame(), world.snapCamera())],
+    ['picnicFollow', () => (at(PICNIC.stand), world.releaseFrame(), world.snapCamera())],
+    ['picnicFrame', () => (void picnicFrame(0), world.snapCamera())],
+    ['rackFollow', () => (at(HAY_RACK.stand), world.releaseFrame(), world.snapCamera())],
+    ['rackFrame', () => (void rackFrame(0), world.snapCamera())],
+    ['portraitBody', () => (at(START), void portrait('body', START, 0), world.snapCamera())],
+    ['portraitFace', () => (at(START), void portrait('face', START, 0), world.snapCamera())],
     ['nest', () => (void world.frame(NEST.center, 7, { ms: 0 }), world.snapCamera())],
     ['slide', () => (at(SLIDE.ladderBase), world.releaseFrame(), world.snapCamera())],
     ['pond', () => (at(POND.center), world.releaseFrame(), world.snapCamera())],
@@ -203,6 +272,7 @@ function measure(): Record<string, unknown> {
     }
   }
   out.worstFollow = worst;
+  world.stable.hay(hayWas, 0);
   at(START);
   world.releaseFrame();
   world.snapCamera();
@@ -237,5 +307,5 @@ function place(x: number, z: number): void {
   world.snapCamera();
 }
 
-Object.assign(window, { __world: world, __dev: { marker, walkTo, measure, numerals, place, stalled, THREE } });
+Object.assign(window, { __world: world, __dev: { marker, walkTo, measure, numerals, place, stalled, frameAt, picnicFrame, rackFrame, portrait, THREE } });
 world.start();

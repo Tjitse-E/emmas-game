@@ -1,8 +1,9 @@
 // What a tap hits in the world: doors (by where the ray meets the stable fronts, so every door gets its full width),
-// the slide, the nest and the gazebo (generous invisible shapes), the rest of the stable buildings (their roofs and
-// walls count as the nearest door, so a tap there never walks her behind them), then the pond and the ground.
+// the slide, the nest, the hay rack, the picnic and the gazebo (generous invisible shapes), the rest of the stable
+// buildings (their roofs and walls count as the nearest door, so a tap there never walks her behind them), then the
+// pond and the ground.
 import * as THREE from 'three';
-import { GAZEBO, NEST, SLIDE, SLIDE_CURVE, STABLE, inPond, type Vec2 } from '../layout';
+import { GAZEBO, HAY_RACK, NEST, PICNIC, SLIDE, SLIDE_CURVE, STABLE, inPond, type Vec2 } from '../layout';
 import type { WorldPick } from '../contracts';
 
 /** A tap this far in front of a lower door (on the ground) still counts as the door. */
@@ -11,6 +12,10 @@ const ROW_HALF_PICK = 3.85;
 const DOOR_TOP = STABLE.upperFloorY * 2 + 0.1;
 /** One stable building with its roof, eaves and the balcony ramp on its outer end. */
 const BUILDING = { halfX: 3.9 + 0.8, top: STABLE.upperFloorY * 2 + 1.4, eave: 0.4 } as const;
+/** The hay rack's tap box: its crib (turned a little), legs and a full heap of hay, a little wider than they are. */
+const RACK_BOX = { x: 2.1, y: 1.5, z: 1.4 } as const;
+/** The picnic's tap box: the rug with its tassels and the hamper, as high as the hamper's handle. */
+const PICNIC_BOX = { pad: 0.1, hamper: 0.3, y: 0.55 } as const;
 
 export interface Picker {
   pick(ray: THREE.Ray): WorldPick | null;
@@ -28,6 +33,15 @@ export function buildPicker(): Picker {
   nest.position.set(NEST.center.x, 0.65, NEST.center.z);
   const gazebo = new THREE.Mesh(new THREE.CylinderGeometry(GAZEBO.radius + 0.1, GAZEBO.radius + 0.2, 6.2, 16), hidden);
   gazebo.position.set(GAZEBO.center.x, 3.1, GAZEBO.center.z);
+  const rack = new THREE.Mesh(new THREE.BoxGeometry(RACK_BOX.x, RACK_BOX.y, RACK_BOX.z), hidden);
+  rack.position.set(HAY_RACK.center.x, RACK_BOX.y / 2, HAY_RACK.center.z);
+  const { rug, hamper } = PICNIC;
+  const minX = Math.min(rug.center.x - rug.halfX, hamper.x - PICNIC_BOX.hamper) - PICNIC_BOX.pad;
+  const maxX = Math.max(rug.center.x + rug.halfX, hamper.x + PICNIC_BOX.hamper) + PICNIC_BOX.pad;
+  const minZ = Math.min(rug.center.z - rug.halfZ, hamper.z - PICNIC_BOX.hamper) - PICNIC_BOX.pad;
+  const maxZ = Math.max(rug.center.z + rug.halfZ, hamper.z + PICNIC_BOX.hamper) + PICNIC_BOX.pad;
+  const picnic = new THREE.Mesh(new THREE.BoxGeometry(maxX - minX, PICNIC_BOX.y, maxZ - minZ), hidden);
+  picnic.position.set((minX + maxX) / 2, PICNIC_BOX.y / 2, (minZ + maxZ) / 2);
   // The buildings: a box each from the ground to above the ridge, the eaves to the back wall. The ramps stand on the
   // outer ends, so each box reaches 0.8 m further out on that side.
   const buildings = STABLE.rows.map((r) => {
@@ -37,7 +51,7 @@ export function buildPicker(): Picker {
     box.position.set(r.centerX + outer * 0.4, BUILDING.top / 2, STABLE.frontZ + BUILDING.eave - depth / 2);
     return box;
   });
-  group.add(slide, slideTop, nest, gazebo, ...buildings);
+  group.add(slide, slideTop, nest, gazebo, rack, picnic, ...buildings);
   group.updateMatrixWorld(true);
   const raycaster = new THREE.Raycaster();
   const hit = new THREE.Vector3();
@@ -85,6 +99,9 @@ export function buildPicker(): Picker {
       if (d !== null) return { kind: 'door', door: d };
       if (hits(ray, slide, slideTop)) return { kind: 'slide' };
       if (hits(ray, nest)) return { kind: 'nest' };
+      // The rack and the picnic come after the doors, so they can never take a door's tap.
+      if (hits(ray, rack)) return { kind: 'rack' };
+      if (hits(ray, picnic)) return { kind: 'picnic' };
       if (hits(ray, gazebo)) return { kind: 'gazebo' };
       const b = building(ray);
       if (b !== null) return { kind: 'door', door: b };
