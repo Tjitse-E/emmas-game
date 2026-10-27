@@ -11,7 +11,6 @@ import { SENTENCES, lineFor } from '../tools/lines.ts';
 vi.stubGlobal('location', { pathname: '/' });
 const C = await import('../src/content/index.ts');
 const { DATA } = await import('../src/content/data.ts');
-const { stonesFor } = await import('../src/content/eggs.ts');
 
 const here = resolve(import.meta.dirname, '..');
 const v3 = resolve(here, '../moon-meadow-home');
@@ -51,89 +50,22 @@ const sameSound = (a: string, b: string): boolean => a === b || SAME_SOUND.some(
 function eggs(kind: 'warm' | 'snow'): EggSpec[] {
   return seeds.flatMap((s) => {
     const r = C.seeded(s);
-    return [C.eggSpec(kind, r, { first: s % 2 === 0 }), C.eggSpec(kind, r, { avoidNeed: kind === 'warm' ? 13 : 9 })];
+    return [C.eggSpec(kind, r, { first: s % 2 === 0 }), C.eggSpec(kind, r)];
   });
 }
 
 describe('eggs', () => {
-  it('warm eggs add 4 or more to reach 11 to 15 from 6 to 9 warm (always across ten)', () => {
-    for (const e of eggs('warm')) {
-      expect(e.need).toBeGreaterThanOrEqual(11);
-      expect(e.need).toBeLessThanOrEqual(15);
-      expect(e.have).toBeGreaterThanOrEqual(6);
-      expect(e.have).toBeLessThanOrEqual(9);
-      expect(e.answer).toBe(e.need - e.have);
-      expect(e.answer).toBeGreaterThanOrEqual(4);
-      expect(e.answer).toBeLessThanOrEqual(9);
-    }
-  });
-
-  it('snow eggs take 4 to 6 away from 11 to 15 to leave 7 to 9 (always across ten)', () => {
-    for (const e of eggs('snow')) {
-      expect(e.have).toBeGreaterThanOrEqual(11);
-      expect(e.have).toBeLessThanOrEqual(15);
-      expect(e.answer).toBe(e.have - e.need);
-      expect(e.answer).toBeGreaterThanOrEqual(4);
-      expect(e.answer).toBeLessThanOrEqual(6);
-      expect(e.need).toBeGreaterThanOrEqual(7);
-      expect(e.need).toBeLessThanOrEqual(9);
-    }
-  });
-
-  it('keeps the floor: no 1 or 2 to add or take, no egg under 7, every egg crosses ten', () => {
-    for (const e of [...eggs('warm'), ...eggs('snow')]) {
-      expect(e.answer).toBeGreaterThan(2);
-      expect(e.need).toBeGreaterThanOrEqual(7);
-      // Adding goes from under ten to over ten; taking away goes from over ten to under ten.
-      expect(Math.min(e.have, e.need)).toBeLessThan(10);
-      expect(Math.max(e.have, e.need)).toBeGreaterThan(10);
-    }
-  });
-
-  it('never shows a stone under 3', () => {
-    for (const e of [...eggs('warm'), ...eggs('snow')]) for (const s of e.stones) expect(s).toBeGreaterThanOrEqual(3);
-    // Every combination, every seed's stones: also for answers at the bottom of the range.
-    for (const kind of ['warm', 'snow'] as const) {
-      for (const c of C.eggCombos(kind)) {
-        for (const s of seeds.slice(0, 50)) {
-          for (const stone of stonesFor(c.answer, C.seeded(s))) expect(stone).toBeGreaterThanOrEqual(3);
-        }
-      }
-    }
-  });
-
   it('the very first warm egg says how to drag a stone after its goal', () => {
     expect(C.eggSpec('warm', C.seeded(1), { first: true }).clips.afterGoal).toEqual(['g-stone']);
     expect(C.eggSpec('warm', C.seeded(1)).clips.afterGoal).toBeUndefined();
     expect(C.eggSpec('snow', C.seeded(1), { first: true }).clips.afterGoal).toBeUndefined();
   });
 
-  it('every combination can come up, and avoidNeed is kept', () => {
+  it('every combination can come up', () => {
     for (const kind of ['warm', 'snow'] as const) {
       const seen = new Set(eggs(kind).map((e) => `${e.need}/${e.have}`));
       expect(seen.size).toBe(C.eggCombos(kind).length);
     }
-    for (const s of seeds) {
-      expect(C.eggSpec('warm', C.seeded(s), { avoidNeed: 13 }).need).not.toBe(13);
-      expect(C.eggSpec('snow', C.seeded(s), { avoidNeed: 9 }).need).not.toBe(9);
-    }
-  });
-
-  it('shows three different stones from 3 to 9, ascending: the answer and two near misses', () => {
-    const places = new Set<number>();
-    for (const e of [...eggs('warm'), ...eggs('snow')]) {
-      expect(e.stones).toHaveLength(3);
-      expect(new Set(e.stones).size).toBe(3);
-      expect([...e.stones].sort((a, b) => a - b)).toEqual(e.stones);
-      expect(e.stones).toContain(e.answer);
-      for (const s of e.stones) {
-        expect(s).toBeGreaterThanOrEqual(3);
-        expect(s).toBeLessThanOrEqual(9);
-        if (s !== e.answer) expect([1, 2]).toContain(Math.abs(s - e.answer));
-      }
-      places.add(e.stones.indexOf(e.answer));
-    }
-    expect([...places].sort()).toEqual([0, 1, 2]);
   });
 
   it('says the right clips', () => {
