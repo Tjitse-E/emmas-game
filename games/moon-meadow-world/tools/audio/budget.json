@@ -7,9 +7,11 @@
  "runs": {
   "v4demo": "70 clips (66 the content uses, 4 reserve num-still-warm-3 to 6), 1,819 characters with one retry, 71 speech-to-text checks: 1,843.14 credits booked. All 70 passed speech-to-text exactly; num-take-13-6 failed on its first take and passed on the retry (seed 1011, overrides.json).",
   "menu": "menu-moon-meadow-world, 18 characters and one check: 18.34 credits booked, passed exactly.",
-  "ledgerAfter": 1861.48,
+  "ledgerAfter": 2276.9,
   "counterAfter": 30230,
-  "counterNote": "The account counter moved 805 credits (31,035 to 30,230) against 1,861 booked; as in v3, the ledger books 1 credit per character and is the number the cap counts."
+  "counterNote": "The account counter moved 805 credits (31,035 to 30,230) against 1,861 booked; as in v3, the ledger books 1 credit per character and is the number the cap counts.",
+  "v2.2.0": "13 new clips for 2.2.0 (the customiser lines, the dress-up wish, word-heart, the two picnic lines for Lumi and six take-away facts for band B), 411 characters and 13 speech-to-text checks: 415.42 credits booked on 2026-10-28. All 13 passed speech-to-text on the first take. word-heart passes as 'Heart.' or 'Hart.'; Tjitse listens to it.",
+  "counterAfter2.2.0": "30,230 before the run (the account counter lags a few minutes)."
  },
- "note": "Audio budget for the v4 playable demo only (docs/v4/demo.md section 5): at most 4,000 credits, never fewer than 10,000 credits left on the account. Tjitse's cap for v4 itself is still open (spec 7.1 and 10). It covers the demo's own lines (public/audio/v4demo/) and the menu line menu-moon-meadow-world. Every run goes through tools/audio/gen.sh, which passes the floor, the cap, the ledger and the speech-to-text cost per check (v3's measured 0.34 credits, games/moon-meadow-home/tools/audio/budget.json)."
+ "note": "Audio budget for the v4 playable demo and its 2.x versions (docs/v4/demo.md section 5): at most 4,000 credits, never fewer than 10,000 credits left on the account. Tjitse's cap for v4 itself is still open (spec 7.1 and 10). It covers the demo's own lines (public/audio/v4demo/) and the menu line menu-moon-meadow-world. Every run goes through tools/audio/gen.sh, which passes the floor, the cap, the ledger and the speech-to-text cost per check (v3's measured 0.34 credits, games/moon-meadow-home/tools/audio/budget.json)."
 }

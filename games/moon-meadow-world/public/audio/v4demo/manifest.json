@@ -340,53 +340,121 @@
     "how": "exact"
    }
   },
-  "num-add-10-3": {
-   "hash": "44d078313e8780223132c889b0baeaf16b52ef5899cef58189d22b0f350dae50",
+  "g4-ready": {
+   "hash": "1c99d27bbb331d7a726af8b9ed9884d53f4bed4177caf263a519d90bab7c4b22",
    "speaker": "narrator",
-   "text": "Ten and three make thirteen!",
-   "file": "num-add-10-3.mp3",
+   "text": "Let's get you ready, Princess Emma!",
+   "file": "g4-ready.mp3",
    "model": "eleven_v4",
    "seed": 11,
-   "duration_ms": 2278,
-   "generated": "2026-10-25T20:12:53",
+   "duration_ms": 2089,
+   "generated": "2026-10-28T00:45:08",
    "ok": true,
    "stt": {
-    "hash": "44d078313e8780223132c889b0baeaf16b52ef5899cef58189d22b0f350dae50",
-    "text": "10 and three make 13",
+    "hash": "1c99d27bbb331d7a726af8b9ed9884d53f4bed4177caf263a519d90bab7c4b22",
+    "text": "Let's get you ready, Princess Emma",
     "match": true,
     "how": "exact"
    }
   },
-  "num-add-10-4": {
-   "hash": "b6621384fd569b68474b7e908d6e2e67de6fa5e3b652fe82eeb40b3816fba50c",
+  "g4-look-tap": {
+   "hash": "eed47beb559028e3084c0e535123154042c679ed15f5b2343f92d83094616b37",
    "speaker": "narrator",
-   "text": "Ten and four make fourteen!",
-   "file": "num-add-10-4.mp3",
+   "text": "Tap a picture to change your look.",
+   "file": "g4-look-tap.mp3",
    "model": "eleven_v4",
    "seed": 11,
-   "duration_ms": 2238,
-   "generated": "2026-10-25T20:12:54",
+   "duration_ms": 2077,
+   "generated": "2026-10-28T00:45:08",
    "ok": true,
    "stt": {
-    "hash": "b6621384fd569b68474b7e908d6e2e67de6fa5e3b652fe82eeb40b3816fba50c",
-    "text": "10 and 4 make 14",
+    "hash": "eed47beb559028e3084c0e535123154042c679ed15f5b2343f92d83094616b37",
+    "text": "Tap a picture to change your look",
     "match": true,
     "how": "exact"
    }
   },
-  "num-add-10-5": {
-   "hash": "905856868d61482e3fc6bbbae8a1b0aa62fc29a250fe8bee1be09fce1ef79d6e",
+  "g4-ready-play": {
+   "hash": "ec09b9d750b6a71527927281c19d2d4297758da8801c6eee60533c3bc4b4e36f",
    "speaker": "narrator",
-   "text": "Ten and five make fifteen!",
-   "file": "num-add-10-5.mp3",
+   "text": "When you are ready, tap play.",
+   "file": "g4-ready-play.mp3",
    "model": "eleven_v4",
    "seed": 11,
-   "duration_ms": 2326,
-   "generated": "2026-10-25T20:12:55",
+   "duration_ms": 2126,
+   "generated": "2026-10-28T00:45:07",
    "ok": true,
    "stt": {
-    "hash": "905856868d61482e3fc6bbbae8a1b0aa62fc29a250fe8bee1be09fce1ef79d6e",
-    "text": "10 and 5 make 15",
+    "hash": "ec09b9d750b6a71527927281c19d2d4297758da8801c6eee60533c3bc4b4e36f",
+    "text": "When you are ready, tap Play",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-dress-up": {
+   "hash": "9fe5bbb5a8cda4f456e25f17173c7a8cbf53c80615cdc888ae228434b77c0e45",
+   "speaker": "narrator",
+   "text": "Your baby wants to dress up like you!",
+   "file": "g4-dress-up.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2263,
+   "generated": "2026-10-28T00:45:07",
+   "ok": true,
+   "stt": {
+    "hash": "9fe5bbb5a8cda4f456e25f17173c7a8cbf53c80615cdc888ae228434b77c0e45",
+    "text": "Your baby wants to dress up like you",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-heart": {
+   "hash": "3ce7b1aaf857b274c1582a687a37e2daf3ff18b5286ba561f6700feb214b0462",
+   "speaker": "narrator",
+   "text": "Heart.",
+   "file": "word-heart.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 960,
+   "generated": "2026-10-28T00:45:08",
+   "ok": true,
+   "stt": {
+    "hash": "3ce7b1aaf857b274c1582a687a37e2daf3ff18b5286ba561f6700feb214b0462",
+    "text": "Heart",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-picnic": {
+   "hash": "c0f047c62ea2147a8ecf9207d98f57a9ae8890189075d39bfc5e8368b6148c38",
+   "speaker": "queen",
+   "text": "A royal picnic! Who is hungry?",
+   "file": "lumi4-picnic.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1806,
+   "generated": "2026-10-28T00:45:09",
+   "ok": true,
+   "stt": {
+    "hash": "c0f047c62ea2147a8ecf9207d98f57a9ae8890189075d39bfc5e8368b6148c38",
+    "text": "A royal picnic. Who is hungry?",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-picnic-done": {
+   "hash": "c3b8c6aaa212737e454e77a3cac004e05d9a2f80b61fc29f3eda7a9e909d9deb",
+   "speaker": "queen",
+   "text": "What a lovely picnic! A rose for your hair.",
+   "file": "lumi4-picnic-done.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2432,
+   "generated": "2026-10-28T00:45:09",
+   "ok": true,
+   "stt": {
+    "hash": "c3b8c6aaa212737e454e77a3cac004e05d9a2f80b61fc29f3eda7a9e909d9deb",
+    "text": "What a lovely picnic. A rose for your hair",
     "match": true,
     "how": "exact"
    }
@@ -697,6 +765,23 @@
     "how": "exact"
    }
   },
+  "num-take-14-7": {
+   "hash": "785bae189604b7d16fcceee1c1a63a4680b1365ca164aacb4ccd5dd3bcb146f2",
+   "speaker": "narrator",
+   "text": "Fourteen take away seven is seven!",
+   "file": "num-take-14-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2633,
+   "generated": "2026-10-28T00:45:09",
+   "ok": true,
+   "stt": {
+    "hash": "785bae189604b7d16fcceee1c1a63a4680b1365ca164aacb4ccd5dd3bcb146f2",
+    "text": "14 take away seven is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "num-take-15-5": {
    "hash": "551745fcbaa74ee44f325c78c46a0e435395e5dfcdc7bdec5450704ae883c5ea",
    "speaker": "narrator",
@@ -731,6 +816,40 @@
     "how": "exact"
    }
   },
+  "num-take-15-7": {
+   "hash": "ed00cc3d440b2f3ac4ad90a46c6c799ac37606c206c8a9e47ea91627b7a18598",
+   "speaker": "narrator",
+   "text": "Fifteen take away seven is eight!",
+   "file": "num-take-15-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2544,
+   "generated": "2026-10-28T00:45:09",
+   "ok": true,
+   "stt": {
+    "hash": "ed00cc3d440b2f3ac4ad90a46c6c799ac37606c206c8a9e47ea91627b7a18598",
+    "text": "15 take away seven is eight",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-15-8": {
+   "hash": "150985d4695547f9dee7e18c657a0175599ec954d19d4939ee6c68b8e5260d28",
+   "speaker": "narrator",
+   "text": "Fifteen take away eight is seven!",
+   "file": "num-take-15-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2464,
+   "generated": "2026-10-28T00:45:10",
+   "ok": true,
+   "stt": {
+    "hash": "150985d4695547f9dee7e18c657a0175599ec954d19d4939ee6c68b8e5260d28",
+    "text": "15 take away eight is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "num-take-16-6": {
    "hash": "33df6081c5cdee235e4f80d9b0a541264f0b008ec4655e3b44b4b8c717e9bcd7",
    "speaker": "narrator",
@@ -744,6 +863,57 @@
    "stt": {
     "hash": "33df6081c5cdee235e4f80d9b0a541264f0b008ec4655e3b44b4b8c717e9bcd7",
     "text": "16 take away six is 10",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-16-7": {
+   "hash": "8f8815411968be7715b1aabd54f857a09469699d6bd552094f3a031edaf1974f",
+   "speaker": "narrator",
+   "text": "Sixteen take away seven is nine!",
+   "file": "num-take-16-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2605,
+   "generated": "2026-10-28T00:45:10",
+   "ok": true,
+   "stt": {
+    "hash": "8f8815411968be7715b1aabd54f857a09469699d6bd552094f3a031edaf1974f",
+    "text": "16 take away seven is nine",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-16-8": {
+   "hash": "12cab964ea70eb64d3555af7ff63c88f7b28c1ec51738043348799056bd8ea17",
+   "speaker": "narrator",
+   "text": "Sixteen take away eight is eight!",
+   "file": "num-take-16-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2637,
+   "generated": "2026-10-28T00:45:10",
+   "ok": true,
+   "stt": {
+    "hash": "12cab964ea70eb64d3555af7ff63c88f7b28c1ec51738043348799056bd8ea17",
+    "text": "16 take away eight is eight",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-16-9": {
+   "hash": "b1f6a51850b6f7d0800e467d4084a383533b54ab4437bfd4cd305d0b5a905e8e",
+   "speaker": "narrator",
+   "text": "Sixteen take away nine is seven!",
+   "file": "num-take-16-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2542,
+   "generated": "2026-10-28T00:45:13",
+   "ok": true,
+   "stt": {
+    "hash": "b1f6a51850b6f7d0800e467d4084a383533b54ab4437bfd4cd305d0b5a905e8e",
+    "text": "16 take away nine is seven",
     "match": true,
     "how": "exact"
    }
@@ -1191,5 +1361,5 @@
    }
   }
  },
- "updated": "2026-10-25T20:13:28"
+ "updated": "2026-10-28T00:45:15"
 }
