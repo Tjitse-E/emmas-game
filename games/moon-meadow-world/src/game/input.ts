@@ -3,13 +3,15 @@
 // Priority: a unicorn before the world. While a checked ui moment is open the world takes no taps; during a door
 // moment a door counts as the answer, and a waiting unicorn only hops and looks at its own door.
 // A tap never cuts the speech that plays: names wait their turn (sayAside).
+// In free play a tap on the picnic rug or the hay rack starts that side quest when it is offered (quests.ts).
 import * as THREE from 'three';
 import type { Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
-import { NEST, SLIDE, STABLE, WILD_EGG, dist2 } from '../layout';
+import { HAY_RACK, NEST, PICNIC, SLIDE, STABLE, WILD_EGG, dist2 } from '../layout';
 import { audio } from '../audio';
 import { type Game, GOALS, doorPoint, flat, memberOf, princessAt, sayAside, walkTo } from './game';
 import { peekDoor } from './doors';
+import { askQuest } from './quests';
 
 const TAP_PX = 12;
 const TAP_MS = 600;
@@ -140,6 +142,12 @@ export function installInput(g: Game): void {
         return;
       case 'pond':
         void walkTo(g, world.nearestWalkable(p.at));
+        return;
+      // A side quest's place: the quest starts when it is offered; otherwise she walks to its spot.
+      case 'rack':
+      case 'picnic':
+        if (askQuest(g, p.kind)) return;
+        void walkTo(g, p.kind === 'rack' ? HAY_RACK.stand : PICNIC.stand);
         return;
       case 'gazebo':
       case 'ground': {

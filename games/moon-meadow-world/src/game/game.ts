@@ -8,13 +8,17 @@ import type { LayerExtras } from '../ui';
 import { PITCH } from '../world/camera';
 import { NEST, STABLE, SLIDE, WILD_EGG, dist2, doorCenter, doorIsUpper } from '../layout';
 import { audio } from '../audio';
-import { type Rand, seeded, wayTo } from '../content';
+import { type Rand, wayTo } from '../content';
 import { Followers } from './followers';
 import { Results } from './results';
 import { Run } from './run';
+import { type MathsState, startMaths } from './band';
+import type { GameOptions, QuestId } from './options';
+import type { SaveStore } from './save';
+import { type Streams, createStreams } from './streams';
 
-/** The parts of the level, in order (docs/v4/demo.md section 1). */
-export const PARTS = ['welcome', 'egg1', 'naming1', 'wish1', 'pond', 'egg2', 'naming2', 'wish2', 'free', 'bedtime', 'goodnight'] as const;
+/** The parts of the level, in order (docs/v4/demo.md section 1; the wardrobe is 2.2.0's customiser). */
+export const PARTS = ['wardrobe', 'welcome', 'egg1', 'naming1', 'wish1', 'pond', 'egg2', 'naming2', 'wish2', 'free', 'bedtime', 'goodnight'] as const;
 export type Part = (typeof PARTS)[number];
 export const isPart = (s: string | null): s is Part => !!s && (PARTS as readonly string[]).includes(s);
 
@@ -55,12 +59,47 @@ export interface DoorMoment {
   idleNow(): void;
 }
 
+/** The afternoon's side quests (docs/v4/2.2.md section 5), for this play. */
+export interface QuestState {
+  /** The quests whose offer bubble shows now. */
+  readonly offered: Set<QuestId>;
+  readonly done: Set<QuestId>;
+  running: QuestId | null;
+  /** Asked by a bubble tap, a tap on its place or walking near it: the afternoon starts it at its next frame. */
+  asked: QuestId | null;
+  /** Time since free play began (ms), and the part of it without a quest running. */
+  wallMs: number;
+  freeMs: number;
+  /** "When you see a bubble, someone is waiting for you." has played this play. */
+  explained: boolean;
+  /** The herd unicorns waiting at the hay rack (ids). */
+  helpers: string[];
+  /** The picnic rose in her hair, and the hay in the rack (0 to 1), for the test hook. */
+  rose: boolean;
+  hay: number;
+}
+
+export function startQuests(): QuestState {
+  return { offered: new Set(), done: new Set(), running: null, asked: null, wallMs: 0, freeMs: 0, explained: false, helpers: [], rose: false, hay: 0 };
+}
+
 export interface Game {
   readonly world: WorldWithExtras;
   readonly actors: ActorsImpl;
   readonly layer: Layer & LayerExtras;
   readonly seed: number;
-  rand: Rand;
+  readonly options: GameOptions;
+  readonly save: SaveStore;
+  /** Each moment's own random stream ('egg1', 'wish1', 'picnic', ...); see streams.ts. */
+  randFor(label: string): Rand;
+  readonly streams: Streams;
+  /** The maths band and this play's sums. */
+  maths: MathsState;
+  /** This play's reading: how many wishes ran (the first is the warm-up) and every wish and picnic target. */
+  today: { wishes: number; words: string[] };
+  quests: QuestState;
+  /** The spec of the open checked moment as the game planned it (the test hook's spec()). */
+  openSpec: unknown;
   /** The starting herd of 12 (doors 1 to 12). */
   readonly herd: HerdMember[];
   babies: Baby[];
@@ -82,16 +121,28 @@ export interface Game {
   slid: boolean;
   /** performance.now() of her last touch anywhere (free play prompts after a quiet while). */
   lastTouch: number;
-  /** The word of the bath wish at the pond, kept out of the second bath wish. */
-  pondWord: string | null;
   /** Doors whose unicorn is walking in right now (not in g.stalls until it is inside). */
   readonly entering: Set<number>;
 }
 
-export function createGame(o: { world: WorldWithExtras; actors: ActorsImpl; layer: Layer & LayerExtras; seed: number; herd: HerdMember[] }): Game {
+export function createGame(o: {
+  world: WorldWithExtras;
+  actors: ActorsImpl;
+  layer: Layer & LayerExtras;
+  options: GameOptions;
+  save: SaveStore;
+  herd: HerdMember[];
+}): Game {
+  const streams = createStreams(o.options.seed);
   return {
     ...o,
-    rand: seeded(o.seed),
+    seed: o.options.seed,
+    streams,
+    randFor: (label) => streams.for(label),
+    maths: startMaths(o.options.band),
+    today: { wishes: 0, words: [] },
+    quests: startQuests(),
+    openSpec: null,
     babies: [],
     part: 'start',
     goal: null,
@@ -105,7 +156,6 @@ export function createGame(o: { world: WorldWithExtras; actors: ActorsImpl; laye
     run: new Run((fn) => o.world.onFrame(fn)),
     slid: false,
     lastTouch: performance.now(),
-    pondWord: null,
     entering: new Set(),
   };
 }

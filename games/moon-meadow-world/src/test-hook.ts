@@ -1,9 +1,11 @@
 // window.__game: the test hook for the flows and for Tjitse in the console. State, every touchable thing on screen
-// (ui targets and 3D targets), the answer of the open moment, and jumps between parts.
+// (ui targets and 3D targets), the answer of the open moment, jumps between parts, and the save.
 import * as THREE from 'three';
+import type { LookRow, PrincessLook, Ribbon } from './contracts';
 import type { UiTarget } from './ui';
-import { NEST, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
+import { HAY_RACK, NEST, PICNIC, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
 import { audio } from './audio';
+import { nameGems } from './ui/geometry';
 import { type Game, type Part, doorPoint, flat, isPart } from './game/game';
 import { jump } from './game/level';
 
@@ -68,16 +70,36 @@ export function installHook(g: Game): void {
     }
     out.push(target3d(g, 'slide', SLIDE_CURVE.getPointAt(0.62), 1.4));
     out.push(target3d(g, 'slide top', SLIDE.top.clone(), 1.2));
+    out.push(target3d(g, 'rack', new THREE.Vector3(HAY_RACK.center.x, 0.9, HAY_RACK.center.z), 1.8));
+    out.push(target3d(g, 'picnic', new THREE.Vector3(PICNIC.rug.center.x, 0.1, PICNIC.rug.center.z), 2));
     if (g.goal) out.push(target3d(g, 'goal', new THREE.Vector3(g.goal.stand.x, 0, g.goal.stand.z), 1.2));
     return out.filter((t): t is UiTarget => t !== null);
   };
 
+  /** The customiser's state from the layer: open, and the row in focus (null while it is closed). */
+  const wardrobe = (): { open: boolean; focus: LookRow | null } | null =>
+    (layer.snapshot() as { wardrobe?: { open: boolean; focus: LookRow | null } | null }).wardrobe ?? null;
+
   const hook = {
     state() {
       const p = actors.princess;
+      const q = g.quests;
       return {
         part: g.part,
         moment: moment(),
+        look: { ...p.look },
+        wardrobe: wardrobe(),
+        readingLevel: g.options.readingLevel ?? g.save.data.reading.level,
+        mathsBand: g.maths.band,
+        quests: {
+          offered: [...q.offered],
+          done: [...q.done],
+          running: q.running,
+          helpers: q.helpers.slice(),
+          rose: q.rose,
+          hay: q.hay,
+          freeMs: Math.round(q.freeMs),
+        },
         princess: { x: +p.position.x.toFixed(2), z: +p.position.z.toFixed(2), mode: p.mode },
         herd: actors.herd.all().map((u) => {
           const door = g.herd.find((h) => h.id === u.id)?.door ?? g.babies.find((b) => b.unicorn === u)?.door ?? null;
@@ -95,6 +117,27 @@ export function installHook(g: Game): void {
     /** The name of the target that answers the open moment now (a stone, a bell, a gem, the star, an item, a door). */
     answer(): string | null {
       return moment()?.answer ?? null;
+    },
+    /**
+     * The open moment's spec as the game planned it: an egg's numbers, stones and decoy kinds; a wish's target,
+     * basket, level and decoy kinds; naming's bells and, once chosen, the gems of the name in slot order.
+     */
+    spec(): unknown {
+      const s = g.openSpec as Record<string, unknown> | null;
+      if (!s) return null;
+      if ('stones' in s) {
+        const { clips: _clips, ...rest } = s;
+        return rest;
+      }
+      if ('basket' in s) {
+        const w = s as { kind: string; level: number; target: { word: string }; basket: { word: string }[]; decoys: Record<string, string> };
+        return { kind: w.kind, level: w.level, target: w.target.word, basket: w.basket.map((i) => i.word), decoys: w.decoys };
+      }
+      const n = s as { bells: { name: string }[]; chosen: { name: string; gpcs: string[]; distractors: string[] } | null };
+      return {
+        bells: n.bells.map((b) => b.name),
+        chosen: n.chosen ? { name: n.chosen.name, gems: nameGems(n.chosen.gpcs), distractors: n.chosen.distractors } : null,
+      };
     },
     /** Run the open moment's next idle step now (repeat, then the focused hint). */
     idleNow(): boolean {
@@ -122,6 +165,26 @@ export function installHook(g: Game): void {
     /** A world point on screen (flows tap the ground with it). */
     screenOf(x: number, z: number, y = 0) {
       return world.toScreen(new THREE.Vector3(x, y, z));
+    },
+    /** Change her look (missing fields keep what she wears) and save it. */
+    setLook(look: Partial<PrincessLook>): PrincessLook {
+      actors.princess.setLook(look);
+      g.save.write((s) => void (s.look = { ...actors.princess.look }));
+      return { ...actors.princess.look };
+    },
+    /** The ribbon colours she has earned (pink is always hers), as goodnight would add them. The customiser reads them when it opens. */
+    setRibbons(ribbons: Ribbon[]): Ribbon[] {
+      g.save.write((s) => void (s.ribbons = ribbons.slice()));
+      return g.save.data.ribbons.slice();
+    },
+    /** What the save holds now (read from the store again; from memory with ?fresh=1). */
+    save() {
+      return g.save.load();
+    },
+    /** Remove the save: the next load is a first visit. */
+    clearSave(): boolean {
+      g.save.clear();
+      return true;
     },
   };
   (window as unknown as { __game: typeof hook }).__game = hook;
