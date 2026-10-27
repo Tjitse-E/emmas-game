@@ -5,6 +5,7 @@ import { audio } from '../audio';
 import { menuUrl } from './geometry';
 import { draggable } from './drag';
 import { el, html, img, onPress, onTick, play, sleep } from './dom';
+import { press } from './press';
 import { CROWN_SVG, PIC } from './parts';
 
 /** A printed name with a small crown over its capital (v3 NameTag). */
@@ -127,7 +128,9 @@ const RING_LEN = 2 * Math.PI * RING_R;
 
 /**
  * The round home button (shared/home.js): goes to the picture menu after a press and hold of about 1 s, while a ring
- * fills around it. A quick tap only wiggles it, and a finger that slides off lets go.
+ * fills around it. A quick tap only wiggles it, and a finger that slides off lets go. The hold runs only while the
+ * press is open: press() ends it on a release anywhere (the window hears it too), a cancel, a lost capture or another
+ * touch, so a release that misses the button on Emma's iPad cancels the hold instead of letting it finish by itself.
  */
 export function createHome(parent: HTMLElement): HTMLElement {
   const b = html(
@@ -139,49 +142,45 @@ export function createHome(parent: HTMLElement): HTMLElement {
   b.setAttribute('aria-label', 'Home');
   const ring = b.querySelector('.home-ring .fill') as SVGCircleElement;
   const fillTo = (k: number) => ring.setAttribute('stroke-dashoffset', (RING_LEN * (1 - k)).toFixed(2));
-  let id = -1;
   let t0 = 0;
   let from = { x: 0, y: 0 };
   let stop: (() => void) | null = null;
+  let holding = false;
   let left = false;
 
-  /** The finger let go early (a wiggle after a tap) or slid off: the ring empties again. */
+  /** The finger let go early (a wiggle after a tap), slid off or went missing: the ring empties again. */
   const letGo = (wiggle: boolean) => {
-    id = -1;
+    if (!holding) return;
+    holding = false;
     stop?.();
     stop = null;
     b.classList.remove('down', 'holding');
     fillTo(0);
     if (wiggle) void play(b, [{ transform: 'rotate(0)' }, { transform: 'rotate(-12deg)' }, { transform: 'rotate(10deg)' }, { transform: 'rotate(-6deg)' }, { transform: 'rotate(0)' }], { duration: 420, easing: 'ease-in-out' });
   };
-  b.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (id !== -1 || left) return;
-    id = e.pointerId;
-    try {
-      b.setPointerCapture(e.pointerId);
-    } catch {
-      /* gone */
-    }
-    t0 = performance.now();
-    from = { x: e.clientX, y: e.clientY };
-    b.classList.add('down', 'holding');
-    stop = onTick(() => {
-      const k = Math.min(1, (performance.now() - t0) / HOME_HOLD_MS);
-      fillTo(k);
-      if (k < 1) return;
-      stop?.();
-      stop = null;
-      left = true;
-      audio.stop();
-      location.href = menuUrl(location.pathname);
-    });
+  press(b, {
+    down: (e) => {
+      if (left) return false;
+      holding = true;
+      t0 = performance.now();
+      from = { x: e.clientX, y: e.clientY };
+      b.classList.add('down', 'holding');
+      stop = onTick(() => {
+        const k = Math.min(1, (performance.now() - t0) / HOME_HOLD_MS);
+        fillTo(k);
+        if (k < 1 || !holding) return;
+        stop?.();
+        stop = null;
+        left = true;
+        audio.stop();
+        location.href = menuUrl(location.pathname);
+      });
+    },
+    move: (e) => {
+      if (Math.hypot(e.clientX - from.x, e.clientY - from.y) > 40) letGo(false);
+    },
+    // Every end lets go; only a release is a tap that wiggles.
+    end: (_e, how) => letGo(how === 'up'),
   });
-  b.addEventListener('pointermove', (e) => {
-    if (e.pointerId === id && Math.hypot(e.clientX - from.x, e.clientY - from.y) > 40) letGo(false);
-  });
-  b.addEventListener('pointerup', (e) => { if (e.pointerId === id) letGo(true); });
-  b.addEventListener('pointercancel', (e) => { if (e.pointerId === id) letGo(false); });
   return b;
 }
