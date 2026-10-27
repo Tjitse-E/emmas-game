@@ -4,6 +4,7 @@ import { v3Art } from '../assets';
 import { audio } from '../audio';
 import { dicePoints, gemKind, nearestIndex, printUnits, type Point, type PrintUnit } from './geometry';
 import { el, img } from './dom';
+import { press } from './press';
 
 export const PIC = {
   star: v3Art('ui/ui-star.webp'),
@@ -78,6 +79,8 @@ export function slotEl(i: number, need: string): HTMLElement {
 export interface StarSlider {
   readonly el: HTMLElement;
   readonly star: HTMLElement;
+  /** True while a finger holds the star. */
+  readonly held: boolean;
   /** The ghost hand holds the star with its centre at clientX, passing the slots as a finger would. */
   ghostTo(clientX: number): void;
   /** The ghost hand lets go: the star flies back to the start. */
@@ -90,7 +93,7 @@ export function starSlider(parent: HTMLElement, o: { centres: () => number[]; en
   const star = el('div', 'slider-star touch', track);
   star.setAttribute('aria-label', 'star');
   img(PIC.star, '', star);
-  let held = -1;
+  let held = false;
   let ghosting = false;
   let x = 0;
   let grabX = 0;
@@ -116,29 +119,6 @@ export function starSlider(parent: HTMLElement, o: { centres: () => number[]; en
       o.onPass(i);
     }
   };
-  const down = (e: PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (held !== -1 || !o.enabled()) return;
-    held = e.pointerId;
-    try {
-      star.setPointerCapture(e.pointerId);
-    } catch {
-      /* gone */
-    }
-    star.classList.add('held');
-    star.getAnimations().forEach((a) => a.cancel());
-    grabX = e.clientX - x;
-    last = -1;
-    o.onDown?.();
-    pass();
-  };
-  const move = (e: PointerEvent) => {
-    if (e.pointerId !== held) return;
-    const { max } = limits();
-    setX(Math.max(0, Math.min(max, e.clientX - grabX)));
-    pass();
-  };
   /** The star flies back to the start. */
   const back = () => {
     star.classList.remove('held');
@@ -146,21 +126,39 @@ export function starSlider(parent: HTMLElement, o: { centres: () => number[]; en
     setX(0);
     star.animate([{ transform: `translateX(${from}px)` }, { transform: 'translateX(0px)' }], { duration: 360, easing: 'cubic-bezier(.3,1.3,.5,1)' });
   };
-  const up = (e: PointerEvent) => {
-    if (e.pointerId !== held) return;
-    held = -1;
-    const { max } = limits();
-    const end = max > 0 && x >= max * 0.86;
-    back();
-    if (end) o.onDone();
-  };
-  star.addEventListener('pointerdown', down);
-  star.addEventListener('pointermove', move);
-  star.addEventListener('pointerup', up);
-  star.addEventListener('pointercancel', up);
+  // press() ends the slide on any release, also one the iPad lost (a lost capture, a release over another layer, or
+  // the next touch), so the star can never stay held and block every later slide: the naming freeze of the bell.
+  const unpress = press(star, {
+    down: (e) => {
+      if (held || !o.enabled()) return false;
+      held = true;
+      star.classList.add('held');
+      star.getAnimations().forEach((a) => a.cancel());
+      grabX = e.clientX - x;
+      last = -1;
+      o.onDown?.();
+      pass();
+    },
+    move: (e) => {
+      const { max } = limits();
+      setX(Math.max(0, Math.min(max, e.clientX - grabX)));
+      pass();
+    },
+    // However the slide ended, a star slid to the end is a slide she made: the build is checked.
+    end: () => {
+      held = false;
+      const { max } = limits();
+      const end = max > 0 && x >= max * 0.86;
+      back();
+      if (end) o.onDone();
+    },
+  });
   return {
     el: track,
     star,
+    get held() {
+      return held;
+    },
     ghostTo(clientX) {
       if (!ghosting) {
         ghosting = true;
@@ -177,7 +175,10 @@ export function starSlider(parent: HTMLElement, o: { centres: () => number[]; en
       ghosting = false;
       back();
     },
-    destroy: () => track.remove(),
+    destroy: () => {
+      unpress();
+      track.remove();
+    },
   };
 }
 
@@ -191,6 +192,10 @@ export interface Print {
   /** Pulse one unit (the slow sounds) or glow the whole word (after a miss). */
   pulse(i: number): void;
   glow(on: boolean): void;
+  /** Light these units in gold (the miss contrast: the letters that differ); an empty list puts them out. */
+  glowUnits(indexes: readonly number[]): void;
+  /** Remove the listeners (the moment's end). */
+  destroy(): void;
 }
 
 /**
@@ -210,7 +215,6 @@ export function printEl(word: string, gpcs: string[], o: { onTouch?(): void; ena
     el('span', 'dot', e).setAttribute('aria-label', `dot ${un.g}`);
     return e;
   });
-  let held = -1;
   let lastPlayed = -1;
   const at = (p: Point) => {
     for (let i = 0; i < unitEls.length; i++) {
@@ -233,30 +237,27 @@ export function printEl(word: string, gpcs: string[], o: { onTouch?(): void; ena
     void e.offsetWidth;
     e.classList.add('pulse');
   };
-  box.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (held !== -1 || (o.enabled && !o.enabled())) return;
-    held = e.pointerId;
-    try {
-      box.setPointerCapture(e.pointerId);
-    } catch {
-      /* gone */
-    }
-    lastPlayed = -1;
-    o.onTouch?.();
-    at({ x: e.clientX, y: e.clientY });
+  // press() ends the touch on any release, also one the iPad lost, so the dots never stop answering.
+  const unpress = press(box, {
+    down: (e) => {
+      if (o.enabled && !o.enabled()) return false;
+      lastPlayed = -1;
+      o.onTouch?.();
+      at({ x: e.clientX, y: e.clientY });
+    },
+    move: (e) => at({ x: e.clientX, y: e.clientY }),
+    end: () => {
+      lastPlayed = -1;
+    },
   });
-  box.addEventListener('pointermove', (e) => { if (e.pointerId === held) at({ x: e.clientX, y: e.clientY }); });
-  const up = (e: PointerEvent) => { if (e.pointerId === held) held = -1; };
-  box.addEventListener('pointerup', up);
-  box.addEventListener('pointercancel', up);
   return {
     el: box,
     units,
     dot: (i) => unitEls[i].querySelector('.dot') as HTMLElement,
     pulse,
     glow: (on) => box.classList.toggle('glow', on),
+    glowUnits: (indexes) => unitEls.forEach((e, i) => e.classList.toggle('diff', indexes.includes(i))),
+    destroy: unpress,
   };
 }
 

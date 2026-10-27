@@ -1,11 +1,15 @@
 // The hint ladder of one checked moment (v3 spec 3.3, ported from v3's core/places/hints.ts):
-//   level 1  idle (15 s, 10 s on reading): the goal again
+//   level 1  idle (15 s; reading 10 s, or 14 s with 5 items): the goal again
 //   level 2  one miss, or a second idle: the focused hint
 //   level 3  two misses: the ghost hand shows the answer, result 'helped'
 // Idle never goes past level 2; an idle after the ghost only nudges (the moment says its next step again). An answer
 // after a level 2 hint is 'helped', because the hint gives part of the answer (spec 3.3), whether a miss or idling
 // brought it. A miss answered right before any hint ran would be 'miss'. The state functions are pure; HintRunner
 // adds the timer.
+//
+// Reading in 2.2.0 (docs/v4/2.2.md 3.1) has the miss step 'contrast': the first miss shows the word of the wrong
+// picture and lights the letters that differ (level 1, not hinted), the next idle gives the focused hint, and a
+// second miss brings the ghost. A right answer after only the contrast is 'miss': guessed, then read.
 import type { MomentResult, Outcome } from '../contracts';
 
 export type Strand = 'maths' | 'spelling' | 'reading';
@@ -19,10 +23,14 @@ export type LadderState = {
   hinted: boolean;
   done: boolean;
 };
-export type HintEffect = 'repeat' | 'focused' | 'ghost' | 'nudge';
+export type HintEffect = 'repeat' | 'focused' | 'contrast' | 'ghost' | 'nudge';
+/** What one miss does: v3's focused hint, or the reading contrast. */
+export type MissStep = 'focused' | 'contrast';
 
-export function idleDelay(strand: Strand): number {
-  return strand === 'reading' ? 10_000 : 15_000;
+/** The quiet time before an idle step: 15 s, and for reading 10 s with up to 4 items or 14 s with 5. */
+export function idleDelay(strand: Strand, items = 0): number {
+  if (strand !== 'reading') return 15_000;
+  return items >= 5 ? 14_000 : 10_000;
 }
 
 /** The quiet time before the name bells are asked for again: 20 s, then 5 s longer each time, at most 30 s. */
@@ -46,10 +54,12 @@ export function onTouch(s: LadderState): LadderState {
   return s.done ? s : { ...s, touchedSinceIdle: true };
 }
 
-export function onMiss(s: LadderState): [LadderState, HintEffect | null] {
+export function onMiss(s: LadderState, step: MissStep = 'focused'): [LadderState, HintEffect | null] {
   if (s.done) return [s, null];
   const misses = s.misses + 1;
   if (misses >= 2) return [{ ...s, misses, level: 3, touchedSinceIdle: true }, 'ghost'];
+  // The contrast gives no sounds of the word, so the answer is not helped; the next idle gives the focused hint.
+  if (step === 'contrast') return [{ ...s, misses, level: s.level === 0 ? 1 : s.level, touchedSinceIdle: true }, 'contrast'];
   return [{ ...s, misses, level: 2, hinted: true, touchedSinceIdle: true }, 'focused'];
 }
 
@@ -63,12 +73,21 @@ export interface LadderHooks {
   repeat(still: () => boolean): Promise<void>;
   /** Level 2: the focused hint. `still()` turns false when she touches something, so the hint stops early. */
   focused(reason: 'idle' | 'miss', still: () => boolean): Promise<void>;
+  /** The first miss with missStep 'contrast': the word of the wrong picture and the letters that differ. */
+  contrast?(still: () => boolean): Promise<void>;
   /** Level 3: the ghost hand shows the answer; the moment then makes the move itself. */
   ghost(): Promise<void>;
   /** An idle after the ghost: the moment says its next step again (a safety net when the answer is not finished). */
   nudge?(still: () => boolean): Promise<void>;
   /** True while speech plays that an idle step must not cut into. */
   busy?(): boolean;
+}
+
+export interface LadderOpts {
+  /** What one miss does (default 'focused', v3's rule). */
+  missStep?: MissStep;
+  /** Items to choose from: a reading moment with 5 waits 14 s before an idle step instead of 10 s. */
+  items?: number;
 }
 
 /** Runs the ladder for one moment: the idle timer, the hints and the result. */
@@ -81,12 +100,14 @@ export class HintRunner {
   private chosenAt: number | null = null;
   private readonly strand: Strand;
   private readonly hooks: LadderHooks;
-  /** True while a hint (repeat or focused) is running. */
+  private readonly opts: LadderOpts;
+  /** True while a hint (repeat, contrast or focused) is running. */
   hinting = false;
 
-  constructor(strand: Strand, hooks: LadderHooks) {
+  constructor(strand: Strand, hooks: LadderHooks, opts: LadderOpts = {}) {
     this.strand = strand;
     this.hooks = hooks;
+    this.opts = opts;
   }
 
   /**
@@ -123,10 +144,10 @@ export class HintRunner {
     this.chosenAt ??= now;
   }
 
-  /** A wrong answer: the focused hint or the ghost, in the background. Resolves when the hint has run. */
+  /** A wrong answer: the focused hint (or the contrast) or the ghost, in the background. Resolves when it has run. */
   async miss(): Promise<void> {
     let fx: HintEffect | null;
-    [this.state, fx] = onMiss(this.state);
+    [this.state, fx] = onMiss(this.state, this.opts.missStep);
     this.chosenAt = null;
     this.stopTimer();
     await this.run(fx, 'miss');
@@ -161,7 +182,7 @@ export class HintRunner {
   private arm(): void {
     this.stopTimer();
     if (this.state.done || !this.opened) return;
-    this.timer = setTimeout(() => this.idle(), idleDelay(this.strand));
+    this.timer = setTimeout(() => this.idle(), idleDelay(this.strand, this.opts.items));
   }
 
   private idle(force = false): void {
@@ -185,6 +206,7 @@ export class HintRunner {
     try {
       if (fx === 'repeat') await this.hooks.repeat(still);
       else if (fx === 'focused') await this.hooks.focused(reason, still);
+      else if (fx === 'contrast') await this.hooks.contrast?.(still);
       else if (fx === 'nudge') await this.hooks.nudge?.(still);
       else await this.hooks.ghost();
     } finally {

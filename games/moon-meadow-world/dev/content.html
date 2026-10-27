@@ -34,6 +34,20 @@
   .basket .item { display: inline-block; text-align: center; margin: 0 4px; }
   .basket .item.target { outline: 3px solid #ffbf3f; border-radius: 10px; }
   code { font-size: 12px; }
+  .basket .item small { display: block; font-size: 11px; opacity: 0.7; }
+  /* The picture check: one card per wish word with its picture, verdict and reason (2.2.md section 0 and 3.2). */
+  .sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .word { text-align: center; padding: 8px 8px 10px; }
+  .word img { width: 112px; height: 112px; object-fit: contain; display: block; margin: 0 auto 4px; }
+  .word .w { font-size: 24px; font-weight: 700; }
+  .word .why { font-size: 11.5px; line-height: 1.3; opacity: 0.8; margin-top: 4px; text-align: left; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 1px 7px; margin: 1px 2px; }
+  .badge.ok { background: #d6f5dc; color: #23703a; }
+  .badge.decoy { background: #fff0c8; color: #8a5a00; }
+  .badge.drop, .badge.none { background: #ffd9d9; color: #9a2626; }
+  .badge.wish { background: #e8dcff; color: #5a3aa0; }
+  .word.drop, .word.none { opacity: 0.6; }
+  .note { font-size: 13px; max-width: 900px; }
 </style>
 </head>
 <body>
@@ -47,7 +61,10 @@
 <div class="row" id="eggs"></div>
 <h2>Name bells</h2>
 <div class="row" id="bells"></div>
-<h2>Wishes</h2>
+<h2>Wish words: the picture check</h2>
+<p class="note">Every word a wish can show, with Claude's verdict from <code>tools/picture-check.json</code>: <b>ok</b> (it can be the wish), <b>decoy</b> (only a wrong picture), <b>drop</b> (never used). A purple <b>wish</b> badge marks the words a wish of that kind asks for, with the reading levels (L1 to L3) that use it. Tap a card to hear Elizabeth. Change an entry where Emma does not know the picture, then run <code>node tools/build-content.ts</code>.</p>
+<div id="sheets"></div>
+<h2>Wishes (sample baskets per reading level)</h2>
 <div class="row" id="wishes"></div>
 <h2>Doors</h2>
 <div class="row" id="doors"></div>
@@ -55,6 +72,8 @@
   import * as C from '/src/content/index.ts';
   import { audio } from '/src/audio/index.ts';
   import { V3 } from '/src/assets.ts';
+  import { DATA } from '/src/content/data.ts';
+  import checks from '/tools/picture-check.json';
 
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
@@ -110,20 +129,53 @@
     $('eggs').append(playable(c, [...e.clips.intro, ...e.clips.goal, ...e.clips.right]));
   }
 
-  const first = C.namingSpec(C.seeded(5), []);
-  const second = C.namingSpec(C.seeded(6), [first.bells[0].name]);
+  const first = C.namingSpec(C.seeded(5), [], 3);
+  const second = C.namingSpec(C.seeded(6), [first.bells[0].name], 4);
   for (const spec of [first, second]) {
     for (const b of spec.bells) {
       const gems = [...b.gpcs.map((g, i) => `<span class="gem ${/^[aeiou]/.test(g) ? 'v' : ''}">${i ? g : g[0].toUpperCase() + g.slice(1)}</span>`),
         ...b.distractors.map((g) => `<span class="gem x ${/^[aeiou]/.test(g) ? 'v' : ''}">${g}</span>`)].join('');
+      // The first naming has 3 wrong gems, the second 4; each has one wrong capital for the crowned slot.
       $('bells').append(playable(el('div', 'card', `<span class="tag">${b.name}</span><br>${gems}`), [b.clip]));
     }
   }
 
-  for (const [kind, seed] of [['food', 1], ['food', 2], ['bath', 1], ['bath', 2]]) {
-    const w = C.wishSpec(kind, C.seeded(seed * 31));
-    const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}"><img src="${i.pic}" alt=""><b>${i.word}</b></span>`).join('');
-    $('wishes').append(playable(el('div', 'card basket', `<b>${kind}</b> wants <span class="tag">${w.target.word}</span><br>${items}`), [...w.clips.intro, w.target.clip]));
+  // The contact sheets: per wish kind, every pool word with its picture and verdict; then the words left out.
+  const KIND_NAMES = { dress: 'Dress-up (wish 1)', bath: 'Pond (the pond wish)', picnic: 'Picnic (wish 2 and the royal picnic)' };
+  const card = (word, d) => {
+    const c = checks[word];
+    const verdict = c ? c.verdict : 'none';
+    const badges = [`<span class="badge ${verdict}">${c ? verdict : 'no entry'}</span>`];
+    for (const [kind, k] of Object.entries(DATA.kinds)) {
+      if (!k.targets.includes(word)) continue;
+      const levels = [k.level1.includes(word) ? 'L1' : '', 'L2', k.level3.includes(word) ? 'L3' : ''].filter(Boolean).join(' ');
+      badges.push(`<span class="badge wish">wish ${kind} ${levels}</span>`);
+    }
+    const pic = d ? d.pic : word;
+    return playable(el('div', `card word ${verdict}`, `<img src="${V3}art/words/${pic}.webp" alt=""><div class="w">${word}</div>`
+      + `<div>${badges.join('')}</div><div class="why">${c ? c.why : 'No picture check yet: left out.'}${d ? ` <i>tier ${d.tier}</i>` : ''}</div>`), [`word-${word}`]);
+  };
+  const byWord = new Map(DATA.words.map((w) => [w.word, w]));
+  for (const [kind, k] of Object.entries(DATA.kinds)) {
+    $('sheets').append(el('h3', '', `${KIND_NAMES[kind]}: ${k.targets.length} wish words, ${k.pool.length} pictures`));
+    const sheet = el('div', 'sheet');
+    for (const w of k.pool) sheet.append(card(w, byWord.get(w)));
+    $('sheets').append(sheet);
+  }
+  const out = Object.keys(checks).filter((w) => !byWord.has(w));
+  if (out.length) {
+    $('sheets').append(el('h3', '', `Left out (${out.length})`));
+    const sheet = el('div', 'sheet');
+    for (const w of out) sheet.append(card(w, null));
+    $('sheets').append(sheet);
+  }
+
+  for (const kind of ['dress', 'bath', 'picnic', 'food']) {
+    for (const level of [1, 2, 3]) {
+      const w = C.wishSpec(kind, C.seeded(level * 31 + kind.length), [], { level });
+      const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}"><img src="${i.pic}" alt=""><b>${i.word}</b><small>${w.decoys[i.word] ?? i.react}</small></span>`).join('');
+      $('wishes').append(playable(el('div', 'card basket', `<b>${kind}</b> level ${w.level} wants <span class="tag">${w.target.word}</span><br>${items}`), [...w.clips.intro, w.target.clip]));
+    }
   }
   const foods = C.foods().map((i) => `<span class="item"><img src="${i.pic}" alt=""><b>${i.word}</b></span>`).join('');
   $('wishes').append(playable(el('div', 'card basket', `<b>free play</b><br>${foods}`), ['g4-basket', ...C.foods().map((f) => f.clip)]));
