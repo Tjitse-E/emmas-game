@@ -1,5 +1,6 @@
 // Small DOM helpers for the 2D layer: element builders, the design unit, a frame ticker and promise timing.
 import type { Box, Point } from './geometry';
+import { press } from './press';
 
 /** One design pixel in CSS pixels (see geometry.unitFor). Set by the layer on every resize. */
 let unit = 1;
@@ -86,33 +87,32 @@ export function onTick(fn: () => void): () => void {
   };
 }
 
-/** A tap that only fires when the finger lifts on the element it went down on (no tap on a stray slide). */
+/** How far outside the element a release still counts as a tap on it. */
+const PRESS_SLOP = 12;
+
+/**
+ * A tap that only fires when the finger lifts on the element it went down on, or within 12 px of it (no tap on a
+ * stray slide). Built on press(), so the release also counts when only the window hears it, and when the capture is
+ * lost with the finger last seen on the element: on Emma's iPad a release can miss the element, and the tap was lost
+ * (the play-again moon). A pointercancel or a new touch elsewhere is no tap.
+ */
 export function onPress(e: HTMLElement, fn: (ev: PointerEvent) => void, o: { down?: (ev: PointerEvent) => void } = {}): () => void {
-  let id = -1;
-  const down = (ev: PointerEvent) => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    id = ev.pointerId;
-    e.classList.add('down');
-    o.down?.(ev);
-  };
-  const up = (ev: PointerEvent) => {
-    if (ev.pointerId !== id) return;
-    id = -1;
-    e.classList.remove('down');
-    const r = e.getBoundingClientRect();
-    if (ev.clientX >= r.left - 12 && ev.clientX <= r.right + 12 && ev.clientY >= r.top - 12 && ev.clientY <= r.bottom + 12) fn(ev);
-  };
-  const cancel = () => {
-    id = -1;
-    e.classList.remove('down');
-  };
-  e.addEventListener('pointerdown', down);
-  e.addEventListener('pointerup', up);
-  e.addEventListener('pointercancel', cancel);
-  return () => {
-    e.removeEventListener('pointerdown', down);
-    e.removeEventListener('pointerup', up);
-    e.removeEventListener('pointercancel', cancel);
-  };
+  let last = { x: 0, y: 0 };
+  return press(e, {
+    down: (ev) => {
+      last = { x: ev.clientX, y: ev.clientY };
+      e.classList.add('down');
+      o.down?.(ev);
+    },
+    move: (ev) => {
+      last = { x: ev.clientX, y: ev.clientY };
+    },
+    end: (ev, how) => {
+      e.classList.remove('down');
+      if (how === 'cancel' || how === 'other') return;
+      const p = how === 'up' ? { x: ev.clientX, y: ev.clientY } : last;
+      const r = e.getBoundingClientRect();
+      if (p.x >= r.left - PRESS_SLOP && p.x <= r.right + PRESS_SLOP && p.y >= r.top - PRESS_SLOP && p.y <= r.bottom + PRESS_SLOP) fn(ev);
+    },
+  });
 }

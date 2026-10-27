@@ -1,0 +1,83 @@
+/* The customiser (src/ui/wardrobe.ts) and the offer bubbles (src/ui/offer.ts). The customiser's boxes are placed in
+   px from wardrobeLayout(); everything inside them is sized in design px times --u. Safari 15: no newer CSS. */
+
+.wardrobe { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; }
+.wd-slide { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; will-change: transform; }
+.wd-panel { position: absolute; }
+
+/* The picture tile at the start of each row: a rounded square, so it never looks like a swatch. */
+.wd-icon {
+  position: absolute; display: flex; align-items: center; justify-content: center;
+  border-radius: calc(24 * var(--u)); background: linear-gradient(180deg, #ffffff 0%, #f7f0ff 100%);
+  border: calc(4 * var(--u)) solid #e3d4ff; box-shadow: 0 calc(4 * var(--u)) 0 rgba(172, 146, 214, 0.45);
+}
+.wd-icon svg { display: block; width: 84%; height: 84%; pointer-events: none; }
+
+/* A rail: the touch target is the whole row height; the lilac track ends after its last cell. */
+.wd-rail { position: absolute; }
+.wd-track {
+  position: absolute; left: 0; right: 0; top: calc(6 * var(--u)); height: calc(88 * var(--u)); border-radius: calc(44 * var(--u));
+  background: linear-gradient(180deg, #e9ddff 0%, #f4eeff 100%);
+  box-shadow: inset 0 calc(3 * var(--u)) calc(6 * var(--u)) rgba(140, 110, 200, 0.28), 0 calc(2 * var(--u)) 0 rgba(255, 255, 255, 0.9);
+}
+.wd-swatch {
+  position: absolute; border-radius: 50%; overflow: hidden; pointer-events: none;
+  border: calc(4 * var(--u)) solid #ffffff;
+  background: radial-gradient(circle at 40% 32%, #ffffff 0%, #fffaff 55%, #f4ecff 100%);
+  box-shadow: 0 calc(3 * var(--u)) calc(5 * var(--u)) rgba(110, 80, 160, 0.28);
+}
+.wd-swatch svg { position: absolute; left: 5%; top: 5%; width: 90%; height: 90%; display: block; }
+/* The gold knob ring round the option she wears. It glides; it never takes a touch. */
+.wd-knob {
+  position: absolute; left: 0; top: 0; width: calc(92 * var(--u)); height: calc(92 * var(--u)); border-radius: 50%; pointer-events: none;
+  border: calc(6 * var(--u)) solid #ffc93a;
+  box-shadow: inset 0 0 0 calc(2 * var(--u)) #ffffff, 0 0 calc(12 * var(--u)) rgba(255, 201, 58, 0.8), 0 calc(3 * var(--u)) 0 #e0a21a;
+  transition: transform 180ms cubic-bezier(.3, .8, .4, 1);
+}
+
+/* Done: the big pink play button under her, popping in once the panel takes touches. */
+.wd-done {
+  position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #ff9fd0, #ff5fae 62%); border: calc(7 * var(--u)) solid #ffffff;
+  box-shadow: 0 calc(8 * var(--u)) 0 #c2468a, 0 calc(16 * var(--u)) calc(30 * var(--u)) rgba(120, 40, 100, 0.35), 0 0 0 calc(12 * var(--u)) rgba(255, 255, 255, 0.35);
+  opacity: 0; transform: scale(0.3); transition: opacity 240ms ease, transform 420ms cubic-bezier(.3, 1.5, .5, 1);
+}
+.wd-done svg { display: block; width: 50%; height: 50%; pointer-events: none; }
+.wd-done.on { opacity: 1; transform: scale(1); animation: mmw-play 1.6s 600ms ease-in-out infinite; }
+.wd-done.pressed { animation: none; transform: scale(0.88); transition: transform 120ms ease-out; }
+.wardrobe.leaving .wd-done { opacity: 0; transition: opacity 360ms 120ms ease, transform 120ms ease-out; }
+
+.wd-preview { position: absolute; }
+
+/* The printed word over her head while Elizabeth says it. */
+.wd-pill {
+  position: absolute; height: calc(60 * var(--u)); padding: 0 calc(26 * var(--u)) calc(4 * var(--u)); transform: translateX(-50%);
+  display: flex; align-items: center; white-space: nowrap; pointer-events: none;
+  background: #ffffff; border: calc(4 * var(--u)) solid #c9b8ff; border-radius: calc(30 * var(--u));
+  box-shadow: 0 calc(5 * var(--u)) 0 rgba(172, 146, 214, 0.45);
+  font: 700 calc(44 * var(--u)) / 1 'Andika', sans-serif; color: var(--ink);
+  opacity: 0; transition: opacity 260ms ease;
+}
+.wd-pill.on { opacity: 1; animation: wd-pill-in 320ms cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes wd-pill-in { from { margin-top: calc(-16 * var(--u)); } }
+
+.wd-spark { position: absolute; left: 0; top: 0; width: calc(40 * var(--u)); height: calc(40 * var(--u)); pointer-events: none; }
+
+/* ---------------------------------------------------------------------------------------------- offer bubbles */
+.offer { position: absolute; left: 0; top: 0; width: calc(132 * var(--u)); height: calc(158 * var(--u)); opacity: 0; visibility: hidden; transition: opacity 300ms, visibility 0s 300ms; }
+.offer.on { opacity: 1; visibility: visible; transition: opacity 300ms; }
+.offer-bob { position: absolute; left: 0; top: 0; width: 100%; height: 100%; animation: mmw-float 3s ease-in-out infinite; }
+.offer-ball {
+  position: absolute; left: 0; top: 0; width: calc(132 * var(--u)); height: calc(132 * var(--u)); border-radius: 50%;
+  background: radial-gradient(circle at 40% 32%, #ffffff 0%, #fffaf2 60%, #fff1d6 100%); border: calc(6 * var(--u)) solid #ffe08a;
+  box-shadow: 0 calc(6 * var(--u)) 0 rgba(214, 160, 60, 0.45), 0 0 calc(22 * var(--u)) calc(4 * var(--u)) rgba(255, 236, 160, 0.85);
+  display: flex; align-items: center; justify-content: center; z-index: 1;
+}
+.offer.on .offer-ball { animation: mmw-glow-ring 2.2s ease-in-out infinite; }
+.offer-pic { width: 76%; height: 76%; object-fit: contain; }
+.offer-spark { position: absolute; right: calc(-4 * var(--u)); top: calc(-6 * var(--u)); width: calc(38 * var(--u)); animation: mmw-twinkle 1.6s ease-in-out infinite; }
+.offer-tail {
+  position: absolute; top: calc(116 * var(--u)); left: var(--tail-x, 50%); width: calc(30 * var(--u)); height: calc(30 * var(--u));
+  margin-left: calc(-15 * var(--u)); background: #fff8ea; border-right: calc(6 * var(--u)) solid #ffe08a; border-bottom: calc(6 * var(--u)) solid #ffe08a;
+  transform: rotate(45deg); border-bottom-right-radius: calc(8 * var(--u));
+}
