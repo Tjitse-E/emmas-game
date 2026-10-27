@@ -1,7 +1,8 @@
 // The naming moment (v3 spec 2.8 and naming.ctrl, v4 demo part 4): three name bells chosen by ear, then the name
 // tag: Elizabeth says the name first, she fills one slot per grapheme from the gem tray and slides the star to
 // hear what she built. A wrong build hums the sounds the slots need; two wrong builds bring the ghost hand, which
-// fills every slot that is still empty or wrong (v3 answerMoves) and slides the star, so the name is finished.
+// fills every slot that is still empty or wrong (v3 answerMoves) and slides the star, so the name is finished. The
+// tray holds up to 8 gems (2.2.md 3.1): the name's 3 or 4 and 3 or 4 wrong ones, one of them a second capital.
 import type { MomentResult, NameChoice, NamingHooks, NamingSpec } from '../contracts';
 import { audio } from '../audio';
 import { clamp, inBox, judgeBuild, nameGems, planTray, type Point } from './geometry';
@@ -386,6 +387,8 @@ export function runNaming(ctx: LayerCtx, spec: NamingSpec, hooks: NamingHooks, s
         onPass: (i) => { const g = filled[i]?.g; if (g) void audio.sound(g); },
         onDone: () => void check(),
       });
+      // The slider listens on the window too (press.ts), so it must let go when the moment ends.
+      life.own(() => slider?.destroy());
 
       for (const t of trayGems) {
         life.own(draggable(t.gem, ctx.drag, {
@@ -427,7 +430,8 @@ export function runNaming(ctx: LayerCtx, spec: NamingSpec, hooks: NamingHooks, s
         // once she has touched anything here, or while a build is being checked.
         if (first && !everTouched && phase === 'spell' && filled.every((t) => t === null)) {
           ctx.seen.add('gem-demo');
-          const wrong = trayGems.find((t) => !nameGems(c.gpcs).includes(t.g) && !c.gpcs.includes(t.g));
+          // A small-letter gem: dragging the wrong capital towards the crowned slot would look like the answer.
+          const wrong = trayGems.find((t) => !nameGems(c.gpcs).includes(t.g) && !c.gpcs.includes(t.g) && t.g === t.g.toLowerCase());
           if (wrong) await ctx.ghost.drag(() => centreOf(wrong.cell), () => centreOf(slots[0]), { fraction: 0.5 });
         }
         if (life.alive) ladder?.restartIdle();

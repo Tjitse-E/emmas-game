@@ -1,26 +1,44 @@
-// The wish moment (v3 spec 2.5 and wish.ctrl, v4 demo parts 5 and 10): a speech bubble over the baby with a printed
-// word and sound dots, and a basket of three pictures. Reading never says the word before she acts: a basket item
-// only pops when tapped. The right item makes the baby munch or play, then Elizabeth reads the word. A wrong item
-// gets a head shake and a giggle. A touch on a dot or an item stops Elizabeth first, then plays its sound.
+// The wish moment (v3 spec 2.5 and wish.ctrl, v4 demo parts 5 and 10, 2.2.md 3.1 and 3.3): a speech bubble over the
+// baby with a printed word and sound dots, and a basket of 4 or 5 pictures. Reading never says the word before she
+// acts: a basket item only pops when tapped. The right item makes the baby munch, play or wear it, then Elizabeth reads
+// the word. A wrong item gets a head shake and a giggle, then the light contrast: the item goes home with a small tag
+// of its own word, Elizabeth says that word, the letters that differ from the wish word glow gold, and "Look at the
+// letters again." The sounds of the wish word come only after she waits (the next idle). A spec without
+// clips.again keeps v3's rule: one miss gives the focused hint at once (?contrast=0). A touch on a dot or an item
+// stops Elizabeth first, then plays its sound.
 import type { MomentHooks, MomentResult, WishItem, WishSpec } from '../contracts';
 import { audio } from '../audio';
-import { bubbleBox, inBox, type Box, type Point } from './geometry';
+import { bubbleBox, inBox, printUnits, type Box, type Point } from './geometry';
 import { HintRunner } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, img, onTick, play, sleep, u } from './dom';
 import { Life, leave, target, type LayerCtx, type OpenMoment } from './moment';
 import { PIC, printEl } from './parts';
+import { diffUnits } from './contrast';
 
 /** The baby's giggle at a wrong item (v3 core, "[giggles] Silly!"; the level preloads it). */
 const SILLY = 'foal-silly';
+/** A first item touch this soon after input opened, with no look at the word, is a quick pick (the log). */
+const QUICK_MS = 1500;
+/** How long the differing letters of the wish word glow after a miss. */
+const GLOW_MS = 3600;
+
+/** How the baby takes an item: the item's own reaction, or by the kind as in the demo. */
+function reactionOf(spec: WishSpec, it: WishItem): 'munch' | 'play' | 'wear' {
+  return it.react ?? (spec.kind === 'dress' ? 'wear' : spec.kind === 'food' ? 'munch' : 'play');
+}
 
 export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOpen: (m: OpenMoment | null) => void): Promise<MomentResult> {
   return new Promise((resolve) => {
     const life = new Life();
-    const root = el('div', `wish-moment kind-${spec.kind}`, ctx.moments);
+    const root = el('div', `wish-moment kind-${spec.kind} n${spec.basket.length}`, ctx.moments);
     life.own(() => root.remove());
     let busy = true;
     let finished = false;
+    /** When input opened, her first touch of an item, and whether she touched the word or a dot before it (the log). */
+    let openedAt = 0;
+    let firstItemAt: number | null = null;
+    let printTouched = false;
 
     // ---- the bubble over the baby, following it every frame and kept on screen
     const bubble = el('div', 'wish-bubble', root);
@@ -28,10 +46,13 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
     const print = printEl(spec.target.word, spec.target.gpcs, {
       enabled: () => !busy && life.alive,
       onTouch: () => {
+        if (firstItemAt === null) printTouched = true;
         ladder.touch();
         audio.stop();
+        print.glowUnits([]);
       },
     });
+    life.own(() => print.destroy());
     bubble.appendChild(print.el);
     el('span', 'bubble-tail', bubble);
 
@@ -60,13 +81,13 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
     follow();
     life.own(onTick(follow));
 
-    // ---- the basket
+    // ---- the basket (a gingham hamper at the picnic)
     const basket = el('div', 'basket', root);
     const items = spec.basket.map((it) => {
       const cell = el('div', 'item touch', basket);
       cell.setAttribute('aria-label', `item ${it.word}`);
       img(it.pic, 'item-pic', cell);
-      return { it, cell };
+      return { it, cell, tag: null as HTMLElement | null };
     });
     const right = items.find((x) => x.it.word === spec.target.word);
     const touched = new Map<string, number>();
@@ -99,13 +120,57 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
       }
     };
 
+    // ---- the light contrast after a miss: the wrong item's own word in a tag, the letters that differ in gold
+    let lastMiss: (typeof items)[number] | null = null;
+    let glowTimer: ReturnType<typeof setTimeout> | null = null;
+    life.own(() => { if (glowTimer) clearTimeout(glowTimer); });
+    const wishUnits = printUnits(spec.target.word.toLowerCase(), spec.target.gpcs.map((g) => g.toLowerCase()));
+
+    /** A small white tag at the bottom of the cell with the item's own word; it stays until the moment ends. */
+    const tagCell = (x: (typeof items)[number]) => {
+      if (x.tag) return x.tag;
+      const units = printUnits(x.it.word.toLowerCase(), x.it.gpcs.map((g) => g.toLowerCase()));
+      const diff = diffUnits(wishUnits, units);
+      const tag = el('span', 'contrast-tag', x.cell);
+      tag.dataset.word = x.it.word;
+      units.forEach((un, i) => {
+        el('span', diff.b.includes(i) ? 'tag-unit diff' : 'tag-unit', tag).textContent = un.text;
+      });
+      x.cell.classList.add('tagged');
+      x.tag = tag;
+      return tag;
+    };
+    const glowDiff = (x: (typeof items)[number]) => {
+      const units = printUnits(x.it.word.toLowerCase(), x.it.gpcs.map((g) => g.toLowerCase()));
+      print.glowUnits(diffUnits(wishUnits, units).a);
+      x.tag?.classList.remove('shine');
+      void x.tag?.offsetWidth;
+      x.tag?.classList.add('shine');
+      if (glowTimer) clearTimeout(glowTimer);
+      glowTimer = setTimeout(() => print.glowUnits([]), GLOW_MS);
+    };
+    const contrast = async (still: () => boolean) => {
+      const x = lastMiss;
+      if (!x || !life.alive) return;
+      tagCell(x);
+      // Elizabeth says the word of the picture she gave: she has acted, and it is not the wish word.
+      await audio.sayAll([x.it.clip]);
+      if (!still() || !life.alive) return;
+      glowDiff(x);
+      await sleep(350);
+      if (!still() || !life.alive) return;
+      await audio.sayAll(spec.clips.again ?? []);
+    };
+
     const ladder = new HintRunner('reading', {
       busy: () => audio.speaking,
       repeat: () => audio.sayAll(spec.clips.goal),
       focused: async (_reason, still) => {
+        print.glowUnits([]);
         await audio.sayAll(spec.clips.hint);
         await slowSounds(still);
       },
+      contrast,
       ghost: async () => {
         if (!right || !life.alive) return;
         busy = true;
@@ -113,18 +178,26 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
         await ctx.ghost.drag(() => centreOf(right.cell), babyPoint, { carry: f });
         if (life.alive) await give(right.it, f);
       },
-    });
+    }, { missStep: spec.clips.again ? 'contrast' : 'focused', items: spec.basket.length });
     life.own(() => ladder.close());
 
     const give = async (it: WishItem, f: Flyer) => {
       busy = true;
+      const x = items.find((y) => y.it === it)!;
       if (it.word === spec.target.word) {
-        hooks.react(spec.kind === 'food' ? 'munch' : 'play');
-        await f.moveTo(babyPoint(), { ms: 380, scale: 0.35, opacity: 0, easing: 'ease-in' });
+        const how = reactionOf(spec, it);
+        hooks.react(how);
+        print.glowUnits([]);
+        // A thing to wear flies up onto the baby's head; food and toys go to the baby.
+        const to = how === 'wear' ? { ...hooks.anchor(), y: hooks.anchor().y - u(10) } : babyPoint();
+        await f.moveTo(to, { ms: how === 'wear' ? 460 : 380, scale: 0.35, opacity: 0, easing: 'ease-in' });
         f.drop({ keepHidden: true });
         ladder.chose(touched.get(it.word) ?? performance.now());
         const result = ladder.finish();
-        hooks.log?.('wish', { kind: spec.kind, word: spec.target.word, ...result });
+        const quick = firstItemAt !== null && !printTouched && firstItemAt - openedAt < QUICK_MS;
+        hooks.log?.('wish', {
+          kind: spec.kind, word: spec.target.word, ...result, level: spec.level, n: spec.basket.length, printTouched, quick,
+        });
         hearts();
         print.glow(false);
         bubble.classList.add('read');
@@ -136,17 +209,21 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
         return;
       }
       hooks.log?.('tried', { what: it.word });
-      hooks.log?.('wish-miss', { word: spec.target.word, gave: it.word });
+      hooks.log?.('wish-miss', { word: spec.target.word, gave: it.word, decoy: spec.decoys[it.word] ?? null });
       touched.clear();
+      print.glowUnits([]);
       await f.moveTo(babyPoint(), { ms: 240, scale: 0.9 });
       if (!life.alive) return;
       // The baby shakes its head and giggles: a wrong item is a funny event. The hint waits for the giggle.
       hooks.react('shake');
       const giggle = audio.say(SILLY);
       await f.home(560);
+      if (spec.clips.again && life.alive) tagCell(x);
       await giggle;
       if (!life.alive) return;
-      print.glow(true);
+      lastMiss = x;
+      // v3's rule glows the whole word; the contrast lights only the letters that differ.
+      if (!spec.clips.again) print.glow(true);
       busy = false;
       await ladder.miss();
     };
@@ -155,9 +232,11 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
       life.own(draggable(cell, ctx.drag, {
         enabled: () => !busy && life.alive,
         onDown: () => {
+          const now = performance.now();
+          firstItemAt ??= now;
           ladder.touch();
           audio.stop();
-          if (!touched.has(it.word)) touched.set(it.word, performance.now());
+          if (!touched.has(it.word)) touched.set(it.word, now);
         },
         // In a checked wish an item only makes a sound until she has acted: never its name.
         onTap: () => {
@@ -172,7 +251,6 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
       }));
     }
 
-
     const handle: OpenMoment = {
       kind: 'wish',
       ladder,
@@ -186,8 +264,8 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
       },
       snapshot: () => {
         const b = babyBox();
-        return {
-          kind: 'wish',
+        const snap = {
+          kind: 'wish' as const,
           phase: finished ? 'done' : busy ? 'busy' : 'open',
           level: ladder.state.level,
           misses: ladder.state.misses,
@@ -199,6 +277,8 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
             { name: 'baby', x: Math.round(b.x + b.w / 2), y: Math.round(b.y + b.h / 2), w: Math.round(b.w), h: Math.round(b.h) },
           ],
         };
+        // The words that carry a contrast tag (not a target: the tag cannot be touched), for the flows.
+        return Object.assign(snap, { tags: items.filter((x) => x.tag).map((x) => x.it.word) });
       },
     };
     setOpen(handle);
@@ -207,7 +287,8 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
     // the intro has been said.
     void (async () => {
       busy = false;
-      ladder.open();
+      openedAt = performance.now();
+      ladder.open(openedAt);
       await audio.sayAll(spec.clips.intro);
       if (life.alive) ladder.restartIdle();
     })();

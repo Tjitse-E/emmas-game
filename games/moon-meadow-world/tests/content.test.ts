@@ -11,6 +11,7 @@ import { SENTENCES, lineFor } from '../tools/lines.ts';
 vi.stubGlobal('location', { pathname: '/' });
 const C = await import('../src/content/index.ts');
 const { DATA } = await import('../src/content/data.ts');
+const W = await import('../src/content/wishes.ts');
 
 const here = resolve(import.meta.dirname, '..');
 const v3 = resolve(here, '../moon-meadow-home');
@@ -91,10 +92,12 @@ describe('eggs', () => {
 });
 
 describe('wishes', () => {
-  const groupOf = (w: string) => LOOK_ALIKE.findIndex((g) => g.includes(w));
+  const KINDS = ['dress', 'bath', 'picnic', 'food'] as const;
+  const poolWords = [...new Set(KINDS.flatMap((k) => W.wishWords(k)))];
 
-  it('every word obeys spec 4.3, is pictured and has its clip', () => {
-    for (const w of [...DATA.food, ...DATA.bath]) {
+  it('every pool word obeys spec 4.3, is pictured and has its clip', () => {
+    expect(poolWords.length).toBe(DATA.words.length);
+    for (const w of poolWords) {
       expect(w.word.length).toBeLessThanOrEqual(5);
       expect(w.gpcs.filter(isVowel)).toHaveLength(1);
       expect(spell(w.gpcs)).toBe(w.word);
@@ -102,38 +105,60 @@ describe('wishes', () => {
       expect(existsSync(join(v3, 'public/art/words', `${w.pic}.webp`))).toBe(true);
       expect(v3Clips.has(w.clip)).toBe(true);
     }
-    for (const w of DATA.food) expect(UNICORN_FOODS).toContain(w.word);
   });
 
-  it('baskets hold three different things, the target among them, no look-alikes', () => {
+  it('baskets hold 4 or 5 different things of their own pool, the target among them, no look-alikes', () => {
     for (const s of seeds) {
-      for (const kind of ['food', 'bath'] as const) {
-        const spec = C.wishSpec(kind, C.seeded(s), s % 3 === 0 ? ['plum', 'duck'] : []);
+      for (const kind of KINDS) {
+        const level = ((s % 3) + 1) as 1 | 2 | 3;
+        const exclude = s % 4 === 0 ? W.wishTargets(kind, 2).slice(0, 3).map((w) => w.word) : [];
+        const spec = C.wishSpec(kind, C.seeded(s), exclude, { level });
         const words = spec.basket.map((b) => b.word);
-        expect(words).toHaveLength(3);
-        expect(new Set(words).size).toBe(3);
+        const pool = W.wishWords(kind);
+        expect(words).toHaveLength(spec.level === 1 ? 4 : 5);
+        expect(new Set(words).size).toBe(words.length);
+        expect(new Set(spec.basket.map((b) => b.pic)).size).toBe(words.length);
         expect(words).toContain(spec.target.word);
-        if (s % 3 === 0) expect(['plum', 'duck']).not.toContain(spec.target.word);
-        const groups = (kind === 'food' ? DATA.food : DATA.bath).filter((w) => words.includes(w.word)).map((w) => w.group);
-        expect(new Set(groups).size).toBe(3);
-        if (kind === 'food') {
-          const v3Groups = words.map(groupOf).filter((g) => g >= 0);
-          expect(new Set(v3Groups).size).toBe(v3Groups.length);
-        } else {
-          expect(words.includes('ship') && words.includes('boat')).toBe(false);
+        expect(exclude).not.toContain(spec.target.word);
+        for (const b of spec.basket) {
+          const d = pool.find((w) => w.word === b.word)!;
+          expect(d).toBeDefined();
+          expect(b.pic).toBe(`/v3/art/words/${d.pic}.webp`);
+          expect(b.tier).toBe(d.tier);
+          for (const o of spec.basket) if (o !== b) expect(d.alike ?? []).not.toContain(o.word);
         }
-        for (const item of spec.basket) expect(item.pic).toBe(`/v3/art/words/${(kind === 'food' ? DATA.food : DATA.bath).find((w) => w.word === item.word)!.pic}.webp`);
+        expect(Object.keys(spec.decoys).sort()).toEqual(words.filter((w) => w !== spec.target.word).sort());
         expect(spec.clips.right).toEqual(['fb-yes']);
         expect(spec.clips.hint).toEqual(['h-sounds']);
+        expect(spec.clips.again).toEqual(['fb-letters']);
         expect(spec.clips.goal).toEqual(kind === 'food' ? ['g-hungry'] : ['g4-give']);
       }
     }
   });
 
+  it('?contrast=0 drops clips.again, so a miss keeps v3\'s rule', () => {
+    const spec = C.wishSpec('dress', C.seeded(1), [], { contrast: false });
+    expect(spec.clips.again).toBeUndefined();
+    expect(spec.clips.goal).toEqual(['g4-give']);
+  });
+
+  it('each item says how the baby takes it', () => {
+    for (const s of seeds.slice(0, 100)) {
+      for (const b of C.wishSpec('dress', C.seeded(s)).basket) expect(b.react).toBe('wear');
+      for (const b of C.wishSpec('bath', C.seeded(s)).basket) expect(b.react).toBe('play');
+      for (const b of C.wishSpec('picnic', C.seeded(s)).basket) expect(b.react).toBe(DATA.foods.includes(b.word) ? 'munch' : 'play');
+      expect(C.wishSpec('food', C.seeded(s)).target.react).toBe('munch');
+    }
+    for (const w of ['plum', 'milk', 'tart', 'jam']) expect(W.reactOf('picnic', w)).toBe('munch');
+    for (const w of ['mug', 'plate', 'mat', 'pan', 'spoon']) expect(W.reactOf('picnic', w)).toBe('play');
+  });
+
   it('the free-play basket has four foods that look nothing alike', () => {
     const f = C.foods();
-    expect(f).toHaveLength(4);
-    const groups = f.map((x) => groupOf(x.word)).filter((g) => g >= 0);
+    expect(f.map((x) => x.word)).toEqual(['plum', 'corn', 'cake', 'peach']);
+    for (const x of f) expect(UNICORN_FOODS).toContain(x.word);
+    for (const x of f) expect(x.react).toBe('munch');
+    const groups = f.map((x) => LOOK_ALIKE.findIndex((g) => g.includes(x.word))).filter((g) => g >= 0);
     expect(new Set(groups).size).toBe(groups.length);
   });
 });
@@ -188,10 +213,15 @@ describe('names', () => {
         expect(b.gpcs.filter(isVowel)).toHaveLength(1);
         expect(spell(b.gpcs)).toBe(b.name.toLowerCase());
         expect(v3Clips.has(b.clip)).toBe(true);
-        for (const g of [...b.gpcs, ...b.distractors]) expect(phonics.has(g)).toBe(true);
-        expect(b.distractors).toHaveLength(2);
+        for (const g of [...b.gpcs, ...b.distractors]) expect(phonics.has(g.toLowerCase())).toBe(true);
+        // Naming 1: a near capital for slot 1, a near vowel and a near consonant (2.2.md 3.1).
+        expect(b.distractors).toHaveLength(3);
+        expect(new Set(b.distractors).size).toBe(3);
         expect(b.distractors.filter(isVowel)).toHaveLength(1);
-        for (const d of b.distractors) for (const g of b.gpcs) expect(sameSound(d, g)).toBe(false);
+        const caps = b.distractors.filter((d) => d !== d.toLowerCase());
+        expect(caps).toHaveLength(1);
+        expect(caps[0].toLowerCase()).not.toBe(b.gpcs[0]);
+        for (const d of b.distractors) for (const g of b.gpcs) expect(sameSound(d.toLowerCase(), g)).toBe(false);
       }
       expect(spec.clips).toEqual({
         bells: ['g-bells'], drag: ['g-bell-drag'], spell: ['g-spell'], gems: ['g-gems'], slide: ['g-slide'], done: ['fb-spelled'], again: ['fb-listen'],
