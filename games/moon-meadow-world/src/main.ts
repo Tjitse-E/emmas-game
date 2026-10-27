@@ -1,7 +1,10 @@
-// Moon Meadow World, the v4 demo: one playable level (docs/v4/demo.md). Boots the world, the actors and the 2D
-// layer, wires them together and plays the level after the Play tap.
-// URL options: ?seed=<n> (the same level every time), ?at=<part> (start at a part, after Play), ?perf=1 (stats),
-// ?pr=<n> (pixel ratio cap) and ?aa=0 (no antialias), both read by the world.
+// Moon Meadow World, the v4 demo: one playable level (docs/v4/demo.md, docs/v4/2.2.md). Boots the world, the actors
+// and the 2D layer, wires them together and plays the level after the Play tap.
+// URL options (src/game/options.ts): ?seed=<n> (the same level every time), ?at=<part> (start at a part, after Play;
+// ?at=wardrobe is the customiser), ?fresh=1 (the save in memory only: a first visit), ?rl=1|2|3 (reading level),
+// ?maths=a|b (maths band), ?contrast=0 (v3's miss rule), ?quest=picnic|rack (with ?at=free), ?portrait=0 (no finer
+// detail in the customiser), ?perf=1 (stats), ?pr=<n> (pixel ratio cap) and ?aa=0 (no antialias), the last two read
+// by the world.
 import { createWorld } from './world';
 import { createActors } from './actors';
 import { createLayer } from './ui';
@@ -11,6 +14,10 @@ import { GRAZE_HOMES } from './layout';
 import { createGame, isPart, sayWay } from './game/game';
 import { installInput } from './game/input';
 import { begin, installSlideWatch, installWayHelper } from './game/level';
+import { parseOptions } from './game/options';
+import { createSave } from './game/save';
+import { herdAside } from './game/wardrobe-part';
+import { diagQuery, sendDiag } from './game/results';
 import { installHook } from './test-hook';
 
 // The script has started: index.html's 10 s fallback is only for a script that never runs (an old Safari, a failed
@@ -24,12 +31,7 @@ import { installHook } from './test-hook';
  */
 function report(kind: string, what: string, why = ''): void {
   console.warn(`[mmw] ${kind} failed`, what, why);
-  try {
-    const q = new URLSearchParams({ kind, what: what.slice(-120), why: why.slice(0, 120), t: String(Math.round(performance.now())) });
-    void fetch(`diag.txt?${q}`, { cache: 'no-store' }).catch(() => undefined);
-  } catch {
-    /* reporting must never break the game */
-  }
+  sendDiag(diagQuery({ kind, what: what.slice(-120), why: why.slice(0, 120), t: Math.round(performance.now()) }));
 }
 (window as unknown as { EmmaAudioFailed?: (url: string, why: string) => void }).EmmaAudioFailed = (url, why) => report('clip', url, why);
 const tries = new WeakMap<HTMLImageElement, number>();
@@ -43,9 +45,8 @@ window.addEventListener('error', (e) => {
   if (n <= 2) setTimeout(() => { i.src = `${src}${src.includes('?') ? '&' : '?'}retry=${n}`; }, 400 * n);
 }, true);
 
-const params = new URLSearchParams(location.search);
-const seed = Number(params.get('seed')) || Date.now();
-const at = params.get('at');
+const options = parseOptions(location.search);
+const at = isPart(options.at) ? options.at : null;
 
 /** The fallback picture with the home button (index.html), for an iPad where WebGL 2 does not start. */
 function noWorld(e?: unknown): void {
@@ -81,11 +82,16 @@ function boot(): void {
   // The herd of 12 grazes over the meadow.
   const herd = startingHerd();
   herd.forEach((h, i) => actors.herd.add({ id: h.id, name: h.name, look: h.look, at: GRAZE_HOMES[i] }).graze(GRAZE_HOMES[i]));
+  // Her saved look from the first frame (the save is read once here; ?fresh=1 keeps it in memory only).
+  const save = createSave(() => window.localStorage, options.fresh);
+  actors.princess.setLook(save.data.look);
   // Every shader program now, behind the start screen: three.js would otherwise compile each one the first time it
   // draws it (the crown, the egg, the glows, the night), a stall on the Air 2 just as the moment starts.
   world.renderer.compile(world.scene, world.camera);
 
-  const game = createGame({ world, actors, layer, seed, herd });
+  const game = createGame({ world, actors, layer, options, save, herd });
+  // The play starts with the customiser: the unicorns grazing near her step behind the camera before anything shows.
+  if (!at || at === 'wardrobe') herdAside(game, true);
   installInput(game);
   installWayHelper(game);
   installSlideWatch(game);
@@ -99,7 +105,7 @@ function boot(): void {
     sayWay(game);
   });
 
-  if (params.get('perf') === '1') {
+  if (options.perf) {
     setInterval(() => {
       const p = world.perf();
       const s = actors.stats();
@@ -110,7 +116,7 @@ function boot(): void {
     }, 500);
   }
 
-  console.info('[mmw] seed', seed);
+  console.info('[mmw] seed', options.seed, save.memoryOnly ? '(fresh, nothing is stored)' : `(play ${save.data.plays + 1})`);
   world.introStart();
   // The start screen covers the world: nothing is drawn until the Play tap.
   world.setPaused(true);
@@ -120,7 +126,7 @@ function boot(): void {
       void audio.unlock();
       world.setPaused(false);
     });
-    await begin(game, isPart(at) ? at : null);
+    await begin(game, at);
   })();
 }
 

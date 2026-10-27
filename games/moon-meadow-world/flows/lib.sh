@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Helpers for the Moon Meadow World flows. A flow sources this file; everything runs from the repo root.
 # Env: S (playwright-cli session), W and H (viewport), MMW_URL (the demo page), MMW_SHOTS (screenshots).
-# Targets are names from window.__game.targets(): ui targets ('stone 5', 'bell Pip', 'item plum', 'play') and 3D
-# targets on screen ('princess', 'unicorn luna', 'door 9', 'nest', 'egg', 'slide', 'slide top', 'wild egg', 'goal').
+# Targets are names from window.__game.targets(): ui targets ('stone 5', 'bell Pip', 'item plum', 'play', the
+# customiser's 'swatch eyes green', 'row eyes', 'rail eyes', 'done', 'preview') and 3D targets on screen ('princess',
+# 'unicorn luna', 'door 9', 'nest', 'egg', 'slide', 'slide top', 'wild egg', 'goal', 'rack', 'picnic').
 # playwright-cli exits 0 even when page code throws, so every helper checks the output for an error.
 set -euo pipefail
 REPO="$(git rev-parse --show-toplevel)"
@@ -71,6 +72,9 @@ wait_for() {
 
 # Wait for a target to be on screen.
 wait_target() { wait_for "() => window.__game.targets().some(t => t.name === $(jsq "$1"))" "${2:-10}"; }
+
+# Wait for the open moment's phase to be exactly this ('open': the stones are awake, the moment takes an answer).
+wait_phase() { wait_for "() => window.__game.state().moment?.phase === $(jsq "$1")" "${2:-20}"; }
 
 # Wait for the open moment's phase (or kind) to match.
 wait_moment() { wait_for "() => { const m = window.__game.state().moment; return m && (m.kind === $(jsq "$1") || m.phase === $(jsq "$1")); }" "${2:-20}"; }
@@ -149,11 +153,27 @@ press_play() {
   wait_for "() => window.__game.state().part !== 'start'" 20
 }
 
-# No missing clip and no console error.
+# The customiser after Play: wait for the open panel's Done (the play button), tap it, wait for Lumi's welcome.
+dress_done() {
+  wait_for "() => window.__game.state().part === 'wardrobe'" 20
+  wait_target 'done' 20
+  # Input turns on after the panel's slide.
+  sleep 0.6
+  tap 'done'
+  wait_for "() => window.__game.state().part === 'welcome'" 20
+}
+
+# The touchable names of the open customiser (rows, rails, swatches, Done, the preview), as a JS array literal.
+wardrobe_targets() {
+  val "() => JSON.stringify(window.__game.targets().map((t) => t.name).filter((n) => /^(row|rail|swatch) /.test(n) || n === 'done' || n === 'preview'))"
+}
+
+# No missing clip and no console error. Each result and the customiser's look line go to diag.txt, which no server
+# has: those requests are meant to fail (the server log is the record), so their 404s are not errors.
 finish() {
   expect_eq "$(hook 'missingClips()')" '[]' 'missing clips'
   local errs
-  errs="$(pw console error 2>/dev/null | grep -E '^\[ERROR\]' || true)"
+  errs="$(pw console error 2>/dev/null | grep -E '^\[ERROR\]' | grep -vE 'diag\.txt\?kind=(result|look)&' || true)"
   [ -z "$errs" ] || fail "console errors: $errs"
   pw close >/dev/null 2>&1 || true
   echo "ok ${W}x$H $1"
@@ -179,6 +199,36 @@ spell_right() {
   wait_target star 10
   sleep 0.3
   slide_star
+}
+
+# The number of basket items of the open wish.
+item_count() {
+  val "() => (window.__game.state().moment?.targets || []).filter((t) => /^item /.test(t.name)).length"
+}
+
+# The stones of the open egg (or hay rack), as a JSON array of numbers.
+stones_of() {
+  val "() => JSON.stringify((window.__game.state().moment?.targets || []).filter((t) => /^stone /.test(t.name)).map((t) => +t.name.slice(6)).sort((a, b) => a - b))"
+}
+
+# The stone of the open egg that is in the tray for this reason (2.2.0 decoys: slip, heard, first-nest, ...), or ''.
+stone_of_kind() {
+  val "() => { const s = window.__game.spec(); const d = (s && s.decoys) || {}; const k = Object.keys(d).find((n) => d[n] === $(jsq "$1")); return k ? 'stone ' + k : ''; }"
+}
+
+# A decoy capital gem of the open naming (a near capital for slot 1, never the name's own capital), or ''.
+decoy_capital() {
+  val "() => { const s = window.__game.spec(); const first = s && s.chosen ? 'gem ' + s.chosen.gems[0] : ''; const t = window.__game.targets().find((x) => /^gem [A-Z]/.test(x.name) && x.name !== first); return t ? t.name : ''; }"
+}
+
+# Where a stone or a pile is dropped: the egg's cups, or the hay rack's panel.
+drop_target() {
+  val "() => { const ts = window.__game.targets().map((t) => t.name); return ['hay', 'rack panel', 'cups'].find((n) => ts.includes(n)) || 'cups'; }"
+}
+
+# The light contrast of a wrong wish item is on screen (the wrong item's word tag).
+contrast_shown() {
+  val "() => !!document.querySelector('.ui-moments [class*=\"contrast\"]')"
 }
 
 # A target with this prefix that is not the open moment's answer (a wrong stone, gem, item or bell).
