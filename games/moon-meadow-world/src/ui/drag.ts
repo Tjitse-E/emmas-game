@@ -76,6 +76,11 @@ export interface DragOpts {
   enabled?(): boolean;
   /** The finger touched it (decision time, the hint ladder). */
   onDown?(): void;
+  /**
+   * A touch while enabled() is false (the sleeping stones wiggle). Nothing lifts, nothing is captured and the touch
+   * ends by itself. Not called while another finger drags.
+   */
+  onBlocked?(): void;
   /** A touch without a drag. */
   onTap?(): void;
   /** While dragging. */
@@ -98,7 +103,11 @@ export function draggable(source: HTMLElement, layer: HTMLElement, o: DragOpts):
   const down = (e: PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (active !== -1 || flyer || (o.enabled && !o.enabled())) return;
+    if (active !== -1 || flyer) return;
+    if (o.enabled && !o.enabled()) {
+      o.onBlocked?.();
+      return;
+    }
     active = id = e.pointerId;
     try {
       source.setPointerCapture(e.pointerId);
