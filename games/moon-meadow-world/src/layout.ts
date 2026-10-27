@@ -126,10 +126,31 @@ export function doorCenter(n: number): THREE.Vector3 {
   return new THREE.Vector3(x, y, STABLE.frontZ + 0.02);
 }
 
-/** Round obstacles for walking (trees inside the fence, the gazebo, the nest). The pond is handled by inPond. */
-export const OBSTACLES: { center: Vec2; radius: number }[] = [
-  { center: GAZEBO.center, radius: GAZEBO.radius },
-  { center: NEST.center, radius: NEST.radius },
+/**
+ * The hay rack west of the yard sand (side quest, docs/v4/2.2.md section 5): a slatted A-frame over a trough, outside
+ * the door framing. An obstacle. She stands at `stand`; up to three hungry herd unicorns eat at `eat`.
+ */
+export const HAY_RACK = {
+  center: v2(-12.6, -11.6),
+  radius: 0.9,
+  stand: v2(-12.6, -9.6),
+  /** The middle spot sits 1.35 m south of the centre, just outside the walking margin (0.9 + 0.4 m). */
+  eat: [v2(-13.8, -10.6), v2(-11.4, -10.6), v2(-12.6, -10.25)] as Vec2[],
+} as const;
+
+/**
+ * The royal picnic south of the gazebo step (side quest, section 5): a rug of 2.4 x 1.8 m, two seats on it for the
+ * babies, her spot east of it and the hamper between. Not an obstacle: the babies walk onto the rug.
+ */
+export const PICNIC = {
+  rug: { center: v2(-14, 4.6), halfX: 1.2, halfZ: 0.9 },
+  seats: [v2(-14.7, 4.1), v2(-13.3, 4.1)] as Vec2[],
+  stand: v2(-12.2, 5.0),
+  hamper: v2(-12.7, 4.4),
+} as const;
+
+/** The big trees inside the fence (the world draws one on each). Obstacles. */
+export const TREES: { center: Vec2; radius: number }[] = [
   { center: v2(-20, -9), radius: 1.6 },
   { center: v2(19, -7), radius: 1.6 },
   { center: v2(-21, 10), radius: 1.6 },
@@ -138,20 +159,28 @@ export const OBSTACLES: { center: Vec2; radius: number }[] = [
   { center: v2(14, -17), radius: 1.4 },
 ];
 
+/** Round obstacles for walking (the gazebo, the nest, the trees, the hay rack). The pond is handled by inPond. */
+export const OBSTACLES: { center: Vec2; radius: number }[] = [
+  { center: GAZEBO.center, radius: GAZEBO.radius },
+  { center: NEST.center, radius: NEST.radius },
+  ...TREES,
+  { center: HAY_RACK.center, radius: HAY_RACK.radius },
+];
+
 /** Stable buildings as rectangles (obstacles): x from centerX - 3.9 to + 3.9, z from frontZ - depth to frontZ. */
 export function inStableBuilding(p: Vec2, margin = 0): boolean {
   if (p.z > STABLE.frontZ + margin || p.z < STABLE.frontZ - STABLE.depth - margin) return false;
   return STABLE.rows.some((r) => Math.abs(p.x - r.centerX) < 3.9 + margin);
 }
 
-/** Grazing homes for the starting herd of 12 (one each), spread over the meadow. */
+/** Grazing homes for the starting herd of 12 (one each), spread over the meadow, clear of the picnic rug. */
 export const GRAZE_HOMES: Vec2[] = [
-  v2(-12, 7), v2(-17, 3), v2(-7, 9), v2(-1, 8), v2(2, -4), v2(-9, -6),
+  v2(-12, 7), v2(-19, 8), v2(-7, 9), v2(-1, 8), v2(2, -4), v2(-9, -6),
   v2(-16, -7), v2(18, -2), v2(20, 7), v2(6, 11), v2(-3, -7), v2(12, -6),
 ];
 
 /** Places the level points at (goal beacons, edge arrows and "this way" lines). */
-export type Place = 'nest' | 'pond' | 'slide' | 'wildEgg' | 'stable' | 'gazebo';
+export type Place = 'nest' | 'pond' | 'slide' | 'wildEgg' | 'stable' | 'gazebo' | 'rack' | 'picnic';
 export const PLACES: Record<Place, Vec2> = {
   nest: NEST.center,
   pond: POND.center,
@@ -159,4 +188,6 @@ export const PLACES: Record<Place, Vec2> = {
   wildEgg: WILD_EGG.at,
   stable: STABLE.emmaStand,
   gazebo: GAZEBO.center,
+  rack: HAY_RACK.center,
+  picnic: PICNIC.rug.center,
 };

@@ -2,16 +2,27 @@
 // Speakers follow VOICES.md: Elizabeth (narrator) for goals, hints, numbers and words; Queen Lumi for her story
 // lines (lumi-*); a baby unicorn's voice for foal-*. Ids with g4-, h4-, fb4-, lumi4- and the demo's num- ids are
 // the demo's own pack (public/audio/v4demo/); the rest are v3's.
-import type { DoorSpec, EggSpec, NamingSpec, Place, WishSpec } from '../contracts.ts';
+//
+// The full lists are composed from one helper per file (wishes.ts, eggs.ts, rack.ts, src/wardrobe.ts), so a lane
+// that adds clips changes its own file and never this one.
+import type { DoorSpec, NamingSpec, Place, WishSpec } from '../contracts.ts';
+import { wardrobeClipIds } from '../wardrobe.ts';
 import { DATA } from './data.ts';
 import { DOOR_COUNT, NEWBORN_DOORS, ROLL_CALL_DOORS, VISIT_DOORS } from './doors.ts';
-import { STONES, addClip, eggCombos, takeClip } from './eggs.ts';
+import { allEggClipIds } from './eggs.ts';
 import { GEM_SOUNDS, NAMING_CLIPS } from './naming.ts';
-import { WISH_CLIPS, wishWords } from './wishes.ts';
+import { allRackClipIds } from './rack.ts';
+import { allWishClipIds, allWishGraphemes } from './wishes.ts';
 
 export const CLIPS = {
+  // 0 The customiser (2.2.0): every play, the first visit, after 25 s without a touch
+  ready: ['g4-ready'],
+  lookTap: ['g4-look-tap'],
+  readyPlay: ['g4-ready-play'],
   // 1 Welcome
   welcome: ['lumi-hello', 'lumi-meadow-yours'],
+  /** The shorter welcome from the second play on. */
+  helloBack: ['lumi-hello-back'],
   crown: ['lumi-crown'],
   eggWaiting: ['g-egg-waiting'],
   walk: ['g4-walk'],
@@ -30,8 +41,15 @@ export const CLIPS = {
   slideTap: ['g4-slide-tap'],
   // 7 Wild egg
   anotherEgg: ['lumi4-another-egg'],
+  // The dress-up wish: "Your baby wants to dress up like you!"
+  dressUp: ['g4-dress-up'],
   // 11 Free play
   basket: ['g4-basket'],
+  /** Once per play, when the side quests' offer bubbles first show. */
+  bubbles: ['mw-bubbles-explain'],
+  // The royal picnic (side quest)
+  picnic: ['lumi4-picnic'],
+  picnicDone: ['lumi4-picnic-done'],
   /** When the basket opens: "Tap a food to hear its name. Then give it to a baby." */
   tray: ['g-tray'],
   // Walking help after 20 s without progress (section 3)
@@ -65,32 +83,15 @@ export const CLIPS = {
   foalLook: ['foal-look'],
 };
 
-/** "The pond is this way." for a place, or nothing for a place without a line (the gazebo). */
+/** "The pond is this way." for a place, or nothing for a place without a line (the gazebo, the rack, the picnic). */
 export function wayTo(place: Place): string[] {
-  return place === 'gazebo' ? [] : CLIPS.way[place];
+  return place in CLIPS.way ? CLIPS.way[place as keyof typeof CLIPS.way] : [];
 }
 
 /** Herd sizes the level counts: 12 at the start, 14 at goodnight. */
 const HERD_SIZES = [12, 13, 14];
 
 const range = (lo: number, hi: number): number[] => Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
-
-function eggIds(): string[] {
-  const out = ['g-egg', 'g-stone', 'g4-snow-egg', 'g4-snow', 'fb-warm', 'fb4-just-right', 'fb-hot', 'fb-brr', 'h-peek', 'h4-count-extra'];
-  for (const kind of ['warm', 'snow'] as const) {
-    for (const { need, have, answer } of eggCombos(kind)) {
-      out.push(`num-egg-${need}`, kind === 'warm' ? `num-warm-${have}` : `num-toowarm-${have}`);
-      out.push(kind === 'warm' ? addClip(have, answer) : takeClip(have, answer));
-      for (let i = 1; i <= answer; i++) out.push(`num-${i}`);
-      // A wrong stone is 1 or 2 away and stays on the stones 3 to 9.
-      for (const k of [1, 2]) {
-        if (answer + k <= STONES.max) out.push(`num-over-${k}`);
-        if (answer - k >= STONES.min) out.push(kind === 'warm' ? `num-cold-${k}` : `num-still-warm-${k}`);
-      }
-    }
-  }
-  return out;
-}
 
 function doorIds(): string[] {
   const out = ['h4-doors'];
@@ -113,8 +114,8 @@ function staticIds(): string[] {
 
 /**
  * Every clip id the level can use, each once: the lines above, the herd's and every bell's name, every wish word,
- * and every number any egg or door can say. About 230 clips; to keep memory low, preload what a moment needs with
- * the *ClipIds helpers below instead.
+ * every number any egg, the hay rack or a door can say, and the wardrobe's words. About 230 clips; to keep memory
+ * low, preload what a moment needs with the *ClipIds helpers instead.
  */
 export function allClipIds(): string[] {
   const ids = [
@@ -122,8 +123,10 @@ export function allClipIds(): string[] {
     ...DATA.herd.map((h) => h.clip),
     ...DATA.bells.map((b) => b.clip),
     ...Object.values(NAMING_CLIPS).flat(),
-    ...(['food', 'bath'] as const).flatMap((k) => [...wishWords(k).map((w) => w.clip), ...Object.values(WISH_CLIPS[k]).flat()]),
-    ...eggIds(),
+    ...allWishClipIds(),
+    ...allEggClipIds(),
+    ...allRackClipIds(),
+    ...wardrobeClipIds(),
     ...doorIds(),
   ];
   return [...new Set(ids)];
@@ -147,11 +150,6 @@ export function doorClipIds(specs: (DoorSpec & { hint?: string[] })[]): string[]
 
 /** Every letter sound the names, gems and words can play, for audio.preloadSounds(). */
 export function allGraphemes(): string[] {
-  const g = [
-    ...DATA.bells.flatMap((b) => b.gpcs),
-    ...GEM_SOUNDS,
-    ...DATA.food.flatMap((w) => w.gpcs),
-    ...DATA.bath.flatMap((w) => w.gpcs),
-  ];
+  const g = [...DATA.bells.flatMap((b) => b.gpcs), ...GEM_SOUNDS, ...allWishGraphemes()];
   return [...new Set(g)];
 }

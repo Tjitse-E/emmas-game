@@ -1,7 +1,7 @@
 // The ground: a flat meadow inside the fence (soft greens), sandy paths and the stable yard, the pond basin, the
 // white fence with flower hedges, trees, rolling hills beyond and the castle hill far to the north.
 import * as THREE from 'three';
-import { BOUNDS, GAZEBO, NEST, OBSTACLES, POND, SLIDE, STABLE, type Vec2 } from '../layout';
+import { BOUNDS, GAZEBO, NEST, POND, SLIDE, STABLE, TREES, type Vec2 } from '../layout';
 import { Scenery, eachFaceUp, faceUp, fillSouth, merge, paint, paintBy, paintY, place, rng, type Geo } from './geo';
 
 const smooth = (e0: number, e1: number, x: number): number => {
@@ -541,7 +541,7 @@ function treeSpots(): TreeSpot[] {
     if (k < 0.6) return TREE_COLOURS[[0, 1, 2, 3, 6][Math.floor(r() * 5)]];
     return TREE_COLOURS[[4, 5, 7][Math.floor(r() * 3)]];
   };
-  for (const o of OBSTACLES.slice(2)) out.push({ x: o.center.x, z: o.center.z, s: o.radius * 1.05, colour: pick(), kind: 'round' });
+  for (const o of TREES) out.push({ x: o.center.x, z: o.center.z, s: o.radius * 1.05, colour: pick(), kind: 'round' });
   // A belt of trees just outside the hedges, denser to the north (the top of the screen).
   const tryAdd = (x: number, z: number, s: number, kind: TreeSpot['kind']): void => {
     for (const t of out) if (Math.hypot(t.x - x, t.z - z) < (t.s + s) * 1.25) return;
@@ -628,7 +628,7 @@ const CYPRESS_COLOURS = ['#6fc28e', '#7dcc98', '#76c3a6', '#8bd29a'];
 /** Trees as instanced meshes: the grand trees, round crowns, cypress crowns and trunks (four draw calls). */
 export function buildTrees(material: THREE.Material): THREE.InstancedMesh[] {
   const spots = treeSpots();
-  const inner = new Set(spots.slice(0, OBSTACLES.length - 2));
+  const inner = new Set(spots.slice(0, TREES.length));
   const grands = spots.filter((t) => inner.has(t));
   const rounds = spots.filter((t) => t.kind === 'round' && !inner.has(t));
   const cypresses = spots.filter((t) => t.kind === 'cypress');
@@ -690,7 +690,7 @@ function growsHere(x: number, z: number): boolean {
   for (const r of STABLE.rows) {
     if (Math.abs(x - r.centerX) < 5.4 && z < STABLE.frontZ + 0.8 && z > STABLE.frontZ - STABLE.depth - 0.8) return false;
   }
-  for (const o of OBSTACLES.slice(2)) if (Math.hypot(x - o.center.x, z - o.center.z) < 0.5) return false;
+  for (const o of TREES) if (Math.hypot(x - o.center.x, z - o.center.z) < 0.5) return false;
   return true;
 }
 

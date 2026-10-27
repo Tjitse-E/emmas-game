@@ -1,7 +1,7 @@
 // The level script: "Emma's first day in Moon Meadow" (docs/v4/demo.md section 1). Each part is an async step on
 // the current Run; jump(part) stops the run, snaps the world into that part's state and starts from there.
 import * as THREE from 'three';
-import type { EndMember, MomentHooks, MomentResult, NameChoice, Vec2, WishSpec } from '../contracts';
+import type { EndMember, MomentHooks, MomentResult, NameChoice, Ribbon, Vec2, WishSpec } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { GRAZE_HOMES, NEST, SLIDE, STABLE, START, WILD_EGG, dist2, doorFront, doorIsUpper } from '../layout';
 import { audio } from '../audio';
@@ -26,7 +26,7 @@ const HATCH_SPOT: Record<13 | 14, Vec2> = { 13: { x: NEST.center.x, z: NEST.cent
  */
 const SIDE: Record<0 | 1, Vec2> = { 0: { x: NEST.center.x - 1.55, z: NEST.center.z - 0.15 }, 1: { x: WILD_EGG.at.x - 1.5, z: WILD_EGG.at.z - 0.15 } };
 /** Her new ribbon colour at goodnight (her first ribbons are pink). */
-const GOODNIGHT_RIBBONS = '#a77bff';
+const GOODNIGHT_RIBBONS: Ribbon = 'lilac';
 /** Width of ground across the screen for each framing. */
 const EGG_WIDTH = 6;
 const BABY_WIDTH = 5.5;
@@ -585,7 +585,7 @@ async function goodnight(g: Game): Promise<void> {
   await g.run.sleep(1800);
   // The stars land just in front of her head, so they do not hide the new ribbons.
   await g.run.w(actors.fx.starfall(head.clone().setZ(head.z + 0.35)));
-  actors.princess.ribbons(GOODNIGHT_RIBBONS);
+  actors.princess.setLook({ ribbon: GOODNIGHT_RIBBONS });
   actors.fx.sparkle(head, { count: 20, colour: '#d9c2ff' });
   await g.run.w(actors.princess.emote('twirl'));
   actors.princess.face({ x: p.x, z: p.z + 6 });

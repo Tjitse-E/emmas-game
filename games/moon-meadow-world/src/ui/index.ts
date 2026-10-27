@@ -140,6 +140,9 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
     },
     arrow: (goal, onTap) => arrow.set(goal, onTap),
     tag: (name, at, ms) => tags.show(name, at, ms),
+    // Stubs until the 2.2.0 customiser and offer bubbles are built: the look stays as it is, no bubble shows.
+    wardrobe: (o) => Promise.resolve(o.look),
+    offer: () => {},
     foodBasket: (o) => food.set(o),
     theEnd: (o) => endScreen(screens, o),
     sky: (t) => {

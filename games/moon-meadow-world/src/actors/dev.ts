@@ -1,11 +1,12 @@
 // Harness for the actors lane (dev/actors.html): a plain stage with the level's places, the shared lights, a game-like
 // follow camera and a close-up camera, a straight-line stub for routes, and buttons for everything the actors do.
 import * as THREE from 'three';
-import type { ActorDeps, UnicornEmote, UnicornLook, Vec2 } from '../contracts';
+import type { ActorDeps, Ribbon, UnicornEmote, UnicornLook, Vec2 } from '../contracts';
 import {
-  BOUNDS, GAZEBO, GRAZE_HOMES, NEST, OBSTACLES, POND, SLIDE, SLIDE_CURVE, STABLE, WILD_EGG, doorCenter, doorFront, doorIsUpper, inPond,
+  BOUNDS, GAZEBO, GRAZE_HOMES, NEST, OBSTACLES, POND, SLIDE, SLIDE_CURVE, STABLE, TREES, WILD_EGG, doorCenter, doorFront, doorIsUpper, inPond,
   inStableBuilding, v2,
 } from '../layout';
+import { GIFT_ORDER } from '../wardrobe';
 import { audio } from '../audio';
 import { v3Art } from '../assets';
 import { createActors } from './index';
@@ -113,7 +114,7 @@ scene.add(stage);
   const roof = new THREE.Mesh(new THREE.ConeGeometry(GAZEBO.radius, 1.6, 24), lam('#ffb6d5'));
   roof.position.set(GAZEBO.center.x, 3.3, GAZEBO.center.z);
   stage.add(mound, nest, gazebo, roof);
-  for (const o of OBSTACLES.slice(2)) {
+  for (const o of TREES) {
     const crown = new THREE.Mesh(new THREE.SphereGeometry(o.radius, 16, 10), lam('#7cc46f'));
     crown.position.set(o.center.x, 2.2, o.center.z);
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 1.4, 8), lam('#b98559'));
@@ -312,7 +313,7 @@ let door = 13;
 let ribbon = 0;
 let crowned = false;
 let detail: 0 | 1 | 2 = 0;
-const RIBBONS = ['#ff5c9d', '#a77bff', '#4fc3ff', '#ffbf3f', '#3fd69a'];
+const RIBBONS: Ribbon[] = ['pink', ...GIFT_ORDER];
 section('Princess Emma', [
   ['wave', () => void princess.emote('wave')],
   ['clap', () => void princess.emote('clap')],
@@ -320,7 +321,7 @@ section('Princess Emma', [
   ['twirl', () => void princess.emote('twirl')],
   ['slide', () => void princess.rideSlide()],
   ['crown', () => princess.crown((crowned = !crowned))],
-  ['ribbons', () => princess.ribbons(RIBBONS[++ribbon % RIBBONS.length])],
+  ['ribbons', () => princess.setLook({ ribbon: RIBBONS[++ribbon % RIBBONS.length] })],
   ['to pond', () => void princess.walkTo(deps.route(princess.position, v2(1, 3)))],
   ['to stable', () => void princess.walkTo(deps.route(princess.position, STABLE.emmaStand))],
 ]);

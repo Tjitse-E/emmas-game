@@ -27,7 +27,7 @@ interface EmmaAudioApi {
 const A = (window as unknown as { EmmaAudio: EmmaAudioApi }).EmmaAudio;
 
 /** v3 packs the demo speaks from, searched after the demo's own pack. */
-export const V3_PACKS = ['core', 'numbers', 'names-t1', 'words-phase2', 'words-phase3-4', 'words-year1'] as const;
+export const V3_PACKS = ['core', 'numbers', 'names-t1', 'words-phase2', 'words-phase3-4', 'words-year1', 'places'] as const;
 
 /** The demo's own clips: public/audio/v4demo/ (built to dist/audio/v4demo/). */
 export const OWN_PACK_BASE = 'audio/v4demo/';

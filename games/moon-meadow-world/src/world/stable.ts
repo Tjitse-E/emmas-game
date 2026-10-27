@@ -526,6 +526,8 @@ export function buildStable(scene: THREE.Scene, scenery: Scenery, material: THRE
     lanterns(on) {
       lit = on;
     },
+    // The hay rack comes with the 2.2.0 side quest; until then there is no hay to show.
+    hay() {},
   };
 
   const ease = (x: number): number => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);

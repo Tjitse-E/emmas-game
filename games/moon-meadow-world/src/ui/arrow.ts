@@ -1,6 +1,7 @@
 // The glowing picture arrow at the screen edge (v4 spec 3.3): while the goal is off screen it sits on the edge in
 // the goal's direction, showing a picture of the place; a tap walks Princess Emma there (the game's onTap).
 import type { Place, ScreenPoint } from '../contracts';
+import { v3Art } from '../assets';
 import { edgeArrow } from './geometry';
 import { el, onPress, onTick, u } from './dom';
 import { PIC } from './parts';
@@ -63,6 +64,10 @@ function placePicture(place: Place): string {
       return STABLE_SVG;
     case 'gazebo':
       return GAZEBO_SVG;
+    case 'rack':
+      return `<img src="${v3Art('items/station-hay-rack.webp')}" alt="" draggable="false" style="width:100%">`;
+    case 'picnic':
+      return `<img src="${v3Art('words/picnic.webp')}" alt="" draggable="false" style="width:100%">`;
   }
 }
 

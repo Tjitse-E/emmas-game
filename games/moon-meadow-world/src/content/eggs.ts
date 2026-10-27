@@ -127,3 +127,21 @@ export function eggClipIds(spec: EggSpec): string[] {
     .flatMap((s) => (s > spec.answer ? c.tooBig(s - spec.answer) : c.tooSmall(spec.answer - s)));
   return [...c.intro, ...c.goal, ...(c.afterGoal ?? []), ...c.right, ...misses, ...c.hint, ...c.count];
 }
+
+/** Every clip an egg can say: the lines, and every number of every egg with the miss lines of its stones. */
+export function allEggClipIds(): string[] {
+  const out = ['g-egg', 'g-stone', 'g4-snow-egg', 'g4-snow', 'fb-warm', 'fb4-just-right', 'fb-hot', 'fb-brr', 'h-peek', 'h4-count-extra'];
+  for (const kind of ['warm', 'snow'] as const) {
+    for (const { need, have, answer } of eggCombos(kind)) {
+      out.push(`num-egg-${need}`, kind === 'warm' ? `num-warm-${have}` : `num-toowarm-${have}`);
+      out.push(kind === 'warm' ? addClip(have, answer) : takeClip(have, answer));
+      for (let i = 1; i <= answer; i++) out.push(`num-${i}`);
+      // A wrong stone is 1 or 2 away and stays on the stones 3 to 9.
+      for (const k of [1, 2]) {
+        if (answer + k <= STONES.max) out.push(`num-over-${k}`);
+        if (answer - k >= STONES.min) out.push(kind === 'warm' ? `num-cold-${k}` : `num-still-warm-${k}`);
+      }
+    }
+  }
+  return out;
+}

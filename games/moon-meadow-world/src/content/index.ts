@@ -5,7 +5,7 @@ import type { HerdMember } from '../contracts.ts';
 import { DATA } from './data.ts';
 import { HERD_LOOKS } from './looks.ts';
 
-export { type Rand, seeded } from './rand.ts';
+export { type Rand, seeded, stream } from './rand.ts';
 export { babyLook } from './looks.ts';
 export { eggSpec, eggClipIds, eggCombos } from './eggs.ts';
 export { namingSpec } from './naming.ts';

@@ -1,5 +1,6 @@
 // Contracts between the demo's parts. Each lane implements its side in its own folder and only depends on this file,
-// src/layout.ts, src/assets.ts and src/audio/index.ts. Changing a contract means changing every side that uses it.
+// src/layout.ts, src/wardrobe.ts, src/assets.ts and src/audio/index.ts. Changing a contract means changing every side
+// that uses it.
 //
 //   world   src/world/    createWorld(container)          the three.js stage, scenery, stable, camera, routes
 //   actors  src/actors/   createActors(scene, deps)       Princess Emma, the herd, the egg, effects
@@ -38,6 +39,8 @@ export type WorldPick =
   | { kind: 'nest' }
   | { kind: 'pond'; at: Vec2 }
   | { kind: 'gazebo' }
+  | { kind: 'rack' } // the hay rack (2.2.0 side quest)
+  | { kind: 'picnic' } // the picnic rug and hamper (2.2.0 side quest)
   | { kind: 'ground'; at: Vec2 };
 
 export interface StableApi {
@@ -52,6 +55,8 @@ export interface StableApi {
   rattle(n: number): Promise<void>;
   /** Lanterns on the stable fronts, lit at dusk. */
   lanterns(on: boolean): void;
+  /** The hay in the hay rack, from 0 (empty, not drawn) to 1 (full), eased over `ms`. It stays for the day. */
+  hay(fill: number, ms?: number): void;
 }
 
 export interface World {
@@ -75,7 +80,10 @@ export interface World {
   releaseFrame(): void;
   /** Opening shot: start high over the meadow and sweep down to the follow position over `ms`. */
   introSweep(ms: number): Promise<void>;
-  /** World things under a screen point, nearest first by priority: door, slide, nest, gazebo, pond, ground. */
+  /**
+   * World things under a screen point, nearest first by priority: door, slide, nest, rack, picnic, gazebo, pond,
+   * ground.
+   */
   pick(clientX: number, clientY: number): WorldPick | null;
   /** The ground point under a screen point (y = 0 plane), or null when the ray misses the ground. */
   groundAt(clientX: number, clientY: number): Vec2 | null;
@@ -182,8 +190,11 @@ export interface Unicorn {
   lookAt(p: Vec2 | null): void;
   /** One short animation. Resolves when it ends. */
   emote(kind: UnicornEmote): Promise<void>;
-  /** Show a small toy next to it in the water or on the grass (the bath wish), as a 3D floating picture. */
-  showToy(pictureUrl: string | null): void;
+  /**
+   * Show a small toy next to it in the water or on the grass (the bath wish), as a 3D floating picture, or with
+   * `on: 'head'` on top of its head (the dress-up wish's 'wear'). null takes it away.
+   */
+  showToy(pictureUrl: string | null, o?: { on?: 'ground' | 'head' }): void;
 }
 
 export interface Herd {
@@ -197,6 +208,28 @@ export interface Herd {
 
 export type PrincessMode = 'idle' | 'walk' | 'run' | 'climb' | 'slide' | 'swim';
 
+// Princess Emma's look (docs/v4/2.2.md 2.5 and 2.6). The ids, swatch colours and words are in src/wardrobe.ts.
+export type HairColour = 'sunny' | 'strawberry' | 'chestnut' | 'midnight' | 'candy' | 'rainbow';
+export type EyeColour = 'blue' | 'green' | 'brown' | 'hazel' | 'grey' | 'violet';
+export type Gown = 'rose' | 'rainbow' | 'lilac' | 'moon' | 'fairy' | 'tutu';
+export type HairStyle = 'ponytails' | 'high' | 'plaits' | 'bun';
+export type HairThing = 'bows' | 'unicorn' | 'flowers' | 'stars' | 'butterflies' | 'hearts';
+export type Ribbon = 'pink' | 'lilac' | 'sky' | 'mint' | 'gold' | 'coral';
+/** Ids only, never colours, so palettes can be tuned without breaking a save. */
+export interface PrincessLook {
+  hair: HairColour;
+  eyes: EyeColour;
+  gown: Gown;
+  style: HairStyle;
+  thing: HairThing;
+  /** The colour of her hair thing's ribbons. Not a row: a tap on the hair thing she wears changes it. */
+  ribbon: Ribbon;
+}
+/** The wardrobe's five rows, in Emma's order. */
+export type LookRow = 'hair' | 'eyes' | 'gown' | 'style' | 'thing';
+/** toss, blink, show, tilt and curtsy are the wardrobe's reactions (2.4). */
+export type PrincessEmote = 'wave' | 'clap' | 'jump' | 'twirl' | 'toss' | 'blink' | 'show' | 'tilt' | 'curtsy';
+
 export interface Princess {
   readonly position: THREE.Vector3;
   readonly mode: PrincessMode;
@@ -205,12 +238,28 @@ export interface Princess {
   stop(): void;
   /** Climb the slide, slide into the pond, swim to the nearest exit and climb out. Resolves when she stands on the grass again. */
   rideSlide(): Promise<void>;
-  emote(kind: 'wave' | 'clap' | 'jump' | 'twirl'): Promise<void>;
+  /** One short animation. Resolves when it ends. */
+  emote(kind: PrincessEmote): Promise<void>;
   /** Turn towards a point. */
   face(p: Vec2): void;
   crown(on: boolean): void;
-  /** Ribbon colour in her ponytails (CSS hex). */
-  ribbons(colour: string): void;
+  readonly look: PrincessLook;
+  /**
+   * Change her look; missing fields keep what she wears. Cheap on every slider step: colours at once, cached dress
+   * geometry, new chains only on a style change. No new materials, programs or per-frame allocations. Goodnight
+   * gives a new ribbon colour with setLook({ ribbon }).
+   */
+  setLook(look: Partial<PrincessLook>): void;
+  /** Stand still for the portrait: no random look-around. */
+  hold(on: boolean): void;
+  /** Turn from the current heading (preview drag); face() eases back. */
+  turnBy(rad: number): void;
+  /** World points for sparkles and framing. */
+  point(part: 'head' | 'eyes' | 'thing' | 'dress', out?: THREE.Vector3): THREE.Vector3;
+  /** A day-only extra (the picnic rose), drawn beside her hair thing. Never saved. */
+  extra(kind: 'rose' | null): void;
+  /** Finer shapes while the camera is close (wardrobe only). */
+  portrait(on: boolean): void;
 }
 
 export interface Egg3D {
@@ -270,6 +319,10 @@ export interface HerdMember {
   look: UnicornLook;
 }
 
+/** Why a wrong stone is in the tray (2.2.0 section 4.1). */
+export type StoneDecoy = 'slip' | 'heard' | 'first-nest' | 'second-nest' | 'near';
+
+/** An egg, or the hay rack: a 'warm' spec (adding across ten) with skin 'hay'. */
 export interface EggSpec {
   kind: 'warm' | 'snow';
   /** Cups the egg needs to be warm. */
@@ -278,8 +331,14 @@ export interface EggSpec {
   have: number;
   /** The stone that is right: need - have for 'warm', have - need for 'snow'. */
   answer: number;
-  /** Three different stones from 3 to 9, ascending, the answer among them. */
+  /** 4 (band A) or 5 (band B) different stones from 3 to 9, ascending, the answer among them. */
   stones: number[];
+  /** The maths band the numbers come from (4.2). */
+  band?: 'a' | 'b';
+  /** Why each wrong stone is in the tray, by stone number, for the log. */
+  decoys?: Record<number, StoneDecoy>;
+  /** The panel's look: the egg and its cups (the default), or the hay rack's bundles and piles. */
+  skin?: 'egg' | 'hay';
   clips: {
     /** The first time this kind of egg is seen: how the egg works ("Make every cup warm, and the egg will hatch."). */
     intro: string[];
@@ -306,7 +365,10 @@ export interface NameChoice {
   gpcs: string[];
   /** Elizabeth's clip of the name ("Pip!"). */
   clip: string;
-  /** Two wrong gems for the tray (plausible: a near vowel, a near consonant). */
+  /**
+   * Wrong gems for the tray: 3 (naming 1: a near capital, a near vowel, a near consonant) or 4 (naming 2: a near
+   * capital, both near vowels, a near consonant). The capital is a decoy for slot 1.
+   */
   distractors: string[];
 }
 
@@ -328,18 +390,34 @@ export interface WishItem {
   gpcs: string[]; // ["p", "l", "u", "m"]
   pic: string; // picture URL (v3 word art)
   clip: string; // "word-plum"
+  /** Grapheme tier of v3's word pack: 1 phase2, 2 phase3-4, 3 year1. */
+  tier: 1 | 2 | 3;
+  /** How the baby takes it: munch (food), play (a toy, a dish, a mug), wear (on its head). Without it, by the kind. */
+  react?: 'munch' | 'play' | 'wear';
 }
 
+/** Why a wrong item is in the basket (3.1). */
+export type WishDecoy = 'twin' | 'frame' | 'onset' | 'rhyme' | 'ending' | 'length' | 'other';
+
 export interface WishSpec {
-  kind: 'food' | 'bath';
+  kind: 'food' | 'bath' | 'picnic' | 'dress';
   target: WishItem;
-  /** Three items in basket order, the target among them, no look-alikes. */
+  /** The items in basket order (4 at reading level 1, 5 at 2 and 3), the target among them, no look-alikes. */
   basket: WishItem[];
+  /** The reading level the basket was planned at, for the log. */
+  level: 1 | 2 | 3;
+  /** Why each wrong item is in the basket, by word, for the log. */
+  decoys: Record<string, WishDecoy>;
   clips: {
     intro: string[]; // "Your baby has a wish!" "Read the wish, and feed your baby."
     goal: string[]; // the short repeat on idle and replay
     right: string[]; // "Yes!" (the word clip follows, said by the ui)
     hint: string[]; // "Listen to the sounds."
+    /**
+     * After a miss's contrast tag ("Look at the letters again."). Without it a miss keeps v3's rule (the focused
+     * hint at once), which is how ?contrast=0 reaches the ui.
+     */
+    again?: string[];
   };
 }
 
@@ -364,7 +442,7 @@ export interface MomentHooks {
   /** Where the egg or the baby is on screen right now (called every frame). */
   anchor(): ScreenPoint;
   /** A 3D reaction to show. The game maps it onto the egg or the baby. */
-  react(kind: 'hot' | 'cold' | 'warm' | 'right' | 'wrong' | 'munch' | 'play' | 'happy' | 'shake' | 'look'): void;
+  react(kind: 'hot' | 'cold' | 'warm' | 'right' | 'wrong' | 'munch' | 'play' | 'wear' | 'happy' | 'shake' | 'look'): void;
   /**
    * Log line for the results log. Every wrong choice is logged as log('tried', { what }) with what she chose as a
    * string (the stone number, the item word, the built name); the game keeps them in the result's detail.tried.
@@ -409,6 +487,26 @@ export interface Layer {
   arrow(goal: { place: Place; at: () => ScreenPoint } | null, onTap?: () => void): void;
   /** A name tag over a unicorn for a moment (the printed name). */
   tag(name: string, at: () => ScreenPoint, ms?: number): void;
+  /**
+   * The customiser (2.1 to 2.3): five picture rails on the right, Princess Emma in 3D on the left. `ribbons` are the
+   * colours she owns; a tap on the hair thing she wears goes to the next one. `clips.ready` plays on every open,
+   * `clips.firstTime` after it on the first visit, `clips.idle` once after 25 s without a touch, `clips.done` on Done.
+   * Resolves with her look on Done's pointerdown; the panel then slides out by itself.
+   */
+  wardrobe(o: {
+    look: PrincessLook; ribbons: Ribbon[]; firstTime: boolean;
+    clips: { ready: string[]; firstTime: string[]; idle: string[]; done: string[] };
+    onLook(look: PrincessLook, row: LookRow): void;    // apply to 3D (gown and style 150 ms after settle)
+    onPicked(look: PrincessLook, row: LookRow): void;  // gesture ended with a change: react, save
+    onFocus(row: LookRow | null): void;                 // face or body frame
+    onTurn(dxPx: number, ended: boolean): void;         // preview drag
+    onPreviewTap(): void;
+  }): Promise<PrincessLook>;
+  /**
+   * A side quest's offer bubble (section 5): a picture in a bubble that follows `at` every frame and acts on
+   * pointerdown. One per id; null takes it away.
+   */
+  offer(id: string, o: { pic: string; at: () => ScreenPoint; onTap(): void } | null): void;
   /** Free play: the food basket button (bottom right). A dragged food dropped on screen calls drop(word, x, y). */
   foodBasket(o: { show: boolean; foods?: WishItem[]; drop?(item: WishItem, x: number, y: number): boolean }): void;
   /**

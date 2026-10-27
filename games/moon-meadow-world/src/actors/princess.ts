@@ -1,8 +1,9 @@
 // Princess Emma: a chibi princess built from smooth shapes, with two long blonde ponytails on verlet chains.
 // She walks and runs routes, waves, claps, jumps and twirls, and rides the slide into the pond and swims out.
 import * as THREE from 'three';
-import type { Princess, PrincessMode, Vec2 } from '../contracts';
+import type { Princess, PrincessEmote, PrincessLook, PrincessMode, Ribbon, Vec2 } from '../contracts';
 import { POND, SLIDE } from '../layout';
+import { DEFAULT_LOOK, RIBBON_HEX, normaliseLook } from '../wardrobe';
 import { audio } from '../audio';
 import { B, PartList, Xf, col, rimLambert } from './parts';
 import * as S from './shapes';
@@ -38,8 +39,11 @@ export interface PrincessCtx {
   sounds(): boolean;
 }
 
-type Emote = 'wave' | 'clap' | 'jump' | 'twirl';
-const EMOTE_TIME: Record<Emote, number> = { wave: 1.7, clap: 1.5, jump: 0.95, twirl: 1.4 };
+type Emote = PrincessEmote;
+/** The wardrobe's reactions (toss to curtsy) only take their time for now: she stands still. */
+const EMOTE_TIME: Record<Emote, number> = {
+  wave: 1.7, clap: 1.5, jump: 0.95, twirl: 1.4, toss: 1.0, blink: 1.6, show: 1.6, tilt: 1.2, curtsy: 1.2,
+};
 
 type RideStage = 'toLadder' | 'wait' | 'climb' | 'top' | 'sit' | 'slide' | 'swim' | 'out';
 interface Ride {
@@ -90,6 +94,9 @@ export class PrincessActor implements Princess {
   private crownScale = 0;
   private readonly ribbon = col('#ff5c9d');
   private readonly ribbonLight = col('#ff8fbd');
+  private current: PrincessLook = { ...DEFAULT_LOOK };
+  /** Her head's centre in world space, from the last drawn frame. */
+  private readonly headAt = new THREE.Vector3();
 
   // Pose, recomputed every frame.
   private phase = 0;
@@ -125,6 +132,7 @@ export class PrincessActor implements Princess {
   constructor(scene: THREE.Scene, ctx: PrincessCtx, at: Vec2) {
     this.ctx = ctx;
     this.position.set(at.x, 0, at.z);
+    this.headAt.set(at.x, 1.08, at.z);
     this.dress = new THREE.Mesh(S.dress(), rimLambert({ vertexColors: true }, 0.15));
     this.dress.name = 'actors-dress';
     this.crownMesh = new THREE.Mesh(
@@ -200,7 +208,32 @@ export class PrincessActor implements Princess {
     this.crownOn = on;
   }
 
-  ribbons(colour: string): void {
+  get look(): PrincessLook {
+    return this.current;
+  }
+
+  /** For now only the ribbon colour shows; the rest of the look is stored. */
+  setLook(look: Partial<PrincessLook>): void {
+    const next = normaliseLook({ ...this.current, ...look }, this.current);
+    if (next.ribbon !== this.current.ribbon) this.paintRibbons(next.ribbon);
+    this.current = next;
+  }
+
+  hold(_on: boolean): void {}
+
+  turnBy(_rad: number): void {}
+
+  /** For now every part gives her head. */
+  point(_part: 'head' | 'eyes' | 'thing' | 'dress', out = new THREE.Vector3()): THREE.Vector3 {
+    return out.copy(this.headAt);
+  }
+
+  extra(_kind: 'rose' | null): void {}
+
+  portrait(_on: boolean): void {}
+
+  private paintRibbons(r: Ribbon): void {
+    const colour = RIBBON_HEX[r];
     this.ribbon.set(colour);
     // The knot is a light tint of the colour: a highlight that reads as a bow at a glance.
     this.ribbonLight.set(colour).lerp(col('#ffffff'), 0.55);
@@ -602,6 +635,7 @@ export class PrincessActor implements Princess {
     // Head: a big round head with the hair as a cap, a soft fringe and side locks.
     const neck = _n.from(root).at(0, 0.86, 0).turn(this.headYaw).tilt(headPitch).roll(headRoll);
     const head = _h.from(neck).at(0, 0.22, 0);
+    this.headAt.setFromMatrixPosition(head);
     m.from(head).size(HR * 1.02, HR * 0.98, HR);
     L.push(B.Fine, m, c.skin, 0);
     m.from(head).at(0, 0.036, -0.032).size(0.266, 0.258, 0.262);

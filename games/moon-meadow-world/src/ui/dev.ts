@@ -121,15 +121,17 @@ const naming: NamingSpec = {
   bells,
   clips: { bells: ['g-bells'], drag: ['g-bell-drag'], spell: ['g-spell'], gems: ['g-gems'], slide: ['g-slide'], done: ['fb-spelled'], again: ['fb-listen'] },
 };
-const item = (word: string, gpcs: string[]): WishItem => ({ word, gpcs, pic: wordPic(word), clip: `word-${word}` });
+const item = (word: string, gpcs: string[]): WishItem => ({ word, gpcs, pic: wordPic(word), clip: `word-${word}`, tier: 1 });
 const foodWish: WishSpec = {
   kind: 'food', target: item('plum', ['p', 'l', 'u', 'm']),
   basket: [item('corn', ['c', 'or', 'n']), item('plum', ['p', 'l', 'u', 'm']), item('cake', ['c', 'a-e', 'k'])],
+  level: 1, decoys: { corn: 'other', cake: 'other' },
   clips: { intro: ['g-wish', 'g-hungry'], goal: ['g-hungry'], right: ['fb-yes'], hint: ['h-sounds'] },
 };
 const bathWish: WishSpec = {
   kind: 'bath', target: item('duck', ['d', 'u', 'ck']),
   basket: [item('boat', ['b', 'oa', 't']), item('shell', ['sh', 'e', 'll']), item('duck', ['d', 'u', 'ck'])],
+  level: 1, decoys: { boat: 'other', shell: 'other' },
   clips: { intro: ['g-wish', 'v4-bath-wish'], goal: ['v4-bath-wish'], right: ['fb-yes'], hint: ['h-sounds'] },
 };
 const foods = ['plum', 'corn', 'cake', 'bun', 'apple'].map((w) => item(w, [...w]));

@@ -15,6 +15,25 @@ export function seeded(seed: number): Rand {
   };
 }
 
+/** A 32-bit hash of a label (FNV-1a). */
+export function hash(label: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < label.length; i++) {
+    h ^= label.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/**
+ * A moment's own generator: the same seed and label give the same sequence. Each moment draws from its own stream
+ * (g.randFor('egg1'), 'wish1', 'picnic', ...), so the customiser or a quest never shifts a later sum or word, and
+ * ?at=egg2&seed=5 gives the same egg as a full play with seed 5.
+ */
+export function stream(seed: number, label: string): Rand {
+  return seeded(seed ^ hash(label));
+}
+
 /** A whole number from lo to hi, both included. */
 export function between(rand: Rand, lo: number, hi: number): number {
   return lo + Math.min(hi - lo, Math.floor(rand() * (hi - lo + 1)));

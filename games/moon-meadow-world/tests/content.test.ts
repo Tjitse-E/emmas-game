@@ -1,10 +1,11 @@
 // The content lane: the maths floor, the stones, the words, the names, the doors, and that every clip the level
-// can say exists (an ok clip in a v3 pack or in the demo's own pack).
+// can say exists (an ok clip in a v3 pack or in the demo's own pack) or has a line waiting for gen.sh.
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import type { EggSpec, HerdMember, UnicornLook } from '../src/contracts.ts';
 import { LOOK_ALIKE, UNICORN_FOODS } from '../../moon-meadow-home/src/core/heartbeat/feed.ts';
+import { SENTENCES, lineFor } from '../tools/lines.ts';
 
 // src/assets.ts reads the page location when it loads.
 vi.stubGlobal('location', { pathname: '/' });
@@ -19,7 +20,7 @@ const SEEDS = 600;
 const seeds = Array.from({ length: SEEDS }, (_, i) => i + 1);
 
 interface Clip { ok?: boolean; file?: string; speaker?: string }
-const V3_PACKS = ['core', 'numbers', 'names-t1', 'words-phase2', 'words-phase3-4', 'words-year1'];
+const V3_PACKS = ['core', 'numbers', 'names-t1', 'words-phase2', 'words-phase3-4', 'words-year1', 'places'];
 function clipsIn(dir: string): Map<string, Clip> {
   const path = join(dir, 'manifest.json');
   if (!existsSync(path)) return new Map();
@@ -324,8 +325,9 @@ describe('doors', () => {
 describe('clips', () => {
   const all = new Set(C.allClipIds());
 
-  it('every clip the level can use exists as an ok clip (v3 or the demo pack)', () => {
-    const missing = [...all].filter((id) => !clipExists(id));
+  it('every clip the level can use exists as an ok clip (v3 or the demo pack), or has a line for gen.sh', () => {
+    // New lines are generated once, after all 2.2.0 lanes merge (docs/v4/2.2.md 7.3).
+    const missing = [...all].filter((id) => !clipExists(id) && !lineFor(id));
     expect(missing).toEqual([]);
   });
 
@@ -378,13 +380,14 @@ describe('clips', () => {
 
   it('the demo pack follows the voice rules and never shadows a v3 clip', () => {
     const lines = JSON.parse(readFileSync(join(ownDir, 'lines.json'), 'utf8')).lines as { id: string; speaker: string; text: string }[];
-    for (const l of lines) {
+    for (const l of [...lines, ...SENTENCES]) {
       expect(l.id).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
       expect(v3Clips.has(l.id)).toBe(false);
       expect(l.speaker).toBe(l.id.startsWith('lumi4-') ? 'queen' : 'narrator');
       expect(l.text).not.toMatch(/\d/);
     }
     expect(new Set(lines.map((l) => l.id)).size).toBe(lines.length);
+    expect(new Set(SENTENCES.map((l) => l.id)).size).toBe(SENTENCES.length);
   });
 
   it('every letter sound the moments can play exists', () => {
