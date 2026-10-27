@@ -101,6 +101,8 @@ function boot(): void {
     if (game.door) return game.door.replay();
     // Lumi never talks over a line that plays.
     if (audio.speaking) return;
+    // A side quest hides the basket: between its moments she hears nothing (an open moment replays its goal above).
+    if (game.quests.running) return;
     if (!game.goal && game.part === 'free') return void audio.sayAll(CLIPS.basket);
     sayWay(game);
   });
