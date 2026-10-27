@@ -266,13 +266,14 @@ describe('the hay rack (4.3)', () => {
 });
 
 describe('clips', () => {
-  /** Band B's take-away facts that are new lines (section 6), generated once after all lanes merge. */
+  /** Band B's take-away facts that are new lines (section 6), generated in 2.2.0. */
   const NEW_FACTS = ['num-take-14-7', 'num-take-15-7', 'num-take-15-8', 'num-take-16-7', 'num-take-16-8', 'num-take-16-9'];
 
-  it('every clip of every reachable sum and stone exists, except the six new take-away facts in the line list', () => {
+  it('every clip of every reachable sum and stone exists, the six new take-away facts too', () => {
     const all = [...new Set([...allEggClipIds(), ...allRackClipIds()])];
     const missing = all.filter((id) => !clipExists(id)).sort();
-    expect(missing).toEqual([...NEW_FACTS].sort());
+    expect(missing).toEqual([]);
+    for (const id of NEW_FACTS) expect(clipExists(id), id).toBe(true);
     const words = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen'];
     for (const id of NEW_FACTS) {
       const [a, b] = id.split('-').slice(2).map(Number);
