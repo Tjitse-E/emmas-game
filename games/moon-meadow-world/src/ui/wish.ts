@@ -12,14 +12,12 @@ import { bubbleBox, inBox, printUnits, type Box, type Point } from './geometry';
 import { HintRunner } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, img, onTick, play, sleep, u } from './dom';
-import { Life, leave, target, type LayerCtx, type OpenMoment } from './moment';
+import { Life, QUICK_MS, leave, target, type LayerCtx, type OpenMoment } from './moment';
 import { PIC, printEl } from './parts';
 import { diffUnits } from './contrast';
 
 /** The baby's giggle at a wrong item (v3 core, "[giggles] Silly!"; the level preloads it). */
 const SILLY = 'foal-silly';
-/** A first item touch this soon after input opened, with no look at the word, is a quick pick (the log). */
-const QUICK_MS = 1500;
 /** How long the differing letters of the wish word glow after a miss. */
 const GLOW_MS = 3600;
 

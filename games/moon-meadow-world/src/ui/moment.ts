@@ -4,6 +4,12 @@ import type { Ghost } from './ghost';
 import type { HintRunner } from './ladder';
 import { boxOf } from './dom';
 
+/**
+ * A first touch of an item or a stone this soon after input opened (with no look at the word, for a wish) is a quick
+ * pick, a likely guess (the log).
+ */
+export const QUICK_MS = 1500;
+
 export interface LayerCtx {
   /** Where moment panels go. */
   readonly moments: HTMLElement;

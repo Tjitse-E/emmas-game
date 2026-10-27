@@ -17,7 +17,7 @@ import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, html, img, play, sleep, u } from './dom';
 import { hayPileEl, haySkin } from './hay';
 import { pulse, type Skin } from './skin';
-import { Life, leave, target, type LayerCtx, type OpenMoment } from './moment';
+import { Life, QUICK_MS, leave, target, type LayerCtx, type OpenMoment } from './moment';
 import { PIC, sparkleBurst, stoneEl } from './parts';
 
 const STEAM = '<svg viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"><path d="M12 38 C4 30 20 24 12 16 C8 12 12 6 14 2"/><path d="M28 38 C20 30 36 24 28 16 C24 12 28 6 30 2"/></g></svg>';
@@ -219,6 +219,9 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
     let asleep = true;
     /** She has touched a stone at some time in this moment (never cleared: no gesture demo after that). */
     let everTouched = false;
+    /** When the stones woke (input opened) and her first stone touch after that, for the quick flag (the log). */
+    let openedAt = 0;
+    let firstStoneAt: number | null = null;
     /** "Drag one stone to the nest." is said once: after the first goal, at her first stone tap or with the first idle repeat. */
     let afterGoal = spec.clips.afterGoal?.length ? spec.clips.afterGoal : null;
     const takeAfterGoal = (): string[] => {
@@ -291,7 +294,11 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         sparkleBurst(ctx.drag, hooks.anchor(), 9);
         ladder.chose(touched.get(k) ?? performance.now());
         const result = ladder.finish();
-        hooks.log?.('egg', { kind: spec.kind, skin: spec.skin ?? 'egg', band: spec.band, need: spec.need, have: spec.have, stones: spec.stones, place: at, decoys: spec.decoys, ...result });
+        const quick = firstStoneAt !== null && firstStoneAt - openedAt < QUICK_MS;
+        hooks.log?.('egg', {
+          kind: spec.kind, skin: spec.skin ?? 'egg', band: spec.band, need: spec.need, have: spec.have, stones: spec.stones, place: at,
+          decoys: spec.decoys, ...result, quick,
+        });
         if (now) hooks.react(now);
         await audio.sayAll(spec.clips.right);
         if (!life.alive) return;
@@ -344,10 +351,12 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         },
         // A touch on a stone always stops Elizabeth first (the same rule for gems, dots and basket items).
         onDown: () => {
+          const now = performance.now();
           everTouched = true;
+          firstStoneAt ??= now;
           ladder.touch();
           audio.stop();
-          if (!touched.has(v)) touched.set(v, performance.now());
+          if (!touched.has(v)) touched.set(v, now);
         },
         onTap: () => {
           void audio.sfx('pop');
@@ -400,7 +409,8 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
       if (!life.alive) return;
       wake();
       busy = false;
-      ladder.open();
+      openedAt = performance.now();
+      ladder.open(openedAt);
       if (!everTouched) {
         const showDemo = !ctx.seen.has('egg-demo');
         const wrong = stones.find((s) => Number(s.dataset.value) !== spec.answer);

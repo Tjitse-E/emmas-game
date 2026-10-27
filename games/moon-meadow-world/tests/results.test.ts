@@ -9,7 +9,7 @@ const wish: ResultLine = {
 };
 const egg: ResultLine = {
   part: 'egg1', strand: 'm', outcome: 'helped', misses: 1, ms: 9000,
-  detail: { kind: 'warm', need: 14, have: 6, answer: 8, band: 'a', stones: [4, 6, 7, 8], place: 3, decoys: { 4: 'first-nest', 6: 'heard', 7: 'slip' }, tried: ['6'] },
+  detail: { kind: 'warm', need: 14, have: 6, answer: 8, band: 'a', stones: [4, 6, 7, 8], place: 3, decoys: { 4: 'first-nest', 6: 'heard', 7: 'slip' }, tried: ['6'], quick: true },
 };
 
 describe('diag lines', () => {
@@ -18,9 +18,9 @@ describe('diag lines', () => {
     expect(Object.fromEntries(q)).toEqual({ kind: 'result', part: 'wish1', s: 'r', o: 'miss', ms: '5235', mi: '1', lv: '1', n: '4', w: 'cape', pt: '0', q: '1', tried: 'cap:frame' });
   });
 
-  it('writes a maths result with the band, stones, place and decoys', () => {
+  it('writes a maths result with the band, stones, place, decoys and a quick pick', () => {
     const q = Object.fromEntries(new URLSearchParams(diagQuery(resultFields(egg))));
-    expect(q).toMatchObject({ kind: 'result', part: 'egg1', s: 'm', o: 'helped', band: 'a', st: '4,6,7,8', pl: '3', tried: '6:heard', dc: '4:first-nest,6:heard,7:slip' });
+    expect(q).toMatchObject({ kind: 'result', part: 'egg1', s: 'm', o: 'helped', band: 'a', st: '4,6,7,8', pl: '3', q: '1', tried: '6:heard', dc: '4:first-nest,6:heard,7:slip' });
   });
 
   it('stays under 400 characters, cutting long lists first', () => {
