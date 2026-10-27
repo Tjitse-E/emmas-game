@@ -21,8 +21,8 @@ import { doorMoment, heartsBetween } from './doors';
 import { startMaths } from './band';
 import { ownedRibbons } from './save';
 import {
-  afterWish, babyReact, crownKeep, dropToyAfter, momentLog, noteMaths, parkFollowers, planEgg, planWish, reactOf,
-  runWish, settleBy,
+  afterWish, babyReact, crownKeep, dropToyAfter, momentLog, noteMaths, parkFollowers, planEgg, planWish, runWish,
+  settleBy,
 } from './moments';
 import { herdAside, wardrobe, wardrobePartClipIds } from './wardrobe-part';
 import { afternoon, hideOffers } from './quests';
@@ -244,8 +244,8 @@ function bathSwim(u: UnicornActor): void {
 
 /**
  * A baby's wish beside her: the first baby wants to dress up like her (at the nest), the second asks for a picnic
- * treat (by the wild egg). "Your baby wants to dress up like you!" before the dress-up wish, "I'm hungry!" before a
- * picnic food.
+ * treat (by the wild egg). "Your baby wants to dress up like you!" before the dress-up wish. Nothing before the picnic
+ * wish: "I'm hungry!" only before a food would tell her the answer is a food.
  */
 async function wish(g: Game, i: 0 | 1): Promise<void> {
   const baby = g.babies[i];
@@ -254,7 +254,7 @@ async function wish(g: Game, i: 0 | 1): Promise<void> {
   const part = i === 0 ? 'wish1' : 'wish2';
   const kind = i === 0 ? 'dress' : 'picnic';
   const spec = planWish(g, kind, part, { wish: true });
-  const before = kind === 'dress' ? CLIPS.dressUp : reactOf(spec.target, spec.kind) === 'munch' ? CLIPS.hungry : [];
+  const before = kind === 'dress' ? CLIPS.dressUp : [];
   await preload(g, [...wishClipIds(spec), ...afterWish(spec), ...before]);
   await settleBy(g, u);
   await say(g, before);

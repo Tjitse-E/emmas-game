@@ -13,7 +13,7 @@ import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
 import { CLIPS, eggClipIds, foods, rackSpec, wishClipIds } from '../content';
 import { type Game, flat, frameAt, lumiSay, preload, princessAt, say, sayAside, v3, walkTo } from './game';
-import { afterWish, crownKeep, eggAsk, momentLog, noteMaths, parkFollowers, planWish, reactOf, runWish } from './moments';
+import { afterWish, crownKeep, eggAsk, momentLog, noteMaths, parkFollowers, planWish, runWish } from './moments';
 import { useSum } from './band';
 import { herdAside } from './wardrobe-part';
 import type { QuestId } from './options';
@@ -243,8 +243,8 @@ async function picnicQuest(g: Game): Promise<void> {
   // Guest 1, then guest 2: two different targets from the picnic pool.
   for (const [k, u] of babies.entries()) {
     const spec = guestWish(g);
-    await preload(g, [...wishClipIds(spec), ...afterWish(spec), ...CLIPS.hungry]);
-    if (reactOf(spec.target, spec.kind) === 'munch') await say(g, CLIPS.hungry);
+    // No "I'm hungry!" first: before a food only, it would give the answer away (docs/v4/2.2.md 3.2).
+    await preload(g, [...wishClipIds(spec), ...afterWish(spec)]);
     await runWish(g, u, spec, `picnic${k + 1}`, { frame: false });
     u.lookAt(null);
   }
