@@ -58,7 +58,7 @@ describe('maths band', () => {
     useSum(m, { kind: 'warm', need: 13, have: 8, answer: 5 });
     useSum(m, { kind: 'snow', need: 9, have: 14, answer: 5 });
     expect(m.used).toEqual({ totals: [13, 14], answers: [5, 5] });
-    expect(totalOf({ kind: 'warm', need: 12, have: 7 })).toBe(12);
-    expect(totalOf({ kind: 'snow', need: 8, have: 15 })).toBe(15);
+    expect(totalOf({ need: 12, have: 7 })).toBe(12);
+    expect(totalOf({ need: 8, have: 15 })).toBe(15);
   });
 });

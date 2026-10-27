@@ -5,6 +5,7 @@
 // looking at L = (her.x + ox, lookY, her.z). shiftY 0 keeps frame() from making a low pitch into a sky shot.
 import type { LookRow, Vec2 } from '../contracts';
 import { FOV } from '../world/camera';
+import { wardrobeLayout } from '../ui/geometry';
 
 export type PortraitKind = 'body' | 'face';
 
@@ -26,13 +27,9 @@ export const MOVE_MS = 500;
 
 export const portraitKind = (row: LookRow | null): PortraitKind => (row && FACE_ROWS.includes(row) ? 'face' : 'body');
 
-/**
- * The panel's left edge in CSS px: anchored 16 design px from the right, 628 wide (2.2). The ui lane's
- * wardrobeLayout(w, h).panel gives the same number; this copy keeps the helper pure until the lanes meet.
- */
+/** The panel's left edge in CSS px, as the layer draws it (2.2): she stands at half of it. */
 export function panelLeftOf(w: number, h: number): number {
-  const unit = Math.min(w / 1180, h / 820);
-  return w - (16 + 628) * unit;
+  return wardrobeLayout(w, h).panel.x;
 }
 
 export interface PortraitFrame {

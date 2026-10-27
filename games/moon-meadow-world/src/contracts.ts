@@ -497,7 +497,7 @@ export interface Layer {
     look: PrincessLook; ribbons: Ribbon[]; firstTime: boolean;
     clips: { ready: string[]; firstTime: string[]; idle: string[]; done: string[] };
     onLook(look: PrincessLook, row: LookRow): void;    // apply to 3D (gown and style 150 ms after settle)
-    onPicked(look: PrincessLook, row: LookRow): void;  // gesture ended with a change: react, save
+    onPicked(look: PrincessLook, row: LookRow): void;  // gesture ended or row tile tapped (also with no change): react, save
     onFocus(row: LookRow | null): void;                 // face or body frame
     onTurn(dxPx: number, ended: boolean): void;         // preview drag
     onPreviewTap(): void;

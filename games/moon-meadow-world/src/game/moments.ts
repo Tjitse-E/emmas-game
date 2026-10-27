@@ -3,19 +3,17 @@
 // a wish beside a baby; how a baby shows the reactions; and noting every result (the results log, the reading level,
 // the maths band and the save).
 import * as THREE from 'three';
-import type { EggSpec, MomentHooks, MomentResult, Unicorn, WishItem, WishSpec } from '../contracts';
+import type { EggSpec, MomentHooks, MomentResult, WishItem, WishSpec } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { dist2 } from '../layout';
-import { type Rand, CLIPS, eggSpec, wishSpec } from '../content';
+import { CLIPS, eggSpec, wishSpec } from '../content';
 import { type Game, flat, frameAt, princessAt, say } from './game';
-import { type ReadingLevel, foldReading, readingLevelFor } from './reading';
+import { foldReading, readingLevelFor } from './reading';
 import { type Band, noteBand, useSum } from './band';
 
 const BABY_WIDTH = 5.5;
 /** A worn picture stays on the baby's head this long. */
 const WEAR_MS = 20_000;
-/** "Pretty!" after a dress-up wish (v3 places pack). */
-const PRETTY = ['foal-pretty'];
 
 // ---- the moment log ------------------------------------------------------------------------------------------------
 
@@ -51,8 +49,7 @@ const toys = new WeakMap<UnicornActor, number>();
 export function showToy(u: UnicornActor, pic: string | null, o: { on?: 'ground' | 'head'; ms?: number } = {}): void {
   const token = (toys.get(u) ?? 0) + 1;
   toys.set(u, token);
-  // Through the contract: the actor's showToy takes `on` (the dress-up wish wears it on the head).
-  (u as Unicorn).showToy(pic, pic ? { on: o.on ?? 'ground' } : undefined);
+  u.showToy(pic, pic ? { on: o.on ?? 'ground' } : undefined);
   if (pic && o.ms) setTimeout(() => toys.get(u) === token && u.showToy(null), o.ms);
 }
 
@@ -145,13 +142,6 @@ export function frameWish(g: Game, u: UnicornActor): Promise<void> {
 
 // ---- wishes --------------------------------------------------------------------------------------------------------
 
-/**
- * The reading lane's wishSpec with the reading level (docs/v4/2.2.md 3.1): kind, the moment's stream, the words that
- * cannot be the wish, then the level and the miss rule. The step-0 content takes only the first three.
- */
-type PlanWishSpec = (kind: WishSpec['kind'], rand: Rand, exclude: readonly string[], o: { level: ReadingLevel; contrast: boolean }) => WishSpec;
-const planWishSpec = wishSpec as unknown as PlanWishSpec;
-
 /** How the baby takes an item: its own reaction, or the kind's (food and picnic munch, dress-up wears, the rest play). */
 export function reactOf(item: WishItem, kind: WishSpec['kind']): 'munch' | 'play' | 'wear' {
   if (item.react) return item.react;
@@ -169,14 +159,7 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   if (o.wish) g.today.wishes++;
   const exclude = [...new Set([...g.save.data.last.words, ...g.today.words])];
   const rand = g.randFor(label);
-  const opts = { level, contrast: g.options.contrast };
-  let spec = planWishSpec(kind, rand, exclude, opts);
-  // The step-0 content knows only the food and bath words; the reading lane adds dress and picnic.
-  if (!spec.clips) spec = planWishSpec(kind === 'picnic' ? 'food' : 'bath', rand, exclude, opts);
-  if (!g.options.contrast && spec.clips.again) {
-    const { again: _again, ...clips } = spec.clips;
-    spec = { ...spec, clips };
-  }
+  const spec = wishSpec(kind, rand, exclude, { level, contrast: g.options.contrast });
   g.today.words.push(spec.target.word);
   return spec;
 }
@@ -184,7 +167,7 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
 /** The baby's line after it has its wish: "Pretty!", "Yum!" or "Yay!". */
 export function afterWish(spec: WishSpec): string[] {
   const r = reactOf(spec.target, spec.kind);
-  return r === 'wear' ? PRETTY : r === 'munch' ? CLIPS.yum : CLIPS.yay;
+  return r === 'wear' ? CLIPS.pretty : r === 'munch' ? CLIPS.yum : CLIPS.yay;
 }
 
 /** Every clip a wish needs besides wishClipIds(spec): the baby's line after it. */

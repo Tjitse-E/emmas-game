@@ -11,10 +11,9 @@ import type { UnicornActor } from '../actors';
 import { GRAZE_HOMES, HAY_RACK, PICNIC, PLACES, dist2 } from '../layout';
 import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
-import { type Rand, CLIPS, eggClipIds, eggSpec, foods, wishClipIds } from '../content';
-import * as rackContent from '../content/rack';
+import { CLIPS, eggClipIds, foods, rackSpec, wishClipIds } from '../content';
 import { type Game, flat, frameAt, lumiSay, preload, princessAt, say, sayAside, v3, walkTo } from './game';
-import { type EggAsk, afterWish, crownKeep, eggAsk, momentLog, noteMaths, parkFollowers, planWish, reactOf, runWish } from './moments';
+import { afterWish, crownKeep, eggAsk, momentLog, noteMaths, parkFollowers, planWish, reactOf, runWish } from './moments';
 import { useSum } from './band';
 import { herdAside } from './wardrobe-part';
 import type { QuestId } from './options';
@@ -260,16 +259,12 @@ async function picnicQuest(g: Game): Promise<void> {
 
 // ---- the hungry herd at the hay rack (maths) -----------------------------------------------------------------------
 
-/** The maths lane's rackSpec (docs/v4/2.2.md 4.3): a 'warm' spec with skin 'hay' and the rack's clips. */
-type RackSpec = (rand: Rand, ask: EggAsk) => EggSpec;
-const rackSpec = (rackContent as unknown as { rackSpec?: RackSpec }).rackSpec;
-
-/** The rack's sum from its own stream, in the current band; it is then used for this play. */
+/**
+ * The rack's sum from its own stream, in the current band (the maths lane's rackSpec, docs/v4/2.2.md 4.3: a 'warm'
+ * spec with skin 'hay' and the rack's clips); it is then used for this play.
+ */
 function planRack(g: Game): EggSpec {
-  const ask = eggAsk(g);
-  const rand = g.randFor('rack');
-  // Until the maths lane's rackSpec is there, the rack asks a warm egg's sum in the hay skin.
-  const spec = rackSpec ? rackSpec(rand, ask) : { ...eggSpec('warm', rand, ask), skin: 'hay' as const };
+  const spec = rackSpec(g.randFor('rack'), eggAsk(g));
   useSum(g.maths, spec);
   return spec;
 }

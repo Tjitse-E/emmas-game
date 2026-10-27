@@ -38,6 +38,8 @@ check_targets "$(moment_targets)"
 expect_eq "$(val "() => window.__game.state().moment.targets.filter((t) => /^stone /.test(t.name)).every((t) => +t.name.slice(6) >= 3)")" true 'stones 3 to 9'
 expect_eq "$(val "() => JSON.parse('$(stones_of)').length")" 4 'egg 1 stones (band A)'
 heard="$(stone_of_kind heard)"
+# The heard number is not always a valid stone: then the slip (one off).
+[ -n "$heard" ] || heard="$(stone_of_kind slip)"
 [ -n "$heard" ] || heard="$(wrong_of stone)"
 say "egg 1 wrong stone: $heard"
 drag "$heard" cups

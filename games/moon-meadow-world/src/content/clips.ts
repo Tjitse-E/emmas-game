@@ -76,6 +76,8 @@ export const CLIPS = {
   lovely: ['fb-lovely'],
   notMe: ['foal-notme'],
   yum: ['foal-yum'],
+  /** After a dress-up wish: "Pretty!" (v3 places pack). */
+  pretty: ['foal-pretty'],
   wee: ['foal-wee'],
   silly: ['foal-silly'],
   yay: ['foal-yay'],

@@ -1,7 +1,7 @@
 // window.__game: the test hook for the flows and for Tjitse in the console. State, every touchable thing on screen
 // (ui targets and 3D targets), the answer of the open moment, jumps between parts, and the save.
 import * as THREE from 'three';
-import type { LookRow, PrincessLook, Ribbon } from './contracts';
+import type { PrincessLook, Ribbon } from './contracts';
 import type { UiTarget } from './ui';
 import { HAY_RACK, NEST, PICNIC, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
 import { audio } from './audio';
@@ -77,8 +77,7 @@ export function installHook(g: Game): void {
   };
 
   /** The customiser's state from the layer: open, and the row in focus (null while it is closed). */
-  const wardrobe = (): { open: boolean; focus: LookRow | null } | null =>
-    (layer.snapshot() as { wardrobe?: { open: boolean; focus: LookRow | null } | null }).wardrobe ?? null;
+  const wardrobe = () => layer.snapshot().wardrobe;
 
   const hook = {
     state() {

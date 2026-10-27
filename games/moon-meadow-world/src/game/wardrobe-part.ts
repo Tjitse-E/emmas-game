@@ -4,7 +4,7 @@
 // saved, and the big pink play button (Done) ends the part with a curtsy. Lumi stays hidden, the home button stays.
 import type { LookRow, PrincessEmote, PrincessLook, Vec2 } from '../contracts';
 import { GRAZE_HOMES, dist2 } from '../layout';
-import { EYE_HEX, HAIR_HEX, LOOK_ROWS, RIBBON_HEX, wardrobeClipIds } from '../wardrobe';
+import { EYE_HEX, HAIR_HEX, wardrobeClipIds } from '../wardrobe';
 import { audio } from '../audio';
 import { CLIPS } from '../content';
 import { type Game, flat } from './game';
@@ -23,15 +23,21 @@ const ASIDE: [Vec2, Vec2][] = [
 
 /** Her reaction when a pick is released, per row (2.4). */
 const REACTION: Record<LookRow, PrincessEmote> = { hair: 'toss', eyes: 'blink', gown: 'twirl', style: 'show', thing: 'tilt' };
-/** Where the sparkle of a released pick shows. */
-const PART_OF: Record<LookRow, 'head' | 'eyes' | 'thing' | 'dress'> = { hair: 'head', eyes: 'eyes', gown: 'dress', style: 'head', thing: 'thing' };
+/**
+ * Where the sparkle of a released pick shows. The toss, twirl and tilt reactions make their own sparkle (in the hair,
+ * gown and ribbon colour), so only the rows whose reaction has none get one here.
+ */
+const SPARKLE_AT: Partial<Record<LookRow, 'head' | 'eyes'>> = { eyes: 'eyes', style: 'head' };
 /** A released pick is saved this long after the release (a quick second pick saves once). */
 const SAVE_AFTER_MS = 300;
 /** The preview drag: 1 degree per 2 px, at most 170 degrees either way from facing the camera. */
 const TURN_PER_PX = Math.PI / 360;
 const TURN_MAX = (170 * Math.PI) / 180;
-/** For hair things and styles she turns this far, so a side clip or a ponytail shows. */
-const SIDE_TURN = (25 * Math.PI) / 180;
+/**
+ * For hair things and styles she turns this far, so a side clip or a ponytail shows. Negative: her left side (the
+ * unicorn clip) turns towards the camera.
+ */
+const SIDE_TURN = (-25 * Math.PI) / 180;
 const SIDE_ROWS: readonly LookRow[] = ['thing', 'style'];
 /** Done: the curtsy, then "Lovely!" (said by the layer) may take this long before the welcome. */
 const LOVELY_MS = 1800;
@@ -57,14 +63,9 @@ export function herdAside(g: Game, on: boolean, o: { walk?: boolean } = {}): voi
   });
 }
 
-/** The colour of a released pick's sparkle: her new hair, eyes, gown or ribbons. */
+/** The colour of a released pick's sparkle: her new eyes, or her hair for a style. */
 function sparkleColour(look: PrincessLook, row: LookRow): string {
   if (row === 'eyes') return EYE_HEX[look.eyes];
-  if (row === 'thing') return RIBBON_HEX[look.ribbon];
-  if (row === 'gown') {
-    const gowns = LOOK_ROWS.find((r) => r.row === 'gown')!.options;
-    return gowns.find((o) => o.id === look.gown)?.swatch[1] ?? '#ffb3df';
-  }
   const hair = HAIR_HEX[look.hair];
   return hair.bands?.[0] ?? hair.light;
 }
@@ -176,7 +177,8 @@ export async function wardrobe(g: Game): Promise<void> {
         touched.add(row);
         touch(row);
         void her.emote(REACTION[row]);
-        actors.fx.sparkle(her.point(PART_OF[row]), { count: 12, colour: sparkleColour(look, row) });
+        const at = SPARKLE_AT[row];
+        if (at) actors.fx.sparkle(her.point(at), { count: 12, colour: sparkleColour(look, row) });
         saveSoon(look);
       },
       onFocus(row) {

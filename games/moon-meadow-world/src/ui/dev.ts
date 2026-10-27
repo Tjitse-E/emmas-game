@@ -5,6 +5,7 @@ import type { EggSpec, EndMember, LookRow, MomentHooks, NameChoice, NamingSpec, 
 import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
 import { DEFAULT_LOOK } from '../wardrobe';
+import { eggSpec, rackSpec, seeded } from '../content';
 import { createLayer } from './index';
 import { wardrobeLayout } from './geometry';
 import { gownBody, headBody, thingBody } from './swatches';
@@ -161,21 +162,10 @@ function log(line: string) {
 const hooks: MomentHooks = { anchor, react, log: (e, d) => log(`${e} ${JSON.stringify(d ?? {})}`) };
 
 // ---- sample specs on v3 clips (new v4 ids warn as missing, which is fine)
-const count = Array.from({ length: 20 }, (_, i) => `num-${i + 1}`);
-const warmEgg: EggSpec = {
-  kind: 'warm', need: 13, have: 8, answer: 5, stones: [3, 5, 7],
-  clips: {
-    intro: ['g-egg'], goal: ['num-egg-13', 'num-warm-8'], afterGoal: ['g-stone'], right: ['fb-warm', 'v4-eight-and-five'],
-    tooBig: (k) => ['fb-hot', `num-over-${k}`], tooSmall: (k) => ['fb-brr', `num-cold-${k}`], hint: ['h-count'], count,
-  },
-};
-const snowEgg: EggSpec = {
-  kind: 'snow', need: 9, have: 13, answer: 4, stones: [3, 4, 6],
-  clips: {
-    intro: ['v4-snow-intro'], goal: ['num-egg-9', 'v4-but-13-warm'], right: ['v4-just-right', 'v4-thirteen-take-four'],
-    tooBig: (k) => ['fb-brr', `v4-too-cold-${k}`], tooSmall: (k) => ['fb-hot', `num-over-${k}`], hint: ['v4-count-extra'], count,
-  },
-};
+// Real 2.2.0 trays from the content: 4 stones (band A), 5 stones (band B) and the hay rack.
+const warmEgg: EggSpec = eggSpec('warm', seeded(1), { first: true, band: 'a' });
+const snowEgg: EggSpec = eggSpec('snow', seeded(2), { first: true, band: 'b' });
+const hayRack: EggSpec = rackSpec(seeded(3), { band: 'a' });
 const bells: NameChoice[] = [
   { name: 'Pip', gpcs: ['p', 'i', 'p'], clip: 'name-pip', distractors: ['o', 'b'] },
   { name: 'Meg', gpcs: ['m', 'e', 'g'], clip: 'name-meg', distractors: ['a', 'n'] },
@@ -262,6 +252,7 @@ const runs: Record<string, () => Promise<unknown> | void> = {
   lumi: () => layer.lumi.speak(['g-egg']),
   'egg warm': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(warmEgg, hooks); results.push({ egg: 'warm', ...r }); log(`egg warm ${JSON.stringify(r)}`); },
   'egg snow': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(snowEgg, hooks); results.push({ egg: 'snow', ...r }); log(`egg snow ${JSON.stringify(r)}`); },
+  'hay rack': async () => { show(null); const r = await layer.egg(hayRack, hooks); results.push({ egg: 'hay', ...r }); log(`hay rack ${JSON.stringify(r)}`); },
   naming: async () => {
     show('baby', { x: 0.5, y: 0.26 });
     const r = await layer.naming(naming, { ...hooks, chosen: (n) => log(`chosen ${n.name}`) });

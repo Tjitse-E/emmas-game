@@ -206,7 +206,8 @@ async function naming(g: Game, i: 0 | 1): Promise<void> {
   const baby = g.babies[i];
   const u = baby.unicorn;
   g.free = false;
-  const spec = namingSpec(g.randFor(i === 0 ? 'naming1' : 'naming2'), i === 1 && g.babies[0]?.member ? [g.babies[0].member.name] : []);
+  // The second naming has a fourth wrong gem (docs/v4/2.2.md 3.1).
+  const spec = namingSpec(g.randFor(i === 0 ? 'naming1' : 'naming2'), i === 1 && g.babies[0]?.member ? [g.babies[0].member.name] : [], i === 0 ? 3 : 4);
   await preload(g, namingClipIds(spec));
   faceBeside(g, flat(u.position));
   // The frame centre a little towards her, so her crown stays clear of Lumi's portrait (top left).
@@ -618,7 +619,7 @@ function snapBaby(g: Game, i: 0 | 1, at: Vec2, nameIt: boolean): Baby {
   const u = g.actors.herd.add({ id: `baby-${door}`, name: '', look, at });
   const baby: Baby = { door, look, unicorn: u, member: null };
   const naming = g.randFor(i === 0 ? 'naming1' : 'naming2');
-  if (nameIt) named(g, baby, namingSpec(naming, i === 1 && g.babies[0].member ? [g.babies[0].member.name] : []).bells[0]);
+  if (nameIt) named(g, baby, namingSpec(naming, i === 1 && g.babies[0].member ? [g.babies[0].member.name] : [], i === 0 ? 3 : 4).bells[0]);
   return baby;
 }
 

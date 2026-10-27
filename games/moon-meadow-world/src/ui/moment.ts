@@ -37,6 +37,8 @@ export interface MomentSnapshot {
    * extra cups are not marked yet).
    */
   covered?: boolean;
+  /** Wish only: the words of the wrong items that carry a contrast tag after a miss (the tag cannot be touched). */
+  tags?: string[];
   targets: UiTarget[];
 }
 

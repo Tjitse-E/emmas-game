@@ -278,7 +278,7 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
           ],
         };
         // The words that carry a contrast tag (not a target: the tag cannot be touched), for the flows.
-        return Object.assign(snap, { tags: items.filter((x) => x.tag).map((x) => x.it.word) });
+        return { ...snap, tags: items.filter((x) => x.tag).map((x) => x.it.word) };
       },
     };
     setOpen(handle);

@@ -7,9 +7,10 @@ import { HERD_LOOKS } from './looks.ts';
 
 export { type Rand, seeded, stream } from './rand.ts';
 export { babyLook } from './looks.ts';
-export { eggSpec, eggClipIds, eggCombos } from './eggs.ts';
+export { eggSpec, eggClipIds, eggCombos, nextBand, totalOf, type Band, type MathsUsed, type MathsPick } from './eggs.ts';
+export { rackSpec, allRackClipIds } from './rack.ts';
 export { namingSpec } from './naming.ts';
-export { wishSpec, foods } from './wishes.ts';
+export { wishSpec, foods, wishTargets, planBasket, reactOf, BASKET_SIZE, type WishOpts } from './wishes.ts';
 export { moveIn, doorVisit, rollCall, newborn, NEWBORN_DOORS, type DoorAsk } from './doors.ts';
 export { CLIPS, wayTo, allClipIds, allGraphemes, namingClipIds, wishClipIds, doorClipIds } from './clips.ts';
 
