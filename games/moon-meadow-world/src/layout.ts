@@ -147,6 +147,8 @@ export const PICNIC = {
   seats: [v2(-14.7, 4.1), v2(-13.3, 4.1)] as Vec2[],
   stand: v2(-12.2, 5.0),
   hamper: v2(-12.7, 4.4),
+  /** Where her other followers wait during the picnic: west of the rug, clear of the cushions and the 5.5 m frame. */
+  aside: [v2(-17, 4.0), v2(-17.3, 5.1), v2(-16.8, 2.9)] as Vec2[],
 } as const;
 
 /** The big trees inside the fence (the world draws one on each). Obstacles. */

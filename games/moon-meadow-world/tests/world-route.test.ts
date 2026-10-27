@@ -233,6 +233,18 @@ describe('the 2.2.0 places: the hay rack and the picnic', () => {
     }
   });
 
+  it('lets her other followers wait beside the rug at the picnic, clear of the cushions, the hamper and her spot', () => {
+    const { center, halfX, halfZ } = PICNIC.rug;
+    for (const p of PICNIC.aside) {
+      expect(isWalkable(p), `${p.x},${p.z}`).toBe(true);
+      expect(Math.abs(p.x - center.x) > halfX + 0.8 || Math.abs(p.z - center.z) > halfZ + 0.8, `${p.x},${p.z}`).toBe(true);
+      for (const q of [...PICNIC.seats, PICNIC.hamper, PICNIC.stand]) expect(straight(p, q), `${p.x},${p.z}`).toBeGreaterThan(1.5);
+      // Outside the picnic close-up (5.5 m across, centred 0.6 m east of the rug).
+      expect(Math.abs(p.x - (center.x + 0.6))).toBeGreaterThan(2.75 + 0.5);
+    }
+    for (const [i, a] of PICNIC.aside.entries()) for (const b of PICNIC.aside.slice(i + 1)) expect(straight(a, b)).toBeGreaterThan(0.85);
+  });
+
   it('walks straight across the rug, which is not an obstacle', () => {
     const { center, halfZ } = PICNIC.rug;
     const north = v2(center.x, GAZEBO.center.z + GAZEBO.radius + 0.6);

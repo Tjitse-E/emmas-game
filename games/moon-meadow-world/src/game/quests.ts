@@ -221,7 +221,8 @@ async function picnicQuest(g: Game): Promise<void> {
   g.free = false;
   const babies = guests(g);
   for (const u of babies) g.followers.remove(u);
-  parkFollowers(g, PICNIC.stand);
+  // Other followers wait beside the rug, off the cushions (the egg moments' spots would put them on the rug).
+  parkFollowers(g, PICNIC.stand, PICNIC.aside);
   // The unicorns grazing by the gazebo step back behind the camera, as for the customiser.
   herdAside(g, true, { walk: true });
   // Both babies walk to their cushions while she walks to her spot; they sit there after 4 s at the latest, facing

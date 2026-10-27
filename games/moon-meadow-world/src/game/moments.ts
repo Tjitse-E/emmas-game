@@ -3,7 +3,7 @@
 // a wish beside a baby; how a baby shows the reactions; and noting every result (the results log, the reading level,
 // the maths band and the save).
 import * as THREE from 'three';
-import type { EggSpec, MomentHooks, MomentResult, WishItem, WishSpec } from '../contracts';
+import type { EggSpec, MomentHooks, MomentResult, Vec2, WishItem, WishSpec } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { dist2 } from '../layout';
 import { CLIPS, eggSpec, wishSpec } from '../content';
@@ -101,14 +101,15 @@ export function babyReact(g: Game, u: UnicornActor, toy?: string, playMs?: numbe
 
 /**
  * Her followers step aside, behind her and away from the camera, while an egg and its baby have her attention, so
- * nobody plays in front of the egg, the bubble or the basket. They follow again after the baby's wish.
+ * nobody plays in front of the egg, the bubble or the basket. They follow again after the baby's wish. A place with
+ * its own waiting spots (the picnic) passes them as `spots`.
  */
-export function parkFollowers(g: Game, her: { x: number; z: number }): void {
+export function parkFollowers(g: Game, her: { x: number; z: number }, spots?: readonly Vec2[]): void {
   g.followers.sync();
   const list = g.followers.list.slice();
   list.forEach((u, k) => {
     g.followers.remove(u);
-    const spot = g.world.nearestWalkable({ x: her.x - 1.6 - 0.9 * k, z: her.z - 1.4 + 0.6 * k });
+    const spot = g.world.nearestWalkable(spots?.[k] ?? { x: her.x - 1.6 - 0.9 * k, z: her.z - 1.4 + 0.6 * k });
     void u.goTo(g.world.route(flat(u.position), spot));
   });
   g.parked.push(...list);
