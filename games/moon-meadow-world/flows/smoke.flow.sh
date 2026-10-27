@@ -1,21 +1,41 @@
 #!/usr/bin/env bash
-# Smoke runs at W x H: start at a part with ?at= (after the Play tap, as Emma would), check that its moment opens
-# and that every target of it (and every 3D unicorn near her) is on screen and at least 64 px. Screenshots of every
-# part.
+# Smoke runs at W x H with a fresh save: start at a part with ?at= (after the Play tap, as Emma would), check that its
+# moment opens and that every target of it (and every 3D unicorn near her) is on screen and at least 64 px.
+# Screenshots of every part. Extra address options after the part: `start_at egg2 '&maths=b'`.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-11}"
 
 start_at() {
-  if [ "$1" = egg1 ]; then open_page "?seed=$SEED&at=$1"; else goto_page "?seed=$SEED&at=$1"; fi
+  if [ "$1" = wardrobe ]; then open_page "?seed=$SEED&fresh=1&at=$1${2:-}"; else goto_page "?seed=$SEED&fresh=1&at=$1${2:-}"; fi
   press_play
 }
 
+# The customiser: every swatch, row, Done and the preview are touchable; Done goes on to Lumi's welcome.
+start_at wardrobe
+wait_target 'done' 30
+sleep 1
+shot smoke-wardrobe
+check_targets "$(wardrobe_targets)"
+check_targets '["done","preview","home"]'
+dress_done
+
 start_at egg1
 wait_moment egg 30
+wait_phase open 30
 sleep 1.5
 shot smoke-egg1
 check_targets "$(moment_targets)"
 check_targets '["cups","lumi","home"]'
+expect_eq "$(val "() => JSON.parse('$(stones_of)').length")" 4 'band A stones'
+
+# Band B: 5 smaller stones, still below the home button and touchable.
+start_at egg2 '&maths=b'
+wait_moment egg 30
+wait_phase open 30
+sleep 1.5
+shot smoke-egg2-band-b
+check_targets "$(moment_targets)"
+expect_eq "$(val "() => JSON.parse('$(stones_of)').length")" 5 'band B stones'
 
 start_at naming1
 wait_moment naming 30
@@ -28,12 +48,22 @@ sleep 0.5
 shot smoke-naming1-spell
 check_targets "$(moment_targets)"
 
+# The dress-up wish is the play's warm-up (4 items); at ?rl=3 every basket has 5.
 start_at wish1
 wait_moment wish 30
 sleep 1.5
 shot smoke-wish1
 check_targets "$(moment_targets)"
 check_targets '["baby","bubble"]'
+expect_eq "$(item_count)" 4 'items in the warm-up wish'
+
+start_at wish2 '&rl=3'
+wait_moment wish 30
+sleep 1.5
+shot smoke-wish2-level3
+check_targets "$(moment_targets)"
+check_targets '["baby","bubble"]'
+expect_eq "$(item_count)" 5 'items at level 3'
 
 # The pond: the slide, the followers near her, and the bath wish after the first slide.
 start_at pond
