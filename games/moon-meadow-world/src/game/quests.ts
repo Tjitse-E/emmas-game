@@ -1,6 +1,6 @@
-// The afternoon (docs/v4/2.2.md section 5): free play with two optional side quests. It starts as before, with the
-// basket line and the food basket. A second later two offer bubbles appear: a picnic over the rug by the gazebo and a
-// hay bundle over the hay rack by the stable. A bubble tap, a tap on the place or walking within 2.5 m of it starts
+// The afternoon (docs/v4/2.2.md section 5): free play with two optional side quests. It starts with two offer bubbles:
+// a picnic over the rug by the gazebo and a hay bundle over the hay rack by the stable, explained once a play. Then the
+// basket line and the food basket, as before. A bubble tap, a tap on the place or walking within 2.5 m of it starts
 // that quest; free play itself is never checked, and a skipped quest costs nothing.
 //
 // Time: free play ends after two minutes without a quest running (a quest pauses the clock), once no quest runs. No
@@ -25,7 +25,6 @@ export const FREE_PLAY_MS = 120_000;
 export const QUEST_CUTOFF_MS = 180_000;
 /** A quiet while without a touch brings the next suggestion. */
 const FREE_PROMPT_MS = 30_000;
-const BUBBLES_AFTER_MS = 1000;
 /** Walking this near a quest's place starts it. */
 const NEAR_M = 2.5;
 /** The longest walk to a quest's spot; after that she is there at once. */
@@ -68,7 +67,7 @@ export function askQuest(g: Game, id: QuestId): boolean {
   return true;
 }
 
-/** Show the bubble of every quest that can start, hide the others. The first bubbles of a play are explained once. */
+/** Show the bubble of every quest that can start, hide the others. */
 function showOffers(g: Game): void {
   const q = g.quests;
   for (const id of QUESTS) {
@@ -78,10 +77,6 @@ function showOffers(g: Game): void {
       const p = v3({ x: OFFER[id].at.x, z: OFFER[id].at.z }, OFFER[id].at.y);
       g.layer.offer(id, { pic: OFFER[id].pic(), at: () => g.world.toScreen(p), onTap: () => void askQuest(g, id) });
     } else hideOffer(g, id);
-  }
-  if (q.offered.size && !q.explained) {
-    q.explained = true;
-    sayAside(CLIPS.bubbles[0]);
   }
 }
 
@@ -129,9 +124,28 @@ export async function afternoon(g: Game): Promise<void> {
   const { layer, world } = g;
   const q = g.quests;
   g.free = true;
-  await say(g, CLIPS.basket);
-  showBasket(g);
-  trayLineOnce(g);
+  if (g.options.quest) askQuest(g, g.options.quest);
+  // The bubbles first, explained once a play: "When you see a bubble, someone is waiting for you." Nothing can cut it
+  // (the basket and its lines come after it, Lumi waits while it plays, a unicorn's name waits its turn), so it counts
+  // as said when it has played.
+  let basket = false;
+  const basketOnce = () => {
+    showBasket(g);
+    if (!basket) trayLineOnce(g);
+    basket = true;
+  };
+  if (!q.asked) {
+    showOffers(g);
+    if (q.offered.size && !q.explained) {
+      await say(g, CLIPS.bubbles);
+      q.explained = true;
+    }
+  }
+  // A bubble tapped meanwhile starts its quest at once: no basket line, the basket shows after the quest.
+  if (!q.asked) {
+    await say(g, CLIPS.basket);
+    basketOnce();
+  }
 
   // The afternoon's clocks, the walk-near trigger and the three-minute cut-off for new quests.
   const offClock = world.onFrame((dt) => {
@@ -146,9 +160,6 @@ export async function afternoon(g: Game): Promise<void> {
   });
   g.run.defer(offClock);
   if (canQuest(g, 'rack')) hungryHerd(g);
-  const bubbles = setTimeout(() => g.part === 'free' && !q.running && showOffers(g), BUBBLES_AFTER_MS);
-  g.run.defer(() => clearTimeout(bubbles));
-  if (g.options.quest) askQuest(g, g.options.quest);
 
   // After a quiet while without a touch: the slide, a follower, the basket or the bubbles, in turn.
   const prompts = [CLIPS.slideTap, CLIPS.follow, CLIPS.basket, CLIPS.bubbles];
@@ -169,7 +180,6 @@ export async function afternoon(g: Game): Promise<void> {
     if (left <= 0 || !(await g.run.until(() => (prompt(), q.asked !== null), left))) break;
     const id = q.asked!;
     q.asked = null;
-    clearTimeout(bubbles);
     hideOffers(g);
     layer.foodBasket({ show: false });
     q.running = id;
@@ -180,11 +190,10 @@ export async function afternoon(g: Game): Promise<void> {
     }
     q.done.add(id);
     g.free = true;
-    showBasket(g);
+    basketOnce();
     showOffers(g);
     prompted = performance.now();
   }
-  clearTimeout(bubbles);
   offClock();
   hideOffers(g);
   layer.foodBasket({ show: false });
