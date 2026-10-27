@@ -14,6 +14,8 @@ import { type Band, noteBand, useSum } from './band';
 const BABY_WIDTH = 5.5;
 /** A worn picture stays on the baby's head this long. */
 const WEAR_MS = 20_000;
+/** A dish or a mug from a picnic wish stays at the baby's feet this long (the bath toy stays for the swim). */
+const PLAY_MS = 8000;
 
 // ---- the moment log ------------------------------------------------------------------------------------------------
 
@@ -59,8 +61,11 @@ export function dropToyAfter(u: UnicornActor, ms: number): void {
   setTimeout(() => toys.get(u) === token && u.showToy(null), ms);
 }
 
-/** How a baby shows the reactions a naming or wish moment asks for. `toy` is the wish's picture. */
-export function babyReact(g: Game, u: UnicornActor, toy?: string): MomentHooks['react'] {
+/**
+ * How a baby shows the reactions a naming or wish moment asks for. `toy` is the wish's picture; a played-with toy is
+ * taken away after `playMs` (none: it stays until someone takes it away, as bathSwim does).
+ */
+export function babyReact(g: Game, u: UnicornActor, toy?: string, playMs?: number): MomentHooks['react'] {
   return (k) => {
     const heart = () => g.actors.fx.hearts(u.headTop().setY(u.headTop().y - 0.1));
     switch (k) {
@@ -69,7 +74,7 @@ export function babyReact(g: Game, u: UnicornActor, toy?: string): MomentHooks['
         heart();
         return;
       case 'play':
-        showToy(u, toy ?? null);
+        showToy(u, toy ?? null, { ms: playMs });
         void u.emote('hop');
         heart();
         return;
@@ -192,7 +197,11 @@ export async function runWish(g: Game, u: UnicornActor, spec: WishSpec, part: st
   const t = momentLog();
   g.openSpec = spec;
   const r: MomentResult = await g.run.w(
-    layer.wish(spec, { anchor: () => world.toScreen(u.headTop()), react: babyReact(g, u, spec.target.pic), log: t.log }),
+    layer.wish(spec, {
+      anchor: () => world.toScreen(u.headTop()),
+      react: babyReact(g, u, spec.target.pic, spec.kind === 'bath' ? undefined : PLAY_MS),
+      log: t.log,
+    }),
   );
   g.openSpec = null;
   g.results.add(part, 'r', r, {
