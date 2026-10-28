@@ -19,7 +19,7 @@ export const PILL_MS = 1500;
 
 /** The fields whose change waits for SETTLE_MS (Layer.wardrobe: gown, crown, shoes and style). The rest apply at once. */
 export const SETTLE_FIELDS: readonly LookField[] = ['gown', 'crown', 'shoes', 'style'];
-/** A pick of these that says no word now plays the dress swish (section 16). */
+/** A pick of these without a word, or inside the word gap, plays the dress swish instead (section 16). */
 const SWISH_FIELDS: readonly LookField[] = ['gown', 'extra'];
 
 /** The effects a pick can play, through audio.fx (section 20: wardrobe-ui wires these two for picks). */
@@ -35,8 +35,8 @@ export interface RailOut {
   bounce(rail: RailSpec, cell: number): void;
   sfx(name: 'tick' | 'pop'): void;
   fx(id: PickFx): void;
-  /** Say and print a word, rate limited (WordVoice). True when it is said now, false when it waits. */
-  word(w: LookWord): boolean;
+  /** Say and print a word, rate limited (WordVoice.push): said now, waiting, or dropped inside the word gap. */
+  word(w: LookWord, o?: { dropInGap?: boolean }): WordFate;
 }
 
 export interface RailHooks {
@@ -56,7 +56,7 @@ interface Gesture {
  * The rails' state. A finger going down selects the cell under it at once (with a tick), a move into a new cell
  * selects that one, and the end of the gesture (however it ends) gives the one sound of the pick and its reaction:
  * the option's word when it has one, else its effect. A pick that says a word plays no effect, so nothing plays under
- * her word; a gown shape or extra whose word must wait for the word gap plays the swish now instead.
+ * her word; a gown shape or extra picked inside the word gap plays the swish instead, and its word is not kept.
  */
 export class Rails {
   private current: PrincessLook;
@@ -118,8 +118,9 @@ export class Rails {
     if (!changed) this.out.bounce(g.rail, g.cell);
     else if (!this.muted) {
       const w = id === undefined ? undefined : wordOf(field, id);
-      const now = w ? this.out.word(w) : false;
-      if (SWISH_FIELDS.includes(field) && !now) this.out.fx('dress-swish');
+      const swish = SWISH_FIELDS.includes(field);
+      const fate = w ? this.out.word(w, { dropInGap: swish }) : null;
+      if (swish && (fate === null || fate === 'dropped')) this.out.fx('dress-swish');
       else if (field === 'crown' && !w) this.out.fx('crown-twinkle');
       else if (!w) this.out.sfx('pop');
     }
@@ -300,6 +301,9 @@ export function pillOf(w: LookWord): Pill | null {
   return printable(w.print) ? { text: w.print, ink: PRINT_INK } : null;
 }
 
+/** What became of a word: said now, waiting (the gap or a guidance line), or dropped inside the gap (dropInGap). */
+export type WordFate = 'said' | 'waits' | 'dropped';
+
 export interface WordVoiceOpts {
   say(clip: string): void;
   show(pill: Pill | null): void;
@@ -332,10 +336,18 @@ export class WordVoice {
     return !this.o.guiding() && this.now() >= this.last + WORD_GAP_MS;
   }
 
-  /** Say this word now, or let it wait as the newest. True when it was said at once. */
-  push(w: LookWord): boolean {
+  /**
+   * Say this word now, or let it wait as the newest. With `dropInGap`, a word inside the word gap is not kept and a
+   * word still waiting goes too (the newest pick then plays its swish, so nothing is said after it); during a guidance
+   * line it waits as usual.
+   */
+  push(w: LookWord, o: { dropInGap?: boolean } = {}): WordFate {
+    if (o.dropInGap && !this.o.guiding() && this.now() < this.last + WORD_GAP_MS) {
+      this.drop();
+      return 'dropped';
+    }
     this.pending = w;
-    return this.pump();
+    return this.pump() ? 'said' : 'waits';
   }
 
   /** Say the waiting word when it may be said, or wait for that. True when a word was said. */

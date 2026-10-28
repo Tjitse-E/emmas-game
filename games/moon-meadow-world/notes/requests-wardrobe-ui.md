@@ -11,6 +11,7 @@ Changes this lane needs in files it does not own. The lane compiles and passes i
 
 - **Change:** `wordOf('eyes', id)` returns the colour word for blue, green and brown, for example `eyes: { blue: word('blue'), green: word('green'), brown: word('brown') }` in `SHAPE_WORDS`.
 - **Why:** section 15 says "Eyes (6): 2.2's six. Blue, green and brown say their colour word." Today `wordOf('eyes', …)` returns nothing, because `eyes` is not a colour field and `SHAPE_WORDS` has no eyes entry. The panel calls `wordOf` for every pick, so it speaks and prints them as soon as `wordOf` returns them. The clips exist (`word-blue`, `word-green`, `word-brown` are lines in tools/lines.ts).
+- **Then:** add `['eyes', 'eyes', 'green']` to the cases of "a pick with a word says it and plays no effect" in tests/wardrobe-ui.test.ts (wardrobe-ui), so an eye pick is checked to say its word and play no effect.
 
 ## 3. src/test-hook.ts (quests-world, or the integrator in 22.3 step 4): drop `legacy()`
 
@@ -26,3 +27,13 @@ Changes this lane needs in files it does not own. The lane compiles and passes i
 
 - **Change:** link `games/moon-meadow-home/dist-test-gate` into each lane worktree, as `node_modules` is linked, or let `run.sh` take the v3 build from the main tree.
 - **Why:** `run.sh` serves v3's clips and pictures from `games/moon-meadow-home/dist-test-gate`, a gitignored build that exists only in the main tree. Without it every flow's `finish` fails on missing v3 clips (fb-lovely, lumi-hello, the letter sounds), and Lumi's picture is missing. For this lane's flow runs I linked the main tree's build read-only and removed the link afterwards.
+
+## 6. src/contracts.ts (integrator): `Layer.gift` with no items
+
+- **Change:** add to the `Layer.gift` doc: "`items` is never empty; with no items it rejects at once."
+- **Why:** 17.2 says there is no picker when every set is full. `runGift` now rejects an empty list, so a caller that forgets the rule fails in the flows instead of waiting forever with nothing on screen (the frame on and the herd aside).
+
+## 7. src/contracts.ts (integrator): when `Layer.gift` tells the game of the pick
+
+- **Question:** `Layer.gift` resolves "once the sparkles have landed", about 1.6 s after the pointerdown, and the panel follows that. 17.2 says the item is saved in `owned` at the pick, but the game only hears of the pick when the promise resolves. A reload or a closed app in that 1.6 s loses the gift she chose.
+- **Options:** an `onPick(item)` callback on `Layer.gift`, or resolve at the pick and let the sparkles finish by themselves (the quests-world lane then starts her twirl 1.6 s sooner). Either is a small change in gift.ts once the contract says which.

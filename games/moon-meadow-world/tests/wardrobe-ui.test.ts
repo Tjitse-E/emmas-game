@@ -2,7 +2,7 @@
 // the rails on their fixed rows, tabs that act on pointerdown, the rail rules (select on down and on move, onLook
 // timing, one end per gesture on every end path, the one sound of a pick), the words on release in normal ink, the
 // music box (beads, onBox, "Nearly ready!") and the kind ending's fingers, the treasure board, the gift cards, the
-// pictures, and onPress on press().
+// pictures, onPress on press(), and the panel and the gift picker on a fake page with a fake audio.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GiftItem, LookField, LookTab, Owned, PrincessLook } from '../src/contracts';
 import {
@@ -12,11 +12,46 @@ import {
 import { boardLayout, cellAt, giftCards, overlaps, railIn, unitFor, wardrobeLayout, type Box } from '../src/ui/geometry';
 import {
   Fingers, PILL_MS, PRINT_INK, Rails, SETTLE_MS, UNFOCUS_MS, WORD_GAP_MS, WordVoice, boardRows, pillOf, printable, railPress, tabPress,
-  type Pill,
+  type Pill, type WordFate,
 } from '../src/ui/wardrobe-ctl';
 import { BEAD_COUNT, BoxClock, FINGERS_WAIT_MS, NEARLY_BEFORE_MS, beadTimes, nearlyAt } from '../src/ui/musicbox';
 import { giftSwatch, giftSwatchUrl, ribbonSwatch, swatchSvg, tabIconSvg } from '../src/ui/swatches';
 import { onPress } from '../src/ui/dom';
+import { runWardrobe, type WardrobeHandle, type WardrobeOpts, type WardrobeResult } from '../src/ui/wardrobe';
+import { runGift, type GiftHandle, type GiftOpts } from '../src/ui/gift';
+import { FX_WAIT_MS } from '../src/audio/sound';
+
+/**
+ * The audio the panel and the picker hear, as a log. `talking` is the speech count: as in shared/audio.js, stop() lets
+ * go of it only once its promises settle (a microtask later), and fx() skips an effect while it is up.
+ */
+const fake = vi.hoisted(() => {
+  // src/assets.ts reads the page's path when it loads.
+  (globalThis as { location?: unknown }).location ??= { pathname: '/games/moon-meadow-world/dist/index.html' };
+  const s = { log: [] as string[], talking: false, sfxMs: { chime: 1200 } as Record<string, number> };
+  const audio = {
+    get speaking() {
+      return s.talking;
+    },
+    say: async (id: string) => void s.log.push(`say ${id}`),
+    sayAll: async (ids: string[]) => void s.log.push(`sayAll ${ids.join(' ')}`),
+    sfx: (name: string) => {
+      s.log.push(`sfx ${name}`);
+      return new Promise<void>((r) => setTimeout(r, s.sfxMs[name] ?? 150));
+    },
+    fx: async (id: string) => void s.log.push(s.talking ? `fx ${id} skipped` : `fx ${id}`),
+    stop: () => {
+      s.log.push('stop');
+      if (s.talking) queueMicrotask(() => (s.talking = false));
+    },
+    musicBox: (ms: number) => {
+      s.log.push(`musicBox ${ms}`);
+      return { stop: () => void s.log.push('musicBox stop'), done: new Promise<void>(() => {}) };
+    },
+  };
+  return { s, audio };
+});
+vi.mock('../src/audio', () => ({ audio: fake.audio }));
 
 // ------------------------------------------------------------------------------------------------ fakes
 
@@ -82,7 +117,10 @@ function touch(el: FakeElement, x: number, id = 1) {
 const rail = (tab: LookTab, field: LookField, n = 0, owned: Owned = START_OWNED): RailSpec =>
   railsOf(tab, owned).filter((r) => r.field === field)[n];
 
-/** Rails with every output recorded as a line. `word` says at once unless `gap` (the word gap or a guidance line). */
+/**
+ * Rails with every output recorded as a line. `word` says at once unless `gap` (inside the word gap): then a word the
+ * rails ask to drop in the gap (a gown shape or extra) is dropped, and any other word waits.
+ */
 function railsWith(o: { look?: Partial<PrincessLook>; gap?: () => boolean } = {}) {
   const log: string[] = [];
   const looks: PrincessLook[] = [];
@@ -100,11 +138,11 @@ function railsWith(o: { look?: Partial<PrincessLook>; gap?: () => boolean } = {}
     bounce: (r, cell) => log.push(`bounce ${r.field} ${cell}`),
     sfx: (name) => log.push(`sfx ${name}`),
     fx: (id) => log.push(`fx ${id}`),
-    word: (w) => {
+    word: (w, wo) => {
       words.push(w);
-      const now = !o.gap?.();
-      log.push(`word ${w.clip}${now ? '' : ' waits'}`);
-      return now;
+      const fate: WordFate = !o.gap?.() ? 'said' : wo?.dropInGap ? 'dropped' : 'waits';
+      log.push(`word ${w.clip}${fate === 'said' ? '' : ` ${fate}`}`);
+      return fate;
     },
   });
   return { rails, log, looks, words, take: () => log.splice(0), sounds: () => log.filter((l) => /^(sfx|fx|word)/.test(l)) };
@@ -516,37 +554,67 @@ describe('the one sound of a pick', () => {
     expect(one('sparkles', 'thing', 'unicorn')).toEqual(['sfx pop']);
   });
 
-  it('a gown pick inside the word gap swishes now and its word waits; other picks only wait', () => {
+  it('a gown pick inside the word gap swishes and keeps no word; other picks only wait', () => {
     let gap = false;
     const r = railsWith({ gap: () => gap });
     gap = true;
     pick(r.rails, rail('gown', 'gown'), 'ball');
-    expect(r.sounds().filter((l) => l !== 'sfx tick')).toEqual(['word word-gown waits', 'fx dress-swish']);
+    expect(r.sounds().filter((l) => l !== 'sfx tick')).toEqual(['word word-gown dropped', 'fx dress-swish']);
     r.take();
     pick(r.rails, rail('gown', 'gownColour'), 'blue');
     expect(r.sounds().filter((l) => l !== 'sfx tick')).toEqual(['word word-blue waits']);
   });
 
-  it('with the real word gap: a second word within 1.2 s waits, and a gown picked then swishes', () => {
-    vi.useFakeTimers();
+  /** Rails on a real WordVoice, recording what is said and which effects play. */
+  const voiced = (guiding = () => false) => {
     const said: string[] = [];
     const fx: string[] = [];
-    const voice = new WordVoice({ say: (c) => said.push(c), show: () => {}, guiding: () => false, now: () => Date.now() });
+    const voice = new WordVoice({ say: (c) => said.push(c), show: () => {}, guiding, now: () => Date.now() });
     const rails = new Rails(DEFAULT_LOOK, { onLook() {}, onPicked() {}, onFocus() {} }, {
-      select() {}, changed() {}, bounce() {}, sfx() {}, fx: (id) => fx.push(id), word: (w) => voice.push(w),
+      select() {}, changed() {}, bounce() {}, sfx() {}, fx: (id) => fx.push(id), word: (w, o) => voice.push(w, o),
     });
-    pick(rails, rail('gown', 'gownColour'), 'green');
-    expect(said).toEqual(['word-green']);
+    return { said, fx, voice, rails };
+  };
+
+  it('with the real word gap: a gown picked within 1.2 s of a word swishes, and nothing is said after it', () => {
+    vi.useFakeTimers();
+    const v = voiced();
+    pick(v.rails, rail('gown', 'gownColour'), 'green');
+    expect(v.said).toEqual(['word-green']);
     vi.advanceTimersByTime(400);
-    pick(rails, rail('gown', 'gown'), 'ball');
-    expect(fx).toEqual(['dress-swish']);
-    expect(said).toEqual(['word-green']);
-    vi.advanceTimersByTime(WORD_GAP_MS);
-    expect(said).toEqual(['word-green', 'word-gown']);
-    vi.advanceTimersByTime(WORD_GAP_MS);
-    pick(rails, rail('gown', 'gown'), 'gala');
-    expect(fx).toEqual(['dress-swish']);
-    expect(said.at(-1)).toBe('word-gown');
+    pick(v.rails, rail('gown', 'gown'), 'ball');
+    expect(v.fx).toEqual(['dress-swish']);
+    vi.advanceTimersByTime(WORD_GAP_MS * 3);
+    expect(v.said).toEqual(['word-green']);
+    // After the gap a gown pick says its word and plays no effect.
+    pick(v.rails, rail('gown', 'gown'), 'gala');
+    expect(v.fx).toEqual(['dress-swish']);
+    expect(v.said).toEqual(['word-green', 'word-gown']);
+  });
+
+  it('a gown picked in the gap also drops a colour word still waiting, so the newest pick has one sound', () => {
+    vi.useFakeTimers();
+    const v = voiced();
+    pick(v.rails, rail('gown', 'gownColour'), 'green');
+    vi.advanceTimersByTime(300);
+    pick(v.rails, rail('gown', 'gownColour'), 'blue');
+    vi.advanceTimersByTime(300);
+    pick(v.rails, rail('gown', 'gown'), 'ball');
+    vi.advanceTimersByTime(WORD_GAP_MS * 3);
+    expect(v.said).toEqual(['word-green']);
+    expect(v.fx).toEqual(['dress-swish']);
+  });
+
+  it('during a guidance line a gown word waits for its end and plays no swish', () => {
+    vi.useFakeTimers();
+    let guiding = true;
+    const v = voiced(() => guiding);
+    pick(v.rails, rail('gown', 'gown'), 'ball');
+    expect(v.fx).toEqual([]);
+    expect(v.said).toEqual([]);
+    guiding = false;
+    v.voice.pump();
+    expect(v.said).toEqual(['word-gown']);
   });
 });
 
@@ -629,8 +697,8 @@ describe('words on release', () => {
   it('says at most one word per 1.2 s, and only the newest waits', () => {
     vi.useFakeTimers();
     const s = voice();
-    expect(s.v.push(w('dress'))).toBe(true);
-    expect(s.v.push(w('gown'))).toBe(false);
+    expect(s.v.push(w('dress'))).toBe('said');
+    expect(s.v.push(w('gown'))).toBe('waits');
     s.v.push(w('bun'));
     expect(s.said).toEqual(['word-dress']);
     vi.advanceTimersByTime(WORD_GAP_MS - 1);
@@ -672,7 +740,8 @@ describe('words on release', () => {
   });
 
   it('prints every colour word in the normal ink, never in its own colour', () => {
-    const hexes = new Set(Object.values(PALETTE).flatMap((p) => [p.light, p.base, p.deep, p.sash, p.small, p.pic ?? '', ...(p.bands ?? [])]).filter(Boolean));
+    // The pill's style colour on the panel itself is checked in 'the panel on a page'.
+    expect(PRINT_INK).toBe('var(--ink)');
     let printed = 0;
     for (const f of COLOUR_FIELDS) {
       for (const c of COLOURS) {
@@ -682,7 +751,6 @@ describe('words on release', () => {
         printed++;
         expect(p.text).toBe(c);
         expect(p.ink).toBe(PRINT_INK);
-        expect(hexes.has(p.ink.toLowerCase())).toBe(false);
       }
     }
     // pink, red, gold, green, blue, white and brown print (section 14 fix 1), on each colour rail.
@@ -996,5 +1064,331 @@ describe('onPress on press()', () => {
     win.fire('pointerdown', { id: 2, x: 600, y: 600 });
     win.fire('pointerup', { id: 1, x: 150, y: 150 });
     expect(s.taps).toHaveLength(0);
+  });
+});
+
+// ------------------------------------------------------------------------------------------------ the panel on a page
+
+/** A page element: a tree with classes, attributes, a style and pointer capture; its box is its own left and top plus its parents'. */
+class FakeNode extends FakeTarget {
+  parent: FakeNode | null = null;
+  readonly children: FakeNode[] = [];
+  readonly style: Record<string, string> = {};
+  readonly captured = new Set<number>();
+  innerHTML = '';
+  textContent = '';
+  src = '';
+  alt = '';
+  draggable = true;
+  decoding = '';
+  private cls = new Set<string>();
+  private readonly attrs = new Map<string, string>();
+  readonly classList = {
+    add: (...c: string[]) => c.forEach((x) => this.cls.add(x)),
+    remove: (...c: string[]) => c.forEach((x) => this.cls.delete(x)),
+    contains: (c: string) => this.cls.has(c),
+    toggle: (c: string, on?: boolean) => {
+      const v = on ?? !this.cls.has(c);
+      if (v) this.cls.add(c);
+      else this.cls.delete(c);
+      return v;
+    },
+  };
+  get className(): string {
+    return [...this.cls].join(' ');
+  }
+  set className(v: string) {
+    this.cls = new Set(v.split(/\s+/).filter(Boolean));
+  }
+  get offsetWidth(): number {
+    return 0;
+  }
+  setAttribute(k: string, v: string): void {
+    this.attrs.set(k, v);
+  }
+  getAttribute(k: string): string | null {
+    return this.attrs.get(k) ?? null;
+  }
+  appendChild(c: FakeNode): FakeNode {
+    c.parent = this;
+    this.children.push(c);
+    return c;
+  }
+  remove(): void {
+    const p = this.parent;
+    if (p) p.children.splice(p.children.indexOf(this), 1);
+    this.parent = null;
+  }
+  getBoundingClientRect() {
+    let x = 0;
+    let y = 0;
+    for (let n: FakeNode | null = this; n; n = n.parent) {
+      x += parseFloat(n.style.left ?? '') || 0;
+      y += parseFloat(n.style.top ?? '') || 0;
+    }
+    const w = parseFloat(this.style.width ?? '') || 0;
+    const h = parseFloat(this.style.height ?? '') || 0;
+    return { left: x, top: y, right: x + w, bottom: y + h, width: w, height: h, x, y };
+  }
+  /** Web Animations: it finishes after its delay and duration. */
+  animate(_frames: Keyframe[], o: KeyframeAnimationOptions) {
+    const a = { onfinish: null as null | (() => void), oncancel: null as null | (() => void), cancel() {} };
+    setTimeout(() => a.onfinish?.(), Number(o.duration ?? 0) + (o.delay ?? 0));
+    return a;
+  }
+  setPointerCapture(id: number): void {
+    this.captured.add(id);
+  }
+  releasePointerCapture(id: number): void {
+    if (!this.captured.delete(id)) throw new Error('NotFoundError');
+  }
+  all(): FakeNode[] {
+    return this.children.flatMap((c) => [c, ...c.all()]);
+  }
+  byLabel(label: string): FakeNode {
+    const n = this.all().find((c) => c.getAttribute('aria-label') === label && c.parent);
+    if (!n) throw new Error(`no ${label}`);
+    return n;
+  }
+  byClass(c: string): FakeNode[] {
+    return this.all().filter((n) => n.classList.contains(c));
+  }
+}
+
+describe('the panel on a page', () => {
+  const W = 1080;
+  const H = 740;
+  let parent: FakeNode;
+  let ghost: { calls: string[]; tap(): Promise<void>; drag(): Promise<void>; hide(): void };
+  const run = (ms: number) => vi.advanceTimersByTimeAsync(ms);
+  const ctx = () => ({ parent: parent as unknown as HTMLElement, ghost: ghost as never, screen: () => ({ w: W, h: H }) });
+  const centre = (n: FakeNode) => {
+    const b = n.getBoundingClientRect();
+    return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+  };
+  /** A finger goes down on `n` (the window hears it first), at `at` or the middle of `n`. */
+  const down = (n: FakeNode, id = 1, at = centre(n)) => {
+    win.fire('pointerdown', { id, ...at });
+    n.fire('pointerdown', { id, ...at });
+  };
+  const up = (id = 1) => win.fire('pointerup', { id });
+  const sounds = () => fake.s.log.filter((l) => !l.startsWith('musicBox'));
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance'] });
+    vi.stubGlobal('document', { createElement: () => new FakeNode() });
+    vi.stubGlobal('addEventListener', win.addEventListener.bind(win));
+    vi.stubGlobal('removeEventListener', win.removeEventListener.bind(win));
+    parent = new FakeNode();
+    ghost = {
+      calls: [],
+      tap: async () => void ghost.calls.push('tap'),
+      drag: () => {
+        ghost.calls.push('drag');
+        return new Promise((r) => setTimeout(r, 1500));
+      },
+      hide: () => {},
+    };
+    fake.s.log.length = 0;
+    fake.s.talking = false;
+  });
+
+  const BOARD = {
+    owned: START_OWNED, fresh: [], ribbons: [],
+    pics: { crowns: 'crowns.webp', shoes: 'shoes.webp', jewels: 'jewels.webp', hair: 'hair.webp' },
+  };
+  const opts = (o: Partial<WardrobeOpts> = {}) => {
+    const log: string[] = [];
+    const w: WardrobeOpts = {
+      look: { ...DEFAULT_LOOK }, owned: copyOwned(START_OWNED), crownTab: false, firstTime: false, limitMs: 60_000,
+      clips: { ready: ['ready'], firstTime: ['first'], idle: ['idle'], nearly: ['nearly'], done: ['lovely'] },
+      onLook() {}, onPicked: (l, f) => void log.push(`picked ${f} ${l[f]}`), onFocus() {}, onTurn() {}, onPreviewTap() {},
+      onBox: (on) => void log.push(`box ${on}`),
+      ...o,
+    };
+    return { w, log };
+  };
+  const open = (w: WardrobeOpts) => {
+    let handle: WardrobeHandle | null = null;
+    let result: WardrobeResult | null = null;
+    const p = runWardrobe(ctx(), w, (h) => (handle = h)).then((r) => (result = r));
+    return { p, handle: () => handle!, result: () => result };
+  };
+  /** The panel's five rail rows, in row order. */
+  const railRows = () => parent.byClass('wd-rail');
+
+  it('starts the music box only after the slide-in and the board, and Done stops it with onBox(false)', async () => {
+    const o = opts({ board: BOARD });
+    const p = open(o.w);
+    await run(400 + 3500 - 50);
+    expect(o.log).toEqual([]);
+    expect(fake.s.log.filter((l) => l.startsWith('musicBox'))).toEqual([]);
+    expect(p.handle().snapshot().open).toBe(false);
+    await run(100);
+    expect(o.log).toEqual(['box true']);
+    expect(fake.s.log).toContain('musicBox 60000');
+    expect(p.handle().snapshot().open).toBe(true);
+    down(parent.byLabel('done'));
+    expect(o.log).toEqual(['box true', 'box false']);
+    expect(fake.s.log).toContain('musicBox stop');
+    await run(10);
+    expect(p.result()?.end).toBe('done');
+    await run(70_000);
+    expect(o.log).toEqual(['box true', 'box false']);
+  });
+
+  it('at the end stops her word, chimes, and says "Lovely!" when the chime is over, at most 1 s later', async () => {
+    const o = opts();
+    open(o.w);
+    await run(500);
+    fake.s.log.length = 0;
+    down(parent.byLabel('done'));
+    expect(sounds()).toEqual(['stop', 'sfx chime']);
+    await run(FX_WAIT_MS - 1);
+    expect(sounds()).toEqual(['stop', 'sfx chime']);
+    await run(1);
+    expect(sounds()).toEqual(['stop', 'sfx chime', 'sayAll lovely']);
+  });
+
+  it('never starts "Lovely!" over a line that began after Done', async () => {
+    const o = opts();
+    open(o.w);
+    await run(500);
+    fake.s.log.length = 0;
+    down(parent.byLabel('done'));
+    await run(300);
+    fake.s.talking = true;
+    await run(FX_WAIT_MS);
+    expect(sounds()).toEqual(['stop', 'sfx chime']);
+  });
+
+  it('a tab acts on pointerdown: its rails are on their RailSpec.row while the finger is still on the tab', async () => {
+    const o = opts({ owned: copyOwned(ALL_OWNED), crownTab: true });
+    open(o.w);
+    await run(500);
+    const L = wardrobeLayout(W, H);
+    for (const { tab } of [...TABS].reverse()) {
+      down(parent.byLabel(`tab ${tab}`), 3);
+      // No release yet.
+      const specs = railsOf(tab, ALL_OWNED);
+      const rows = railRows();
+      const seen = new Map<LookField, number>();
+      for (let i = 0; i < 5; i++) {
+        const spec = specs.find((s) => s.row === i);
+        expect(rows[i].classList.contains('empty'), `${tab} row ${i}`).toBe(!spec);
+        if (!spec) continue;
+        const n = seen.get(spec.field) ?? 0;
+        seen.set(spec.field, n + 1);
+        expect(rows[i].getAttribute('aria-label')).toBe(`rail ${spec.field} ${n}`);
+        expect(rows[i].style.top).toBe(`${railIn(L.rows[i], spec.ids.length).rail.y}px`);
+      }
+      up(3);
+    }
+  });
+
+  it('prints a colour word in the pill in the normal ink, never in its colour', async () => {
+    const o = opts();
+    open(o.w);
+    await run(500);
+    down(parent.byLabel('tab gown'));
+    up();
+    const green = parent.byLabel('swatch gownColour green');
+    const rail = green.parent!;
+    down(rail, 1, centre(green));
+    up();
+    expect(fake.s.log).toContain('say word-green');
+    const pill = parent.byClass('wd-pill')[0];
+    expect(pill.textContent).toBe('green');
+    expect(pill.style.color).toBe(PRINT_INK);
+    expect(pill.classList.contains('on')).toBe(true);
+  });
+
+  it('plays no tick or pop while Elizabeth speaks', async () => {
+    const o = opts();
+    open(o.w);
+    await run(500);
+    const at = (id: string) => {
+      const s = parent.byLabel(`swatch hair ${id}`);
+      down(s.parent!, 1, centre(s));
+      up();
+    };
+    fake.s.talking = true;
+    fake.s.log.length = 0;
+    at('honey');
+    expect(fake.s.log.filter((l) => l.startsWith('sfx'))).toEqual([]);
+    fake.s.talking = false;
+    // A natural shade has no word: its tick on down and its pop at the release.
+    at('auburn');
+    expect(fake.s.log.filter((l) => l.startsWith('sfx'))).toEqual(['sfx tick', 'sfx pop']);
+  });
+
+  it('the kind ending waits for the finger on a rail, and its release still picks', async () => {
+    const o = opts({ limitMs: 5000 });
+    const p = open(o.w);
+    await run(500);
+    const a = parent.byLabel('swatch hair honey');
+    const b = parent.byLabel('swatch hair auburn');
+    down(a.parent!, 7, centre(a));
+    await run(5000 + 1000);
+    expect(p.result()).toBeNull();
+    expect(p.handle().snapshot().open).toBe(false);
+    a.parent!.fire('pointermove', { id: 7, ...centre(b) });
+    up(7);
+    expect(o.log).toContain('picked hair auburn');
+    await run(10);
+    expect(p.result()).toEqual({ look: expect.objectContaining({ hair: 'auburn' }), end: 'time' });
+  });
+
+  it('a thumb resting off the rails does not keep the first-visit ghost away', async () => {
+    const o = opts({ firstTime: true });
+    open(o.w);
+    await run(500);
+    // A thumb on the 3D world while she holds the iPad: the window hears it go down, never up.
+    win.fire('pointerdown', { id: 9, x: 4, y: 400 });
+    await run(8000 + 300);
+    expect(ghost.calls[0]).toBe('tap');
+    await run(500);
+    expect(ghost.calls).toContain('drag');
+  });
+
+  // ---- the gift picker
+  const ITEMS = [...GIFT_SETS.hair.items.slice(0, 2)];
+  const gift = (items: GiftItem[] = ITEMS): GiftOpts => ({ items, look: { ...DEFAULT_LOOK }, clips: ['gift-pick'], to: () => ({ x: 300, y: 400, visible: true }) });
+
+  it('the gift paper sounds when she picks during "Pick one present!", once the cut line has let go', async () => {
+    let item: GiftItem | null = null;
+    void runGift(ctx(), gift(), () => {}).then((i) => (item = i));
+    expect(fake.s.log).toEqual(['sayAll gift-pick']);
+    fake.s.talking = true;
+    await run(600);
+    down(parent.byLabel(`gift ${ITEMS[1].id}`));
+    await run(1);
+    expect(fake.s.log).toEqual(['sayAll gift-pick', 'stop', 'fx gift-paper']);
+    await run(2000);
+    expect(item).toEqual(ITEMS[1]);
+  });
+
+  it('fails at once when it is given nothing to pick', async () => {
+    await expect(runGift(ctx(), gift([]), () => {})).rejects.toThrow(/no items/);
+    expect(parent.children).toEqual([]);
+  });
+
+  it('a picker closed while it fades out leaves the next picker\'s handle alone', async () => {
+    let handle: GiftHandle | null = null;
+    const setOpen = (h: GiftHandle | null) => (handle = h);
+    let first: GiftItem | null = null;
+    void runGift(ctx(), gift(), setOpen).then((i) => (first = i));
+    await run(600);
+    down(parent.byLabel(`gift ${ITEMS[0].id}`));
+    up();
+    await run(1700);
+    expect(first).toEqual(ITEMS[0]);
+    // The layer closes the old picker and opens the next one (index.ts gift()), inside the old one's last 300 ms.
+    handle!.close();
+    void runGift(ctx(), gift([ITEMS[1]]), setOpen);
+    const next = handle;
+    await run(400);
+    expect(handle).not.toBeNull();
+    expect(handle).toBe(next);
   });
 });

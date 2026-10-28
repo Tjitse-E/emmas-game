@@ -36,8 +36,12 @@
   box-shadow: 0 calc(3 * var(--u)) calc(5 * var(--u)) rgba(110, 80, 160, 0.28);
 }
 .wd-swatch svg { position: absolute; left: 5%; top: 5%; width: 90%; height: 90%; display: block; }
-/* Today's gift on its rail: a soft gold glow, so she finds what she was just given. */
-.wd-swatch.fresh { border-color: #fff3c4; animation: wd-fresh 1.8s ease-in-out infinite; }
+/* Today's gift on its rail: a soft gold glow, so she finds what she was just given. It pulses four times (about 7 s)
+   and then stays still: a box-shadow repaints every frame it moves, and the Corner visit lasts up to 60 s. */
+.wd-swatch.fresh {
+  border-color: #fff3c4; box-shadow: 0 0 calc(10 * var(--u)) calc(2 * var(--u)) rgba(255, 210, 94, 0.6);
+  animation: wd-fresh 1.8s ease-in-out 4;
+}
 @keyframes wd-fresh { 50% { box-shadow: 0 0 calc(14 * var(--u)) calc(4 * var(--u)) rgba(255, 210, 94, 0.85); } }
 /* The gold knob ring round the option she wears. It glides; it never takes a touch. */
 .wd-knob {

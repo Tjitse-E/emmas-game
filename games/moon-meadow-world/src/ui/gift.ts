@@ -36,8 +36,10 @@ const CARD_BOW =
   '<svg viewBox="0 0 100 50" aria-hidden="true"><path d="M50 40 C38 14 14 12 18 30 C20 40 36 42 50 40 C64 42 80 40 82 30 C86 12 62 14 50 40 Z" fill="#ff8fbd" stroke="#d9466f" stroke-width="3" stroke-linejoin="round"/><circle cx="50" cy="40" r="7" fill="#ffb7d8" stroke="#d9466f" stroke-width="3"/></svg>';
 
 export function runGift(ctx: { parent: HTMLElement; ghost: Ghost; screen(): { w: number; h: number } }, o: GiftOpts, setOpen: (h: GiftHandle | null) => void): Promise<GiftItem> {
+  // No picker when every set is full (17.2): a call without items is the caller's mistake, so it fails at once
+  // instead of waiting forever with nothing on screen.
+  if (!o.items.length) return Promise.reject(new Error('layer.gift: no items to pick (no picker when every set is full)'));
   return new Promise((resolve) => {
-    if (!o.items.length) return;
     let alive = true;
     let picked = false;
     let inputOn = false;
@@ -95,9 +97,12 @@ export function runGift(ctx: { parent: HTMLElement; ghost: Ghost; screen(): { w:
       inputOn = false;
       ctx.ghost.hide();
       const card = cards[i];
-      // Her pick cuts the line, so the paper sounds on its own and never under Elizabeth.
+      // Her pick cuts the line, so the paper sounds on its own and never under Elizabeth. The speech count drops only
+      // once stop()'s promises settle (microtasks), and fx() skips an effect while it is up, so the paper waits a task.
       audio.stop();
-      void audio.fx('gift-paper');
+      setTimeout(() => {
+        if (alive) void audio.fx('gift-paper');
+      }, 0);
       card.classList.add('chosen');
       cards.forEach((c, j) => j !== i && c.classList.add('other'));
       await play(card, [{ transform: 'scale(1)' }, { transform: 'scale(1.14)', offset: 0.4 }, { transform: 'scale(0.92)' }], { duration: 420, easing: 'ease-out', fill: 'forwards' });
@@ -107,6 +112,8 @@ export function runGift(ctx: { parent: HTMLElement; ghost: Ghost; screen(): { w:
       resolve(o.items[i]);
       root.classList.add('leaving');
       await sleep(300);
+      // A reset or the next picker closed this one meanwhile: the handle the layer holds is no longer ours.
+      if (!alive) return;
       close();
       setOpen(null);
     };

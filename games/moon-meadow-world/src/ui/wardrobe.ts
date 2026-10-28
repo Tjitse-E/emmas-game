@@ -8,6 +8,7 @@
 import './wardrobe.css';
 import type { Layer, LookField, LookTab, PrincessLook } from '../contracts';
 import { audio } from '../audio';
+import { FX_WAIT_MS } from '../audio/sound';
 import { TABS, railsOf, tabOf, type RailSpec } from '../wardrobe';
 import type { Ghost } from './ghost';
 import { cellAt, clamp, railIn, wardrobeLayout, type Box, type Point, type WardrobeLayout } from './geometry';
@@ -266,10 +267,13 @@ export function runWardrobe(
         const r = rowOf(rail);
         if (r) hop(r.swatches[cell]);
       },
-      sfx: (name) => void audio.sfx(name),
+      // The synthesised tick and pop play outside the channel, so they keep its rule here: nothing under Elizabeth.
+      sfx: (name) => {
+        if (!audio.speaking) void audio.sfx(name);
+      },
       // Before the sound pack exists, a pick's effect plays 2.2's pop, so every pick still gives one sound.
       fx: (id) => void audio.fx(id, { fallback: 'pop' }),
-      word: (w) => voice.push(w),
+      word: (w, o) => voice.push(w, o),
     });
     paint(rails.look, null);
     fillRows();
@@ -378,8 +382,10 @@ export function runWardrobe(
       rails.restore(d.start);
       lastTouch = performance.now();
     };
+    // Only a finger on a rail or turning her holds these back: a thumb resting anywhere else (or a release the window
+    // never heard) must not keep the ghost and the idle line away. Fingers is for the kind ending only.
     const quietStep = (now: boolean): boolean => {
-      if (!inputOn || guiding || demo || rails.active || fingers.count) return false;
+      if (!inputOn || guiding || demo || rails.active || turn) return false;
       const quiet = performance.now() - lastTouch;
       if (!demoDone && (now || quiet >= GHOST_AFTER_MS)) {
         void runDemo();
@@ -425,6 +431,8 @@ export function runWardrobe(
     };
 
     // ---- the end: Done (pointerdown) or the kind ending; the look is resolved, then the panel slides out by itself
+    /** The layer closed the panel from outside (a reset or the next wardrobe). */
+    let reset = false;
     const close = () => {
       if (!alive) return;
       alive = false;
@@ -442,8 +450,12 @@ export function runWardrobe(
       voice.drop();
       clock.stop();
       if (end === 'done') done.classList.add('pressed');
-      void audio.sfx('chime');
-      void audio.sayAll(o.clips.done);
+      // Her last word stops and the chime sounds on its own; "Lovely!" follows it, as her line waits for an effect (at
+      // most 1 s, section 8), and only when no other speech has begun by then, so it never cuts a line.
+      audio.stop();
+      void Promise.race([audio.sfx('chime'), sleep(FX_WAIT_MS)]).then(() => {
+        if (!reset && !audio.speaking) void audio.sayAll(o.clips.done);
+      });
       resolve({ look: rails.look, end });
       root.classList.add('leaving');
       void play(slide, [{ transform: 'none' }, { transform: `translateX(${ctx.screen().w - L.panel.x + 24}px)` }], { duration: SLIDE_MS, easing: 'cubic-bezier(.5, 0, .8, .4)', fill: 'forwards' });
@@ -481,7 +493,10 @@ export function runWardrobe(
         return out;
       },
       idleNow: () => quietStep(true),
-      close,
+      close: () => {
+        reset = true;
+        close();
+      },
     };
     setOpen(handle);
 
