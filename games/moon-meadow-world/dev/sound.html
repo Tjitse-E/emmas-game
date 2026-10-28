@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sound check</title>
+<link rel="icon" href="data:,">
+<!-- The page sits in dev/, the game at the root: relative audio paths (audio/v4demo/, audio/sfx/) resolve from the root. -->
+<base href="../">
+<style>
+  :root { --bg: #f6f1ff; --card: #fff; --ink: #2f2540; --soft: #6c5f80; --line: #e2d8f2; --accent: #7a4fd8; --ok: #2f8a4f; --warn: #b5651d; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.4 system-ui, -apple-system, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; margin: 4px 0 2px; }
+  h2 { font-size: 17px; margin: 0 0 8px; }
+  p { margin: 4px 0 10px; color: var(--soft); }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 12px 0; }
+  button { min-height: 44px; min-width: 44px; padding: 6px 14px; border: 0; border-radius: 10px; background: #ece4fb; color: var(--ink); font: inherit; touch-action: manipulation; }
+  button.go { background: var(--accent); color: #fff; font-weight: 600; }
+  button.on { background: var(--accent); color: #fff; }
+  button:disabled { opacity: 0.45; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { text-align: left; padding: 6px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; color: var(--soft); font-weight: 600; border-top: 0; }
+  td.id { font-weight: 600; white-space: nowrap; }
+  td.prompt { font-size: 13px; color: var(--soft); }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 9px; background: #efe9f8; color: var(--soft); margin: 1px 2px 1px 0; }
+  .tag.ok { background: #e2f4e8; color: var(--ok); }
+  .tag.warn { background: #fbeedf; color: var(--warn); }
+  #state, #boxline { font: 12px/1.4 ui-monospace, Menlo, monospace; color: var(--soft); white-space: pre-wrap; }
+  @media (max-width: 700px) { td.prompt { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sound check</h1>
+  <p>Every effect, the day loop and the music box of Moon Meadow World 2.3.0, with the rules that keep them away from Elizabeth. Tap Start first (the iPad needs a tap before it plays sound). This page plays files that are not approved yet.</p>
+  <div class="row"><button class="go" id="start">Start</button><span id="loaded"></span></div>
+  <section id="fx"><h2>Effects</h2><p>Play plays the file, or the fallback the game uses while the file is missing. Approve a file after listening: <code>sh games/moon-meadow-world/tools/audio/sfx.sh --approve id</code>.</p><table id="fxtable"></table></section>
+  <section id="rules"><h2>Rules</h2><p>Each button plays a short scene. What you should hear is under it.</p><div class="row" id="rulebtns"></div><p id="rulenote"></p></section>
+  <section id="amb"><h2>Day loop</h2><p>0.22 by day, 0.08 under speech, silent in a checked moment (out in 400 ms, back 1.5 s after). Night is quiet in 2.3.0.</p><div class="row" id="ambbtns"></div></section>
+  <section id="box"><h2>Music box</h2><p>An original tune made in code. It slows down in its last four bars and ends on its home note when the time is up. It goes down to 0.1 under speech.</p><div class="row" id="boxbtns"></div><div id="boxline"></div></section>
+  <section><h2>Channel state</h2><div id="state"></div></section>
+</main>
+<script type="module" src="/src/audio/dev.ts"></script>
+</body>
+</html>
