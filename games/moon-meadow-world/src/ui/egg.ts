@@ -9,6 +9,12 @@
 // The hay rack (4.3) is the same moment with skin 'hay' (src/ui/hay.ts): bundles under a wooden board, hay piles for
 // stones. The stones sleep (dimmed, a touch only wiggles them) until Elizabeth has said both numbers, then wake with
 // a hop and a chime; the ladder and decision time start at the wake.
+//
+// 2.3.0 (docs/v4/2.3.md section 19.1): an egg asks three sums on one panel. Three hearts sit on the cups panel's rim;
+// `round.index` of them are lit when a sum opens. After the right stone of a sum the next heart lights (with the
+// heart-glow effect, awaited, so the line that follows never plays under it) and react('heart') lets the 3D egg glow.
+// After the first and the second sum the panel stays on screen: the moment resolves and keeps its root, and the next
+// sum's runEgg takes it over with new cups and new sleeping stones. After the third it slides away as before.
 import type { EggSpec, MomentHooks, MomentResult } from '../contracts';
 import { audio } from '../audio';
 import { blanketPatches, cupStates, hintCups, inBox, nestsFor, stoneEffect, type CupState, type Point } from './geometry';
@@ -22,6 +28,50 @@ import { PIC, sparkleBurst, stoneEl } from './parts';
 
 const STEAM = '<svg viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"><path d="M12 38 C4 30 20 24 12 16 C8 12 12 6 14 2"/><path d="M28 38 C20 30 36 24 28 16 C24 12 28 6 30 2"/></g></svg>';
 const SNOWFLAKE = '<svg viewBox="0 0 24 24" aria-hidden="true"><g stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9 3.5l3 2.5 3-2.5M9 20.5l3-2.5 3 2.5" fill="none"/></g></svg>';
+
+const HEART = '<svg viewBox="0 0 48 44" aria-hidden="true"><path d="M24 41 C11 32 3 24.5 3 14.5 C3 7.8 8.2 3 14.4 3 C18.6 3 22 5.2 24 8.6 C26 5.2 29.4 3 33.6 3 C39.8 3 45 7.8 45 14.5 C45 24.5 37 32 24 41 Z"/></svg>';
+
+/** The egg's three hearts on the rim of its cups panel. */
+interface Hearts {
+  readonly el: HTMLElement;
+  /** How many are lit. */
+  readonly lit: number;
+  /** Light the next heart, with a pop and sparkles. */
+  light(sparkles: HTMLElement): void;
+}
+
+function heartsEl(root: HTMLElement, lit: number, of: number): Hearts {
+  const row = el('div', 'egg-hearts', root);
+  row.setAttribute('aria-label', 'hearts');
+  const hearts = Array.from({ length: of }, (_, i) => html(HEART, `egg-heart${i < lit ? ' lit' : ''}`, row, 'span'));
+  let n = lit;
+  return {
+    el: row,
+    get lit() {
+      return n;
+    },
+    light(sparkles) {
+      const h = hearts[n];
+      if (!h) return;
+      n++;
+      h.classList.add('lit', 'pop');
+      sparkleBurst(sparkles, centreOf(h), 8);
+    },
+  };
+}
+
+/**
+ * An egg's panel between its sums (2.3 section 19.1): the root and the hearts stay, and the last sum's cups panel and
+ * stone tray stay on screen until the next sum swaps them. One per layer.
+ */
+interface Kept {
+  kind: EggSpec['kind'];
+  root: HTMLElement;
+  frame: Life;
+  hearts: Hearts;
+  stale: HTMLElement[];
+}
+const kept = new WeakMap<LayerCtx, Kept>();
 
 /** The stones wake when the goal ends, or after this long if the speech never ends (a clip that fails to play). */
 const WAKE_CAP_MS = 20_000;
@@ -196,12 +246,28 @@ function cupsSkin(ctx: LayerCtx, spec: EggSpec, root: HTMLElement, life: Life): 
 
 export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen: (m: OpenMoment | null) => void): Promise<MomentResult> {
   return new Promise((resolve) => {
+    /** This sum: its ladder, its stones' drags and its steps. */
     const life = new Life();
     const hay = spec.skin === 'hay';
-    const root = el('div', `egg-moment kind-${spec.kind}${hay ? ' skin-hay' : ''}`, ctx.moments);
-    life.own(() => root.remove());
+    const round = spec.round ?? null;
+    /** The last sum of its egg (or the hay rack, which asks one): the panel slides away after it. */
+    const last = !round || round.index >= round.of - 1;
+    // The egg's second and third sums take over the panel the sum before kept on screen.
+    const prev = kept.get(ctx);
+    kept.delete(ctx);
+    const reuse = prev && round && round.index > 0 && prev.kind === spec.kind && prev.root.isConnected ? prev : null;
+    if (prev && !reuse) prev.frame.end();
+    /** The panel's root and hearts, which outlive one sum. */
+    const frame = reuse?.frame ?? new Life();
+    const root = reuse?.root ?? el('div', `egg-moment kind-${spec.kind}${hay ? ' skin-hay' : ''}`, ctx.moments);
+    if (!reuse) frame.own(() => root.remove());
+    for (const e of reuse?.stale ?? []) e.remove();
+    const hearts = reuse?.hearts ?? (round ? heartsEl(root, round.index, round.of) : null);
     const skin = hay ? haySkin(ctx, spec, root, life) : cupsSkin(ctx, spec, root, life);
     const panel = skin.panel;
+    // The next sum's cups come in on the panel that stayed, without its pop-in. The shake of a wrong stone (.hot,
+    // .cold) still wins over it, as over the first sum's pop-in (ui.css).
+    if (reuse) panel.classList.add('next-in');
 
     // ---- the stones: 4 (band A) or 5 (band B) below the home button; 5 are smaller cells so the tray still fits
     const n = spec.stones.length;
@@ -264,13 +330,16 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
       },
     });
 
-    /** Where a stone rests while its dots fly: just above the panel. */
+    /** Where a stone rests while its dots fly: just above the panel, and above its hearts. */
     const dropSpot = (): Point => {
       const b = boxOf(panel);
-      return { x: b.x + b.w / 2, y: b.y - u(80) };
+      const top = hearts ? Math.min(b.y, boxOf(hearts.el).y) : b.y;
+      return { x: b.x + b.w / 2, y: top - u(80) };
     };
     const onTarget = (p: Point): boolean => {
       if (inBox(p, boxOf(panel), u(36))) return true;
+      // The hearts sit on the panel's rim and look part of it, so a stone let go on them counts too.
+      if (hearts && inBox(p, boxOf(hearts.el), u(36))) return true;
       const a = hooks.anchor();
       return Math.hypot(p.x - a.x, p.y - a.y) < u(170);
     };
@@ -304,7 +373,23 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         if (!life.alive) return;
         if (skin.afterPraise) hooks.react(skin.afterPraise);
         finished = true;
-        if (await leave(root, life, setOpen)) resolve(result);
+        if (hearts) {
+          // The next heart lights and the egg glows more. Its effect is awaited, so "A happy heart!" (said by the game
+          // after this resolves) or Lumi's hatching line never plays under it.
+          hearts.light(ctx.drag);
+          hooks.react('heart');
+          await audio.fx('heart-glow');
+          if (!life.alive) return;
+        }
+        if (!last && hearts) {
+          keep(hearts);
+          resolve(result);
+          return;
+        }
+        if (await leave(root, life, setOpen)) {
+          frame.end();
+          resolve(result);
+        }
         return;
       }
       hooks.log?.('tried', { what: String(k) });
@@ -384,6 +469,7 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
       close: () => {
         ladder.close();
         life.end();
+        frame.end();
       },
       snapshot: () => ({
         kind: 'egg',
@@ -392,18 +478,46 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         misses: ladder.state.misses,
         answer: `stone ${spec.answer}`,
         covered: skin.covered(),
+        ...(round ? { round: { index: round.index, of: round.of, lit: hearts?.lit ?? round.index } } : {}),
         targets: [...stones.map((s) => target(`stone ${s.dataset.value}`, s)), target('cups', panel)],
       }),
     };
     life.own(() => ladder.close());
     setOpen(handle);
 
+    /**
+     * After a right first or second sum: this sum's ladder and drags stop, but the panel, its stones and the hearts
+     * stay on screen for the next sum. Until it comes the open moment is the kept panel (busy, nothing to touch), so
+     * a reset or another moment still closes it.
+     */
+    const keep = (h: Hearts) => {
+      const stale = [panel, tray];
+      tray.classList.add('asleep');
+      life.end();
+      const k: Kept = { kind: spec.kind, root, frame, hearts: h, stale };
+      kept.set(ctx, k);
+      const r = round ?? { index: 0, of: 3 };
+      setOpen({
+        kind: 'egg',
+        ladder: null,
+        replay: () => {},
+        close: () => {
+          if (kept.get(ctx) === k) kept.delete(ctx);
+          frame.end();
+        },
+        snapshot: () => ({ kind: 'egg', phase: 'busy', level: 0, misses: 0, answer: null, round: { index: r.index, of: r.of, lit: h.lit }, targets: [] }),
+      });
+    };
+
     // ---- the opening: the panels come in with the stones asleep while Elizabeth says the goal (the intro first for a
     // new kind). When it ends the stones wake and input is on, so decision time starts there. Then, for the first warm
     // egg, how to play; the first egg ever shows how a stone is dragged with a stone that is not the answer, halfway.
     void (async () => {
+      // The kind's intro is said once per layer. An egg's first sum ends its intro with the hearts line ("Fill all
+      // three hearts", content/eggs.ts sumClips), which every egg says, so a second egg of a kind keeps it.
       const introKey = `egg-intro:${hay ? 'hay' : spec.kind}`;
-      const clips = ctx.seen.has(introKey) ? spec.clips.goal : [...spec.clips.intro, ...spec.clips.goal];
+      const everyEgg = round?.index === 0 ? spec.clips.intro.slice(-1) : [];
+      const clips = [...(ctx.seen.has(introKey) ? everyEgg : spec.clips.intro), ...spec.clips.goal];
       ctx.seen.add(introKey);
       await Promise.race([audio.sayAll(clips), sleep(WAKE_CAP_MS)]);
       if (!life.alive) return;

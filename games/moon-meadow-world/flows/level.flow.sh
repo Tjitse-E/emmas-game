@@ -1,12 +1,75 @@
 #!/usr/bin/env bash
 # The whole level, played with real taps and drags at W x H with a fixed seed and a fresh save (a first visit): the
-# customiser (Done at once), then one wrong answer in egg 1 (the stone she just heard), naming 1 (a near capital in
-# slot 1), the dress-up wish (the light contrast), the first roll call (a door whose unicorn waits in the yard) and
-# the visit (an empty stall), the rest right; the slide, the bath wish at the pond, the wild egg, the picnic wish,
-# free play (skipped with a hook call), bedtime and goodnight with its ribbon gift. Checks the results log (with what
-# she tried), the basket and tray sizes, the save, missing clips and console errors. Screenshots of every part.
+# customiser (Done at once), then one wrong answer in egg 1 (its second sum of three, the stone she just heard),
+# naming 1 (a near capital in slot 1), the dress-up wish (the light contrast), the first roll call (a door whose
+# unicorn waits in the yard) and the visit (an empty stall), the rest right; the slide, the bath wish at the pond, the
+# wild egg and its three sums, the picnic wish, free play (skipped with a hook call), bedtime and goodnight with its
+# ribbon gift. Checks each egg's three sums on one panel with its hearts and the band (2.3), the results log (with
+# what she tried), the basket and tray sizes, the save, missing clips and console errors. Screenshots of every part.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-7}"
+
+# One egg's three sums on one panel (docs/v4/2.3.md sections 19.1 and 22.5). $1 is the part (egg1 or egg2), $2 the sum
+# (1 to 3) that first gets one wrong stone (the one she heard, else a slip), or 0. Each sum waits for its stones to wake
+# (phase open), and checks: the hearts lit so far, the same panel as the first sum, easy first, 4 stones for easy and
+# middle and 4 (A) or 5 (B) for the hard one, the result line (part, grade, heart), and that only the hard sum moves
+# the band. The baby hatches after the third sum, not before. Sets EGG_TRIED to the wrong stone.
+EGG_TRIED=''
+egg_sums() {
+  local part="$1" wrong="$2" baby k grade band n before outcome want sb
+  baby="baby-$([ "$part" = egg1 ] && echo 13 || echo 14)"
+  for k in 0 1 2; do
+    wait_for "() => { const m = window.__game.state().moment; return m && m.kind === 'egg' && m.round && m.round.index === $k && m.phase === 'open'; }" 40
+    sleep 0.8
+    shot "egg-$part-sum$((k + 1))"
+    check_targets "$(moment_targets)"
+    expect_eq "$(val "() => window.__game.state().moment.targets.filter((t) => /^stone /.test(t.name)).every((t) => +t.name.slice(6) >= 3)")" true "$part sum $((k + 1)): stones 3 to 9"
+    expect_eq "$(val "() => window.__game.state().moment.round.lit + '/' + document.querySelectorAll('.egg-moment .egg-heart.lit').length")" "$k/$k" "$part sum $((k + 1)): hearts lit"
+    if [ "$k" = 0 ]; then
+      val "() => { document.querySelector('.egg-moment').dataset.flow = '$part'; return 'ok'; }" >/dev/null
+    else
+      expect_eq "$(val "() => { const e = document.querySelectorAll('.egg-moment'); return e.length === 1 && e[0].dataset.flow === '$part'; }")" true "$part sum $((k + 1)) on the panel of sum 1"
+    fi
+    grade="$(val "() => window.__game.spec().grade")"
+    band="$(field mathsBand)"
+    [ "$k" != 0 ] || expect_eq "$grade" easy "$part sum 1 grade"
+    n="$(val "() => JSON.parse('$(stones_of)').length")"
+    if [ "$grade" = hard ]; then
+      sb="$(val "() => window.__game.spec().band")"
+      expect_eq "$sb" "$band" "$part hard sum: the band at the egg's start"
+      want="$([ "$sb" = b ] && echo 5 || echo 4)"
+    else
+      expect_eq "$(val "() => window.__game.spec().band ?? 'none'")" none "$part $grade sum: no band"
+      want=4
+    fi
+    expect_eq "$n" "$want" "$part $grade sum stones"
+    say "$part sum $((k + 1)): $grade, $(val "() => { const s = window.__game.spec(); return s.need + '/' + s.have + ' stones ' + s.stones.join(','); }"), band $band"
+    if [ "$((k + 1))" = "$wrong" ]; then
+      EGG_TRIED="$(stone_of_kind heard)"
+      [ -n "$EGG_TRIED" ] || EGG_TRIED="$(stone_of_kind slip)"
+      [ -n "$EGG_TRIED" ] || EGG_TRIED="$(wrong_of stone)"
+      say "$part sum $((k + 1)) wrong stone: $EGG_TRIED"
+      drag "$EGG_TRIED" cups
+      wait_for "() => { const m = window.__game.state().moment; return m && m.misses === 1 && m.phase === 'open'; }" 20
+      shot "egg-$part-sum$((k + 1))-miss"
+    fi
+    [ "$k" != 2 ] || expect_eq "$(val "() => window.__game.state().herd.some((h) => h.id === '$baby')")" false "$part: no baby before the third sum"
+    before="$(val "() => window.__game.state().results.length")"
+    drag "$(hook 'answer()')" cups
+    wait_for "() => window.__game.state().results.length === $((before + 1))" 30
+    expect_eq "$(val "() => { const r = window.__game.state().results; const l = r[r.length - 1]; return l.part + ' ' + l.detail.grade + ' ' + l.detail.round; }")" "$part $grade $k" "$part sum $((k + 1)) result line"
+    outcome="$(val "() => { const r = window.__game.state().results; return r[r.length - 1].outcome; }")"
+    want="$band"
+    if [ "$grade" = hard ]; then
+      [ "$outcome" = first ] && want=b
+      [ "$outcome" = helped ] && want=a
+    fi
+    expect_eq "$(field mathsBand)" "$want" "$part band after the $grade sum ($outcome)"
+  done
+  # The third heart, then the hatch.
+  wait_for "() => window.__game.state().herd.some((h) => h.id === '$baby')" 30
+  shot "egg-$part-hatch"
+}
 
 open_page "?seed=$SEED&fresh=1"
 shot 00-start
@@ -28,24 +91,14 @@ run_code "async page => { const p = await page.evaluate(() => { const g = window
 say "ran after a double tap"
 walk_to_goal
 
-# ---- 2 Egg 1 (band A: 4 stones that sleep until both numbers are said): the stone she just heard, then the right one.
+# ---- 2 Egg 1: three sums on one panel (easy, then middle and hard; the stones sleep until both numbers are said).
+# The second sum gets the stone she just heard first.
 wait_moment egg 20
 wait_phase open 30
 sleep 1
 shot 03-egg1
 budget nest
-check_targets "$(moment_targets)"
-expect_eq "$(val "() => window.__game.state().moment.targets.filter((t) => /^stone /.test(t.name)).every((t) => +t.name.slice(6) >= 3)")" true 'stones 3 to 9'
-expect_eq "$(val "() => JSON.parse('$(stones_of)').length")" 4 'egg 1 stones (band A)'
-heard="$(stone_of_kind heard)"
-# The heard number is not always a valid stone: then the slip (one off).
-[ -n "$heard" ] || heard="$(stone_of_kind slip)"
-[ -n "$heard" ] || heard="$(wrong_of stone)"
-say "egg 1 wrong stone: $heard"
-drag "$heard" cups
-wait_for "() => { const m = window.__game.state().moment; return m && m.misses === 1 && m.phase === 'open'; }" 20
-shot 04-egg1-miss
-drag "$(hook 'answer()')" cups
+egg_sums egg1 2
 
 # ---- 3, 4 Hatch and naming 1: a bell, then one wrong build, then the right name.
 wait_moment naming 40
@@ -127,15 +180,13 @@ wait_for "() => window.__game.state().goal === 'wildEgg'" 60
 shot 11-wild-egg-goal
 wait_for "() => window.__game.state().princess.mode === 'idle'" 30
 
-# ---- 8, 9, 10 Egg 2 (band A again after the helped egg 1), naming 2 and the picnic wish, all right first time.
+# ---- 8, 9, 10 Egg 2 (its hard sum in the band egg 1's hard sum left), naming 2 and the picnic wish, all right first time.
 walk_to_goal
 wait_moment egg 20
 wait_phase open 30
 sleep 1
 shot 12-egg2
-check_targets "$(moment_targets)"
-expect_eq "$(val "() => JSON.parse('$(stones_of)').length")" 4 'egg 2 stones (band A)'
-drag "$(hook 'answer()')" cups
+egg_sums egg2 0
 wait_moment naming 40
 sleep 2
 shot 13-naming2
@@ -196,7 +247,7 @@ shot 19-rollcall-wrong
 wait_for "() => window.__game.state().moment?.misses === 1" 15
 wait_open 15
 tap "$(hook 'answer()')"
-wait_for "() => window.__game.state().results.length === 8" 30
+wait_for "() => window.__game.state().results.length === 12" 30
 wait_moment door 30
 wait_open 20
 tap "$(hook 'answer()')"
@@ -227,14 +278,18 @@ shot 23-end
 # first time; every wrong choice is in detail.tried.
 results="$(val "() => JSON.stringify(window.__game.state().results.map((r) => r.part + ':' + (r.detail.moment || r.strand) + ':' + (r.misses === 1 && r.outcome !== 'first' ? 'missed' : r.outcome)))")"
 say "results $results"
-expect_eq "$results" '["egg1:m:missed","naming1:s:missed","wish1:r:missed","pond:r:first","egg2:m:first","naming2:s:first","wish2:r:first","bedtime:roll call:missed","bedtime:roll call:first","bedtime:visit:missed"]' 'results log'
+expect_eq "$results" '["egg1:m:first","egg1:m:missed","egg1:m:first","naming1:s:missed","wish1:r:missed","pond:r:first","egg2:m:first","egg2:m:first","egg2:m:first","naming2:s:first","wish2:r:first","bedtime:roll call:missed","bedtime:roll call:first","bedtime:visit:missed"]' 'results log'
 # Every wrong choice is logged once; the doors log the door number. The door misses are 'helped' (the row hint).
 tried="$(val "() => JSON.stringify(window.__game.state().results.map((r) => (r.detail.tried || []).length))")"
-expect_eq "$tried" '[1,1,1,0,0,0,0,1,0,1]' 'tried per moment'
+expect_eq "$tried" '[0,1,0,1,1,0,0,0,0,0,0,1,0,1]' 'tried per moment'
+# Three result lines per egg: easy first, hearts 0, 1 and 2, and the three grades.
+for part in egg1 egg2; do
+  expect_eq "$(val "() => { const r = window.__game.state().results.filter((x) => x.part === '$part'); return r[0].detail.grade + ' ' + r.map((x) => x.detail.round).join(',') + ' ' + r.map((x) => x.detail.grade).sort().join(','); }")" 'easy 0,1,2 easy,hard,middle' "$part result lines"
+done
 # The light contrast: a right item after it, without the sounds, is 'miss' (guessed, then read).
 expect_eq "$(val "() => window.__game.state().results.find((r) => r.part === 'wish1').outcome")" miss 'the dress-up wish after the contrast'
-# Egg 1's wrong stone is the one she heard (the warm cups), when the tray had it.
-expect_eq "$(val "() => window.__game.state().results[0].detail.tried[0]")" "${heard#stone }" 'egg 1 tried'
+# Egg 1's wrong stone (its second sum) is the one she heard (the warm cups), when the tray had it.
+expect_eq "$(val "() => window.__game.state().results[1].detail.tried[0]")" "${EGG_TRIED#stone }" 'egg 1 tried'
 # The wishes log their level and basket size: the warm-up at level 1 with 4 items, then level 2 with 5.
 expect_eq "$(val "() => JSON.stringify(window.__game.state().results.filter((r) => r.strand === 'r').map((r) => r.detail.level + '/' + r.detail.size))")" '["1/4","2/5","2/5"]' 'wish levels and sizes'
 expect_eq "$(val "() => new Set(window.__game.state().results.filter((r) => r.strand === 'r').map((r) => r.detail.word)).size")" 3 'three different wish words'
@@ -242,7 +297,7 @@ expect_eq "$(val "() => new Set(window.__game.state().results.filter((r) => r.st
 expect_eq "$(val "() => JSON.stringify(window.__game.save().ribbons)")" '["lilac"]' 'ribbons earned'
 # 2.3.0: the goodnight ribbon is the colour of her hair things.
 expect_eq "$(val "() => window.__game.save().look.thingColour")" lilac 'her hair-thing colour'
-expect_eq "$(val "() => { const l = window.__game.save().last; return l.words.length + '/' + l.totals.length; }")" '3/2' 'last play in the save'
+expect_eq "$(val "() => { const l = window.__game.save().last; return l.words.length + '/' + l.totals.length; }")" '3/6' 'last play in the save'
 expect_eq "$(val "() => window.__game.save().seen.wardrobe")" true 'customiser seen'
 expect_eq "$(val "() => JSON.stringify(window.__game.state().results.filter((r) => r.part === 'bedtime').map((r) => r.detail.tried))")" '[["1"],[],["17"]]' 'wrong doors'
 expect_eq "$(val "() => window.__game.state().results.filter((r) => r.part === 'bedtime' && r.misses === 1).every((r) => r.outcome === 'helped')")" true 'door misses are helped'

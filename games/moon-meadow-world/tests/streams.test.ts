@@ -1,6 +1,6 @@
 // The game's random streams per moment (src/game/streams.ts) and the maths band (src/game/band.ts).
 import { describe, expect, it } from 'vitest';
-import { eggSpec } from '../src/content/eggs';
+import { eggSpec, eggSums } from '../src/content/eggs';
 import { createStreams } from '../src/game/streams';
 import { nextBand, noteBand, startMaths, totalOf, useSum } from '../src/game/band';
 
@@ -23,6 +23,18 @@ describe('g.randFor streams', () => {
     const a = eggSpec('snow', full.for('egg2'), { first: true });
     const b = eggSpec('snow', jumped.for('egg2'), { first: true });
     expect({ ...a, clips: undefined }).toEqual({ ...b, clips: undefined });
+  });
+
+  it('gives an egg its three sums from its own stream, whatever ran before it (2.3)', () => {
+    const full = createStreams(5);
+    for (const label of ['egg1', 'hatch1', 'naming1', 'wish1', 'pond']) take(full.for(label), 40);
+    const jumped = createStreams(5);
+    const o = { first: true, used: { totals: [8, 11, 15], answers: [3, 5, 7] }, lastTotals: [] };
+    const strip = (xs: ReturnType<typeof eggSums>) => xs.map((e) => ({ ...e, clips: undefined }));
+    expect(strip(eggSums('snow', full.for('egg2'), o))).toEqual(strip(eggSums('snow', jumped.for('egg2'), o)));
+    // Another egg's stream asks other sums.
+    const other = eggSums('snow', createStreams(5).for('egg1'), o);
+    expect(strip(other)).not.toEqual(strip(eggSums('snow', createStreams(5).for('egg2'), o)));
   });
 
   it('gives other numbers for another seed or label', () => {

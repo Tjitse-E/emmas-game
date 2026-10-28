@@ -109,6 +109,10 @@ html.mmw-guarded body {
   animation: mmw-pop-in 500ms cubic-bezier(.3, 1.3, .5, 1) both;
 }
 .egg-moment .cups-panel { --cup-w: calc(66 * var(--u)); --cup-h: calc(56 * var(--u)); }
+/* 2.3.0: an egg's second and third sums, new cups on the panel that stayed, without its pop-in. Same weight as the
+   pop-in and before .hot and .cold, so a wrong stone shakes the panel on every sum. */
+.cups-panel.next-in { animation: mmw-cups-next 380ms ease-out both; }
+@keyframes mmw-cups-next { from { opacity: 0.35; transform: scale(0.97); } }
 .nest { position: relative; width: calc(390 * var(--u)); height: calc(150 * var(--u)); }
 .nest-bed { position: absolute; left: -3%; top: 8%; width: 106%; height: 96%; opacity: 0.95; }
 .cup-grid {
@@ -267,6 +271,27 @@ html.mmw-guarded body {
 .fly-bundle { position: absolute; left: 0; top: 0; width: calc(64 * var(--u)); height: calc(42 * var(--u)); pointer-events: none; }
 .fly-bundle img { width: 100%; height: 100%; object-fit: contain; }
 .fly-bundle.spill { filter: drop-shadow(0 0 calc(8 * var(--u)) rgba(255, 110, 140, 0.9)); animation: mmw-spare 500ms ease-in-out infinite alternate; }
+
+/* 2.3.0 (docs/v4/2.3.md section 19.1): three sums per egg on one panel. The three hearts sit on the cups panel's top
+   rim (the panel ends 200 up from the bottom), centred over it and clear of the cups and their steam; a dropped stone
+   rests above them (egg.ts dropSpot). They are not touchable. A lit heart is pink with a glow: gold on the warm egg,
+   frost blue on the snow egg. */
+.egg-hearts {
+  position: absolute; left: 0; right: calc(192 * var(--u)); bottom: calc(194 * var(--u)); width: max-content; margin: 0 auto;
+  display: flex; gap: calc(12 * var(--u)); padding: calc(6 * var(--u)) calc(16 * var(--u));
+  background: rgba(255, 250, 242, 0.96); border: calc(4 * var(--u)) solid var(--lilac); border-radius: calc(34 * var(--u));
+  box-shadow: 0 calc(4 * var(--u)) 0 rgba(172, 146, 214, 0.45);
+  pointer-events: none; animation: mmw-pop-in 500ms 80ms cubic-bezier(.3, 1.3, .5, 1) both;
+}
+.egg-heart { display: block; width: calc(50 * var(--u)); height: calc(46 * var(--u)); }
+.egg-heart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.egg-heart path { fill: #f4ebfa; stroke: #c9b3ea; stroke-width: 3; stroke-linejoin: round; transition: fill 300ms, stroke 300ms; }
+.egg-heart.lit path { fill: #ff6f9f; stroke: #e2457c; }
+.egg-heart.lit svg { filter: drop-shadow(0 0 calc(7 * var(--u)) rgba(255, 196, 92, 0.95)); }
+.kind-snow .egg-heart.lit svg { filter: drop-shadow(0 0 calc(7 * var(--u)) rgba(150, 214, 255, 0.95)); }
+.egg-heart.pop { animation: mmw-heart-pop 700ms cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes mmw-heart-pop { 0% { transform: scale(0.7); } 45% { transform: scale(1.4) rotate(-6deg); } 100% { transform: scale(1); } }
+.egg-moment.leaving .egg-hearts { transition: opacity 400ms ease, transform 400ms ease; opacity: 0; }
 /* ---- end of the maths lane block ---- */
 
 .stone-tray {

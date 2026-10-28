@@ -122,11 +122,14 @@ export function haySkin(ctx: LayerCtx, spec: EggSpec, root: HTMLElement, life: L
     show: async (k, from) => {
       const fill = gaps.slice(0, k);
       const flights: Promise<void>[] = [];
+      /** The hay rustles as the first bundle lands; the line after the pile waits for it (at most 1 s, fx()). */
+      let rustle: Promise<void> | null = null;
       for (const s of fill) {
         if (!life.alive) break;
         flights.push(flyBundle(from, centreOf(s.el)).then((d) => {
           d.remove();
           if (!life.alive) return;
+          rustle ??= audio.fx('hay-rustle');
           setAdded(s, true);
           pulse(s.el);
           void audio.sfx('tick');
@@ -142,7 +145,9 @@ export function haySkin(ctx: LayerCtx, spec: EggSpec, root: HTMLElement, life: L
         await sleep(190);
       }
       await Promise.all(flights);
-      return Promise.all(spill);
+      const spilled = await Promise.all(spill);
+      await rustle;
+      return spilled;
     },
     wrong: (diff, spill) => {
       if (diff > 0) {
