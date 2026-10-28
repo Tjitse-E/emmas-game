@@ -1,7 +1,9 @@
 // The side quests' offer bubbles (docs/v4/2.2.md 5, Layer.offer): a picture in a round bubble over a place in the
 // world (the picnic rug, the hay rack), following its point every frame and bobbing gently. While the place is off
 // screen the bubble waits at the screen edge in its direction. It acts on pointerdown, because it moves with the
-// camera and a release could land beside it. A tapped bubble pops away by itself.
+// camera and a release could land beside it. A tapped bubble pops away by itself. 2.3: a quest bubble can carry a
+// badge on its rim, the picture of a gift that quest can still give (swatches.ts giftSwatchUrl), so the prize shows
+// without reading (docs/v4/2.3.md section 17.2).
 import './wardrobe.css';
 import type { ScreenPoint } from '../contracts';
 import { audio } from '../audio';
@@ -37,6 +39,7 @@ export function createOffers(parent: HTMLElement, screen: () => { w: number; h: 
     ball.setAttribute('aria-label', `offer ${id}`);
     wordPicEl({ pic: o.pic, tint: o.tint }, 'offer-pic', ball);
     img(PIC.sparkle, 'offer-spark', ball);
+    if (o.badge) img(o.badge, 'offer-badge-pic', el('div', 'offer-badge', ball));
     el('span', 'offer-tail', bob);
     // Each bubble bobs on its own beat.
     bob.style.animationDelay = `${-((live.size * 1.3) % 3).toFixed(2)}s`;

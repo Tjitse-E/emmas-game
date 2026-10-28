@@ -5,16 +5,17 @@
 // 2.3.0: the wardrobe-ui lane owns this file, except two marked blocks: the eggs lane's (the egg and hay rack specs
 // and their buttons) and the reading lane's (the naming and wish specs and their buttons). Each lane edits only its
 // own block (docs/v4/2.3.md section 22.2). New EggSpec and WishSpec fields stay optional, so the blocks keep compiling.
-import type { EggSpec, EndMember, LookTab, MomentHooks, NameChoice, NamingSpec, Place, PrincessLook, Ribbon, ScreenPoint, WishItem, WishSpec } from '../contracts';
-import { legacyOf } from '../wardrobe-legacy';
+import type {
+  BoardSpec, EggSpec, EndMember, GiftItem, LookTab, MomentHooks, NameChoice, NamingSpec, Owned, Place, PrincessLook, ScreenPoint, WishItem, WishSpec,
+} from '../contracts';
 import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
-import { DEFAULT_LOOK, START_OWNED, tabOf } from '../wardrobe';
+import { DEFAULT_LOOK, GIFT_SETS, START_OWNED, crownOutline, giftChoices, stillToEarn, tabOf, withItem } from '../wardrobe';
 import { eggSpec, rackSpec, seeded } from '../content';
 import { DATA } from '../content/data';
 import { createLayer } from './index';
 import { wardrobeLayout } from './geometry';
-import { gownBody, headBody, thingBody } from './swatches';
+import { crownBody, earringsBody, giftSwatchUrl, gownBody, headBody, necklaceBody, shoesBody, thingBody } from './swatches';
 
 const STYLE = `
 html, body { margin: 0; height: 100%; overflow: hidden; background: #cfe8ff; }
@@ -125,18 +126,24 @@ const herPose = her.querySelector('.pose') as HTMLElement;
 let herLook: PrincessLook = { ...DEFAULT_LOOK };
 let herHeading = 0;
 let herFocus: LookTab | null = null;
+let herCrown = true;
+/** Her look as one flat picture from the swatch bodies: shoes, gown, head and hair, crown, hair things, jewels. */
 function drawHer(next: PrincessLook) {
   herLook = next;
-  // 2.2's pictures until the wardrobe-ui lane draws 2.3's (wardrobe-legacy.ts).
-  const look = legacyOf(next);
-  const legs = look.gown === 'lilac' || look.gown === 'moon' ? '' : '<path d="M45 150 L45 178 M55 150 L55 178" stroke="#ffe2d0" stroke-width="7" stroke-linecap="round"/><ellipse cx="44" cy="182" rx="7" ry="4.5" fill="#ff6fa8"/><ellipse cx="56" cy="182" rx="7" ry="4.5" fill="#ff6fa8"/>';
+  const look = next;
+  const ball = look.gown === 'ball' || look.gown === 'gala';
+  const legs = ball ? '' : '<path d="M45 150 L45 176 M55 150 L55 176" stroke="#ffe2d0" stroke-width="7" stroke-linecap="round"/>';
+  const shoes = ball ? `<g transform="translate(28 168) scale(0.44)">${shoesBody(look.shoes, look.shoeColour)}</g>` : `<g transform="translate(28 160) scale(0.44)">${shoesBody(look.shoes, look.shoeColour)}</g>`;
+  const crown = herCrown ? `<g transform="translate(34 4) scale(0.32)">${crownBody(look.crown, look.crownColour, crownOutline(look.hair, look.crownColour))}</g>` : '';
+  const ears = look.earrings === 'none' ? '' : `<g transform="translate(26 50) scale(0.48)">${earringsBody(look.earrings, look.jewelColour)}</g>`;
+  const neck = look.necklace === 'none' ? '' : `<g transform="translate(38 66) scale(0.24)">${necklaceBody(look.necklace, look.jewelColour)}</g>`;
   herPose.innerHTML =
-    '<svg viewBox="0 0 100 200" aria-hidden="true">' + legs +
-    `<g transform="translate(0 62)">${gownBody(look.gown)}</g>` +
-    '<rect x="45" y="64" width="10" height="22" rx="4" fill="#ffe2d0"/>' +
-    `<g>${headBody(look.style, look.hair, { eyes: look.eyes })}</g>` +
-    `<g transform="translate(14 36) scale(0.2)">${thingBody(look.thing, look.ribbon)}</g>` +
-    `<g transform="translate(66 36) scale(0.2)">${thingBody(look.thing, look.ribbon)}</g>` +
+    '<svg viewBox="0 0 100 200" aria-hidden="true">' + legs + shoes +
+    `<g transform="translate(0 62)">${gownBody(look.gown, look.gownColour, look.extra)}</g>` +
+    '<rect x="45" y="64" width="10" height="22" rx="4" fill="#ffe2d0"/>' + neck +
+    `<g>${headBody(look.style, look.hair, { eyes: look.eyes })}</g>` + ears + crown +
+    `<g transform="translate(14 36) scale(0.2)">${thingBody(look.thing, look.thingColour)}</g>` +
+    `<g transform="translate(66 36) scale(0.2)">${thingBody(look.thing, look.thingColour)}</g>` +
     '</svg>';
 }
 /** The body frame: feet at 77% and head top at 11% of the screen, at x = panel left / 2. The face frame zooms in. */
@@ -242,19 +249,33 @@ const members: EndMember[] = [
   { name: 'Nell', body: '#ffffff', mane: '#4fc3ff', isNew: true },
 ];
 
-async function dress(firstTime: boolean, _ribbons: Ribbon[]) {
-  // As in the game: no Lumi and no crown until the welcome.
+/** Owned with every item of these gift sets, as after many quests. */
+function ownedWith(...items: GiftItem[]): Owned {
+  return items.reduce((o, i) => withItem(o, i), START_OWNED as Owned);
+}
+const SOME_GIFTS: GiftItem[] = [
+  { field: 'crown', id: 'tiara' }, { field: 'crown', id: 'heart' }, { field: 'shoes', id: 'boots' }, { field: 'earrings', id: 'hearts' },
+  { field: 'necklace', id: 'pearls' }, { field: 'style', id: 'long' }, { field: 'thing', id: 'cherries' },
+];
+const ALL_GIFTS: GiftItem[] = Object.values(GIFT_SETS).flatMap((s) => [...s.items]);
+const PICS = { crowns: wordPic('picnic'), shoes: v3Art('items/item-hay-bundle.webp'), jewels: wordPic('bead'), hair: v3Art('items/place-dressing.webp') };
+/** A board after a picnic and a bead tree today: two fresh gifts and three ribbons. */
+const board = (owned: Owned, fresh: GiftItem[]): BoardSpec => ({ owned, fresh, ribbons: ['lilac', 'sky', 'mint'], pics: PICS });
+
+/** The start mirror or the Dressing Corner, as in the game: no Lumi, Princess Emma on the left, the music box. */
+async function dress(o: { firstTime?: boolean; owned?: Owned; crownTab?: boolean; limitMs?: number; board?: BoardSpec } = {}) {
   show(null);
   layer.lumi.show(false);
+  herCrown = o.crownTab ?? true;
   drawHer(herLook);
   herFocus = null;
   frameHer();
   her.classList.remove('hidden');
-  const { look } = await layer.wardrobe({
-    look: herLook, owned: START_OWNED, crownTab: true, firstTime, limitMs: 45_000,
+  const { look, end } = await layer.wardrobe({
+    look: herLook, owned: o.owned ?? START_OWNED, crownTab: herCrown, firstTime: !!o.firstTime, limitMs: o.limitMs ?? 45_000, board: o.board,
     clips: { ready: ['g4-ready'], firstTime: ['g4-look-tap'], idle: ['g4-ready-play'], nearly: ['g4-nearly'], done: ['fb-lovely'] },
     onLook: (l, field) => { drawHer(l); log(`look ${field} ${l[field]}`); },
-    onPicked: (l, field) => { poseHer(REACT[tabOf(field)]); log(`picked ${field} ${JSON.stringify(l)}`); },
+    onPicked: (l, field) => { poseHer(REACT[tabOf(field)]); log(`picked ${field} ${l[field]}`); },
     onFocus: (row) => { herFocus = row; frameHer(); log(`focus ${row}`); },
     onTurn: (dx, ended) => {
       herHeading = ended ? 0 : herHeading + dx / 2;
@@ -263,9 +284,10 @@ async function dress(firstTime: boolean, _ribbons: Ribbon[]) {
       if (ended) log('turn ended');
     },
     onPreviewTap: () => { poseHer('wave'); log('preview tap'); },
+    onBox: (on) => log(`box ${on}`),
   });
-  results.push({ wardrobe: look });
-  log(`wardrobe done ${JSON.stringify(look)}`);
+  results.push({ wardrobe: look, end });
+  log(`wardrobe ${end} ${JSON.stringify(look)}`);
   poseHer('curtsy');
   herFocus = null;
   frameHer();
@@ -273,6 +295,22 @@ async function dress(firstTime: boolean, _ribbons: Ribbon[]) {
     her.classList.add('hidden');
     layer.lumi.show(true);
   }, 1400);
+}
+
+/** The gift picker after a quest: the cards, then the sparkles fly to the stand-in Princess Emma, who wears it. */
+async function gift(items: GiftItem[]) {
+  show(null);
+  drawHer(herLook);
+  her.classList.remove('hidden');
+  frameHer();
+  const item = await layer.gift({
+    items, look: herLook, clips: ['g4-gift'],
+    to: () => ({ x: wardrobeLayout(innerWidth, innerHeight).panel.x / 2, y: innerHeight * 0.3, visible: true }),
+  });
+  drawHer({ ...herLook, [item.field]: item.id });
+  poseHer('twirl');
+  results.push({ gift: `${item.field}:${item.id}` });
+  log(`gift ${item.field}:${item.id}`);
 }
 
 /** Two offer bubbles over drifting points, as over the picnic rug and the hay rack. */
@@ -283,8 +321,10 @@ function offers(on: boolean) {
     return;
   }
   const drift = (fx: number, fy: number) => () => ({ x: innerWidth * fx + Math.sin(performance.now() / 1500) * 40, y: innerHeight * fy + Math.cos(performance.now() / 1100) * 10, visible: true });
-  layer.offer('picnic', { pic: wordPic('picnic'), at: drift(0.3, 0.6), onTap: () => log('offer picnic') });
-  layer.offer('rack', { pic: v3Art('items/item-hay-bundle.webp'), at: drift(0.7, 0.5), onTap: () => log('offer rack') });
+  // 2.3: each quest bubble carries the badge of a gift it can still give.
+  const badge = (set: keyof typeof GIFT_SETS) => giftSwatchUrl(stillToEarn(set, START_OWNED)[0], herLook);
+  layer.offer('picnic', { pic: wordPic('picnic'), badge: badge('crowns'), at: drift(0.3, 0.6), onTap: () => log('offer picnic') });
+  layer.offer('rack', { pic: v3Art('items/item-hay-bundle.webp'), badge: badge('shoes'), at: drift(0.7, 0.5), onTap: () => log('offer rack') });
 }
 
 // ---- the dev buttons
@@ -310,9 +350,14 @@ const runs: Record<string, () => Promise<unknown> | void> = {
     layer.foodBasket({ show: true, foods, drop: (f, x, y) => { const a = anchor(); const hit = Math.hypot(x - a.x, y - a.y - 60) < 160; log(`drop ${f.word} ${hit}`); if (hit) react('munch'); return hit; } });
   },
   'food off': () => layer.foodBasket({ show: false }),
-  wardrobe: () => dress(false, []),
-  'wardrobe first': () => dress(true, []),
-  'wardrobe gifts': () => dress(false, ['lilac', 'sky', 'mint']),
+  wardrobe: () => dress(),
+  'wardrobe first': () => dress({ firstTime: true, crownTab: false }),
+  'wardrobe corner': () => dress({ owned: ownedWith(...SOME_GIFTS), limitMs: 60_000, board: board(ownedWith(...SOME_GIFTS), SOME_GIFTS.slice(-2)) }),
+  'wardrobe all': () => dress({ owned: ownedWith(...ALL_GIFTS), limitMs: 60_000, board: board(ownedWith(...ALL_GIFTS), []) }),
+  'wardrobe short': () => dress({ limitMs: 8000 }),
+  gift: () => gift(giftChoices('hair', START_OWNED, seeded(4))),
+  'gift one': () => gift([{ field: 'necklace', id: 'heart' }]),
+  board: () => layer.board(board(ownedWith(...SOME_GIFTS), SOME_GIFTS.slice(-1))),
   offers: () => offers(true),
   'offers off': () => offers(false),
   'the end': async () => { await layer.theEnd({ herd: 14, members }); log('play again'); },
