@@ -10,7 +10,8 @@
 // The basket is a two by two grid plus one:
 //   level 1 (4 items): {colour, a target colour of another first letter} x {thing, its partner}. The colours differ
 //     at the first letter, the things after it, so a reader of both first letters is right half the time.
-//   level 2 (5 items): {colour, its sibling} x {thing, its partner}, plus red or pink on the target's thing.
+//   level 2 (5 items): {colour, its sibling} x {thing, its partner}, plus red or pink on one of the two things, at
+//     random. On the target's thing every time, the thing shown three times would give the wish's thing away.
 //   level 3 (5 items): the level 2 grid plus a third thing of the same first letter in one of the two colours. Sock
 //     and shirt have no third thing, so they play and log as level 2.
 // Every grid item is a strong phrase itself, so any grid item can be the wish and none can be ruled out; only the
@@ -32,12 +33,14 @@ export interface PhraseTables {
   things: readonly PhraseThingData[];
 }
 
-/** Fewer strong phrases than this and the gate plays word wishes (section 18). */
+/** Fewer strong phrases than this and the gate plays word wishes (section 18). tools/build-content.ts warns by it. */
 export const MIN_PHRASES = 6;
 
 // data.json may be an older one while tools/build-content.ts rebuilds it, so nothing here reads it at load time.
 const TABLES = (): PhraseTables => ({ colours: DATA.phraseColours ?? [], things: DATA.phraseThings ?? [] });
 const THE = (): Pick<PhraseWordData, 'word' | 'gpcs'> => DATA.phraseThe ?? { word: 'the', gpcs: ['th', 'e'] };
+/** The clip a tap on the printed "the" says (v3's word-the, checked by the build). ui/wish.ts has it too (tested). */
+export const theClip = (): string => DATA.phraseThe?.clip ?? 'word-the';
 
 /** The phrase's key, the log word and the picture check key: "green sock". */
 export const phraseKey = (c: string, t: string): string => `${c} ${t}`;
@@ -73,9 +76,12 @@ function grids(t: PhraseTables, s: ReadonlySet<string>, c: string, x: string, co
 }
 const level1Grids = (t: PhraseTables, s: ReadonlySet<string>, c: string, x: string) => grids(t, s, c, x, others(t, c));
 const level2Grids = (t: PhraseTables, s: ReadonlySet<string>, c: string, x: string) => grids(t, s, c, x, siblings(t, c));
-/** Red or pink on the target's thing: the level 2 fifth item. */
+/** Red or pink on a thing, as far as the pictures passed the check: the level 2 fifth item. */
 const decoysOn = (t: PhraseTables, allowed: ReadonlySet<string>, x: string): string[] =>
   decoyColours(t).filter((d) => allowed.has(phraseKey(d, x)));
+/** The level 2 grids whose two things both have red or pink, so the decoy can go on either thing. */
+const decoyGrids = (t: PhraseTables, s: ReadonlySet<string>, allowed: ReadonlySet<string>, c: string, x: string): Grid[] =>
+  decoysOn(t, allowed, x).length ? level2Grids(t, s, c, x).filter(([, x2]) => decoysOn(t, allowed, x2).length > 0) : [];
 /** A third thing of the first letter in one of the grid's colours: the level 3 fifth item. */
 const fifthsOf = (t: PhraseTables, allowed: ReadonlySet<string>, [c, x]: Grid, [c2, x2]: Grid): Grid[] =>
   partners(t, x).filter((x3) => x3 !== x2 && !alike(t, x3, x2))
@@ -83,9 +89,9 @@ const fifthsOf = (t: PhraseTables, allowed: ReadonlySet<string>, [c, x]: Grid, [
 
 /**
  * The strong phrases among the pairs that passed the picture check (section 18): a target colour with a sibling, a
- * thing with a partner, and a basket at level 1 and at level 2 whose grid items are all strong themselves and whose
- * decoy passed the check. It removes phrases until every one left keeps its baskets, so every grid item of every
- * basket is a phrase the wish can ask for. In table order (colour, then thing).
+ * thing with a partner, and a basket at level 1 and at level 2 whose grid items are all strong themselves, with red or
+ * pink passed by the check on both of the level 2 grid's things. It removes phrases until every one left keeps its
+ * baskets, so every grid item of every basket is a phrase the wish can ask for. In table order (colour, then thing).
  */
 export function strongPhrases(t: PhraseTables, allowed: ReadonlySet<string>): string[] {
   let s = new Set(t.colours.filter((c) => c.target && siblings(t, c.word).length)
@@ -94,7 +100,7 @@ export function strongPhrases(t: PhraseTables, allowed: ReadonlySet<string>): st
   for (;;) {
     const next = new Set([...s].filter((k) => {
       const [c, x] = splitKey(k);
-      return level1Grids(t, s, c, x).length > 0 && level2Grids(t, s, c, x).length > 0 && decoysOn(t, allowed, x).length > 0;
+      return level1Grids(t, s, c, x).length > 0 && decoyGrids(t, s, allowed, c, x).length > 0;
     }));
     if (next.size === s.size) return [...next];
     s = next;
@@ -182,15 +188,18 @@ export function phraseSpec(rand: Rand, o: PhraseOpts = {}): WishSpec {
     add([c, x2], 'onset');
     add([c2, x2], 'other');
   } else {
-    const all2 = level2Grids(t, s, c, x);
-    const with3 = all2.filter((g) => fifthsOf(t, allowed, [c, x], g).length);
+    const with3 = level2Grids(t, s, c, x).filter((g) => fifthsOf(t, allowed, [c, x], g).length);
     if (level === 3 && !with3.length) level = 2;
-    const [c2, x2] = pick(rand, level === 3 ? with3 : all2);
+    const [c2, x2] = pick(rand, level === 3 ? with3 : decoyGrids(t, s, allowed, c, x));
     add([c2, x], 'onset');
     add([c, x2], 'onset');
     add([c2, x2], 'onset');
     if (level === 3) add(pick(rand, fifthsOf(t, allowed, [c, x], [c2, x2])), 'onset');
-    else add([pick(rand, decoysOn(t, allowed, x)), x], 'other');
+    else {
+      // Red or pink on either thing at random, so the thing shown three times is the wish's thing only half the time.
+      const on = pick(rand, [x, x2]);
+      add([pick(rand, decoysOn(t, allowed, on)), on], 'other');
+    }
   }
   const { again, ...v3Rule } = WISH_CLIPS.phrase;
   return {
@@ -211,7 +220,7 @@ export function phraseCombos(t: PhraseTables = TABLES()): [string, string][] {
 /** Every clip a phrase wish can say: every colour on every thing, "the" on a tap, and the wish's lines. */
 export function allPhraseClipIds(): string[] {
   const ids = phraseCombos().map(([c, x]) => phraseClip(c, x));
-  return [...new Set([...ids, DATA.phraseThe?.clip ?? 'word-the', ...Object.values(WISH_CLIPS.phrase).flat()])];
+  return [...new Set([...ids, theClip(), ...Object.values(WISH_CLIPS.phrase).flat()])];
 }
 
 /** Every letter sound the phrase hint can play: the colours' and things' sounds ("the" is never sounded). */

@@ -103,34 +103,34 @@ What the build gives (all strong, all `ok`):
 
 ### The strong rule (`strongPhrases`)
 
-A phrase is strong when its colour is a target colour with a sibling, its thing has a partner, it passed the check, it has a level 1 grid and a level 2 grid whose four items are all strong themselves, and red or pink on its thing passed the check. The script removes phrases until every one left keeps its grids (the largest such set), so every grid item of every basket can be the wish. Strong phrases come in grids of 2 colours by 2 things, so a count between 1 and 7 cannot happen: the gate needs at least 8 in practice.
+A phrase is strong when its colour is a target colour with a sibling, its thing has a partner, it passed the check, it has a level 1 grid and a level 2 grid whose four items are all strong themselves, and red or pink passed the check on both of that level 2 grid's things. The script removes phrases until every one left keeps its grids (the largest such set), so every grid item of every basket can be the wish. Strong phrases come in grids of 2 colours by 2 things, so a count between 1 and 7 cannot happen: the gate needs at least 8 in practice.
 
 ### Baskets (`phraseSpec`)
 
 | Level | Basket | Both first letters | Colour word only | Thing word only |
 |---|---|---|---|---|
 | 1 | {colour, a target colour of another letter} x {thing, partner}: 4 | 50% | 50% | 50% |
-| 2 | {colour, sibling} x {thing, partner} + red or pink on the thing: 5 | 25% | 50% | 33% |
-| 3 | the level 2 grid + a third b-thing in one of the two colours: 5 (sock and shirt play and log 2) | 22% | 45% | 43% |
+| 2 | {colour, sibling} x {thing, partner} + red or pink on one of the two things at random: 5 | 25% | 50% | 42% |
+| 3 | the level 2 grid + a third b-thing in one of the two colours: 5 (sock and shirt play and log 2) | 22% | 45% | 47% |
 
-Measured over 10,000 baskets per level with `?phrases=all`; the tests hold them to 55% (level 1) and 40% (levels 2 and 3) for both first letters, and 55% for one word only. Decoy kinds for the log: level 1's other-colour items `other` and the partner thing `onset`; levels 2 and 3 grid items `onset`, red or pink `other`, the third thing `onset`.
+Measured over 10,000 baskets per level with `?phrases=all`; the tests hold them to 55% (level 1) and 40% (levels 2 and 3) for both first letters, and 55% for one word only. The thing shown most often gives nothing away: red or pink goes on the wish's thing half the time. A guesser that reads the colour and takes the most common thing gets 50% at every level, one that reads both first letters and counts 25% at levels 2 and 3, and one that reads nothing, leaves out red and pink and counts 25%; the tests hold these to the same bounds (30% for the last). With red or pink always on the wish's thing these were 100%, 50% and 50% at level 2. Decoy kinds for the log: level 1's other-colour items `other` and the partner thing `onset`; levels 2 and 3 grid items `onset`, red or pink `other`, the third thing `onset`.
 
 ### The game (`game/moments.ts`, `game/reading.ts`)
 
-- `planWish(g, 'phrase', label, { wish: false })` plans at the phrase level (`save.phrases`; `?rl=` forces it), with `?phrases=all` from the options. While `gateKind(g)` is `'word'` it plans a dress-up word wish at the word level instead, whose intro is "Your baby wants to dress up like you!" and the goal; the caller runs either one the same way, so the Corner says nothing of its own before it.
-- `noteReading(g, outcome, kind)` folds a phrase result into `save.phrases` and every word result into `save.reading` (`foldReadingFor`). The gate's word wishes move the word level.
-- `wishExtraClipIds(spec)` adds `word-the` for a phrase; `runWish` preloads it too.
+- `planWish(g, 'phrase', label, { wish: false })` plans at the phrase level (`save.phrases`; `?rl=` forces it), with `?phrases=all` from the options. While `gateKind(g)` is `'word'` it plans a 2.2 dress-up word wish at the word level instead. Its intro is "Your baby wants to dress up like you!" (what the level says before the nest's dress-up wish), then the usual "Your baby has a wish!" and the goal. The caller runs either one the same way, so the Corner says nothing of its own before it. `tests/reading-level.test.ts` checks both cases and the levels they move on a fake game.
+- `noteReading(g, outcome, kind)` (the kind has no default) folds a phrase result into `save.phrases` and every word result into `save.reading` (`foldReadingFor`). The gate's word wishes move the word level.
+- `wishExtraClipIds(spec)` adds `theClip()` (`word-the`, from data.json) for a phrase; `runWish` preloads it while the camera frames, a cache hit when the caller preloaded it. `ui/wish.ts` keeps its own `THE_CLIP`, because the 2D layer reads no content; a test holds the two equal. `build-content.ts` warns by `MIN_PHRASES` from phrases.ts.
 
 ### The ui side
 
 - `parts.ts` `phrasePrintEl(parts)`: "the green sock" on one line at the word print size, a word gap, every word in the print ink. "the" has no dots; a touch on it says `word-the`, once per touch. The colour and the thing play their letter sounds (`sounds` where given).
-- `wish.ts`: the miss tag has two lines, the colour over the thing (Andika 30, no "the"); the picture shrinks above it. The contrast lights per word what differs (`diffPhrase` in `contrast.ts`): the colour against the wish's colour, the thing against its thing; "the" never lights. Elizabeth says the wrong item's phrase, then `fb-letters`. The focused hint: `h-sounds`, the colour's sounds, 400 ms more than the usual gap, the thing's sounds. After a right pick: `fb-yes` and the phrase.
-- `geometry.ts` `phraseUnits(parts)`: the printed units per word, each saying its sound. Checked by `tests/ui.test.ts`, which also checks that ui.css gives the print and the tag no colour of their own.
+- `wish.ts`: the miss tag has two lines, the colour over the thing (Andika 30, no "the"); the picture shrinks above it. The contrast lights per word what differs (`diffPhrase` in `contrast.ts`): the colour against the wish's colour, the thing against its thing; "the" never lights. The differing letters keep the print ink and glow lilac, the print's own mark colour (the digraph bar), in the bubble and the tag: the word print's amber and gold glow could point her at the gold or brown picture. Elizabeth says the wrong item's phrase, then `fb-letters`. The focused hint: `h-sounds`, the colour's sounds, 400 ms more than the usual gap, the thing's sounds. After a right pick: `fb-yes` and the phrase.
+- `geometry.ts` `phraseUnits(parts)`: the printed units per word, each saying its sound. Checked by `tests/ui.test.ts`, which also checks that ui.css gives the print and the tag no colour of their own and the phrase glow no amber or gold. `tests/reading.test.ts` renders every phrase print on a small fake page and checks that no element gets an inline style or a class that names a colour.
 - `dev/ui.html` has `wish phrase 1`, `2` and `3`.
 
 ### Emma's picture check
 
-1. Open `dev/content.html` and scroll to "Phrase pictures". "Hide the words" hides the labels, so she names each picture without reading it. Ask what each one is and what colour it is; gold against yellow above all (the dashed yellow row is only there to compare).
+1. Open `dev/content.html` and scroll to "Phrase pictures". "Hide the words" hides every word (cards, badges, rows, column heads and tooltips) and makes taps silent, so she names each picture without reading or hearing it. Ask what each one is and what colour it is; gold against yellow above all (the dashed yellow row is only there to compare).
 2. For each pair she names right, set `"by": "emma"` in `tools/phrase-check.json`; for one she does not know, `"verdict": "drop"` (keep `by` as who decided).
 3. Run `node tools/build-content.ts` and check the strong count. At 8 or more the gate plays phrases.
 
@@ -138,7 +138,8 @@ Measured over 10,000 baskets per level with `?phrases=all`; the tests hold them 
 
 - The strong rule asks for both grids and the decoy, and removes until stable (above). A looser rule would let a grid item be a phrase that is never the wish.
 - A tap on "the" says the word whole; v3 marks it a tricky word (`heart`), and saying it gives nothing away.
-- The gate's word wishes say "Your baby wants to dress up like you!" in their intro and move the word level, as every word read does.
+- The gate's word wishes say "Your baby wants to dress up like you!" first in their intro and move the word level, as every word read does.
+- Level 2's red or pink goes on either grid thing at random, and a phrase is strong only when both things have it. On the wish's thing every time, the thing shown three times was always the wish's thing.
 - Level 3's third thing takes either grid colour at random, so the colour that shows three times never points at the wish.
 - Gold is a deep mustard as a flat tint. It is `ok` by Claude with that note; Emma's check decides.
 

@@ -25,8 +25,11 @@ import { diffPhrase, diffUnits } from './contrast';
 const SILLY = 'foal-silly';
 /** How long the differing letters of the wish word glow after a miss. */
 const GLOW_MS = 3600;
-/** A touch on the printed "the" of a phrase says it whole (v3's word clip; the game preloads it). */
-const THE_CLIP = 'word-the';
+/**
+ * A touch on the printed "the" of a phrase says it whole (v3's word clip; the game preloads it). The 2D layer reads no
+ * content, so it keeps its own copy of content/phrases.ts theClip(); tests/reading.test.ts holds the two equal.
+ */
+export const THE_CLIP = 'word-the';
 /** The phrase hint's pause between the colour's letter sounds and the thing's, on top of the usual gap. */
 const WORD_GAP_MS = 400;
 

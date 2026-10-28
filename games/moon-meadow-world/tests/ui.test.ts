@@ -165,6 +165,22 @@ describe('print', () => {
     expect(new Set(inks)).toEqual(new Set(['var(--ink)', '#8f80a8', '#8a3fc0', '#b25a00']));
     // No rule singles out a colour word, so "green" never prints green.
     for (const r of printRules) expect(r.sel, r.sel).not.toMatch(/green|gold|blue|brown|red|pink|colour/);
+    // A phrase's differing letters keep the ink and glow lilac, in the bubble and the tag: the word print's amber and
+    // gold could point her at the gold or brown picture.
+    const gold = /#b25a00|#ffd25e|#ffe08a|rgba\(255,\s*2\d\d,/;
+    const phraseDiff = rules.filter((r) => /\.print\.phrase[^,]*\.diff|\.contrast-tag\.two[^,]*\.diff|\.print\.phrase\.glow/.test(r.sel));
+    expect(phraseDiff.length).toBeGreaterThanOrEqual(3);
+    for (const r of phraseDiff) {
+      expect(r.body, r.sel).not.toMatch(gold);
+      for (const m of r.body.matchAll(/(?:^|[;\s])color:\s*([^;]+)/g)) expect(m[1].trim(), r.sel).toBe('var(--ink)');
+    }
+    const frames = [...css.matchAll(/@keyframes (mmw-phrase-[\w-]+)\s*\{([\s\S]*?\})\s*\}/g)];
+    expect(frames.map((f) => f[1]).sort()).toEqual(['mmw-phrase-diff-glow', 'mmw-phrase-word-glow']);
+    for (const [, name, body] of frames) {
+      expect(body, name).not.toMatch(gold);
+      expect(body, name).not.toMatch(/(?:^|[{;\s])color:/);
+    }
+    for (const r of phraseDiff.filter((x) => /animation:/.test(x.body))) expect(r.body, r.sel).toMatch(/mmw-phrase-/);
   });
 });
 

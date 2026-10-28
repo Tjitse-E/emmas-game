@@ -9,7 +9,7 @@ import type { MomentHooks, MomentResult, Vec2, WishItem, WishSpec } from '../con
 import type { UnicornActor } from '../actors';
 import { dist2 } from '../layout';
 import { CLIPS, phraseSpec, wishSpec } from '../content';
-import { gateKind as phraseGateKind } from '../content/phrases';
+import { gateKind as phraseGateKind, theClip } from '../content/phrases';
 import { type Game, checked, flat, frameAt, preload, princessAt, say } from './game';
 import { foldReadingFor, readingLevelFor } from './reading';
 
@@ -175,8 +175,9 @@ export function gateKind(g: Game): 'phrase' | 'word' {
  * `?contrast=0` drops the miss contrast (a spec without clips.again keeps v3's miss rule).
  *
  * 'phrase' (the Corner's gate, 2.3 section 18) plans at the phrase level (`save.phrases`; `?rl=` forces it too).
- * While gateKind() is 'word' it plans a dress-up word wish at the word level instead, which says "Your baby wants to
- * dress up like you!" before its goal; the caller runs either the same way.
+ * While gateKind() is 'word' it plans a 2.2 dress-up word wish at the word level instead. Its intro starts with "Your
+ * baby wants to dress up like you!" (what level.ts says before the nest's dress-up wish), then the usual "Your baby
+ * has a wish!" and its goal. The caller runs either the same way and says nothing of its own before it.
  */
 export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wish: boolean }): WishSpec {
   const gateWords = kind === 'phrase' && gateKind(g) === 'word';
@@ -189,7 +190,7 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   let spec: WishSpec;
   if (gateWords) {
     spec = wishSpec('dress', rand, exclude, opts);
-    spec.clips = { ...spec.clips, intro: [...CLIPS.dressUp, ...spec.clips.goal] };
+    spec.clips = { ...spec.clips, intro: [...CLIPS.dressUp, ...spec.clips.intro] };
   } else {
     spec = kind === 'phrase' ? phraseSpec(rand, { ...opts, exclude, all: g.options.phrasesAll }) : wishSpec(kind, rand, exclude, opts);
   }
@@ -204,15 +205,15 @@ export function afterWish(spec: WishSpec): string[] {
 }
 
 /** Every clip a wish needs besides wishClipIds(spec): the baby's line after it, and "the" of a phrase (on a tap). */
-export const wishExtraClipIds = (spec: WishSpec): string[] => [...afterWish(spec), ...(spec.kind === 'phrase' ? PHRASE_EXTRA : [])];
+export const wishExtraClipIds = (spec: WishSpec): string[] => [...afterWish(spec), ...phraseExtra(spec)];
 /** A tap on the printed "the" of a phrase says the word (v3 word-the): a tricky word is read whole. */
-const PHRASE_EXTRA = ['word-the'];
+const phraseExtra = (spec: WishSpec): string[] => (spec.kind === 'phrase' ? [theClip()] : []);
 
 /**
  * A reading result moves the hidden level of its kind (unless ?rl= forces one) and goes into the save: a phrase read
  * the phrase level, every word read the word level (reading.ts foldReadingFor).
  */
-export function noteReading(g: Game, outcome: MomentResult['outcome'], kind: WishSpec['kind'] = 'dress'): void {
+export function noteReading(g: Game, outcome: MomentResult['outcome'], kind: WishSpec['kind']): void {
   if (g.options.readingLevel) return;
   g.save.write((s) => {
     const next = foldReadingFor(s, kind, outcome);
@@ -228,8 +229,8 @@ export function noteReading(g: Game, outcome: MomentResult['outcome'], kind: Wis
 export async function runWish(g: Game, u: UnicornActor, spec: WishSpec, part: string, o: { frame?: boolean } = {}): Promise<MomentResult> {
   const { layer, world } = g;
   const framed = o.frame !== false;
-  if (framed) await frameWish(g, u);
-  if (spec.kind === 'phrase') await preload(g, PHRASE_EXTRA);
+  // "the" of a phrase loads while the camera frames (a cache hit when the caller preloaded wishExtraClipIds).
+  await Promise.all([framed ? frameWish(g, u) : undefined, spec.kind === 'phrase' ? preload(g, phraseExtra(spec)) : undefined]);
   const t = momentLog();
   g.openSpec = spec;
   const r: MomentResult = await checked(

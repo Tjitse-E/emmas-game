@@ -282,8 +282,6 @@ const PHRASE_THINGS = 'bag bead bow sock shirt';
 const UNTINTABLE = ['white', 'grey', 'black'];
 /** The checkers a phrase pair can have: Claude, or Emma once she has seen the tinted picture with Tjitse. */
 const CHECKERS = ['claude', 'emma'];
-/** Fewer strong phrases than this and the gate plays word wishes (a warning, not a stop). */
-const MIN_PHRASES = 6;
 
 /** v3 writes a grapheme said another way as written.said ('ow.oa' in bow): the print and the letter sound. */
 const written = (g: string): string => g.split('.')[0];
@@ -416,7 +414,8 @@ console.log(`build-content: wrote ${OUT.slice(here.length + 1)}: ${herd.length} 
 // page location when it loads, so it gets a stand-in first. The rule takes the tables as arguments, so the data.json
 // it loads with it does not matter.
 (globalThis as { location?: unknown }).location ??= { pathname: '/' };
-const { strongPhrases } = await import('../src/content/phrases.ts');
+// Fewer strong phrases than the game's MIN_PHRASES is a warning, not a stop: the gate then plays word wishes.
+const { MIN_PHRASES, strongPhrases } = await import('../src/content/phrases.ts');
 const tables = { colours: phraseColours, things: phraseThings };
 const byEmma = strongPhrases(tables, new Set(Object.keys(pairs).filter((k) => pairs[k] === 'emma')));
 const byAll = strongPhrases(tables, new Set(Object.keys(pairs)));
