@@ -2,6 +2,7 @@
  "cap": 7277,
  "floor": 10000,
  "sttPerCheck": 0.34,
+ "sfxPerSecond": 40.0,
  "startCredits": 31035,
  "measured": "2026-10-25",
  "runs": {
@@ -15,5 +16,15 @@
  },
  "note": "Audio budget for the v4 playable demo and its 2.x versions (docs/v4/demo.md section 5): at most 4,000 credits, never fewer than 10,000 credits left on the account. Tjitse's cap for v4 itself is still open (spec 7.1 and 10). It covers the demo's own lines (public/audio/v4demo/) and the menu line menu-moon-meadow-world. Every run goes through tools/audio/gen.sh, which passes the floor, the cap, the ledger and the speech-to-text cost per check (v3's measured 0.34 credits, games/moon-meadow-home/tools/audio/budget.json).",
  "capNote": "Raised from 4,000 to 7,277 on 2026-10-28: Tjitse gave 5,000 credits for 2.3.0 (speech and ElevenLabs sound effects) on top of the 2,276.9 booked before it.",
- "sfxNote": "Sound effects are booked at sfxPerSecond credits per second of duration_seconds (ElevenLabs: 40 credits per second when the duration is set). tools/audio/gen-sfx.py --probe makes the 2 s probe, reads the account counter before and after, and writes what it really took here as sfxProbe (docs/v4/2.3.md section 20). It polls the counter for up to 10 minutes until it moves, and never writes a sfxPerSecond below 40."
+ "sfxNote": "Sound effects are booked at sfxPerSecond credits per second of duration_seconds (ElevenLabs: 40 credits per second when the duration is set). tools/audio/gen-sfx.py --probe makes the 2 s probe, reads the account counter before and after, and writes what it really took here as sfxProbe (docs/v4/2.3.md section 20). It polls the counter for up to 10 minutes until it moves, and never writes a sfxPerSecond below 40.",
+ "sfxProbe": {
+  "t": "2026-10-29T00:55:40",
+  "id": "bedtime-bell",
+  "seconds": 2.0,
+  "before": 27261,
+  "after": 27241,
+  "minutes": 0.5,
+  "credits": 20,
+  "rate": 10.0
+ }
 }

@@ -1,4 +1,17 @@
 {
  "note": "Written by tools/audio/gen-sfx.py. approved is false until Tjitse has listened (sfx.sh --approve id); the game plays only approved files.",
- "clips": {}
+ "clips": {
+  "bedtime-bell": {
+   "file": "bedtime-bell.mp3",
+   "seconds": 1.6401,
+   "loop": false,
+   "loopStart": null,
+   "loopEnd": null,
+   "approved": false,
+   "made": "2026-10-29T00:55:08",
+   "raw": "bedtime-bell-20261029T005508.mp3",
+   "text": "A soft evening bell ringing twice in the distance. Warm and calm, bedtime."
+  }
+ },
+ "updated": "2026-10-29T00:55:08"
 }

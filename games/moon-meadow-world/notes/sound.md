@@ -52,7 +52,7 @@ await say(g, CLIPS.heart); // "A happy heart!"
 | trunk-lid, gift-paper | wardrobe-ui | board opens; chosen card pops |
 | dress-swish, crown-twinkle | wardrobe-ui | only for a pick that says no word |
 | bead-clink | patterns | a right bead lands |
-| stable-door, bedtime-bell, owl | quests-world | `await audio.fx('bedtime-bell')` before `g-dusk`; `await audio.fx('owl')` before Lumi's ribbons line |
+| stable-door, bedtime-bell, owl | quests-world | bedtime-bell from 1 s into the 3 s dusk fade, so it ends with the fade before `g-dusk` (docs/v4/2.3.md section 20); `await audio.fx('owl')` before Lumi's ribbons line |
 | crown-twinkle | quests-world | the welcome, before Lumi's line |
 
 The music box: `const box = audio.musicBox(limitMs)`; `await box.done` resolves at `limitMs` by a timer, also on a silent iPad. Only `box.stop()` ends the tune early (Done, or the wardrobe closing); the timer ends it at `limitMs`, so nothing is left to play when a suspended context wakes after the box. While the context is suspended no note is scheduled, and when it runs again the tune picks up where the timer is. The tune slows in its last four bars, and its last note (the tonic) rings out exactly at `limitMs`. It is laid out back from its end and begins on the first bar line after the box opens, with its bass note (a rest of less than one bar before it). A `limitMs` of NaN, 0 or less gives a silent box that is done at once; more than 10 minutes is cut to 10.
