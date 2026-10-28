@@ -33,6 +33,8 @@ export const V3_PACKS = ['core', 'numbers', 'names-t1', 'words-phase2', 'words-p
 export const OWN_PACK_BASE = 'audio/v4demo/';
 
 let ready = false;
+/** Counts every call that cuts the speech that plays: say without queue, sayAll and stop. */
+let cuts = 0;
 
 function setup(): void {
   if (ready) return;
@@ -66,12 +68,23 @@ export const audio = {
   /** Play one clip. Stops current speech first unless queue is set. Resolves when it ends or is stopped. */
   say(id: string, o?: { queue?: boolean }): Promise<void> {
     setup();
+    if (!o?.queue) cuts++;
     return A.say(id, o);
   },
   /** Stop current speech, then play the clips in order. */
   sayAll(ids: string[]): Promise<void> {
     setup();
+    cuts++;
     return A.sayAll(ids);
+  },
+  /**
+   * sayAll, resolving true when the clips played to their end and false when later speech or stop() cut them (the
+   * other calls resolve either way).
+   */
+  sayWhole(ids: string[]): Promise<boolean> {
+    setup();
+    const mine = ++cuts;
+    return A.sayAll(ids).then(() => cuts === mine);
   },
   /** A pure letter sound (shared phonics clips). */
   sound(grapheme: string, o?: { overlap?: boolean }): Promise<void> {
@@ -87,6 +100,7 @@ export const audio = {
     return A.sfx(name);
   },
   stop(): void {
+    cuts++;
     A.stop();
   },
   has(id: string): Promise<boolean> {

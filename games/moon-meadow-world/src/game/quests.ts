@@ -125,9 +125,10 @@ export async function afternoon(g: Game): Promise<void> {
   const q = g.quests;
   g.free = true;
   if (g.options.quest) askQuest(g, g.options.quest);
-  // The bubbles first, explained once a play: "When you see a bubble, someone is waiting for you." Nothing can cut it
-  // (the basket and its lines come after it, Lumi waits while it plays, a unicorn's name waits its turn), so it counts
-  // as said when it has played.
+  // The bubbles first, explained once a play: "When you see a bubble, someone is waiting for you." The basket and its
+  // lines come after it, Lumi waits while it plays and a unicorn's name waits its turn. Only the turn line in portrait
+  // can cut it, so it counts as said only when it played to its end; a cut one is said again once she is back in
+  // landscape and the turn line is over, unless a bubble was tapped meanwhile.
   let basket = false;
   const basketOnce = () => {
     showBasket(g);
@@ -136,9 +137,9 @@ export async function afternoon(g: Game): Promise<void> {
   };
   if (!q.asked) {
     showOffers(g);
-    if (q.offered.size && !q.explained) {
-      await say(g, CLIPS.bubbles);
-      q.explained = true;
+    while (q.offered.size && !q.explained && !q.asked) {
+      q.explained = await g.run.w(audio.sayWhole(CLIPS.bubbles));
+      if (!q.explained) await g.run.until(() => q.asked !== null || (innerWidth >= innerHeight && !audio.speaking));
     }
   }
   // A bubble tapped meanwhile starts its quest at once: no basket line, the basket shows after the quest.
