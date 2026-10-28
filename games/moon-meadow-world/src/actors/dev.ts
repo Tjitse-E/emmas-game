@@ -1,17 +1,21 @@
 // Harness for the actors lane (dev/actors.html): a plain stage with the level's places, the shared lights, a game-like
 // follow camera, a close-up camera and the wardrobe's body and face frames, a straight-line stub for routes, buttons for
-// everything the actors do, and a look panel with every wardrobe option.
+// everything the actors do, a look panel with every wardrobe option, and the line-up: a princess in every palette
+// colour (or every hair colour) side by side, for tuning the shades (notes/actors.md).
 import * as THREE from 'three';
-import type { ActorDeps, LookField, PrincessEmote, PrincessLook, UnicornEmote, UnicornLook, Vec2 } from '../contracts';
+import type { ActorDeps, GownShape, LookField, PrincessEmote, PrincessLook, UnicornEmote, UnicornLook, Vec2 } from '../contracts';
 import {
   BOUNDS, GAZEBO, GRAZE_HOMES, NEST, OBSTACLES, POND, SLIDE, SLIDE_CURVE, STABLE, TREES, WILD_EGG, doorCenter, doorFront, doorIsUpper, inPond,
   inStableBuilding, v2,
 } from '../layout';
-import { COLOURS, DEFAULT_LOOK, OPTIONS } from '../wardrobe';
+import { COLOURS, DEFAULT_LOOK, HAIR_COLOURS, OPTIONS, PALETTE, crownOutline } from '../wardrobe';
 import { audio } from '../audio';
 import { v3Art } from '../assets';
 import { DATA } from '../content/data';
 import { createActors } from './index';
+import { Parts } from './parts';
+import { SlideQueue } from './motion';
+import { PrincessActor } from './princess';
 import type { UnicornActor } from './unicorn';
 
 // --- renderer, lights and the stage ------------------------------------------------------------------------------
@@ -192,7 +196,8 @@ HERD.forEach(([name, stage, breed, extra], i) => {
 type View =
   | { kind: 'game' }
   | { kind: 'close'; subject: string; angle: number; dist: number; height: number }
-  | { kind: 'portrait'; frame: 'body' | 'face' };
+  | { kind: 'portrait'; frame: 'body' | 'face' }
+  | { kind: 'lineup' };
 
 /**
  * The wardrobe's frames (2.4): the camera looks through a point lookY above her from a pitch, so the visible height
@@ -237,6 +242,8 @@ function placeCamera(dt: number): void {
     camTarget.lerp(look, 1 - Math.exp(-6 * dt));
     camera.position.set(camTarget.x, camTarget.y + d * Math.sin(p), camTarget.z + d * Math.cos(p));
     camera.lookAt(camTarget);
+  } else if (view.kind === 'lineup') {
+    lineupCamera();
   } else {
     camera.fov = 30;
     const at = subjectPoint(view.subject, new THREE.Vector3());
@@ -411,12 +418,14 @@ function portraitView(frame: 'body' | 'face'): void {
   princess.face({ x: princess.position.x, z: princess.position.z + 5 });
   view = { kind: 'portrait', frame };
 }
+let hearts: 0 | 1 | 2 | 3 = 0;
 section('Egg', [
   ['warm in nest', () => egg.place(new THREE.Vector3(NEST.center.x, NEST.eggY, NEST.center.z), 'warm')],
   ['snow on grass', () => egg.place(new THREE.Vector3(WILD_EGG.at.x, 0, WILD_EGG.at.z), 'snow')],
   ['wobble', () => void egg.wobble()],
   ['steam', () => void egg.steam()],
   ['frost', () => void egg.frost()],
+  ['hearts +1', () => egg.hearts((hearts = ((hearts + 1) % 4) as 0 | 1 | 2 | 3))],
   ['hatch', () => {
     void egg.hatch().then(() => {
       const n = herd.all().length;
@@ -440,6 +449,198 @@ section('View', [
   ['turn', () => view.kind === 'close' && (view.angle += Math.PI / 4)],
   ['detail 0/1/2', () => actors.setDetail((detail = ((detail + 1) % 3) as 0 | 1 | 2))],
   ['panel off', () => panel.classList.add('hidden')],
+]);
+
+// --- the line-up: every colour side by side (notes/actors.md) -----------------------------------------------------------
+
+/**
+ * Princesses in rows of six on shelves far south of the meadow, for tuning the shades at 1080 x 740.
+ * - `gowns`: one per palette colour, each wearing it on the gown, the crown, the shoes, the hair things and the
+ *   jewels (earrings and a necklace on), full length.
+ * - `small`: the same twelve, close up on the crown, the hair things, the earrings and the necklace.
+ * - `hair`: one per hair colour (three rows), the rest as the main princess wears it; each label gives the crown
+ *   outline crownOutline() picks on that hair.
+ * - `styles`: the twelve hair styles, the rest as the main princess wears it.
+ * - `things` and `jewels` (close up): the ten hair things; the five crowns with each earring and necklace.
+ * Shapes, the hair and the style come from the main princess: pick them with the look buttons first, then open the
+ * line-up again. `?lineup=gowns|small|hair|styles` and `?gown=party|ball|gala|tutu` open it at once.
+ */
+type LineupKind = 'gowns' | 'small' | 'hair' | 'styles' | 'things' | 'jewels';
+/** Full length: 1.15 m apart, rows 1.75 m above each other. Close: heads 0.62 m apart, rows 0.8 m apart and 1 m back. */
+const LAYOUT = {
+  full: { across: 1.15, rowH: 1.75, rowZ: 0, low: -0.15, high: 1.55 },
+  close: { across: 0.64, rowH: 0.8, rowZ: 1.0, low: 0.62, high: 1.48 },
+} as const;
+const LINEUP = { x: 0, z: 34, shelf: 0.06 } as const;
+const lineupGroup = new THREE.Group();
+lineupGroup.name = 'lineup';
+lineupGroup.visible = false;
+scene.add(lineupGroup);
+const lineupParts = new Parts(20);
+lineupGroup.add(lineupParts.group);
+const lineupStage = lineupParts.group;
+let lineupKind: LineupKind | null = null;
+let lineupGown: GownShape | null = null;
+let lineupRows = 2;
+/** How far the line-up princesses are turned from the camera (0 front, PI / 2 her left side, PI her back). */
+let lineupTurn = 0;
+const layoutOf = (k: LineupKind) => (k === 'small' || k === 'things' || k === 'jewels' ? LAYOUT.close : LAYOUT.full);
+const lineupCast: { p: PrincessActor; own: THREE.Group; label: HTMLDivElement; id: string; y: number }[] = [];
+const labelBox = document.createElement('div');
+labelBox.style.cssText = 'position:fixed;inset:0;pointer-events:none;font:600 13px/1.1 -apple-system,system-ui,sans-serif;color:#5a2346';
+document.body.appendChild(labelBox);
+// A plain wall behind the shelves, so the meadow does not show through between them.
+{
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({ color: '#fbf7fb' }));
+  wall.position.set(LINEUP.x, 4, LINEUP.z - 3.5);
+  lineupStage.add(wall);
+}
+
+function lineupPrincess(i: number): PrincessActor {
+  while (lineupCast.length <= i) {
+    // Her own group holds her dress, crown and hair tubes, so a princess the line-up does not use hides at once.
+    const own = new THREE.Group();
+    lineupGroup.add(own);
+    const entry = { own, label: document.createElement('div'), id: '', y: 0 } as (typeof lineupCast)[number];
+    entry.p = new PrincessActor(
+      own as unknown as THREE.Scene,
+      { deps: { ...deps, heightAt: () => entry.y }, fx, queue: new SlideQueue<object>(), onRide() {}, sounds: () => false },
+      { x: 0, z: LINEUP.z },
+    );
+    entry.p.hold(true);
+    entry.p.crown(true);
+    entry.label.style.cssText = 'position:absolute;transform:translate(-50%,0);background:rgba(255,255,255,0.85);border-radius:6px;padding:2px 5px;white-space:nowrap';
+    labelBox.appendChild(entry.label);
+    lineupCast.push(entry);
+  }
+  return lineupCast[i].p;
+}
+
+/** Where princess i stands: her place in the row, the row's height and (close up) how far back the row is. */
+function lineupSpot(i: number, kind: LineupKind): { x: number; y: number; z: number } {
+  const L = layoutOf(kind);
+  const row = Math.floor(i / 6);
+  return { x: LINEUP.x + ((i % 6) - 2.5) * L.across, y: (lineupRows - 1 - row) * L.rowH, z: LINEUP.z - (lineupRows - 1 - row) * L.rowZ };
+}
+
+function shelves(kind: LineupKind): void {
+  for (const o of [...lineupStage.children]) if (o.name === 'shelf') lineupStage.remove(o);
+  const L = layoutOf(kind);
+  for (let r = 0; r < lineupRows; r++) {
+    const at = lineupSpot(r * 6, kind);
+    const shelf = new THREE.Mesh(new THREE.BoxGeometry(L.across * 6.2, LINEUP.shelf, 1.0), lam('#f3e6f0'));
+    shelf.name = 'shelf';
+    shelf.position.set(LINEUP.x, at.y - LINEUP.shelf / 2, at.z);
+    lineupStage.add(shelf);
+  }
+}
+
+/** The looks of a line-up and their labels. */
+function lineupLooks(kind: LineupKind, gown: GownShape | null): { label: string; look: PrincessLook }[] {
+  const base = { ...princess.look, gown: gown ?? princess.look.gown };
+  if (kind === 'gowns' || kind === 'small') {
+    return COLOURS.map((c) => ({
+      label: c,
+      look: {
+        ...base, gownColour: c, crownColour: c, shoeColour: c, thingColour: c, jewelColour: c,
+        earrings: base.earrings === 'none' ? 'drops' : base.earrings, necklace: base.necklace === 'none' ? 'pearls' : base.necklace,
+      },
+    }));
+  }
+  if (kind === 'hair') return HAIR_COLOURS.map((h) => ({ label: `${h} · ${crownOutline(h, base.crownColour)}`, look: { ...base, hair: h } }));
+  if (kind === 'things') return OPTIONS.thing.map((t) => ({ label: t, look: { ...base, thing: t } }));
+  if (kind === 'jewels') {
+    const ear = OPTIONS.earrings.filter((e) => e !== 'none');
+    const neck = OPTIONS.necklace.filter((n) => n !== 'none');
+    return OPTIONS.crown.flatMap((c, i) => [0, 1].map((k) => {
+      const earrings = ear[(i * 2 + k) % ear.length];
+      const necklace = neck[(i * 2 + k) % neck.length];
+      return { label: `${c} · ${earrings} · ${necklace}`, look: { ...base, crown: c, earrings, necklace } };
+    }));
+  }
+  return OPTIONS.style.map((st) => ({ label: st, look: { ...base, style: st } }));
+}
+
+/** Show a line-up (or hide it with null). */
+function lineup(kind: LineupKind | null, gown: GownShape | null = lineupGown): void {
+  lineupKind = kind;
+  lineupGown = gown;
+  lineupGroup.visible = !!kind;
+  labelBox.style.display = kind ? '' : 'none';
+  if (!kind) {
+    view = { kind: 'game' };
+    return;
+  }
+  const looks = lineupLooks(kind, gown);
+  lineupRows = Math.ceil(looks.length / 6);
+  shelves(kind);
+  looks.forEach(({ label, look }, i) => {
+    const p = lineupPrincess(i);
+    const at = lineupSpot(i, kind);
+    lineupCast[i].y = at.y;
+    p.place({ x: at.x, z: at.z }, lineupTurn);
+    p.setLook(look);
+    lineupCast[i].id = label;
+    lineupCast[i].label.textContent = label;
+  });
+  lineupCast.forEach((c, i) => {
+    const on = i < looks.length;
+    c.label.style.display = on ? '' : 'none';
+    c.own.visible = on;
+  });
+  panel.classList.add('hidden');
+  view = { kind: 'lineup' };
+}
+
+const lineupCount = () => lineupCast.filter((c) => c.own.visible).length;
+
+function lineupCamera(): void {
+  const kind = lineupKind ?? 'gowns';
+  const L = layoutOf(kind);
+  camera.fov = 30;
+  const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const w = L.across * 6 + 0.3;
+  const bottom = L.low;
+  const top = (lineupRows - 1) * L.rowH + L.high;
+  const h = top - bottom;
+  const d = Math.max(h / (2 * tan), w / (2 * tan * camera.aspect)) + (lineupRows - 1) * L.rowZ;
+  const cy = (top + bottom) / 2;
+  const back = ((lineupRows - 1) * L.rowZ) / 2;
+  camera.position.set(LINEUP.x, cy + 0.3, LINEUP.z - back + d);
+  camera.lookAt(LINEUP.x, cy, LINEUP.z - back);
+}
+
+function updateLineup(dt: number, t: number): void {
+  if (!lineupKind) return;
+  const lists = [];
+  for (let i = 0; i < lineupCount(); i++) {
+    const p = lineupCast[i].p;
+    p.update(dt, t);
+    lists.push(p.parts);
+  }
+  lineupParts.flush(lists);
+}
+
+function placeLabels(): void {
+  if (!lineupKind) return;
+  const close = layoutOf(lineupKind) === LAYOUT.close;
+  for (let i = 0; i < lineupCount(); i++) {
+    const c = lineupCast[i];
+    // Full length under her feet; close up on her sash.
+    const v = c.p.position.clone().setY(c.p.position.y + (close ? 0.56 : -0.02)).project(camera);
+    c.label.style.left = `${((v.x + 1) / 2) * innerWidth}px`;
+    c.label.style.top = `${((1 - v.y) / 2) * innerHeight + 4}px`;
+  }
+}
+
+section('Line-up (tuning the shades)', [
+  ...(['gowns', 'small', 'hair', 'styles', 'things', 'jewels'] as const).map((k) => [k, () => lineup(k)] as [string, () => void]),
+  ...(['party', 'ball', 'gala', 'tutu'] as const).map((g) => [g, () => lineup(lineupKind ?? 'gowns', g)] as [string, () => void]),
+  ...([['front', 0], ['side', Math.PI / 2], ['back', Math.PI]] as const).map(([k, a]) => [k, () => {
+    lineupTurn = a;
+    lineup(lineupKind ?? 'gowns');
+  }] as [string, () => void]),
+  ['off', () => lineup(null)],
 ]);
 
 // --- loop, stats and the test hook ---------------------------------------------------------------------------------
@@ -485,7 +686,9 @@ renderer.setAnimationLoop(() => {
   const t0 = performance.now();
   actors.update(dt, time);
   updateMs = updateMs * 0.95 + (performance.now() - t0) * 0.05;
+  updateLineup(dt, time);
   placeCamera(real);
+  placeLabels();
   renderer.info.reset();
   renderer.render(scene, camera);
   if (Math.floor(time * 4) !== Math.floor((time - dt) * 4)) {
@@ -567,5 +770,25 @@ const hook = {
   emma() {
     return { parts: princess.parts.n, triangles: princess.triangles(), look: princess.look, mode: princess.mode };
   },
+  lineup(kind: LineupKind | null, gown?: GownShape | null, turn?: number) {
+    if (turn !== undefined) lineupTurn = turn;
+    lineup(kind, gown ?? null);
+  },
+  /** The line-up's princesses: the colour each shows and her look. */
+  lineupCast() {
+    return lineupKind ? lineupCast.filter((c) => c.label.style.display !== 'none').map((c) => ({ id: c.id, look: c.p.look })) : [];
+  },
+  palette: PALETTE,
 };
 (window as unknown as { __actors: typeof hook }).__actors = hook;
+
+// ?lineup=gowns|hair (and ?gown=party|ball|gala|tutu) opens the line-up at once.
+{
+  const q = new URLSearchParams(location.search);
+  const kind = q.get('lineup');
+  const gown = q.get('gown') as GownShape | null;
+  lineupTurn = q.get('turn') === 'back' ? Math.PI : q.get('turn') === 'side' ? Math.PI / 2 : 0;
+  if (kind === 'gowns' || kind === 'small' || kind === 'hair' || kind === 'styles' || kind === 'things' || kind === 'jewels') {
+    lineup(kind, gown && (OPTIONS.gown as readonly string[]).includes(gown) ? gown : null);
+  }
+}
