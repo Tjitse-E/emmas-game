@@ -55,3 +55,4 @@ Decoy kinds per gap, by tray index: `copy` (the bead left of the gap), `unit` (a
 
 - `dev/beads.html` at all six sizes and the three levels: layout, the demo, a miss with the contrast, the focused hint, two misses and the ghost, a drop off the string, a release only the window hears.
 - The game at `?at=free&quest=beads&fresh=1&seed=5`, 1080 x 740: the demo, one wrong bead, three result lines, the level fold without the demo gap, `seen.beads`, back to free play. The bead tree itself is drawn by the quests-world lane; until then the frame shows grass where it stands.
+- Budget in the tree frame (built game, 1080 x 740, 1080 x 810 and 1024 x 690, before the tree is drawn): 34 draw calls and 54,267 triangles. The panel is DOM only.
