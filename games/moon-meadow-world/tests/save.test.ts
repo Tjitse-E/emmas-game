@@ -22,8 +22,9 @@ describe('parseSave', () => {
       owned: { ...START_OWNED, crown: ['lumi', 'star'], earrings: ['drops'] },
       ribbons: ['lilac', 'sky'],
       plays: 4,
-      seen: { wardrobe: true, crown: true },
+      seen: { wardrobe: true, crown: true, beads: true },
       reading: { level: 3, recent: ['first', 'miss'] },
+      phrases: { level: 1, recent: ['miss'] },
       patterns: { level: 2, recent: ['first'] },
       last: { words: ['crown', 'seal', 'plum'], totals: [13, 14] },
       afternoon: { maths: 'beads', done: ['picnic', 'beads', 'corner'] },
@@ -46,9 +47,11 @@ describe('parseSave', () => {
     expect(s.look).toEqual(fromLegacy(old.look));
     expect(s.look).toMatchObject({ hair: 'pink', gown: 'party', extra: 'wings', thingColour: 'lilac' });
     expect(s.owned).toEqual(START_OWNED);
-    expect(s.seen).toEqual({ wardrobe: true, crown: true });
+    expect(s.seen).toEqual({ wardrobe: true, crown: true, beads: false });
     expect(s.ribbons).toEqual(['lilac', 'sky']);
     expect(s.reading).toEqual(old.reading);
+    // The phrase level starts at her word level, so the new form is neither too easy nor too hard on its first play.
+    expect(s.phrases).toEqual({ level: 3, recent: [] });
     expect(s.last).toEqual(old.last);
   });
 
@@ -57,7 +60,7 @@ describe('parseSave', () => {
     expect(s.v).toBe(2);
     expect(s.look).toEqual({ ...DEFAULT_LOOK, hair: 'midnight' });
     expect(s.plays).toBe(2);
-    expect(s.seen).toEqual({ wardrobe: true, crown: false });
+    expect(s.seen).toEqual({ wardrobe: true, crown: false, beads: false });
   });
 
   it('drops unknown ids and broken fields one by one', () => {
@@ -167,18 +170,18 @@ describe('createSave', () => {
 
 describe('parseOptions', () => {
   it('reads every option', () => {
-    const o = parseOptions('?seed=5&at=wardrobe&fresh=1&rl=3&maths=b&contrast=0&quest=beads&pl=2&box=5&portrait=0&perf=1', 1);
+    const o = parseOptions('?seed=5&at=wardrobe&fresh=1&rl=3&maths=b&contrast=0&quest=beads&pl=2&phrases=all&box=5&portrait=0&perf=1', 1);
     expect(o).toEqual({
-      seed: 5, at: 'wardrobe', fresh: true, readingLevel: 3, band: 'b', contrast: false, quest: 'beads', patternLevel: 2, boxMs: 5000,
-      portrait: false, perf: true,
+      seed: 5, at: 'wardrobe', fresh: true, readingLevel: 3, band: 'b', contrast: false, quest: 'beads', patternLevel: 2, phrasesAll: true,
+      boxMs: 5000, portrait: false, perf: true,
     });
   });
 
   it('falls back for missing and unknown values', () => {
-    const o = parseOptions('?rl=7&maths=c&quest=hunt&pl=0&seed=x', 42);
+    const o = parseOptions('?rl=7&maths=c&quest=hunt&pl=0&phrases=some&seed=x', 42);
     expect(o).toEqual({
-      seed: 42, at: null, fresh: false, readingLevel: null, band: null, contrast: true, quest: null, patternLevel: null, boxMs: null,
-      portrait: true, perf: false,
+      seed: 42, at: null, fresh: false, readingLevel: null, band: null, contrast: true, quest: null, patternLevel: null, phrasesAll: false,
+      boxMs: null, portrait: true, perf: false,
     });
   });
 });

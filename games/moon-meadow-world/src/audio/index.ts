@@ -3,9 +3,9 @@
 // Every clip is pre-generated ElevenLabs audio. Nothing here ever uses browser speech.
 import '@emma/audio-player';
 import { V3 } from '../assets';
-import { type Ambience, type FxOpts, type MusicBox, type SfxFile, createSound } from './sound';
+import { type Ambience, type FxOpts, type MusicBox, type SfxFile, type Speaker, createSound } from './sound';
 
-export type { Ambience, FxOpts, MusicBox, SfxFile };
+export type { Ambience, FxOpts, MusicBox, SfxFile, Speaker };
 
 export type Sfx = 'pop' | 'chime' | 'sparkle' | 'whoosh' | 'soft-no' | 'fanfare' | 'splash' | 'munch' | 'tick' | 'magic' | 'hatch';
 
@@ -29,7 +29,9 @@ interface EmmaAudioApi {
 }
 
 const A = (window as unknown as { EmmaAudio: EmmaAudioApi }).EmmaAudio;
-const sound = createSound({ speaking: () => A.speaking, sfx: (name) => A.sfx(name) });
+// Step 0 counts all speech as Elizabeth's and misses letter sounds. The sound lane counts the pending say, sayAll,
+// sound and hold calls here per speaker (sound.ts isStoryLine), so a letter sound counts as Elizabeth speaking.
+const sound = createSound({ speaking: () => (A.speaking ? 'elizabeth' : null), sfx: (name) => A.sfx(name) });
 
 /** v3 packs the demo speaks from, searched after the demo's own pack. */
 export const V3_PACKS = ['core', 'numbers', 'names-t1', 'words-phase2', 'words-phase3-4', 'words-year1', 'places'] as const;
@@ -104,10 +106,13 @@ export const audio = {
     setup();
     return A.sfx(name);
   },
-  /** An ElevenLabs effect on the game's own channel (sound.ts): skipped while speech plays unless `duck`. */
-  fx(id: SfxFile, o?: FxOpts): void {
+  /**
+   * An ElevenLabs effect on the game's own channel (sound.ts): never under Elizabeth, under a story line only with
+   * `duck`. Resolves at its end (at most 1 s), so a line that follows it can wait for it.
+   */
+  fx(id: SfxFile, o?: FxOpts): Promise<void> {
     setup();
-    sound.fx(id, o);
+    return sound.fx(id, o);
   },
   /** The background loop (day, night or none). It keeps playing through stop() and is silent in checked moments. */
   ambience(kind: Ambience | null): void {
@@ -121,7 +126,7 @@ export const audio = {
   preloadFx(): Promise<void> {
     return sound.preloadFx();
   },
-  /** The wardrobe's music box tune for `ms`. */
+  /** The wardrobe's music box tune for `ms`. Only its own stop() ends it early. */
   musicBox(ms: number): MusicBox {
     setup();
     return sound.musicBox(ms);
@@ -130,7 +135,7 @@ export const audio = {
   soundState() {
     return sound.state();
   },
-  /** Stop speech, letter sounds and effects. The background loop plays on. */
+  /** Stop speech, letter sounds and effects. The background loop and the music box play on. */
   stop(): void {
     cuts++;
     A.stop();

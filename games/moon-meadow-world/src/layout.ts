@@ -152,11 +152,12 @@ export const PICNIC = {
 } as const;
 
 /**
- * The Dressing Corner at the south step of Lumi's gazebo (docs/v4/2.3.md Part 2, section 4). The lilac trunk moves out
+ * The Dressing Corner at the south step of Lumi's gazebo (docs/v4/2.3.md section 17.1). The lilac trunk moves out
  * of the gazebo to the step's west side and a standing mirror stands on its east side, where the two flower pots were
- * (they move round to 0.2 and 0.8 pi). She dresses at `stand`, 1.9 s from START; the babies stand at `babies` for the
+ * (they move round to 0.2 and 0.8 pi). She dresses at `stand`, 2.0 s from START; the babies stand at `babies` for the
  * gate's two phrase reads, in front of the trunk and the mirror; her other followers wait at `aside` (the picnic's
- * spots, west of the rug). The trunk and the mirror are small obstacles (`radius`).
+ * spots, west of the rug). The trunk and the mirror are small obstacles (`radius`). `herd`: the grazing homes near the
+ * step and where those unicorns step aside to (quest-kit.ts herdAsideAt).
  */
 export const CORNER = {
   stand: v2(-14, 2.7),
@@ -165,13 +166,15 @@ export const CORNER = {
   radius: 0.45,
   babies: [v2(-15.2, 3.4), v2(-12.8, 3.4)] as Vec2[],
   aside: [v2(-17, 4.0), v2(-17.3, 5.1), v2(-16.8, 2.9)] as Vec2[],
+  herd: [[v2(-12, 7), v2(-14, 12)], [v2(-7, 9), v2(-4, 12)], [v2(-16, -7), v2(-17, -13)]] as [Vec2, Vec2][],
 } as const;
 
 /**
- * The bead tree in the east yard (side quest, section 4): a small tree with bead strings in its branches, the mirror
- * of the hay rack, outside the 19 m door framing and 7.5 s from the wild egg. Its trunk is an obstacle. She stands at
- * `stand` (west of it, so the tree stays on the left of the screen); the baby whose necklace it is stands at `baby`;
- * her other followers wait at `aside`, west in the yard.
+ * The bead tree in the east yard (side quest, docs/v4/2.3.md section 17.1): a small tree with bead strings in its
+ * branches, the mirror of the hay rack, outside the 19 m door framing, 8.6 s from the wild egg and 8.7 s from START.
+ * Its trunk is an obstacle. She stands at `stand` (west of it, so the tree stays on the left of the screen); the baby
+ * whose necklace it is stands at `baby`; her other followers wait at `aside`, west in the yard; `herd` as for the
+ * Corner.
  */
 export const BEAD_TREE = {
   center: v2(12.6, -9.6),
@@ -179,10 +182,11 @@ export const BEAD_TREE = {
   stand: v2(10.2, -9.0),
   baby: v2(11.1, -8.1),
   aside: [v2(8.6, -10.4), v2(8.2, -8.8), v2(9.0, -7.4)] as Vec2[],
+  herd: [[v2(12, -6), v2(15.5, -3.5)]] as [Vec2, Vec2][],
 } as const;
 
 /**
- * The moon mist in the north-east corner, with a saddle sign in front of it: what opens in 2.4 (section 4). The mist
+ * The moon mist in the north-east corner, with a saddle sign in front of it: what opens in 2.4 (2.3.md section 17.1). The mist
  * bank lies behind the stables' back line (z below -16.7), where nobody walks, so it needs no obstacle and the routes
  * do not change; the sign stands on the grass in front of it.
  */

@@ -3,7 +3,7 @@
 // exist; Emma's home server logs every request), so a play on her iPad leaves its results on the Mac: for wishes the
 // level, basket size, word, what she tried and why it was in the basket, a print touch and a quick pick; for maths the
 // band, the stones, the answer's place, the decoys and a quick pick (docs/v4/2.2.md 7.2); 2.3.0 adds an egg sum's
-// grade and heart, a pattern gap's line, and one kind=play line per play (docs/v4/2.3.md Part 2, section 4).
+// grade and heart, a pattern gap's line, and one kind=play line per play (docs/v4/2.3.md section 17).
 import type { MomentResult } from '../contracts';
 
 export type Strand = 'm' | 's' | 'r';

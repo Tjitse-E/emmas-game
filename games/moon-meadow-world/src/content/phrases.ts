@@ -1,7 +1,8 @@
-// The phrase wish (docs/v4/2.3.md Part 2, section 5): "the", a colour and a thing, at the Dressing Corner gate. The
-// unit is the phrase: a basket is a two by two grid of two colours with the same first letter times two things with
-// the same first letter (level 1 lets one of the two pairs differ), so a child who reads only first letters picks
-// right 1 time in 4 at levels 2 and 3. Only colours a tint can show are used; red and pink are decoys only.
+// The phrase wish (docs/v4/2.3.md section 18): "the", a colour and a thing, at the Dressing Corner gate. The unit is
+// the phrase: a basket is a two by two grid of two colours with the same first letter times two things with the same
+// first letter, so a child who reads only first letters picks right 1 time in 4 at levels 2 and 3. Level 1 pairs the
+// colour with a target colour of another first letter, and the thing with its partner. Only colours a tint can show
+// are used; red and pink are decoys only.
 //
 // Step 0: the tables and a first planner, so the gate can run. The reading lane moves the tables behind the tinted
 // picture check (tools/build-content.ts, tools/phrase-check.json), adds level 3 and the guesser tests.
@@ -79,23 +80,26 @@ export function phraseItem(c: PhraseColour, t: PhraseThing): WishItem {
 
 const siblingsOf = <K extends string>(all: readonly K[], k: K): K[] => all.filter((x) => x !== k && first(x) === first(k));
 
-/** Every target phrase at a level: a target colour with a sibling, a thing with a partner; level 1 tiers 1 and 2. */
-export function phraseTargets(level: 1 | 2 | 3): [PhraseColour, PhraseThing][] {
+/**
+ * Every target phrase: a target colour with a sibling, a thing with a partner. The same at every level: at level 1
+ * the colour is told apart by its first letter and the thing by the letter after it (sock against shirt, bag against
+ * bead), so every item of a level-1 basket can be a target and none can be ruled out by its tier.
+ */
+export function phraseTargets(_level: 1 | 2 | 3): [PhraseColour, PhraseThing][] {
   const out: [PhraseColour, PhraseThing][] = [];
   for (const c of COLOURS) {
     if (!PHRASE_COLOURS[c].target || !siblingsOf(COLOURS, c).length) continue;
     for (const t of THINGS) {
-      if (!siblingsOf(THINGS, t).length) continue;
-      if (level === 1 && tierOf(c, t) > 2) continue;
-      out.push([c, t]);
+      if (siblingsOf(THINGS, t).length) out.push([c, t]);
     }
   }
   return out;
 }
 
 /**
- * A phrase wish at a reading level (2.3 Part 2, 5): level 1 has 4 items where one of the two word pairs shares the
- * first letter, level 2 the full grid and a decoy colour on the target's thing. Step 0 plays level 3 as level 2.
+ * A phrase wish at its own level (2.3 section 18, save.phrases): level 1 has the 4 items {colour, a target colour of
+ * another first letter} x {thing, its partner}, level 2 the full grid and a decoy colour on the target's thing. Step 0
+ * plays level 3 as level 2.
  */
 export function phraseSpec(rand: Rand, o: WishOpts = {}): WishSpec {
   let level = o.level ?? 2;
@@ -113,12 +117,12 @@ export function phraseSpec(rand: Rand, o: WishOpts = {}): WishSpec {
     decoys[`${x} ${y}`] = why;
   };
   if (level === 1) {
-    // One pair shares the first letter, the other differs: a first-letter guesser picks right half the time.
-    const sameColour = rand() < 0.5;
-    const c2 = sameColour ? pick(rand, cs) : pick(rand, COLOURS.filter((x) => first(x) !== first(c)));
-    const t2 = sameColour ? pick(rand, THINGS.filter((x) => first(x) !== first(t))) : pick(rand, ts);
-    add(c2, t, sameColour ? 'onset' : 'other');
-    add(c, t2, sameColour ? 'other' : 'onset');
+    // The colours differ at the first letter, the things after it: a first-letter guesser picks right half the time.
+    // The other colour is a target colour too, so no item can be ruled out as one that is never the answer.
+    const c2 = pick(rand, COLOURS.filter((x) => PHRASE_COLOURS[x].target && first(x) !== first(c)));
+    const t2 = pick(rand, ts);
+    add(c2, t, 'other');
+    add(c, t2, 'onset');
     add(c2, t2, 'other');
   } else {
     const c2 = pick(rand, cs);

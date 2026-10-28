@@ -1,7 +1,7 @@
 // The 2.2.0 wardrobe (docs/v4/2.2.md 2.5), kept only while the 2.3.0 lanes move to src/wardrobe.ts: the five rows,
 // the 2.2 ids, swatch colours and words, and legacyOf(), which shows a 2.3 look in 2.2's terms so the 2.2 actor and
 // customiser code keeps working on top of the 2.3 contracts. Every lane drops its imports from here; the integrator
-// deletes this file when nothing imports it (docs/v4/2.3.md Part 2, section 9).
+// deletes this file when nothing imports it (docs/v4/2.3.md section 22).
 import type { EyeColour, PrincessLook, Ribbon } from './contracts.ts';
 import { fromLegacy } from './wardrobe.ts';
 

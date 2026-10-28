@@ -1,7 +1,8 @@
 // The two egg parts of the level (moved out of level.ts in 2.3.0, so the eggs lane owns them): she walks to the egg,
-// the egg moment runs, and the baby hatches. 2.3.0 asks three sums per egg (docs/v4/2.3.md section 12 and Part 2,
-// section 6): one within 10, one ending at or just past 10, one across ten at her band, each its own checked moment;
-// three hearts light one per sum and the egg hatches after the third.
+// the egg moment runs, and the baby hatches. 2.3.0 asks three sums per egg (docs/v4/2.3.md sections 12 and 19.1): an
+// easy one within 10, a middle one just past 10, a hard one across ten at her band, each its own checked moment and
+// result line; three hearts light one per sum and the egg hatches after the third. The background stays silent across
+// all three (audio.checked(true) around them), and checked() per sum keeps the clock.
 //
 // Step 0: one sum per egg, as in 2.2.0. The eggs lane builds the three sums.
 import * as THREE from 'three';

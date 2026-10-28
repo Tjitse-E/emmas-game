@@ -242,10 +242,10 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
       wobbleRate = 10;
       await wait(800);
     },
-    // Step 0 of 2.3.0: the hearts' warmth is the actors lane's (docs/v4/2.3.md Part 2, section 6). Until then it
-    // only wobbles.
-    warmth(hearts) {
-      if (hearts > 0) {
+    // Step 0 of 2.3.0: the hearts' glow is the actors lane's (docs/v4/2.3.md section 19.1): warmer gold on the warm
+    // egg, frostier blue on the snow egg. Until then it only wobbles.
+    hearts(lit) {
+      if (lit > 0) {
         wobbleAmp = 0.12;
         wobbleRate = 10;
       }

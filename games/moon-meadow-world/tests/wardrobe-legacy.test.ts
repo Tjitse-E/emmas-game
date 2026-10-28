@@ -1,6 +1,6 @@
 // The 2.2.0 catalogue (src/wardrobe-legacy.ts, docs/v4/2.2.md 2.5), kept while the 2.3.0 lanes move over: the rows,
 // the default look, normaliseLegacy, the ribbon gifts, the crown against every hair colour, and every word. Deleted
-// with wardrobe-legacy.ts (docs/v4/2.3.md Part 2, section 9).
+// with wardrobe-legacy.ts (docs/v4/2.3.md section 22).
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';

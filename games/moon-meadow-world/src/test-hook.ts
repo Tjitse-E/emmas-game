@@ -6,6 +6,7 @@ import type { UiTarget } from './ui';
 import { HAY_RACK, NEST, PICNIC, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
 import { audio } from './audio';
 import { parseOwned } from './wardrobe';
+import { legacyOf } from './wardrobe-legacy';
 import { nameGems } from './ui/geometry';
 import { type Game, type Part, doorPoint, flat, isPart } from './game/game';
 import { jump } from './game/level';
@@ -172,6 +173,13 @@ export function installHook(g: Game): void {
     /** A world point on screen (flows tap the ground with it). */
     screenOf(x: number, z: number, y = 0) {
       return world.toScreen(new THREE.Vector3(x, y, z));
+    },
+    /**
+     * Step 0 of 2.3.0: a look as the 2.2 panel shows it (dress.flow.sh checks the legacy panel's ids). It goes when the
+     * wardrobe-ui lane moves the flow to 2.3's ids and wardrobe-legacy.ts is deleted.
+     */
+    legacy(look: PrincessLook = actors.princess.look) {
+      return legacyOf(look);
     },
     /** Change her look (missing fields keep what she wears) and save it. */
     setLook(look: Partial<PrincessLook>): PrincessLook {

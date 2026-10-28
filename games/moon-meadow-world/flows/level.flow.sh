@@ -240,7 +240,8 @@ expect_eq "$(val "() => JSON.stringify(window.__game.state().results.filter((r) 
 expect_eq "$(val "() => new Set(window.__game.state().results.filter((r) => r.strand === 'r').map((r) => r.detail.word)).size")" 3 'three different wish words'
 # The save: one earned ribbon (the goodnight gift, on her look), and this play's targets and totals for the next play.
 expect_eq "$(val "() => JSON.stringify(window.__game.save().ribbons)")" '["lilac"]' 'ribbons earned'
-expect_eq "$(val "() => window.__game.save().look.ribbon")" lilac 'her ribbon colour'
+# 2.3.0: the goodnight ribbon is the colour of her hair things.
+expect_eq "$(val "() => window.__game.save().look.thingColour")" lilac 'her hair-thing colour'
 expect_eq "$(val "() => { const l = window.__game.save().last; return l.words.length + '/' + l.totals.length; }")" '3/2' 'last play in the save'
 expect_eq "$(val "() => window.__game.save().seen.wardrobe")" true 'customiser seen'
 expect_eq "$(val "() => JSON.stringify(window.__game.state().results.filter((r) => r.part === 'bedtime').map((r) => r.detail.tried))")" '[["1"],[],["17"]]' 'wrong doors'
@@ -248,7 +249,7 @@ expect_eq "$(val "() => window.__game.state().results.filter((r) => r.part === '
 # Doors: the roll call asks 7 to 12, the visit a teen door 11 to 14.
 expect_eq "$(val "() => { const r = window.__game.state().results; const calls = r.filter((x) => x.detail.moment === 'roll call').map((x) => x.detail.door); const visit = r.find((x) => x.detail.moment === 'visit').detail.door; return calls.every((d) => d >= 7 && d <= 12) && visit >= 11 && visit <= 14; }")" true 'door ranges'
 expect_eq "$(val "() => JSON.stringify(window.__game.state().stalls)")" '[1,2,3,4,5,6,7,8,9,10,11,12,13,14]' 'stalls'
-expect_eq "$(hook 'missingClips()')" '[]' 'missing clips'
+no_missing_clips
 # The play-again moon reloads the page, back to the Play button.
 tap 'play again'
 sleep 2.5

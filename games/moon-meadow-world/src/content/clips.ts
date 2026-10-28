@@ -53,7 +53,7 @@ export const CLIPS = {
   bubbles: ['mw-bubbles-explain'],
   // The royal picnic (side quest). No line before the first guest: "Who is hungry?" would point at the foods.
   picnicDone: ['lumi4-picnic-done'],
-  // 2.3.0: the eggs' three hearts, the gifts, the Dressing Corner and the moon mist (docs/v4/2.3.md Part 2)
+  // 2.3.0: the eggs' three hearts, the gifts, the Dressing Corner and the moon mist (docs/v4/2.3.md sections 16 to 19)
   /** Before an egg's first sum. */
   hearts: ['g4-hearts'],
   /** After an egg's first and second sum, while a heart lights. */

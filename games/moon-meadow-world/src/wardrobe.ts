@@ -1,4 +1,4 @@
-// Princess Emma's wardrobe (docs/v4/2.3.md Part 2, section 2): one palette for every coloured part, the shapes of
+// Princess Emma's wardrobe (docs/v4/2.3.md section 15): one palette for every coloured part, the shapes of
 // each part, the six tabs and their rails, her default look, what she owns at the start and the four gift sets.
 // Shared by every lane, like layout.ts: the ui draws the swatches from it, the actors take the hex values, the game
 // saves the ids. The 3D shapes live in src/actors/. The 2.2.0 catalogue is in wardrobe-legacy.ts until the lanes
@@ -178,6 +178,8 @@ export const TABS: readonly { tab: LookTab; fields: readonly LookField[]; frame:
 export interface RailSpec {
   field: LookField;
   ids: readonly string[];
+  /** Its row on the panel, 0 to 4. A field always keeps the same rows, so a rail never moves under her finger. */
+  row: number;
 }
 
 /** A field's options she owns, in rail order: earned fields keep 'none' and what she owns, the rest are all hers. */
@@ -188,13 +190,26 @@ export function ownedOptions(field: LookField, owned: Owned): readonly string[] 
   return all.filter((id) => id === 'none' || mine.includes(id));
 }
 
-/** The rails of a tab for what she owns: each field's options cut into rails of six. */
+/** The rows a field always takes on its tab: enough for every option it has, owned or not. */
+export const fieldRows = (field: LookField): number => Math.ceil(OPTIONS[field].length / RAIL_CELLS);
+
+/** She owns an earring or a necklace, so the jewel colour changes something she can see. */
+const ownsJewel = (owned: Owned): boolean => owned.earrings.length > 0 || owned.necklace.length > 0;
+
+/**
+ * The rails of a tab for what she owns. Each field has fixed rows (fieldRows, in the tab's field order), and its owned
+ * options fill them in rails of six; a row it does not fill stays empty, so an earned item or rail never moves a cell
+ * she knows. A field whose only option is 'none' shows no rail, and the jewel colour shows only once she owns a jewel.
+ */
 export function railsOf(tab: LookTab, owned: Owned): RailSpec[] {
   const spec = TABS.find((t) => t.tab === tab)!;
   const out: RailSpec[] = [];
+  let row = 0;
   for (const field of spec.fields) {
     const ids = ownedOptions(field, owned);
-    for (let i = 0; i < ids.length; i += RAIL_CELLS) out.push({ field, ids: ids.slice(i, i + RAIL_CELLS) });
+    const shown = !(ids.length === 1 && ids[0] === 'none') && (field !== 'jewelColour' || ownsJewel(owned));
+    if (shown) for (let i = 0; i < ids.length; i += RAIL_CELLS) out.push({ field, ids: ids.slice(i, i + RAIL_CELLS), row: row + i / RAIL_CELLS });
+    row += fieldRows(field);
   }
   return out;
 }
@@ -266,6 +281,21 @@ export const GIFT_SETS: Readonly<Record<GiftSet, { quest: GiftQuest; items: read
 /** The set a quest pays from, or null. */
 export function setOfQuest(quest: string): GiftSet | null {
   return (Object.keys(GIFT_SETS) as GiftSet[]).find((s) => GIFT_SETS[s].quest === quest) ?? null;
+}
+
+/**
+ * The set a quest's gift comes from now: its own set while it has items left, else the set with the most items left
+ * (the first in GIFT_SETS order on a tie), so a quest keeps paying after its set is full. Null when every set is full.
+ */
+export function giftSetFor(quest: string, owned: Owned): GiftSet | null {
+  const own = setOfQuest(quest);
+  if (own && stillToEarn(own, owned).length) return own;
+  let best: GiftSet | null = null;
+  for (const s of Object.keys(GIFT_SETS) as GiftSet[]) {
+    const left = stillToEarn(s, owned).length;
+    if (left && (!best || left > stillToEarn(best, owned).length)) best = s;
+  }
+  return best;
 }
 
 export const owns = (owned: Owned, item: GiftItem): boolean => (owned[item.field] as readonly string[]).includes(item.id);

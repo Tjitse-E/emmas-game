@@ -177,12 +177,25 @@ wardrobe_targets() {
   val "() => JSON.stringify(window.__game.targets().map((t) => t.name).filter((n) => /^(row|rail|swatch) /.test(n) || n === 'done' || n === 'preview'))"
 }
 
-# No missing clip and no console error. Each result and the customiser's look line go to diag.txt, which no server
-# has: those requests are meant to fail (the server log is the record), so their 404s are not errors.
+# No missing clip. A clip that is missing but has a line in tools/lines.ts waits for the one gen.sh run after the 2.3
+# lanes merge (docs/v4/2.3.md section 22.3), as tests/content.test.ts allows; it is listed and passes, unless
+# MMW_STRICT_CLIPS=1 (the final run after gen.sh).
+no_missing_clips() {
+  local missing bad
+  missing="$(hook 'missingClips()')"
+  [ "$missing" != '[]' ] || return 0
+  [ "${MMW_STRICT_CLIPS:-}" != 1 ] || fail "missing clips: $missing"
+  bad="$(node --input-type=module -e "import { lineFor } from '$REPO/games/moon-meadow-world/tools/lines.ts'; process.stdout.write(JSON.stringify(JSON.parse(process.argv[1]).filter((id) => !lineFor(id))));" "$missing")"
+  expect_eq "$bad" '[]' 'missing clips without a line'
+  echo "waiting for gen.sh: $missing"
+}
+
+# No missing clip and no console error. Each result, look and play line and each missing clip go to diag.txt, which no
+# server has: those requests are meant to fail (the server log is the record), so their 404s are not errors.
 finish() {
-  expect_eq "$(hook 'missingClips()')" '[]' 'missing clips'
+  no_missing_clips
   local errs
-  errs="$(pw console error 2>/dev/null | grep -E '^\[ERROR\]' | grep -vE 'diag\.txt\?kind=(result|look)&' || true)"
+  errs="$(pw console error 2>/dev/null | grep -E '^\[ERROR\]' | grep -vE 'diag\.txt\?kind=(result|look|play|missing)&' || true)"
   [ -z "$errs" ] || fail "console errors: $errs"
   pw close >/dev/null 2>&1 || true
   echo "ok ${W}x$H $1"

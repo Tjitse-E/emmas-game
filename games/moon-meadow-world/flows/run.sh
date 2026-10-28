@@ -9,6 +9,7 @@
 #   MMW_NO_LEVEL=1, MMW_NO_SMOKE=1, MMW_NO_DRESS=1, MMW_NO_QUEST=1 leave a flow out
 #   MMW_PORT=8791 MMW_SESSION=mmw-eggs bash .../run.sh   another port and playwright-cli session, so runs from two
 #                                                         worktrees at the same time do not share a browser
+#   MMW_STRICT_CLIPS=1 bash .../run.sh                    a missing clip fails even when its line waits for gen.sh
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(git -C "$HERE" rev-parse --show-toplevel)"

@@ -1,6 +1,10 @@
 // The ui lane's harness (dev/ui.html): a pastel stand-in for the 3D world with a drifting fake baby and egg as
 // anchors, and dev buttons that run every part of the layer with real specs on v3 clip ids. Dev only; the
 // buttons carry text because Tjitse and the flows use them, never Emma.
+//
+// 2.3.0: the wardrobe-ui lane owns this file, except two marked blocks: the eggs lane's (the egg and hay rack specs
+// and their buttons) and the reading lane's (the naming and wish specs and their buttons). Each lane edits only its
+// own block (docs/v4/2.3.md section 22.2). New EggSpec and WishSpec fields stay optional, so the blocks keep compiling.
 import type { EggSpec, EndMember, LookTab, MomentHooks, NameChoice, NamingSpec, Place, PrincessLook, Ribbon, ScreenPoint, WishItem, WishSpec } from '../contracts';
 import { legacyOf } from '../wardrobe-legacy';
 import { audio } from '../audio';
@@ -166,10 +170,20 @@ function log(line: string) {
 const hooks: MomentHooks = { anchor, react, log: (e, d) => log(`${e} ${JSON.stringify(d ?? {})}`) };
 
 // ---- sample specs on v3 clips (new v4 ids warn as missing, which is fine)
+
+// ==== eggs lane block: the egg and hay rack specs (2.3: three sums per egg) =========================================
 // Real 2.2.0 trays from the content: 4 stones (band A), 5 stones (band B) and the hay rack.
 const warmEgg: EggSpec = eggSpec('warm', seeded(1), { first: true, band: 'a' });
 const snowEgg: EggSpec = eggSpec('snow', seeded(2), { first: true, band: 'b' });
 const hayRack: EggSpec = rackSpec(seeded(3), { band: 'a' });
+const eggRuns: Record<string, () => Promise<unknown> | void> = {
+  'egg warm': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(warmEgg, hooks); results.push({ egg: 'warm', ...r }); log(`egg warm ${JSON.stringify(r)}`); },
+  'egg snow': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(snowEgg, hooks); results.push({ egg: 'snow', ...r }); log(`egg snow ${JSON.stringify(r)}`); },
+  'hay rack': async () => { show(null); const r = await layer.egg(hayRack, hooks); results.push({ egg: 'hay', ...r }); log(`hay rack ${JSON.stringify(r)}`); },
+};
+// ==== end of the eggs lane block ====================================================================================
+
+// ==== reading lane block: the naming and wish specs (2.3: the phrase wish) ==========================================
 const bells: NameChoice[] = [
   { name: 'Pip', gpcs: ['p', 'i', 'p'], clip: 'name-pip', distractors: ['o', 'b'] },
   { name: 'Meg', gpcs: ['m', 'e', 'g'], clip: 'name-meg', distractors: ['a', 'n'] },
@@ -203,6 +217,20 @@ const dressWish: WishSpec = {
   level: 2, decoys: { hat: 'ending', dress: 'other', sock: 'other', bead: 'other' },
   clips: { intro: ['g-wish', 'g4-dress-up'], goal: ['g4-dress-up'], right: ['fb-yes'], hint: ['h-sounds'], again: ['fb-letters'] },
 };
+const readingRuns: Record<string, () => Promise<unknown> | void> = {
+  naming: async () => {
+    show('baby', { x: 0.5, y: 0.26 });
+    const r = await layer.naming(naming, { ...hooks, chosen: (n) => log(`chosen ${n.name}`) });
+    results.push({ naming: r.name.name, outcome: r.outcome, misses: r.misses, ms: r.ms });
+    log(`naming ${r.name.name} ${r.outcome}`);
+    layer.tag(r.name.name, () => ({ ...anchor(), y: anchor().y - 14 }), 3000);
+  },
+  'wish food': async () => { show('baby', { x: 0.5, y: 0.42 }); const r = await layer.wish(foodWish, hooks); results.push({ wish: 'food', ...r }); log(`wish food ${JSON.stringify(r)}`); },
+  'wish dress': async () => { show('baby', { x: 0.5, y: 0.42 }); const r = await layer.wish(dressWish, hooks); results.push({ wish: 'dress', ...r }); log(`wish dress ${JSON.stringify(r)}`); },
+  'wish bath': async () => { show('baby', { x: 0.42, y: 0.4 }); const r = await layer.wish(bathWish, hooks); results.push({ wish: 'bath', ...r }); log(`wish bath ${JSON.stringify(r)}`); },
+};
+// ==== end of the reading lane block =================================================================================
+
 const foods = ['plum', 'corn', 'cake', 'bun', 'apple', 'cup'].map((w) => item(w, [...w]));
 /** The goodnight herd: her two new babies among twelve, in v3's coat and mane colours. */
 const BODIES = ['#ffe0ef', '#e6dcff', '#d6f1ff', '#fff3c4', '#dcffe8', '#ffe2cf', '#ffffff', '#f5d9ff'];
@@ -265,19 +293,8 @@ let placeIx = 0;
 const runs: Record<string, () => Promise<unknown> | void> = {
   start: () => layer.start(() => void audio.unlock()).then(() => layer.lumi.show(true)),
   lumi: () => layer.lumi.speak(['g-egg']),
-  'egg warm': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(warmEgg, hooks); results.push({ egg: 'warm', ...r }); log(`egg warm ${JSON.stringify(r)}`); },
-  'egg snow': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(snowEgg, hooks); results.push({ egg: 'snow', ...r }); log(`egg snow ${JSON.stringify(r)}`); },
-  'hay rack': async () => { show(null); const r = await layer.egg(hayRack, hooks); results.push({ egg: 'hay', ...r }); log(`hay rack ${JSON.stringify(r)}`); },
-  naming: async () => {
-    show('baby', { x: 0.5, y: 0.26 });
-    const r = await layer.naming(naming, { ...hooks, chosen: (n) => log(`chosen ${n.name}`) });
-    results.push({ naming: r.name.name, outcome: r.outcome, misses: r.misses, ms: r.ms });
-    log(`naming ${r.name.name} ${r.outcome}`);
-    layer.tag(r.name.name, () => ({ ...anchor(), y: anchor().y - 14 }), 3000);
-  },
-  'wish food': async () => { show('baby', { x: 0.5, y: 0.42 }); const r = await layer.wish(foodWish, hooks); results.push({ wish: 'food', ...r }); log(`wish food ${JSON.stringify(r)}`); },
-  'wish dress': async () => { show('baby', { x: 0.5, y: 0.42 }); const r = await layer.wish(dressWish, hooks); results.push({ wish: 'dress', ...r }); log(`wish dress ${JSON.stringify(r)}`); },
-  'wish bath': async () => { show('baby', { x: 0.42, y: 0.4 }); const r = await layer.wish(bathWish, hooks); results.push({ wish: 'bath', ...r }); log(`wish bath ${JSON.stringify(r)}`); },
+  ...eggRuns,
+  ...readingRuns,
   'ghost tap': () => layer.ghost.tap(() => ({ x: innerWidth * 0.3, y: innerHeight * 0.6, visible: true })),
   'ghost drag': () => layer.ghost.drag(() => ({ x: innerWidth * 0.3, y: innerHeight * 0.7, visible: true }), anchor),
   arrow: () => {

@@ -1,3 +1,7 @@
+// The 2D layer's pure helpers (src/ui/geometry.ts, ladder.ts). 2.3.0 splits this file by describe block, as
+// content.test.ts is split (docs/v4/2.3.md section 22.2): eggs owns 'stones', 'moon cups' and 'the blanket'; reading
+// owns 'gems and slots', 'print', 'hint ladder', 'hint runner', 'hint runner timing' and 'colour'; wardrobe-ui owns
+// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own.
 import { describe, expect, it, vi } from 'vitest';
 import {
   CUP_GRID, blanketPatches, bubbleBox, capitalOf, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,

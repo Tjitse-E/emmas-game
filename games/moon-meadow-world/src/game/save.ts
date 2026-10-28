@@ -1,4 +1,4 @@
-// The save (docs/v4/2.2.md 2.7, 2.3.md Part 2 section 2). Since 2.3.0 it lives under mmw.save2, next to 2.2's
+// The save (docs/v4/2.2.md 2.7, 2.3.md section 15). Since 2.3.0 it lives under mmw.save2, next to 2.2's
 // mmw.save, which is read once to start from and never written again, so going back to 2.2.0 finds its own save as
 // it was. v3 shares the origin but keeps its own keys. Every read and write is in try/catch: a missing, blocked or
 // broken entry gives the defaults and a first visit (the middle reading level, the first-visit wardrobe). Emma's home
@@ -24,9 +24,17 @@ export interface Save {
   ribbons: Ribbon[];
   /** Plays started (Play taps). */
   plays: number;
-  /** The first-visit wardrobe has been done; Lumi has given the crown (the crown tab shows). */
-  seen: { wardrobe: boolean; crown: boolean };
+  /**
+   * The first-visit wardrobe has been done; Lumi has given the crown (the crown tab shows); she has been to the bead
+   * tree (its first gap is shown by the ghost only on her first visit).
+   */
+  seen: { wardrobe: boolean; crown: boolean; beads: boolean };
   reading: { level: ReadingLevel; recent: Outcome[] };
+  /**
+   * The phrase wish's own level (2.3 section 18), the same fold as the reading level, so a struggle with the new
+   * two-word form never makes her word baskets easier. It starts at her word level.
+   */
+  phrases: { level: ReadingLevel; recent: Outcome[] };
   /** The bead tree's own pattern level (game/beads.ts), the same fold as the reading level. */
   patterns: { level: ReadingLevel; recent: Outcome[] };
   /** The last finished play's wish, picnic and phrase targets and maths totals, kept out of the next play while it can. */
@@ -42,8 +50,9 @@ const OUTCOMES: readonly Outcome[] = ['first', 'miss', 'helped'];
 export function defaultSave(): Save {
   const reading: ReadingState = startReading();
   return {
-    v: 2, look: { ...DEFAULT_LOOK }, owned: copyOwned(START_OWNED), ribbons: [], plays: 0, seen: { wardrobe: false, crown: false }, reading,
-    patterns: { level: 1, recent: [] }, last: { words: [], totals: [] }, afternoon: { maths: null, done: [] },
+    v: 2, look: { ...DEFAULT_LOOK }, owned: copyOwned(START_OWNED), ribbons: [], plays: 0, seen: { wardrobe: false, crown: false, beads: false },
+    reading, phrases: { level: reading.level, recent: [] }, patterns: { level: 1, recent: [] }, last: { words: [], totals: [] },
+    afternoon: { maths: null, done: [] },
   };
 }
 
@@ -82,7 +91,9 @@ export function parseSave(raw: unknown): Save {
   s.plays = Number.isFinite(plays) && plays > 0 ? Math.floor(plays) : 0;
   s.seen.wardrobe = isObj(r.seen) && r.seen.wardrobe === true;
   s.seen.crown = v1 ? s.plays > 0 : isObj(r.seen) && r.seen.crown === true;
+  s.seen.beads = isObj(r.seen) && r.seen.beads === true;
   s.reading = levelState(r.reading, s.reading);
+  s.phrases = levelState(r.phrases, { level: s.reading.level, recent: [] });
   s.patterns = levelState(r.patterns, s.patterns);
   if (isObj(r.last)) {
     s.last.words = list(r.last.words).filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 12).slice(-LAST_MAX);

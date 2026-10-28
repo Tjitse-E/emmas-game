@@ -199,7 +199,7 @@ afterEach(() => {
 
 /**
  * Every option of every 2.2 row on top of the default look, then 20 seeded random looks, in 2.3's terms (step 0 of
- * 2.3.0; the actors lane widens this to every 2.3 option, docs/v4/2.3.md Part 2, section 9).
+ * 2.3.0; the actors lane widens this to every 2.3 option, docs/v4/2.3.md section 22).
  */
 function looksToTry(): PrincessLook[] {
   const out: PrincessLook[] = [];

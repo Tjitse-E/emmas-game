@@ -15,6 +15,8 @@ export interface OfferOpts {
   pic: string;
   /** A greyscale picture's colour (2.3: the bead tree's bead). */
   tint?: string;
+  /** A small picture on the bubble's rim: the swatch of a gift the quest can still give (2.3; drawn by wardrobe-ui). */
+  badge?: string;
   at: () => ScreenPoint;
   onTap(): void;
 }

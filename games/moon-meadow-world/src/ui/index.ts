@@ -19,6 +19,7 @@ import { runNaming } from './naming';
 import { runWish } from './wish';
 import { runWardrobe, type WardrobeHandle, type WardrobeSnapshot } from './wardrobe';
 import { runGift } from './gift';
+import { showBoard } from './board';
 import { runBeads } from './beads';
 import { createOffers } from './offer';
 import { LEGACY_FIELD, LEGACY_TAB, applyLegacy, applyLegacyAll, legacyOf } from '../wardrobe-legacy';
@@ -136,7 +137,8 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       onTap: (fn) => lumi.onTap(fn),
     },
     egg: (spec, hooks) => {
-      open?.close();
+      // 2.3.0: an egg's second and third sums open on the panel the sum before left on screen (egg.ts keeps it).
+      if (!(open?.kind === 'egg' && (spec.round?.index ?? 0) > 0)) open?.close();
       return runEgg(ctx, spec, hooks, setOpen);
     },
     naming: (spec, hooks) => {
@@ -158,7 +160,7 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
     wardrobe: (o) => {
       wardrobe?.close();
       // Step 0 of 2.3.0: the 2.2 panel on the legacy catalogue, its picks laid over the 2.3 look. The music box, the
-      // tabs and the board come with the wardrobe-ui lane (docs/v4/2.3.md Part 2, section 3).
+      // tabs and the board come with the wardrobe-ui lane (docs/v4/2.3.md section 16).
       let look = o.look;
       const picked = runWardrobe(
         { parent: moments, ghost, screen },
@@ -178,9 +180,10 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       return picked.then((l) => ({ look: applyLegacyAll(look, l), end: 'done' as const }));
     },
     gift: (o) => runGift(moments, o),
-    beads: (spec, hooks) => {
+    board: (spec, ms = 3500) => showBoard(moments, spec, ms),
+    beads: (spec, hooks, o) => {
       open?.close();
-      return runBeads(ctx, spec, hooks, setOpen);
+      return runBeads(ctx, spec, hooks, setOpen, o);
     },
     offer: (id, o) => offers.set(id, o),
     foodBasket: (o) => food.set(o),

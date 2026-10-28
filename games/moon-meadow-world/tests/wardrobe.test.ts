@@ -1,4 +1,4 @@
-// The 2.3.0 wardrobe catalogue (src/wardrobe.ts, docs/v4/2.3.md Part 2 section 2): the palette in rails of six, the
+// The 2.3.0 wardrobe catalogue (src/wardrobe.ts, docs/v4/2.3.md section 15): the palette in rails of six, the
 // tabs within five rails, the default look and what she owns at the start, normaliseLook with ownership, a 2.2 look
 // in 2.3 terms, the gift sets, the goodnight ribbons, the crown on every hair, the look line and every word.
 import { existsSync, readFileSync } from 'node:fs';
@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest';
 import type { GiftSet, LookField, PrincessLook } from '../src/contracts';
 import {
   COLOURS, COLOUR_FIELDS, CROWN_CONTRAST, DEFAULT_LOOK, GIFT_SETS, HAIR_COLOURS, HAIR_HEX, OPTIONS, OWNED_FIELDS, PALETTE, RAIL_CELLS,
-  START_OWNED, TABS, TAB_RAILS, contrast, crownOutline, fromLegacy, giftChoices, lookFields, nextRibbon, normaliseLook, owns, parseOwned,
-  railsOf, stillToEarn, wardrobeClipIds, withItem, wordOf,
+  START_OWNED, TABS, TAB_RAILS, contrast, crownOutline, fieldRows, fromLegacy, giftChoices, giftSetFor, lookFields, nextRibbon, normaliseLook,
+  owns, parseOwned, railsOf, stillToEarn, wardrobeClipIds, withItem, wordOf,
 } from '../src/wardrobe';
 import { LEGACY_DEFAULT, LEGACY_ROWS, legacyOf } from '../src/wardrobe-legacy';
 import { DIAG_MAX, diagQuery } from '../src/game/results';
@@ -61,11 +61,14 @@ describe('the tabs', () => {
   it('holds every field once, each tab within five rails of six, also with everything earned', () => {
     expect(TABS.map((t) => t.tab)).toEqual(['hair', 'eyes', 'gown', 'crown', 'shoes', 'sparkles']);
     expect(TABS.flatMap((t) => t.fields).sort()).toEqual([...FIELDS].sort());
+    for (const t of TABS) expect(t.fields.reduce((n, f) => n + fieldRows(f), 0), t.tab).toBeLessThanOrEqual(TAB_RAILS);
     for (const owned of [START_OWNED, ALL_OWNED]) {
       for (const t of TABS) {
         const rails = railsOf(t.tab, owned);
         expect(rails.length, t.tab).toBeLessThanOrEqual(TAB_RAILS);
         for (const r of rails) expect(r.ids.length).toBeLessThanOrEqual(RAIL_CELLS);
+        for (const r of rails) expect(r.row).toBeLessThan(TAB_RAILS);
+        expect(new Set(rails.map((r) => r.row)).size, t.tab).toBe(rails.length);
       }
     }
     expect(railsOf('hair', ALL_OWNED)).toHaveLength(5);
@@ -76,8 +79,29 @@ describe('the tabs', () => {
     expect(styles).toEqual(START_OWNED.style);
     const crowns = railsOf('crown', withItem(START_OWNED, { field: 'crown', id: 'heart' })).find((r) => r.field === 'crown')!.ids;
     expect(crowns).toEqual(['lumi', 'heart']);
-    const earrings = railsOf('eyes', START_OWNED).find((r) => r.field === 'earrings')!.ids;
-    expect(earrings).toEqual(['none']);
+  });
+
+  it('never moves a cell she knows when she earns an item: every rail keeps its row', () => {
+    const rowOf = (rails: ReturnType<typeof railsOf>) => new Map(rails.map((r) => [`${r.field} ${r.ids[0]}`, r.row]));
+    let owned = START_OWNED;
+    for (const item of Object.values(GIFT_SETS).flatMap((s) => s.items)) {
+      const next = withItem(owned, item);
+      for (const t of TABS) {
+        const before = rowOf(railsOf(t.tab, owned));
+        const after = rowOf(railsOf(t.tab, next));
+        for (const [key, row] of before) expect(after.get(key), `${t.tab} ${key} after ${item.id}`).toBe(row);
+      }
+      owned = next;
+    }
+  });
+
+  it('shows no jewel rail before she owns a jewel: no lone crossed-out cell, no colour that changes nothing', () => {
+    expect(railsOf('eyes', START_OWNED).map((r) => r.field)).toEqual(['eyes']);
+    const studs = railsOf('eyes', withItem(START_OWNED, { field: 'earrings', id: 'studs' }));
+    expect(studs.map((r) => [r.field, r.row])).toEqual([['eyes', 0], ['earrings', 1], ['jewelColour', 3], ['jewelColour', 4]]);
+    expect(studs.find((r) => r.field === 'earrings')!.ids).toEqual(['none', 'studs']);
+    const pearls = railsOf('eyes', withItem(START_OWNED, { field: 'necklace', id: 'pearls' }));
+    expect(pearls.map((r) => [r.field, r.row])).toEqual([['eyes', 0], ['necklace', 2], ['jewelColour', 3], ['jewelColour', 4]]);
   });
 });
 
@@ -121,6 +145,17 @@ describe('a 2.2 look in 2.3 terms', () => {
 });
 
 describe('the gift sets', () => {
+  it('pays from its own set, then from the set with the most items left, then nothing', () => {
+    expect(giftSetFor('picnic', START_OWNED)).toBe('crowns');
+    const crowns = GIFT_SETS.crowns.items.reduce(withItem, START_OWNED);
+    expect(giftSetFor('picnic', crowns)).toBe('hair');
+    expect(giftSetFor('rack', crowns)).toBe('shoes');
+    const all = Object.values(GIFT_SETS).flatMap((s) => s.items).reduce(withItem, START_OWNED);
+    for (const q of ['picnic', 'rack', 'beads', 'corner']) expect(giftSetFor(q, all)).toBeNull();
+    const allButOneShoe = Object.values(GIFT_SETS).flatMap((s) => s.items).filter((i) => i.id !== 'boots').reduce(withItem, START_OWNED);
+    expect(giftSetFor('picnic', allButOneShoe)).toBe('shoes');
+  });
+
   it('holds 21 items, none of them a start item, each set paid by its own quest', () => {
     const all = Object.values(GIFT_SETS).flatMap((s) => s.items);
     expect(all).toHaveLength(21);

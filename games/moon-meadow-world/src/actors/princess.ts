@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { Princess, PrincessEmote, PrincessLook, PrincessMode, Ribbon, Vec2 } from '../contracts';
 import { POND, SLIDE } from '../layout';
 import { DEFAULT_LOOK, normaliseLook } from '../wardrobe';
-// 2.2's parts draw her until the actors lane builds 2.3's (docs/v4/2.3.md Part 2, section 9): legacyOf() shows the 2.3
+// 2.2's parts draw her until the actors lane builds 2.3's (docs/v4/2.3.md section 22): legacyOf() shows the 2.3
 // look in 2.2's terms.
 import { EYE_HEX, HAIR_HEX, LEGACY_DEFAULT, RIBBON_HEX, legacyOf, type LegacyLook, type LegacyThing as HairThing } from '../wardrobe-legacy';
 import { audio } from '../audio';

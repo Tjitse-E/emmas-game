@@ -1,5 +1,5 @@
 {
-  "note": "Moon Meadow World's ElevenLabs sound effects and background loops (docs/v4/2.3.md Part 2, sections 7 and 8). tools/audio/gen-sfx.py makes the ones without a file in public/audio/sfx/, calling POST /v1/sound-generation with duration_seconds always set, and books seconds x sfxPerSecond into tools/audio/ledger.jsonl. The API has no seed: a made file is kept and only --retake makes it again. Tjitse listens to every file and sets approved. core marks the eight that stay if the probe costs more than planned.",
+  "note": "Moon Meadow World's ElevenLabs sound effects and background loops (docs/v4/2.3.md sections 20 and 21). tools/audio/gen-sfx.py makes the ones without a file in public/audio/sfx/, calling POST /v1/sound-generation once per attempt (no retries) with duration_seconds always set, and books every attempt at seconds x sfxPerSecond into tools/audio/ledger.jsonl. The API has no seed: a made file is kept and only --retake makes it again. Tjitse listens to every file and sets approved. core marks the eight that stay if the probe costs more than planned. later is not made in 2.3.0.",
   "model": "eleven_text_to_sound_v2",
   "promptInfluence": 0.5,
   "probe": "bedtime-bell",
@@ -22,7 +22,9 @@
     { "id": "heart-glow", "seconds": 1.0, "text": "A warm gentle magical shimmer rising up, like a heart starting to glow. Soft and sweet, for a children's game." }
   ],
   "loops": [
-    { "id": "amb-day", "seconds": 15, "text": "A calm sunny meadow: soft birdsong far away and a light breeze in the grass. Peaceful. No voices, no music, no sudden sounds." },
-    { "id": "amb-night", "seconds": 15, "text": "A calm summer night in a meadow: soft crickets and a light breeze. Peaceful. No owls, no voices, no music, no sudden sounds." }
+    { "id": "amb-day", "seconds": 15, "text": "A calm sunny meadow: soft birdsong far away and a light breeze in the grass. Peaceful. No voices, no music, no sudden sounds." }
+  ],
+  "later": [
+    { "id": "amb-night", "seconds": 15, "for": "2.3.1", "why": "600 credits for about 4 minutes of play, most of it checked moments where the loop is silent.", "text": "A calm summer night in a meadow: soft crickets and a light breeze. Peaceful. No owls, no voices, no music, no sudden sounds." }
   ]
 }

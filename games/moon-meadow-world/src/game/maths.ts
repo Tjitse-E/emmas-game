@@ -32,11 +32,14 @@ export function planEgg(g: Game, kind: EggSpec['kind'], label: string, first: bo
   return spec;
 }
 
-/** A maths result (an egg or the hay rack): the results log with the tray, and the band moves. */
+/**
+ * A maths result (an egg sum or the hay rack): the results log with the tray. Only a hard sum and the hay rack move the
+ * band (2.3 section 19.1): her easy sum is nearly always a first try and would push every hard sum into band B.
+ */
 export function noteMaths(g: Game, part: string, spec: EggSpec, r: MomentResult, t: MomentLog): void {
   g.results.add(part, 'm', r, {
     kind: spec.kind, grade: spec.grade, round: spec.round?.index, need: spec.need, have: spec.have, answer: spec.answer, band: spec.band ?? g.maths.band,
     stones: spec.stones, place: spec.stones.indexOf(spec.answer), decoys: spec.decoys ?? {}, tried: t.tried, ...t.flags,
   });
-  noteBand(g.maths, r.outcome);
+  if (!spec.grade || spec.grade === 'hard') noteBand(g.maths, r.outcome);
 }

@@ -1,7 +1,7 @@
-// The treasure board inside the trunk lid (docs/v4/2.3.md Part 2, section 3): every gift set as a row of places. An
+// The treasure board inside the trunk lid (docs/v4/2.3.md section 16): every gift set as a row of places. An
 // owned item shows its picture; an empty place shows the picture of the quest that fills it; a full set has a sticker.
-// It shows when the Dressing Corner's trunk opens, before the rails, and today's gifts sparkle on it. Nothing on it can
-// be touched.
+// It shows when the Dressing Corner's trunk opens, before the rails, and on its own for 3.5 s when she taps the trunk
+// after her visit (Layer.board). Today's gifts sparkle on it. Nothing on it can be touched.
 //
 // Step 0 stub: shows nothing. The wardrobe-ui lane builds it and calls it from the wardrobe when o.board is set.
 import type { BoardSpec } from '../contracts';

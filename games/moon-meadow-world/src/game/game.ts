@@ -59,7 +59,7 @@ export interface DoorMoment {
   idleNow(): void;
 }
 
-/** The afternoon's side quests (docs/v4/2.2.md section 5, 2.3.md Part 2 section 4), for this play. */
+/** The afternoon's side quests (docs/v4/2.2.md section 5, 2.3.md section 17), for this play. */
 export interface QuestState {
   /** The quests whose offer bubble shows now. */
   readonly offered: Set<QuestId>;
@@ -92,7 +92,7 @@ export function startQuests(maths: QuestState['maths'] = 'beads'): QuestState {
   };
 }
 
-/** This play's time, for the kind=play line at goodnight (2.3 Part 2, section 4). */
+/** This play's time, for the kind=play line at goodnight (2.3 section 17). */
 export interface PlayClock {
   /** performance.now() of the Play tap. */
   startedAt: number;

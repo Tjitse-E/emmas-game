@@ -1,5 +1,7 @@
-// What the three checked moments share: the layer context they draw into, the open-moment handle the layer keeps
-// (replay, reset, the test snapshot) and a small life cycle so a reset stops every pending step.
+// What the checked moments share: the layer context they draw into, the open-moment handle the layer keeps (replay,
+// reset, the test snapshot) and a small life cycle so a reset stops every pending step. Since 2.3.0 this file is the
+// integrator's (docs/v4/2.3.md section 22.2): the eggs, reading and patterns lanes all read it, so a change goes
+// through the integrator.
 import type { Ghost } from './ghost';
 import type { HintRunner } from './ladder';
 import { boxOf } from './dom';
@@ -30,8 +32,11 @@ export interface UiTarget {
   h: number;
 }
 
+/** The kinds of checked moment the layer can have open. */
+export type MomentKind = 'egg' | 'naming' | 'wish' | 'beads';
+
 export interface MomentSnapshot {
-  kind: 'egg' | 'naming' | 'wish';
+  kind: MomentKind;
   /** 'bells', 'spell', 'busy', 'open' ... */
   phase: string;
   level: number;
@@ -43,13 +48,20 @@ export interface MomentSnapshot {
    * extra cups are not marked yet).
    */
   covered?: boolean;
-  /** Wish only: the words of the wrong items that carry a contrast tag after a miss (the tag cannot be touched). */
+  /**
+   * Wish only: the words of the wrong items that carry a contrast tag after a miss (the tag cannot be touched). A
+   * phrase item's word is its colour and thing ("brown sock").
+   */
   tags?: string[];
+  /** Egg only (2.3): which of the egg's three sums is on the panel, and how many hearts are lit. */
+  round?: { index: number; of: number; lit: number };
+  /** Beads only (2.3): the gap that takes a bead now (0 to 2). */
+  gap?: number;
   targets: UiTarget[];
 }
 
 export interface OpenMoment {
-  readonly kind: 'egg' | 'naming' | 'wish';
+  readonly kind: MomentKind;
   /** Repeat the goal (Lumi tap). */
   replay(): void;
   /** Remove everything at once (reset). The moment's promise stays pending. */

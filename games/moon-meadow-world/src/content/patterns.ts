@@ -1,4 +1,4 @@
-// The bead tree's patterns (docs/v4/2.3.md Part 2, section 6): a baby's necklace of 9 beads with 3 gaps. A bead is a
+// The bead tree's patterns (docs/v4/2.3.md section 19): a baby's necklace of 9 beads with 3 gaps. A bead is a
 // shape in a colour, and the units of one pattern differ in both, so neither colour alone nor shape alone fills a
 // gap. Each string is chosen so that copying the bead left of a gap, or swapping between two beads, is wrong at least
 // once. The pattern level is its own small level (game/beads.ts); it never moves the maths band.

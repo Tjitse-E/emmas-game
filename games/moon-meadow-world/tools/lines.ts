@@ -35,7 +35,7 @@ export const SENTENCES: Line[] = [
   // Speech-to-text may only hear "Hart", so Tjitse listens to it once.
   { id: 'word-heart', speaker: 'narrator', text: 'Heart.', expect: ['Hart.'], note: 'Customiser: the hearts hair thing.' },
   { id: 'lumi4-picnic-done', speaker: 'queen', text: 'What a lovely picnic! A rose for your hair.', note: 'Picnic side quest reward.' },
-  // 2.3.0 (docs/v4/2.3.md Part 2, section 8). The phrases come from the phrase pattern and the new egg sums from the
+  // 2.3.0 (docs/v4/2.3.md section 21). The phrases come from the phrase pattern and the new egg sums from the
   // number patterns below.
   { id: 'g4-nearly', speaker: 'narrator', text: 'Nearly ready!', note: 'Wardrobe, 15 s before the music box ends.' },
   { id: 'g4-hearts', speaker: 'narrator', text: 'Fill all three hearts, and the egg will hatch.', note: "Before an egg's first sum." },

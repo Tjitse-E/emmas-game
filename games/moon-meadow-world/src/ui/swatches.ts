@@ -2,8 +2,8 @@
 // shows what the 3D look will be. No text anywhere. The style swatches are drawn in her hair colour and the hair
 // things in her ribbon colour, so the wardrobe draws them again when those change. Every picture uses a 100 x 100
 // view box; ids inside are unique per call, because SVG ids are global in the page.
-// 2.2.0's swatches on the legacy catalogue until the wardrobe-ui lane moves to src/wardrobe.ts (docs/v4/2.3.md Part 2, 9).
-import type { EyeColour, Ribbon } from '../contracts';
+// 2.2.0's swatches on the legacy catalogue until the wardrobe-ui lane moves to src/wardrobe.ts (docs/v4/2.3.md section 22).
+import type { EyeColour, GiftItem, PrincessLook as Look, Ribbon } from '../contracts';
 import {
   EYE_HEX, GOWN_SHAPE, HAIR_HEX, LEGACY_ROWS as LOOK_ROWS, RIBBON_HEX, type HairHex, type LegacyGown as Gown,
   type LegacyHairColour as HairColour, type LegacyLook as PrincessLook, type LegacyRow as LookRow, type LegacyStyle as HairStyle,
@@ -378,6 +378,28 @@ export function rowIconSvg(row: LookRow, look: PrincessLook): string {
     case 'thing':
       return svg(bow(50, 46, 1.2, RIBBON_HEX[look.ribbon]));
   }
+}
+
+// ------------------------------------------------------------------------------------------------ gifts
+
+/**
+ * The picture of one gift item, drawn for the look she wears now (2.3 section 16): the gift picker's cards, the
+ * treasure board and the trunk bubble use it. Frozen signature (docs/v4/2.3.md section 22.1).
+ *
+ * Step 0 stub: a wrapped present for every item. The wardrobe-ui lane draws the item's own swatch.
+ */
+export function giftSwatch(_item: GiftItem, _look: Look): string {
+  return svg(
+    '<rect x="18" y="40" width="64" height="46" rx="6" fill="#ffb7d8" stroke="#d9466f" stroke-width="3"/>' +
+      '<rect x="14" y="30" width="72" height="16" rx="5" fill="#ff8fbd" stroke="#d9466f" stroke-width="3"/>' +
+      '<path d="M50 30 V86" stroke="#ffe08a" stroke-width="8"/>' +
+      '<path d="M50 30 C40 14 26 18 32 28 C36 33 44 31 50 30 C56 31 64 33 68 28 C74 18 60 14 50 30 Z" fill="#ffe08a" stroke="#c99a3c" stroke-width="2.6"/>',
+  );
+}
+
+/** giftSwatch as an image URL (the offer bubble's badge and the trunk bubble). */
+export function giftSwatchUrl(item: GiftItem, look: Look): string {
+  return `data:image/svg+xml,${encodeURIComponent(giftSwatch(item, look))}`;
 }
 
 /** The big pink play button's triangle (the Done button). */

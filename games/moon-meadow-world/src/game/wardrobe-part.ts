@@ -1,4 +1,4 @@
-// The start mirror (docs/v4/2.2.md 2.1 to 2.4, 2.3.md Part 2 section 3): the first part after the sweep, before
+// The start mirror (docs/v4/2.2.md 2.1 to 2.4, 2.3.md section 16): the first part after the sweep, before
 // Lumi's welcome. Princess Emma stands at START, close up on the left of the screen; the layer's tabs and rails are on
 // the right. Nothing is checked or refused. Every pick changes her at once, a released pick plays her reaction and is
 // saved, and the big pink play button (Done) or the end of the music box (45 s) ends the part with a curtsy. Lumi

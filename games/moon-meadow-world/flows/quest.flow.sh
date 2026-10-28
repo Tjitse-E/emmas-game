@@ -54,7 +54,7 @@ expect_eq "$(val "() => { const r = window.__game.state().results; return r[0].d
 expect_eq "$(val "() => JSON.stringify(window.__game.state().results.map((r) => r.detail.level + '/' + r.detail.size))")" '["2/5","2/5"]' 'picnic levels and sizes'
 # Back to free play: the hay rack's bubble is still there.
 expect_eq "$(val "() => JSON.stringify(window.__game.state().quests.offered)")" '["rack"]' 'the bubble left after the picnic'
-expect_eq "$(hook 'missingClips()')" '[]' 'missing clips'
+no_missing_clips
 
 # ---- The hay rack: the herd waits at it, one wrong pile, then the right one.
 goto_page "?seed=$SEED&fresh=1&at=free&quest=rack"

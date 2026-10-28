@@ -212,7 +212,7 @@ export interface Herd {
 
 export type PrincessMode = 'idle' | 'walk' | 'run' | 'climb' | 'slide' | 'swim';
 
-// Princess Emma's look (docs/v4/2.3.md Part 2, section 2). Colour and shape are split: every coloured part takes one
+// Princess Emma's look (docs/v4/2.3.md section 15). Colour and shape are split: every coloured part takes one
 // of the twelve palette colours, the hair also one of six natural shades. The ids, hex values, words and gift sets are
 // in src/wardrobe.ts.
 /** The shared palette: eleven colours and rainbow, two rails of six. */
@@ -317,10 +317,11 @@ export interface Egg3D {
   /** Cracks, a big wobble and a burst of sparkles. Resolves at the burst, when the baby should appear. */
   hatch(): Promise<void>;
   /**
-   * How many of its three hearts are lit (2.3 section 12): the egg glows warmer and its idle wobble grows with each.
-   * 0 is today's egg. place() and hide() set it back to 0.
+   * How many of its three hearts are lit (2.3 sections 12 and 19.1): its idle wobble grows with each, and it glows
+   * more: the warm egg a warmer gold, the snow egg a frostier blue (its story is that it is too warm). 0 is today's
+   * egg. place() and hide() set it back to 0.
    */
-  warmth(hearts: 0 | 1 | 2 | 3): void;
+  hearts(lit: 0 | 1 | 2 | 3): void;
 }
 
 export interface Fx {
@@ -366,7 +367,10 @@ export interface HerdMember {
 
 /** Why a wrong stone is in the tray (2.2.0 section 4.1). */
 export type StoneDecoy = 'slip' | 'heard' | 'first-nest' | 'second-nest' | 'near';
-/** An egg's three sums (2.3 section 12): within 10, ending at or just past 10, across ten at her band. */
+/**
+ * An egg's three sums (2.3 sections 12 and 19.1): easy within 10 (total 7 to 10), middle just past 10 (total 11 or 12),
+ * hard across ten at her band (total 13 and more). Only the hard sum and the hay rack move the band.
+ */
 export type SumGrade = 'easy' | 'middle' | 'hard';
 
 /** An egg, or the hay rack: a 'warm' spec (adding across ten) with skin 'hay'. */
@@ -378,9 +382,12 @@ export interface EggSpec {
   have: number;
   /** The stone that is right: need - have for 'warm', have - need for 'snow'. */
   answer: number;
-  /** 4 (band A) or 5 (band B) different stones from 3 to 9, ascending, the answer among them. */
+  /**
+   * Different stones from 3 to 9, ascending, the answer among them: 4 for band A and for every easy and middle sum,
+   * 5 for band B's hard sum and hay rack.
+   */
   stones: number[];
-  /** The maths band the numbers come from (4.2). */
+  /** The maths band the numbers come from (4.2). Absent for an easy or middle sum, which has no band. */
   band?: 'a' | 'b';
   /** Why each wrong stone is in the tray, by stone number, for the log. */
   decoys?: Record<number, StoneDecoy>;
@@ -388,7 +395,10 @@ export interface EggSpec {
   skin?: 'egg' | 'hay';
   /** Which of the egg's three sums this is (2.3 section 12). Absent for the hay rack. */
   grade?: SumGrade;
-  /** The egg's hearts: `index` are lit when the panel opens, the next one lights after the right stone. */
+  /**
+   * The egg's hearts: `index` are lit when the panel opens, the next one lights after the right stone. With index 1
+   * or 2 the panel the sum before left on screen takes the new cups and stones (layer.egg does not close it).
+   */
   round?: { index: 0 | 1 | 2; of: 3 };
   clips: {
     /** The first time this kind of egg is seen: how the egg works ("Make every cup warm, and the egg will hatch."). */
@@ -539,8 +549,11 @@ export interface DoorSpec {
 export interface MomentHooks {
   /** Where the egg or the baby is on screen right now (called every frame). */
   anchor(): ScreenPoint;
-  /** A 3D reaction to show. The game maps it onto the egg or the baby. */
-  react(kind: 'hot' | 'cold' | 'warm' | 'right' | 'wrong' | 'munch' | 'play' | 'wear' | 'happy' | 'shake' | 'look'): void;
+  /**
+   * A 3D reaction to show. The game maps it onto the egg or the baby. 'heart': an egg's next heart has lit on the
+   * panel (the game calls Egg3D.hearts).
+   */
+  react(kind: 'hot' | 'cold' | 'warm' | 'right' | 'wrong' | 'munch' | 'play' | 'wear' | 'happy' | 'shake' | 'look' | 'heart'): void;
   /**
    * Log line for the results log. Every wrong choice is logged as log('tried', { what }) with what she chose as a
    * string (the stone number, the item word, the built name); the game keeps them in the result's detail.tried.
@@ -569,7 +582,10 @@ export interface Layer {
     /** A tap on Lumi (the replay of the current goal). */
     onTap(fn: () => void): void;
   };
-  /** The checked moments. Each resolves when the moment is done (right answer given, or helped). */
+  /**
+   * The checked moments. Each resolves when the moment is done (right answer given, or helped). An egg sum with
+   * `round.index` 1 or 2 opens on the panel the sum before left on screen; every other moment closes the open one.
+   */
   egg(spec: EggSpec, hooks: MomentHooks): Promise<MomentResult>;
   naming(spec: NamingSpec, hooks: NamingHooks): Promise<MomentResult & { name: NameChoice }>;
   wish(spec: WishSpec, hooks: MomentHooks): Promise<MomentResult>;
@@ -586,13 +602,15 @@ export interface Layer {
   /** A name tag over a unicorn for a moment (the printed name). */
   tag(name: string, at: () => ScreenPoint, ms?: number): void;
   /**
-   * The wardrobe (2.3 Part 2, section 3): six fixed tabs in the icon column, at most five rails of six per tab,
-   * Princess Emma in 3D on the left and a music box under her. Rails show only what she owns. Picking a palette
-   * colour says its name. `clips.ready` plays on every open, `clips.firstTime` after it on the first visit,
-   * `clips.idle` once after 25 s without a touch, `clips.nearly` 15 s before the end, `clips.done` at the end.
+   * The wardrobe (2.3 section 16): six fixed tabs in the icon column, at most five rails of six per tab (wardrobe.ts
+   * railsOf: every field keeps its own rows, so nothing moves when she earns an item), Princess Emma in 3D on the
+   * left and a music box under her. Rails show only what she owns. Picking a palette colour says its name; a pick
+   * that says a word plays no effect. `clips.ready` plays on every open, `clips.firstTime` after it on the first
+   * visit, `clips.idle` once after 25 s without a touch, `clips.nearly` 15 s before the end, `clips.done` at the end.
    * The music box plays for `limitMs` while six moon beads fade; then the panel waits until no finger is down (read
-   * from window, at most 2 s) and ends kindly. Done (pointerdown) ends it sooner. Resolves with her look and how it
-   * ended; the panel then slides out by itself. With `board` the trunk lid's treasure board shows first.
+   * from window, at most 2 s) and ends kindly. Done (pointerdown) ends it sooner. `onBox` says when the music box
+   * starts and stops (the Corner's free time is the box's time). Resolves with her look and how it ended; the panel
+   * then slides out by itself. With `board` the trunk lid's treasure board shows first.
    */
   wardrobe(o: {
     look: PrincessLook;
@@ -608,25 +626,34 @@ export interface Layer {
     onFocus(tab: LookTab | null): void;                     // face or body frame
     onTurn(dxPx: number, ended: boolean): void;             // preview drag
     onPreviewTap(): void;
+    onBox?(on: boolean): void;                              // the music box started (true) or stopped (false)
   }): Promise<{ look: PrincessLook; end: 'done' | 'time' }>;
   /**
-   * The gift picker (2.3 section 5): one or two big cards with a gift each, after a quest. A card acts on
+   * The gift picker (2.3 sections 5 and 17.2): one or two big cards with a gift each, after a quest. A card acts on
    * pointerdown; the other card fades, the chosen one pops open and its sparkles fly to `to` (Princess Emma on
-   * screen, who then wears it for one twirl). `clips` play first ("Pick one present!"). Resolves with the chosen item
-   * once the sparkles have landed.
+   * screen, who puts it on and keeps it). `clips` play first ("Pick one present!"). Resolves with the chosen item once
+   * the sparkles have landed.
    */
   gift(o: { items: GiftItem[]; look: PrincessLook; clips: string[]; to: () => ScreenPoint }): Promise<GiftItem>;
   /**
-   * The bead tree's pattern moment (2.3 section 6): the string over the baby, the tray below. Each gap is its own
-   * checked choice with its own hint ladder; `gap` is called when a gap is filled. Resolves with the three results
-   * in gap order, after `clips.done`.
+   * The trunk lid's treasure board on its own for `ms` (3.5 s), when she taps the trunk after her Corner visit. Not a
+   * target, never a refusal. Resolves when it has folded away.
    */
-  beads(spec: PatternSpec, hooks: MomentHooks & { gap(i: number, r: MomentResult): void }): Promise<MomentResult[]>;
+  board(spec: BoardSpec, ms?: number): Promise<void>;
+  /**
+   * The bead tree's pattern moment (2.3 sections 6 and 19.2): the string over the baby, the tray below. Each gap is
+   * its own checked choice with its own hint ladder; `gap` is called when a gap is filled. With `demo` (her first
+   * visit ever) the ghost carries the right bead into the first gap before the tray wakes. Resolves with the three
+   * results in gap order, after `clips.done`.
+   */
+  beads(spec: PatternSpec, hooks: MomentHooks & { gap(i: number, r: MomentResult): void }, o?: { demo?: boolean }): Promise<MomentResult[]>;
   /**
    * A side quest's offer bubble (2.2 section 5): a picture in a bubble that follows `at` every frame and acts on
-   * pointerdown. `tint` colours a greyscale picture (the bead tree's bead). One per id; null takes it away.
+   * pointerdown. `tint` colours a greyscale picture (the bead tree's bead). `badge` is a small picture on the
+   * bubble's rim (2.3: the swatch of a gift the quest can still give, swatches.ts giftSwatchUrl). One per id; null
+   * takes it away.
    */
-  offer(id: string, o: { pic: string; tint?: string; at: () => ScreenPoint; onTap(): void } | null): void;
+  offer(id: string, o: { pic: string; tint?: string; badge?: string; at: () => ScreenPoint; onTap(): void } | null): void;
   /** Free play: the food basket button (bottom right). A dragged food dropped on screen calls drop(word, x, y). */
   foodBasket(o: { show: boolean; foods?: WishItem[]; drop?(item: WishItem, x: number, y: number): boolean }): void;
   /**
@@ -646,7 +673,7 @@ export interface Layer {
   reset(): void;
 }
 
-/** The trunk lid's treasure board (2.3 section 3): every gift set, what she owns, what is new today. */
+/** The trunk lid's treasure board (2.3 sections 3 and 16): every gift set, what she owns, what is new today. */
 export interface BoardSpec {
   owned: Owned;
   /** Gifts she got today: they sparkle on the board and pop out of the trunk first. */

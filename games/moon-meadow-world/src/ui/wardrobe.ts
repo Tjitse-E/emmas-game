@@ -18,7 +18,7 @@ import { PLAY_SVG, rowIconSvg, swatchSvg } from './swatches';
 
 /**
  * 2.2.0's customiser options. Step 0 of 2.3.0 keeps this panel on the legacy catalogue; ui/index.ts turns the 2.3
- * contract into it until the wardrobe-ui lane builds the tabs (docs/v4/2.3.md Part 2, section 3).
+ * contract into it until the wardrobe-ui lane builds the tabs (docs/v4/2.3.md section 16).
  */
 export interface WardrobeOpts {
   look: PrincessLook;

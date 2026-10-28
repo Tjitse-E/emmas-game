@@ -57,8 +57,12 @@ const OFFER: Record<QuestId, { pic: () => string; at: { x: number; y: number; z:
   corner: { pic: () => v3Art('items/place-dressing.webp'), at: { x: CORNER.trunk.x, y: 1.6, z: CORNER.trunk.z } },
 };
 
-/** Each quest's moment. The afternoon runs the one asked; quests-world adds the gifts after it (2.3 Part 2, 4). */
-const RUN: Record<QuestId, (g: Game) => Promise<void>> = {
+/**
+ * Each quest's moment (2.3 section 17.2). It walks, frames and runs its moments, and resolves while the camera is
+ * still framed and its guests, the followers and the herd are still aside, with the function that lets them go. The
+ * afternoon runs the gift picker in that frame, then calls it.
+ */
+const RUN: Record<QuestId, (g: Game) => Promise<() => void>> = {
   picnic: (g) => picnicQuest(g),
   rack: (g) => rackQuest(g),
   beads: (g) => beadsQuest(g),
@@ -198,7 +202,9 @@ export async function afternoon(g: Game): Promise<void> {
     layer.foodBasket({ show: false });
     q.running = id;
     try {
-      await RUN[id](g);
+      const release = await RUN[id](g);
+      // 2.3.0: the quests-world lane runs the gift picker here, in the quest's frame.
+      release();
     } finally {
       q.running = null;
     }
@@ -221,7 +227,7 @@ function guestWish(g: Game): WishSpec {
   return { ...spec, clips: { ...spec.clips, intro: ['g4-give'], goal: ['g4-give'] } };
 }
 
-async function picnicQuest(g: Game): Promise<void> {
+async function picnicQuest(g: Game): Promise<() => void> {
   const { actors, layer, world } = g;
   g.free = false;
   const babies = guests(g);
@@ -266,9 +272,11 @@ async function picnicQuest(g: Game): Promise<void> {
   await g.run.w(actors.princess.emote('twirl'));
   actors.fx.hearts(head.clone().setY(1.9));
   await g.run.w(talk);
-  world.releaseFrame();
-  herdAside(g, false);
-  followAgain(g, babies);
+  return () => {
+    world.releaseFrame();
+    herdAside(g, false);
+    followAgain(g, babies);
+  };
 }
 
 // ---- the hungry herd at the hay rack (maths) -----------------------------------------------------------------------
@@ -315,7 +323,7 @@ function rackHelpers(g: Game): UnicornActor[] {
     .filter((u): u is UnicornActor => !!u && u.mode !== 'stall' && u.followSlot === null && dist2(flat(u.position), HAY_RACK.center) < 4);
 }
 
-async function rackQuest(g: Game): Promise<void> {
+async function rackQuest(g: Game): Promise<() => void> {
   const { actors, layer, world } = g;
   g.free = false;
   await walkThere(g, world.nearestWalkable(RACK_SIDE));
@@ -357,13 +365,15 @@ async function rackQuest(g: Game): Promise<void> {
   noteMaths(g, 'rack', spec, r, t);
   fill();
   await g.run.sleep(MUNCH_MS);
-  world.releaseFrame();
-  // The helpers go back to grazing at home; the rack stays full for the day.
-  for (const u of rackHelpers(g)) {
-    const i = g.herd.findIndex((h) => h.id === u.id);
-    u.lookAt(null);
-    if (i >= 0) u.graze(GRAZE_HOMES[i]);
-  }
-  g.quests.helpers = [];
-  g.free = true;
+  return () => {
+    world.releaseFrame();
+    // The helpers go back to grazing at home; the rack stays full for the day.
+    for (const u of rackHelpers(g)) {
+      const i = g.herd.findIndex((h) => h.id === u.id);
+      u.lookAt(null);
+      if (i >= 0) u.graze(GRAZE_HOMES[i]);
+    }
+    g.quests.helpers = [];
+    g.free = true;
+  };
 }

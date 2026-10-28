@@ -95,7 +95,7 @@ async function welcome(g: Game): Promise<void> {
   });
   await lumiSay(g, CLIPS.crown);
   await g.run.w(crown);
-  // From now on the wardrobe has its crown tab (2.3 Part 2, section 3).
+  // From now on the wardrobe has its crown tab (2.3 section 16).
   g.save.write((s) => void (s.seen.crown = true));
   await g.run.w(actors.princess.emote('clap'));
   world.releaseFrame();
