@@ -2,9 +2,10 @@
 // and the 2D layer, wires them together and plays the level after the Play tap.
 // URL options (src/game/options.ts): ?seed=<n> (the same level every time), ?at=<part> (start at a part, after Play;
 // ?at=wardrobe is the customiser), ?fresh=1 (the save in memory only: a first visit), ?rl=1|2|3 (reading level),
-// ?maths=a|b (maths band), ?contrast=0 (v3's miss rule), ?quest=picnic|rack (with ?at=free), ?portrait=0 (no finer
-// detail in the customiser), ?perf=1 (stats), ?pr=<n> (pixel ratio cap) and ?aa=0 (no antialias), the last two read
-// by the world.
+// ?maths=a|b (maths band), ?contrast=0 (v3's miss rule), ?quest=picnic|rack|beads|corner (with ?at=free), ?pl=1|2|3
+// (pattern level), ?box=<s> (the music box), ?phrases=all (phrases only Claude checked), ?portrait=0 (no finer detail
+// in the customiser), ?perf=1 (stats), ?pr=<n> (pixel ratio cap) and ?aa=0 (no antialias), the last two read by the
+// world.
 import { createWorld } from './world';
 import { createActors } from './actors';
 import { createLayer } from './ui';

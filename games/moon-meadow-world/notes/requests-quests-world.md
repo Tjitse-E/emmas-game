@@ -1,0 +1,26 @@
+# Requests from the quests-world lane (2.3.0)
+
+Changes this lane needs in files it does not own, and seams with other lanes that the integrator should check at the merge. The lane compiles and its tests pass against the step-0 files as they are.
+
+## Integrator-only files
+
+1. **`src/contracts.ts`, `World.pick` comment.** The comment lists the pick priority as "door, slide, nest, rack, picnic, gazebo, pond, ground". Change it to "door, slide, nest, rack, picnic, corner, beads, sign, gazebo, pond, ground". Why: `world/pick.ts` now picks the Dressing Corner, the bead tree and the saddle sign before the gazebo (the trunk and the mirror stand on the gazebo's step). Comment only; no type changes.
+2. **`src/contracts.ts`, `Layer.board`.** No change needed, but note: `corner.ts trunkTap` keeps the 3D lid open for 3.5 s even when `board()` resolves early (the step-0 stub resolves at once), so the board and the lid stay in step whatever the panel does.
+3. **`CHANGELOG.md`.** The `kind=play` line's `v` is the build's version (`__MMW_VERSION__`, the newest CHANGELOG entry without its v). It reads 2.3.0 once the 2.3.0 entry is written (22.3 step 8); until then it says 2.2.0.
+4. **`src/test-hook.ts` `legacy()` and its import of `wardrobe-legacy.ts`.** Kept on purpose: `flows/dress.flow.sh` (wardrobe-ui) still reads it. Section 22.3 step 4 gives its removal to the integrator: delete `legacy()` and the `legacyOf` import in `src/test-hook.ts` together with `wardrobe-legacy.ts`. This lane has no other import of it.
+
+## Seams with other lanes
+
+5. **The gate's kind (reading).** `corner.ts` calls `planWish(g, 'phrase', 'gate1' | 'gate2', { wish: false })` and reads the kind from the spec: `spec.kind === 'phrase'` logs `gk=phrase`, anything else `gk=word` (and "Your baby wants to dress up like you!" plays before the first). So the reading lane's `planWish` must itself return the 2.2 dress-up word wish (`kind: 'dress'`) while fewer than 6 strong phrases have `"by": "emma"` and `?phrases=all` is off (2.3 section 18). If the reading lane puts that decision elsewhere (a helper the caller must ask), wire it into `gate()` in `corner.ts`.
+6. **`giftSwatchUrl` (wardrobe-ui, `src/ui/swatches.ts`).** The step-0 picture has no `xmlns` on its `<svg>`, so as a data URL in an `<img>` it shows a broken picture: the trunk bubble after a gift shows the browser's "?" icon. The trunk bubble and every `badge` use `giftSwatchUrl`. The wardrobe-ui lane's `svg()` for gift pictures needs `xmlns="http://www.w3.org/2000/svg"` (the inline swatches do not).
+7. **The bead tree's flow names (patterns).** `flows/quest.flow.sh` plays the bead moment when it opens (`moment.kind === 'beads'`, `moment.gap`, `answer()`), drags tray targets named `bead …` onto the first target named `string…`, and expects results `beads1:m:helped:0`, `beads2:m:missed:1`, `beads3:m:first:0` (the ghost fills gap 1 on a first visit). With the step-0 stub it says so and checks only the jewel gift. Adjust the names in that block if the patterns lane names its targets otherwise.
+8. **The music box's end (wardrobe-ui).** The quest flow waits for the 5 s music box to end the Corner when `snapshot().wardrobe.box` exists; with the 2.2 panel (no `box`) it taps Done. No change needed once the wardrobe-ui lane is merged.
+9. **The sticker line (looks, `src/game/save.ts`).** Section 17.2 says Lumi says `lumi4-sticker` "the first time the quest's own set is full, before the picker". Knowing "the first time" on a later play needs a saved list of stickers, which the save does not have. Built instead: Lumi says it right after the pick that fills the set, which is the first time it is full and happens once per set without a new save field. If the doc's timing is wanted, add `seen.stickers: GiftSet[]` to `save.ts` and this lane moves the line in `giveGift` (`quest-kit.ts`).
+
+## Changes in this lane that other lanes may notice
+
+10. **`PICNIC.hamper` moved from (-12.7, 4.4) to (-12.7, 5.3)** (`src/layout.ts`): the Corner's close-up camera stands over the rug, and at 2.2's spot the hamper's handle stood in the bottom right of the wardrobe picture. The picnic pick box follows it; her picnic spot stays outside it.
+11. **`flows/run.sh`** serves the main checkout's `games/moon-meadow-home/dist-test-gate` (read only, an absolute `MOON_DIST`) when the checkout has no v3 test build, as lane worktrees have none. Before this, every flow in a worktree failed on v3's missing clips.
+12. **`QUEST_CUTOFF_MS` is now 90 s of free time without dressing** (was 180 s of wall time) and lives in `src/game/quest-kit.ts` with `FREE_PLAY_MS`; `quests.ts` re-exports both.
+13. **The walk-near trigger fires when she comes to a quest's place**, not while she still stands where the last quest left her, and the nearest place wins (the Corner's spot is 1.9 m from the picnic rug).
+14. **`flows/level.flow.sh` (eggs) expects the 2.2 bubbles.** Its free-play step checks `quests.offered` sorted against `["picnic","rack"]`. In 2.3 a first play (a fresh save) offers the picnic and the bead tree (17.2 rotation), so that line must become `["beads","picnic"]`. This lane cannot edit the file; the eggs lane or the integrator changes the expected value.

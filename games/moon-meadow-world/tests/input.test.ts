@@ -1,7 +1,8 @@
 // The world touch (src/game/input.ts) always ends, so the world keeps taking taps: a release only the window hears
 // still taps, a touch whose release went missing ends at the next touch without a tap, and a carried unicorn whose
 // capture was lost lands where the finger last was (a lost capture has no point of its own). Fake event targets
-// (fixtures/events.ts) stand in for the canvas, the window and the document; a small fake game for the rest.
+// (fixtures/events.ts) stand in for the canvas, the window and the document; a small fake game for the rest. 2.3.0: a
+// tap on the Dressing Corner after her visit opens the trunk on its board and never asks for the Corner again.
 import * as THREE from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installInput } from '../src/game/input';

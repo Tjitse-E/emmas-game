@@ -65,6 +65,15 @@ check_targets "$(moment_targets)"
 check_targets '["baby","bubble"]'
 expect_eq "$(item_count)" 5 'items at level 3'
 
+# The afternoon (2.3.0): the picnic and this play's maths quest (the bead tree on a first play) offer their bubbles,
+# touchable at every size.
+start_at free
+wait_for "() => window.__game.state().quests.offered.length === 2" 30
+sleep 1
+shot smoke-free
+check_targets '["offer picnic","offer beads"]'
+budget 'free play'
+
 # The pond: the slide, the followers near her, and the bath wish after the first slide.
 start_at pond
 wait_for "() => window.__game.state().goal === 'pond'" 30
