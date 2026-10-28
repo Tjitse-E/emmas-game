@@ -38,7 +38,8 @@ export const SFX_BASE = 'audio/sfx/';
 
 // Every say, sayAll, sound and hold goes through `speech`, which counts the pending calls per speaker (speakers.ts):
 // a clip of Lumi or a foal is a story line, every other clip and every letter sound is Elizabeth's. The channel
-// hears each change, so an effect still sounding fades out the moment she starts.
+// hears each change, so an effect still sounding fades out the moment she starts. Every effect plays on the channel,
+// the synthesised ones of sfx() too, so none sounds over or under her.
 const speakers = createSpeakers(() => sound.speakerChanged());
 const speech = countSpeakers(A, speakers);
 const sound = createSound({
@@ -119,9 +120,14 @@ export const audio = {
     setup();
     return speech.hold(soundKey(grapheme));
   },
+  /**
+   * A synthesised effect (tick, pop, chime and the others) on the game's own channel, by the rule of fx(): skipped
+   * while Elizabeth speaks or a letter sound plays, and faded out in 60 ms when she starts; under a story line it plays
+   * ducked. Resolves at its end, at once when skipped. A line by Elizabeth that must not cut it awaits it.
+   */
   sfx(name: Sfx): Promise<void> {
     setup();
-    return A.sfx(name);
+    return sound.synth(name);
   },
   /**
    * An ElevenLabs effect on the game's own channel (sound.ts): never under Elizabeth, under a story line only with
@@ -157,6 +163,7 @@ export const audio = {
   stop(): void {
     cuts++;
     A.stop();
+    speech.cutHolds();
     sound.stopFx();
   },
   has(id: string): Promise<boolean> {

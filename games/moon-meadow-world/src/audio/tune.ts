@@ -1,8 +1,9 @@
 // The music box tune of the wardrobe (docs/v4/2.3.md section 20): an original eight-bar melody in C major, 3/4 at
 // 92 beats a minute, with a soft bass note on the first beat of every bar. It is laid out backwards from its end: the
 // last note, the tonic, sounds at ms - BELL_DECAY_S, so it has rung out exactly at `ms`. Before it, the last four
-// bars slow down to 70% of the tempo (by the note times, so the pitch stays). Before those, the eight bars repeat at
-// full tempo back to the start, so the box may begin anywhere in the melody, as a wound-up music box does.
+// bars slow down to 70% of the tempo (by the note times, so the pitch stays). Before those, the eight bars loop at
+// full tempo back to the start of the box. The tune begins on the first bar line after the box opens, with its bass
+// note, so it never starts in the middle of a bar; the rest before it is shorter than one bar.
 // Pure data and arithmetic: sound.ts plays the plan with a bell voice.
 
 export const TUNE_BPM = 92;
@@ -12,6 +13,13 @@ export const BELL_DECAY_S = 1.2;
 export const SLOW_TO = 0.7;
 export const BEATS_PER_BAR = 3;
 export const BARS = 8;
+/** The longest box the tune and its timer take; a longer one is cut to this. */
+export const MAX_BOX_MS = 10 * 60_000;
+
+/** A box length the timer and the plan can use: 0 for NaN or a value of 0 or less, at most MAX_BOX_MS. */
+export function boxMs(ms: number): number {
+  return Number.isNaN(ms) || ms <= 0 ? 0 : Math.min(ms, MAX_BOX_MS);
+}
 
 /** One bar of the melody: [beat in the bar, MIDI note]. A note lasts until the next one. */
 type Bar = ReadonlyArray<readonly [number, number]>;
@@ -65,10 +73,15 @@ function slowOnsets(beat: number): number[] {
   return out;
 }
 
-/** The whole tune for a box of `ms` milliseconds, sorted by time. The last note is the tonic, ringing out at `ms`. */
+/**
+ * The whole tune for a box of `ms` milliseconds, sorted by time. It starts on a bar line and its last note is the
+ * tonic, ringing out at `ms`. A box of no length (NaN, 0 or less) has no tune.
+ */
 export function tunePlan(ms: number): TuneNote[] {
+  const length = boxMs(ms);
+  if (length <= 0) return [];
   const beat = 60 / TUNE_BPM;
-  const last = Math.max(0, ms / 1000 - BELL_DECAY_S);
+  const last = Math.max(0, length / 1000 - BELL_DECAY_S);
   const slow = slowOnsets(beat);
   const slowStart = last - slow[slow.length - 1];
   const beats: Array<{ t: number; beat: number }> = [];
@@ -78,9 +91,12 @@ export function tunePlan(ms: number): TuneNote[] {
     const n = BARS * BEATS_PER_BAR;
     beats.push({ t: slowStart - m * beat, beat: (((SLOW_FROM - m) % n) + n) % n });
   }
+  // The first bar line inside the box. The last note always is one (the first beat of bar 8), so there is one.
+  const inBox = beats.filter((b) => b.t >= 0);
+  const first = Math.min(...inBox.filter((b) => b.beat % BEATS_PER_BAR === 0).map((b) => b.t));
   const notes: TuneNote[] = [];
-  for (const b of beats) {
-    if (b.t < 0) continue;
+  for (const b of inBox) {
+    if (b.t < first) continue;
     for (const n of notesOn(b.beat)) notes.push({ t: b.t, ...n });
   }
   return notes.sort((a, b) => a.t - b.t || a.midi - b.midi);

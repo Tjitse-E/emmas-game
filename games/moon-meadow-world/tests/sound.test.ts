@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AMBIENCE_FILE, SFX_FILES, loopWindow } from '../src/audio/sound';
 import { BELL_DECAY_S, SLOW_TO, TUNE_BPM, tunePlan } from '../src/audio/tune';
 
@@ -199,7 +199,8 @@ function fakePlayer(ctx: FCtx | null) {
       };
       pending.push(p);
     });
-  const endAll = () => [...pending].forEach((p) => p.end());
+  // A hold in the fake is a sustained one: neither stop() nor other speech resolves its done, only its own stop().
+  const endAll = () => [...pending].filter((p) => !p.what.startsWith('hold-')).forEach((p) => p.end());
   return {
     pending,
     context: ctx,
@@ -249,11 +250,16 @@ const MANIFEST: Manifest = {
   'amb-day': { seconds: 30.04, loop: true, loopStart: 7.5, loopEnd: 22.5, approved: true },
 };
 
-function fakeFetch(manifest: Manifest) {
+function fakeFetch(manifest: Manifest, failing: Record<string, number> = {}) {
   const clips = Object.fromEntries(Object.entries(manifest).map(([id, e]) => [id, { file: id + '.mp3', loop: false, ...e }]));
   const fetched: string[] = [];
+  const left = { ...failing };
   const fn = async (url: string) => {
     fetched.push(url);
+    if ((left[url] ?? 0) > 0) {
+      left[url]--;
+      throw new TypeError('Load failed');
+    }
     if (url === 'audio/sfx/manifest.json') return { ok: true, json: async () => ({ clips }), arrayBuffer: async () => new ArrayBuffer(0) };
     const id = /audio\/sfx\/(.+)\.mp3$/.exec(url)?.[1];
     const e = id ? manifest[id] : undefined;
@@ -265,11 +271,11 @@ function fakeFetch(manifest: Manifest) {
 }
 
 /** The real `audio` of src/audio/index.ts on a fresh fake player and graph. */
-async function load(o: { search?: string; manifest?: Manifest; noContext?: boolean } = {}) {
+async function load(o: { search?: string; manifest?: Manifest; noContext?: boolean; failing?: Record<string, number> } = {}) {
   vi.resetModules();
   const ctx = o.noContext ? null : new FCtx();
   const A = fakePlayer(ctx);
-  const net = fakeFetch(o.manifest ?? MANIFEST);
+  const net = fakeFetch(o.manifest ?? MANIFEST, o.failing);
   vi.stubGlobal('window', { EmmaAudio: A });
   vi.stubGlobal('location', { pathname: '/games/moon-meadow-world/', search: o.search ?? '' });
   vi.stubGlobal('fetch', net);
@@ -384,6 +390,57 @@ describe('effects and who speaks', () => {
     expect(bell.stopAt!).toBeLessThanOrEqual(t + 0.08);
   });
 
+  it('plays an effect asked right after Elizabeth\'s line at 0.8 from its start', async () => {
+    const { audio, ctx, A } = await load();
+    await audio.preloadFx();
+    void audio.say('g4-pattern');
+    await tick(ctx, 500);
+    A.finish('g4-pattern');
+    await tick(ctx, 150);
+    void audio.fx('bead-clink');
+    const clink = ctx.source('bead-clink')!;
+    for (const dt of [0, 0.1, 0.2, 0.3, 0.5]) expect(ctx.level(clink, ctx.currentTime + dt)).toBeCloseTo(0.8);
+  });
+
+  it('starts no effect on a suspended clock, where it would play whenever the context wakes', async () => {
+    const { audio, ctx } = await load();
+    await audio.preloadFx();
+    ctx.state = 'suspended';
+    const fx = watch(audio.fx('bead-clink', { fallback: 'pop' }));
+    const pop = watch(audio.sfx('pop'));
+    await tick(ctx, 0);
+    expect([fx(), pop()]).toEqual([true, true]);
+    expect(ctx.source('bead-clink')).toBeUndefined();
+    expect(ctx.oscs).toHaveLength(0);
+  });
+
+  it('a held letter sound stops counting as Elizabeth when audio.stop() or the next letter sound cuts it', async () => {
+    const { audio, ctx, A } = await load();
+    await audio.preloadFx();
+    audio.hold('ee'); // sustained: the shared player resolves its done only when its stop() is called
+    await tick(ctx, 10);
+    expect(audio.soundState().speaker).toBe('elizabeth');
+    audio.stop();
+    await tick(ctx, 10);
+    expect(audio.soundState().speaker).toBeNull();
+    void audio.fx('bead-clink');
+    expect(ctx.source('bead-clink')).toBeDefined();
+
+    audio.hold('ee');
+    void audio.sound('s');
+    await tick(ctx, 10);
+    expect(audio.soundState().speaker).toBe('elizabeth');
+    A.finish('snd-s');
+    await tick(ctx, 10);
+    expect(audio.soundState().speaker).toBeNull();
+
+    const one = audio.hold('ee');
+    audio.hold('oo');
+    one.stop();
+    await tick(ctx, 10);
+    expect(audio.soundState().speaker).toBe('elizabeth'); // the second hold still sounds
+  });
+
   it('fx() resolves at the end of the effect and never later than 1 s after it started', async () => {
     const { audio, ctx } = await load();
     await audio.preloadFx();
@@ -411,11 +468,77 @@ describe('effects and who speaks', () => {
     expect(ctx.oscs.length).toBeGreaterThan(0);
     const env = ctx.oscs[0].outs[0];
     await tick(ctx, 100);
-    expect(ctx.level(env.outs[0])).toBeCloseTo(0.8);
+    // A synthesised sound is as loud as it was through shared/audio.js: 0.8 on the bus, 1.25 on its own.
+    expect(ctx.level(env.outs[0])).toBeCloseTo(1);
     void audio.say('fb-yes');
     expect(ctx.level(env.outs[0], ctx.currentTime + 0.061)).toBeCloseTo(0, 5);
     await tick(ctx, 1000);
     expect(crack()).toBe(true);
+  });
+
+  it('plays the synthesised sounds of audio.sfx() on the channel, never over or under Elizabeth', async () => {
+    const { audio, ctx, A } = await load();
+    const out = () => ctx.oscs.at(-1)!.outs[0].outs[0];
+    void audio.sfx('chime');
+    expect(ctx.oscs.length).toBeGreaterThan(0);
+    await tick(ctx, 20);
+    expect(ctx.level(out())).toBeCloseTo(1); // as loud as through shared/audio.js
+    expect(A.sfx).not.toHaveBeenCalled();
+    // A chime and then a name in the same tick (naming.ts): the chime fades out as she starts.
+    void audio.sayAll(['word-green']);
+    expect(ctx.level(out(), ctx.currentTime + 0.061)).toBeCloseTo(0, 5);
+    // While she speaks, and while a letter sound plays, it is skipped.
+    const n = ctx.oscs.length;
+    const skipped = watch(audio.sfx('pop'));
+    await tick(ctx, 0);
+    expect(skipped()).toBe(true);
+    A.finish('word-green');
+    void audio.sound('m');
+    void audio.sfx('tick');
+    expect(ctx.oscs).toHaveLength(n);
+    A.finish('snd-m');
+    await tick(ctx, 100);
+    // Under a story line it plays ducked.
+    void audio.say('lumi4-soon');
+    void audio.sfx('pop');
+    expect(ctx.oscs.length).toBeGreaterThan(n);
+    await tick(ctx, 70);
+    expect(ctx.level(out())).toBeCloseTo(0.3 / 0.8);
+  });
+
+  it('tries a failed manifest again on a later effect, 10 s after it failed', async () => {
+    const { audio, ctx, net } = await load({ failing: { 'audio/sfx/manifest.json': 1 } });
+    await audio.preloadFx();
+    void audio.fx('bead-clink');
+    expect(ctx.source('bead-clink')).toBeUndefined();
+    expect(net.fetched.filter((u) => u.endsWith('manifest.json'))).toHaveLength(1);
+    await tick(ctx, 10_000, 100);
+    void audio.fx('bead-clink');
+    await tick(ctx, 100);
+    void audio.fx('bead-clink');
+    expect(ctx.source('bead-clink')).toBeDefined();
+  });
+
+  it('tries a failed file again on a later effect, and the day loop when it is asked for, at most 3 times', async () => {
+    const { audio, ctx, net } = await load({ failing: { 'audio/sfx/bead-clink.mp3': 1, 'audio/sfx/amb-day.mp3': 5 } });
+    await audio.preloadFx();
+    void audio.fx('bead-clink');
+    await tick(ctx, 100);
+    void audio.fx('bead-clink');
+    expect(ctx.source('bead-clink')).toBeUndefined(); // not again within 10 s
+    await tick(ctx, 10_000, 100);
+    void audio.fx('bead-clink');
+    await tick(ctx, 100);
+    void audio.fx('bead-clink');
+    expect(ctx.source('bead-clink')).toBeDefined();
+
+    for (let i = 0; i < 4; i++) {
+      audio.ambience('day');
+      await tick(ctx, 10_100, 100);
+      audio.ambience(null);
+    }
+    expect(net.fetched.filter((u) => u.endsWith('amb-day.mp3'))).toHaveLength(3);
+    expect(ctx.source('amb-day')).toBeUndefined();
   });
 
   it('plays a file Tjitse has not approved only with ?sfx=all', async () => {
@@ -521,6 +644,50 @@ describe('the music box', () => {
     expect(done()).toBe(true);
   });
 
+  it('leaves nothing to play when a suspended context wakes after the box', async () => {
+    const { audio, ctx } = await load();
+    ctx.state = 'suspended';
+    const box = audio.musicBox(5000);
+    const done = watch(box.done);
+    await tick(ctx, 6000, 100);
+    expect(done()).toBe(true);
+    ctx.state = 'running';
+    await tick(ctx, 3000, 100);
+    expect(ctx.oscs).toHaveLength(0);
+  });
+
+  it('stays in step with its timer after the context was suspended, so it still ends at ms', async () => {
+    const { audio, ctx } = await load();
+    const ms = 20_000;
+    const done = watch(audio.musicBox(ms).done);
+    await tick(ctx, 5000, 50);
+    ctx.state = 'suspended';
+    await tick(ctx, 5000, 50);
+    ctx.state = 'running';
+    await tick(ctx, 10_000, 50);
+    expect(done()).toBe(true);
+    // The audio clock lags the wall clock by the 5 s it stood still; the last note still rings out at ms.
+    const last = Math.max(...ctx.oscs.map((o) => o.startAt!));
+    expect(last + BELL_DECAY_S).toBeCloseTo(ms / 1000 - 5 + 0.05, 1);
+    const n = ctx.oscs.length;
+    await tick(ctx, 2000, 100);
+    expect(ctx.oscs).toHaveLength(n);
+  });
+
+  it('a box of no length is silent, done at once and leaves no timer behind; a longer one than 10 minutes is cut', async () => {
+    const { audio, ctx } = await load();
+    const timers = vi.getTimerCount();
+    const done = watch(audio.musicBox(Number.NaN).done);
+    await tick(ctx, 10);
+    expect(done()).toBe(true);
+    expect(ctx.oscs).toHaveLength(0);
+    expect(vi.getTimerCount()).toBe(timers);
+    expect(tunePlan(Number.NaN)).toEqual([]);
+    expect(tunePlan(-5)).toEqual([]);
+    const plan = tunePlan(Number.POSITIVE_INFINITY);
+    expect(plan.at(-1)!.t + BELL_DECAY_S).toBeCloseTo(600, 6);
+  });
+
   it('stop() resolves done at once', async () => {
     const { audio, ctx } = await load();
     const box = audio.musicBox(45_000);
@@ -558,6 +725,14 @@ describe('the tune', () => {
     // The note before the last comes a beat at 70% of the tempo earlier.
     const times = [...new Set(plan.map((n) => n.t))];
     expect(times.at(-1)! - times.at(-2)!).toBeCloseTo(beat / SLOW_TO, 6);
+  });
+
+  it.each([60_000, 45_000, 30_000, 12_345, 5_000, 2_000])('starts on a bar line with its bass, less than a bar in (%i ms)', (ms) => {
+    const plan = tunePlan(ms);
+    const t = plan[0].t;
+    expect(plan.filter((n) => n.t === t).some((n) => n.bass)).toBe(true);
+    expect(t).toBeLessThan((3 * beat) / SLOW_TO);
+    if (ms >= 20_000) expect(t).toBeLessThan(3 * beat);
   });
 
   it('a box shorter than one note still sounds the tonic', () => {
@@ -603,6 +778,23 @@ describe('the background loop', () => {
     A.finish('h-sounds');
     await tick(ctx, 2000, 50);
     expect(ctx.level(day)).toBeCloseTo(0, 5);
+  });
+
+  it('keeps its 1.5 s after a checked moment when speech starts in that time', async () => {
+    const { audio, ctx } = await load();
+    await audio.preloadFx();
+    audio.ambience('day');
+    await tick(ctx, 2100);
+    const day = ctx.source('amb-day')!;
+    audio.checked(true);
+    await tick(ctx, 500);
+    audio.checked(false);
+    await tick(ctx, 300);
+    void audio.say('g4-heart');
+    await tick(ctx, 1100); // 1.4 s after the moment
+    expect(ctx.level(day)).toBeCloseTo(0, 5);
+    await tick(ctx, 1000);
+    expect(ctx.level(day)).toBeCloseTo(0.08);
   });
 
   it('goes to 0.08 under speech', async () => {
@@ -757,6 +949,8 @@ print(json.dumps({'code': code, 'out': buf.getvalue(), 'events': events, 'ledger
 `;
 
 interface GenCase {
+  /** Raw files in the cache, as a run that stopped after its POST leaves them. */
+  raw?: string[];
   ledger?: number[];
   budget?: Record<string, unknown>;
   made?: string[];
@@ -798,6 +992,8 @@ function gen(argv: string[], c: GenCase = {}): GenRun {
   const old = (c.ledger ?? [2276.9]).map((credits) => JSON.stringify({ t: '2026-10-28T00:00:00', lines: 'speech', credits }));
   writeFileSync(join(dir, 'ledger.jsonl'), old.join('\n') + '\n');
   for (const id of c.made ?? []) writeFileSync(join(dir, 'out', id + '.mp3'), 'made before');
+  mkdirSync(join(dir, 'cache'), { recursive: true });
+  for (const id of c.raw ?? []) writeFileSync(join(dir, 'cache', id + '-20261029T120000.mp3'), 'r'.repeat(1000));
   if (c.manifest) writeFileSync(join(dir, 'out', 'manifest.json'), JSON.stringify(c.manifest));
   const caseFile = join(dir, 'case.json');
   writeFileSync(caseFile, JSON.stringify({ dir, argv, counter: c.counter, fail: c.fail }));
@@ -910,19 +1106,20 @@ describe('the generator', () => {
   });
 
   it('the probe makes only bedtime-bell and polls the counter every 30 s until it moves', () => {
-    const r = gen(['--probe'], { counter: [30000, 30000, 30000, 29900] });
+    // The first two reads (60 s apart) agree, so the counter stands still before the probe.
+    const r = gen(['--probe'], { counter: [30000, 30000, 30000, 30000, 29900] });
     expect(r.code).toBe(0);
     expect(posts(r).map((e) => e.data!.duration_seconds)).toEqual([2]);
     expect(Object.keys(r.manifest!.clips)).toEqual(['bedtime-bell']);
     const sleeps = r.events.filter((e) => e.k === 'sleep');
-    expect(sleeps.map((e) => e.s)).toEqual([30, 30, 30]);
+    expect(sleeps.map((e) => e.s)).toEqual([60, 30, 30, 30]);
     expect(r.budget.sfxPerSecond).toBe(50);
     expect(r.budget.sfxProbe).toMatchObject({ id: 'bedtime-bell', before: 30000, after: 29900, credits: 100, minutes: 1.5 });
     expect(runLine(r)).toMatchObject({ credits: 100, attempts: 1 }); // booked at 80, then what it really took
   });
 
   it('the probe never writes a rate below 40', () => {
-    const r = gen(['--probe'], { counter: [30000, 29980] });
+    const r = gen(['--probe'], { counter: [30000, 30000, 29980] });
     expect(r.budget.sfxPerSecond).toBe(40);
     expect(r.budget.sfxProbe).toMatchObject({ credits: 20 });
   });
@@ -930,15 +1127,57 @@ describe('the generator', () => {
   it('the probe waits at most 10 minutes, and a counter that has not moved gives no rate', () => {
     const r = gen(['--probe'], { counter: [30000], budget: { sfxPerSecond: 45 } });
     expect(r.code).toBe(0);
-    const sleeps = r.events.filter((e) => e.k === 'sleep');
-    expect(sleeps.reduce((s, e) => s + e.s!, 0)).toBe(600);
+    const polls = r.events.slice(r.events.findIndex((e) => e.k === 'post')).filter((e) => e.k === 'sleep');
+    expect(polls.reduce((s, e) => s + e.s!, 0)).toBe(600);
     expect(r.budget.sfxPerSecond).toBe(45);
     expect(r.budget.sfxProbe).toMatchObject({ credits: null, minutes: 10 });
   });
 
   it('says when the pack must shrink to the core effects', () => {
-    expect(gen(['--probe'], { counter: [30000, 29760] }).out).toContain('--core');
-    expect(gen(['--probe'], { counter: [30000, 29900] }).out).not.toContain('--core');
+    expect(gen(['--probe'], { counter: [30000, 30000, 29760] }).out).toContain('--core');
+    expect(gen(['--probe'], { counter: [30000, 30000, 29900] }).out).not.toContain('--core');
+  });
+
+  it('the probe first waits until the counter stands still, so an earlier run\'s charge is not taken for its cost', () => {
+    // An earlier run's 300 credits land while the probe waits to start.
+    const r = gen(['--probe'], { counter: [30300, 30000, 30000, 30000, 29920] });
+    expect(r.code).toBe(0);
+    expect(r.events.filter((e) => e.k === 'sleep').map((e) => e.s)).toEqual([60, 60, 30, 30]);
+    expect(r.events.findIndex((e) => e.k === 'post')).toBeGreaterThan(r.events.findIndex((e) => e.k === 'sleep' && e.s === 60));
+    expect(r.budget.sfxProbe).toMatchObject({ before: 30000, after: 29920, credits: 80 });
+    expect(r.budget.sfxPerSecond).toBe(40);
+
+    const moving = gen(['--probe'], { counter: Array.from({ length: 14 }, (_, i) => 30000 - 10 * i) });
+    expect(moving.code).toBe(1);
+    expect(posts(moving)).toEqual([]);
+    expect(runLine(moving)).toBeUndefined();
+    expect(moving.events.filter((e) => e.k === 'sleep').reduce((s, e) => s + e.s!, 0)).toBe(600);
+  });
+
+  it('refuses the whole pack after a probe above 50 a second or 200 a call, unless --core, --only or --full', () => {
+    const dear = { sfxPerSecond: 60 };
+    const r = gen([], { counter: [20000], budget: dear });
+    expect(r.code).toBe(1);
+    expect(posts(r)).toEqual([]);
+    expect(runLine(r)).toBeUndefined();
+    expect(r.out).toContain('--core');
+    expect(gen(['--dry-run'], { budget: dear }).code).toBe(1);
+    expect(gen([], { counter: [20000], budget: { sfxPerSecond: 40, sfxProbe: { credits: 200 } } }).code).toBe(1);
+    expect(posts(gen(['--core'], { counter: [20000], budget: dear }))).toHaveLength(9);
+    expect(posts(gen(['--only', 'owl'], { counter: [20000], budget: dear }))).toHaveLength(1);
+    expect(posts(gen(['--full'], { counter: [20000], budget: dear }))).toHaveLength(ITEMS.length);
+    expect(gen([], { counter: [20000], budget: { sfxPerSecond: 50 } }).code).toBe(0);
+  });
+
+  it('makes a file from the raw file an earlier run paid for, without a call', () => {
+    const r = gen(['--only', 'amb-day'], { counter: [20000], raw: ['amb-day'] });
+    expect(r.code).toBe(0);
+    expect(calls(r)).toEqual([]);
+    expect(runLine(r)).toBeUndefined();
+    expect(r.manifest!.clips['amb-day']).toMatchObject({ loop: true, raw: 'amb-day-20261029T120000.mp3' });
+    expect(gen(['--dry-run'], { raw: ['amb-day'] }).out).toContain(`Planned: ${credits(ALL) - 600} credits`);
+    const again = gen(['--retake', 'amb-day'], { counter: [20000], raw: ['amb-day'], made: ['amb-day'] });
+    expect(posts(again)).toHaveLength(1);
   });
 
   it('the probe is made only once', () => {
@@ -956,5 +1195,91 @@ describe('the generator', () => {
     expect(r.manifest!.clips.owl.approved).toBe(false);
     const notMade = gen(['--approve', 'heart-glow'], { manifest });
     expect(notMade.code).toBe(1);
+  });
+});
+
+// ---- the generator's ffmpeg steps ----------------------------------------------------------------------------------
+
+/** Runs process_loop and process_effect of gen-sfx.py on synthetic sines, and measures what they wrote. */
+const FFMPEG_DRIVER = String.raw`
+import importlib.util, json, re, subprocess, sys
+from pathlib import Path
+
+spec = importlib.util.spec_from_file_location('gen_sfx', sys.argv[1])
+gen = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(gen)
+d = Path(sys.argv[2])
+
+def ff(*a):
+    subprocess.run(['ffmpeg', '-hide_banner', '-nostdin', '-y', *a], check=True, capture_output=True)
+
+def decoded(p):
+    w = p.with_suffix('.check.wav')
+    ff('-i', str(p), '-c:a', 'pcm_s16le', str(w))
+    return {'seconds': int(gen.probe_value(w, 'duration_ts')) / 44100, 'rate': gen.probe_value(w, 'sample_rate'),
+            'channels': gen.probe_value(w, 'channels')}
+
+def levels(p):
+    r = subprocess.run(['ffmpeg', '-hide_banner', '-nostdin', '-i', str(p), '-af', 'volumedetect,ebur128=framelog=quiet',
+                        '-f', 'null', '-'], capture_output=True, text=True)
+    return {'peak': float(re.search(r'max_volume:\s*(-?[\d.]+) dB', r.stderr).group(1)),
+            'lufs': float(re.findall(r'I:\s*(-?[\d.]+) LUFS', r.stderr)[-1])}
+
+# A 4 s loop (a stereo 220 Hz sine at -12 dBFS), and a 1 s effect (880 Hz at -20 dBFS) with 1 s of silence after it.
+ff('-f', 'lavfi', '-i', 'sine=frequency=220:duration=4:sample_rate=44100', '-af', 'volume=-12dB', '-ac', '2',
+   '-c:a', 'libmp3lame', '-b:a', '128k', str(d / 'loop-raw.mp3'))
+ff('-f', 'lavfi', '-i', 'sine=frequency=880:duration=1:sample_rate=44100', '-af', 'volume=-20dB,apad=pad_dur=1',
+   '-c:a', 'libmp3lame', '-b:a', '128k', str(d / 'fx-raw.mp3'))
+loop = gen.process_loop(d / 'loop-raw.mp3', d / 'loop.mp3')
+fx = gen.process_effect(d / 'fx-raw.mp3', d / 'fx.mp3')
+print(json.dumps({'period': decoded(d / 'loop-raw.mp3')['seconds'], 'loop': loop, 'loopFile': decoded(d / 'loop.mp3'),
+                  'loopLevels': levels(d / 'loop.mp3'), 'fx': fx, 'fxFile': decoded(d / 'fx.mp3'),
+                  'fxLevels': levels(d / 'fx.mp3')}))
+`;
+
+const hasFfmpeg = ['ffmpeg', 'ffprobe'].every((t) => spawnSync(t, ['-version'], { encoding: 'utf8' }).status === 0);
+
+describe.skipIf(!hasFfmpeg)("the generator's ffmpeg steps", () => {
+  const dir = join(work, 'ffmpeg');
+  mkdirSync(dir, { recursive: true });
+  const file = join(dir, 'driver.py');
+  writeFileSync(file, FFMPEG_DRIVER);
+  type Decoded = { seconds: number; rate: number; channels: number };
+  type Levels = { peak: number; lufs: number };
+  let r: {
+    period: number;
+    loop: { seconds: number; loopStart: number; loopEnd: number };
+    loopFile: Decoded;
+    loopLevels: Levels;
+    fx: { seconds: number; loopStart: null; loopEnd: null };
+    fxFile: Decoded;
+    fxLevels: Levels;
+  };
+  beforeAll(() => {
+    const run = spawnSync('python3', ['-I', '-B', file, GEN, dir], { encoding: 'utf8', timeout: 60_000 });
+    if (run.status !== 0) throw new Error('ffmpeg driver failed: ' + run.stderr);
+    r = JSON.parse(run.stdout) as typeof r;
+  });
+
+  it('a loop holds two periods, and its window is the middle period, from half a period on', () => {
+    expect(r.loop.seconds).toBeCloseTo(r.period, 3);
+    expect(r.loop.loopStart).toBeCloseTo(r.period / 2, 3);
+    expect(r.loop.loopEnd - r.loop.loopStart).toBeCloseTo(r.period, 5);
+    expect(r.loopFile.seconds).toBeGreaterThan(2 * r.period - 0.03);
+    expect(r.loopFile.seconds).toBeLessThan(2 * r.period + 0.03);
+    expect(r.loop.loopEnd).toBeLessThanOrEqual(r.loopFile.seconds);
+  });
+
+  it('a loop is mono, 44.1 kHz, at -20 LUFS', () => {
+    expect(r.loopFile).toMatchObject({ rate: 44100, channels: 1 });
+    expect(Math.abs(r.loopLevels.lufs + 20)).toBeLessThan(1);
+  });
+
+  it('an effect is mono, 44.1 kHz, its peak at -3 dBFS and its trailing silence trimmed', () => {
+    expect(r.fxFile).toMatchObject({ rate: 44100, channels: 1 });
+    expect(Math.abs(r.fxLevels.peak + 3)).toBeLessThan(0.6);
+    expect(r.fx.seconds).toBeGreaterThan(0.99);
+    expect(r.fx.seconds).toBeLessThan(1.15); // 1 s of sound and 50 ms of the silence, not the 2 s of the raw file
+    expect(r.fx.loopStart).toBeNull();
   });
 });

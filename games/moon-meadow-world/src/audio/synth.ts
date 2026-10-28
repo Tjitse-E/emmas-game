@@ -1,7 +1,8 @@
-// The synthesised fallbacks of the v4 sound channel (docs/v4/2.3.md section 20): when an effect file is missing, fx()
-// plays one of these on the channel's own effects bus, so a fallback follows the same rules as a file (it fades out
-// when Elizabeth starts and ducks under a story line). The recipes are copies of shared/audio.js's EFFECTS, which
-// keeps them private; shared/audio.js and v3 stay unchanged. tick, pop and chime keep playing through audio.sfx().
+// The synthesised effects of the v4 sound channel (docs/v4/2.3.md sections 8 and 20). The channel plays them on its
+// own effects bus, so they follow the same rules as a file: skipped while Elizabeth speaks, faded out when she starts,
+// ducked under a story line. fx() plays one when its file is missing, and audio.sfx() (tick, pop, chime and the rest)
+// plays them all. The recipes are copies of shared/audio.js's EFFECTS, which keeps them private; shared/audio.js and
+// v3 stay unchanged.
 import type { Sfx } from './index';
 
 const noises = new WeakMap<BaseAudioContext, AudioBuffer>();
@@ -115,7 +116,8 @@ const RECIPES: Record<Sfx, Recipe> = {
   },
 };
 
-/** Play a synthesised effect into `out` at time `t`; returns its length in seconds. */
+/** Play a synthesised effect into `out` at time `t`; returns its length in seconds (0 for a name it does not know). */
 export function playSynth(ctx: BaseAudioContext, out: AudioNode, name: Sfx, t: number): number {
-  return RECIPES[name](ctx, out, t);
+  const recipe = Object.hasOwn(RECIPES, name) ? RECIPES[name] : undefined;
+  return recipe ? recipe(ctx, out, t) : 0;
 }

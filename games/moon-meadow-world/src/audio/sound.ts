@@ -7,16 +7,21 @@
 // effect may play ducked to 0.3 when it asks (`duck`). The music box goes down to 0.1 under any speech and the
 // background loop to 0.08; the loop is silent during checked moments. A line that must follow an effect awaits fx(),
 // which resolves at the effect's end and never later than FX_WAIT_MS after it started. audio.stop() stops neither
-// the background loop nor the music box.
+// the background loop nor the music box. The synthesised effects of audio.sfx() (tick, pop, chime and the others)
+// play here too, by the same rule (section 8: no effect over or under Elizabeth, letter sounds included); under a
+// story line they play on the ducked bus.
 //
 // The graph: every sound goes through one of three buses (effects, music box, background) into the channel's master,
 // which follows the shared player's mute, and on to the destination. A file plays only when the manifest
 // (public/audio/sfx/manifest.json, written by tools/audio/gen-sfx.py) lists it as approved, that is after Tjitse has
 // listened to it; ?sfx=all and dev/sound.html play the others too. A missing file plays the synthesised fallback
-// (synth.ts) on the same bus, or nothing. Nothing here throws or waits on a file that is not there.
+// (synth.ts) on the same bus, or nothing. Nothing here throws or waits on a file that is not there. A manifest or a
+// file that failed to load is tried again on a later fx() or ambience(), as shared/audio.js does not remember
+// failures either (on an old iPad a decode can fail under memory pressure). Nothing starts on a clock that does not
+// run (a suspended or interrupted context), because it would play whenever the context wakes, out of place.
 import type { Sfx } from './index';
 import { playSynth } from './synth';
-import { BELL_DECAY_S, hz, type TuneNote, tunePlan } from './tune';
+import { BELL_DECAY_S, boxMs, hz, type TuneNote, tunePlan } from './tune';
 
 /** The ElevenLabs effects (tools/audio/sfx.json), in its order; each lives in public/audio/sfx/<id>.mp3. */
 export const SFX_FILES = [
@@ -98,6 +103,9 @@ export function loopWindow(duration: number, e: Pick<SfxEntry, 'seconds' | 'loop
 const FX_FADE_S = 0.06; // effects down under speech, and an effect cut when Elizabeth starts
 const FX_BACK_AFTER_S = 0.4; // effects back to 0.8 this long after a story line ends
 const FX_BACK_S = 0.2;
+// After Elizabeth the effects bus is back at once: fx() asks only who speaks now, so an effect asked right after her
+// line must not play into a bus that is still coming back (nothing played under her, so nothing jumps).
+const FX_SNAP_S = 0.01;
 const STOP_FADE_S = 0.03; // audio.stop(), as the shared player's
 const BOX_DOWN_S = 0.08;
 const BOX_BACK_AFTER_S = 0.3;
@@ -113,8 +121,15 @@ const MUTE_S = 0.05;
 // The music box schedules its notes a little ahead on a timer, so a 60 s tune is never all built at once.
 const BOX_AHEAD_S = 0.6;
 const BOX_PUMP_MS = 200;
+const BOX_LEAD_S = 0.05; // the tune's time 0 is this long after the box starts
 const BELL_PEAK = 0.3;
 const BELL_OCTAVE = 0.35;
+/** The synthesised effects sound as loud as they did through shared/audio.js (gain 1): 0.8 on the bus times this. */
+const SYNTH_GAIN = 1 / LEVELS.fx;
+/** A failed manifest or file is tried again this long after it failed, on a later fx() or ambience(), at most 3 times. */
+const RETRY_MS = 10_000;
+const MAX_TRIES = 3;
+const MANIFEST = 'manifest.json';
 
 type Fetcher = (url: string, init?: RequestInit) => Promise<{ ok: boolean; json(): Promise<unknown>; arrayBuffer(): Promise<ArrayBuffer> }>;
 
@@ -198,6 +213,12 @@ interface LoopVoice {
 
 const wait = (ms: number) => (ms > 0 ? new Promise<void>((r) => setTimeout(r, ms)) : Promise.resolve());
 
+/** Whether the context's clock runs. A sound started on a suspended or interrupted clock waits until it wakes. */
+function running(ctx: BaseAudioContext): boolean {
+  const state: string | undefined = ctx.state;
+  return state === undefined || state === 'running';
+}
+
 function decode(ctx: BaseAudioContext, data: ArrayBuffer): Promise<AudioBuffer> {
   return new Promise((resolve, reject) => {
     // Older Safari only calls back; newer browsers also return a promise. Either settles this one.
@@ -244,8 +265,17 @@ export function createSound(deps: SoundDeps) {
   let checkedEnded = -Infinity;
   let wanted: Ambience | null = null;
   let loop: LoopVoice | null = null;
-  let loading: Promise<void> | null = null;
+  /** The first preloadFx() has run: only then may fx() and ambience() try a failed load again. */
+  let started = false;
+  let listenAll = false;
+  /** The manifest's clips once it has loaded; null before that and while it fails. */
+  let clips: Record<string, SfxEntry> | null = null;
+  /** The load that runs now (the whole pack, or one file again), so two never run at once. */
+  let busy: Promise<void> | null = null;
+  let loading: Promise<void> = Promise.resolve();
   const files = new Map<string, { buffer: AudioBuffer; entry: SfxEntry }>();
+  /** What failed to load (the manifest, or a clip id): when it last failed, and how often. */
+  const failed = new Map<string, { at: number; tries: number }>();
   const voices = new Set<FxVoice>();
 
   function graph(): Graph | null {
@@ -265,21 +295,27 @@ export function createSound(deps: SoundDeps) {
     return g;
   }
 
-  /** Down at once, up after a pause: speech and checked moments win, the sounds come back gently. */
-  function move(bus: Fader, target: number, down: number, after: number, back: number): void {
+  /**
+   * Down at once, up after a pause: speech and checked moments win, the sounds come back gently. Down or up is judged
+   * against the level the bus has now, not where it was going: a background loop still held at 0 after a checked
+   * moment keeps its 1.5 s when speech starts, instead of rising to the speech level at once.
+   */
+  function move(bus: Fader, target: number, now: number, down: number, after: number, back: number): void {
     if (target === bus.target) return;
-    if (target < bus.target) bus.to(target, 0, down);
+    if (target < bus.valueAt(now)) bus.to(target, 0, down);
     else bus.to(target, after, back);
   }
 
   function apply(cause: 'speech' | 'checked'): void {
     const gr = graph();
     if (!gr) return;
+    const now = gr.ctx.currentTime;
     const lv = busLevels(deps.speaking(), checkedDepth > 0);
-    move(gr.fx, lv.fx, FX_FADE_S, FX_BACK_AFTER_S, FX_BACK_S);
-    move(gr.box, lv.box, BOX_DOWN_S, BOX_BACK_AFTER_S, BOX_BACK_S);
-    const after = Math.max(AMB_BACK_AFTER_SPEECH_S, checkedEnded + AMB_BACK_AFTER_CHECKED_S - gr.ctx.currentTime);
-    move(gr.amb, lv.amb, cause === 'checked' ? AMB_CHECKED_S : AMB_SPEECH_S, after, AMB_BACK_S);
+    const afterHer = gr.fx.target === 0; // only Elizabeth puts the effects bus at 0
+    move(gr.fx, lv.fx, now, FX_FADE_S, afterHer ? 0 : FX_BACK_AFTER_S, afterHer ? FX_SNAP_S : FX_BACK_S);
+    move(gr.box, lv.box, now, BOX_DOWN_S, BOX_BACK_AFTER_S, BOX_BACK_S);
+    const after = Math.max(AMB_BACK_AFTER_SPEECH_S, checkedEnded + AMB_BACK_AFTER_CHECKED_S - now);
+    move(gr.amb, lv.amb, now, cause === 'checked' ? AMB_CHECKED_S : AMB_SPEECH_S, after, AMB_BACK_S);
   }
 
   function release(v: FxVoice, fade: number): void {
@@ -295,6 +331,31 @@ export function createSound(deps: SoundDeps) {
 
   function cutFx(fade: number): void {
     for (const v of [...voices]) release(v, fade);
+  }
+
+  /** The graph an effect may start on now, or null when it is skipped: Elizabeth speaks, a story line plays and the
+   * effect does not duck, the shared player is muted, or the clock does not run. */
+  function effectGraph(duck: boolean): Graph | null {
+    const who = deps.speaking();
+    if (who === 'elizabeth' || (who === 'story' && !duck)) return null;
+    const gr = graph();
+    return gr && !mutedNow && running(gr.ctx) ? gr : null;
+  }
+
+  /** Keep a voice cuttable (Elizabeth's start, audio.stop()) until it has ended. */
+  function keep(v: FxVoice, seconds: number): void {
+    voices.add(v);
+    setTimeout(() => {
+      if (voices.delete(v)) setTimeout(() => v.out.node.disconnect(), 100);
+    }, (seconds + 0.1) * 1000);
+  }
+
+  /** A synthesised effect on the effects bus; returns its length in seconds. */
+  function synthVoice(gr: Graph, name: Sfx): number {
+    const out = new Fader(gr.ctx, SYNTH_GAIN, gr.fx.node);
+    const seconds = playSynth(gr.ctx, out.node, name, gr.ctx.currentTime + 0.01) + 0.01;
+    keep({ out, src: null }, seconds);
+    return seconds;
   }
 
   function syncLoop(): void {
@@ -337,23 +398,68 @@ export function createSound(deps: SoundDeps) {
     }
   }
 
+  function fail(key: string): void {
+    failed.set(key, { at: Date.now(), tries: (failed.get(key)?.tries ?? 0) + 1 });
+  }
+
+  /** Whether a failed load may be tried again now. */
+  function due(key: string): boolean {
+    const f = failed.get(key);
+    return !!f && f.tries < MAX_TRIES && Date.now() - f.at >= RETRY_MS;
+  }
+
+  /** Whether the game may play this entry: a known id with a file, approved by Tjitse (or ?sfx=all). */
+  function playable(id: string, entry: SfxEntry | undefined): entry is SfxEntry {
+    return isKnown(id) && !!entry && typeof entry.file === 'string' && (entry.approved || listenAll);
+  }
+
+  /** Run one load at a time. */
+  function run(job: () => Promise<void>): Promise<void> {
+    const p: Promise<void> = job().finally(() => {
+      if (busy === p) busy = null;
+    });
+    busy = p;
+    return p;
+  }
+
+  async function loadFile(ctx: BaseAudioContext, id: string, entry: SfxEntry): Promise<void> {
+    try {
+      const r = await get(base + entry.file);
+      if (!r.ok) throw new Error('HTTP error');
+      files.set(id, { buffer: await decode(ctx, await r.arrayBuffer()), entry });
+      failed.delete(id);
+    } catch {
+      fail(id);
+      console.warn('[sound] cannot load ' + base + entry.file);
+      return;
+    }
+    if (wanted && AMBIENCE_FILE[wanted] === id) syncLoop();
+  }
+
   async function load(ctx: BaseAudioContext): Promise<void> {
-    const all = !!deps.listenAll?.();
-    const clips = (await json(base + 'manifest.json'))?.clips ?? {};
+    const m = await json(base + MANIFEST);
+    if (!m) {
+      fail(MANIFEST);
+      console.warn('[sound] cannot load ' + base + MANIFEST);
+      return;
+    }
+    failed.delete(MANIFEST);
+    clips = m.clips ?? {};
     // The loops first, so the day sound starts as soon as it can.
     const list = Object.entries(clips).sort(([, a], [, b]) => Number(!!b?.loop) - Number(!!a?.loop));
-    for (const [id, entry] of list) {
-      if (!isKnown(id) || !entry || typeof entry.file !== 'string' || (!entry.approved && !all)) continue;
-      try {
-        const r = await get(base + entry.file);
-        if (!r.ok) throw new Error('HTTP error');
-        files.set(id, { buffer: await decode(ctx, await r.arrayBuffer()), entry });
-      } catch {
-        console.warn('[sound] cannot load ' + base + entry.file);
-        continue;
-      }
-      if (wanted && AMBIENCE_FILE[wanted] === id) syncLoop();
+    for (const [id, entry] of list) if (playable(id, entry)) await loadFile(ctx, id, entry);
+  }
+
+  /** Try a failed load again: the whole pack when the manifest failed, else the one file `id`. */
+  function retry(id: string | null): void {
+    const ctx = deps.context();
+    if (!started || busy || !id || !ctx) return;
+    if (!clips) {
+      if (due(MANIFEST)) loading = run(() => load(ctx));
+      return;
     }
+    const entry = clips[id];
+    if (!files.has(id) && playable(id, entry) && due(id)) void run(() => loadFile(ctx, id, entry));
   }
 
   function startTune(ms: number): { stop(): void } | null {
@@ -362,15 +468,24 @@ export function createSound(deps: SoundDeps) {
     const { ctx } = gr;
     const plan = tunePlan(ms);
     const out = new Fader(ctx, 1, gr.box.node);
-    const t0 = ctx.currentTime + 0.05;
+    const began = Date.now();
+    // The audio time of the tune's time 0. The notes go on the audio clock, which stands still while the context is
+    // suspended; then nothing is scheduled, and when it runs again time 0 is set anew from the wall clock, so the tune
+    // stays in step with the box's timer and still ends at `ms`.
+    let t0: number | null = null;
     let i = 0;
     let stopped = false;
     let iv: ReturnType<typeof setInterval> | undefined;
     const pump = () => {
+      if (!running(ctx)) {
+        t0 = null;
+        return;
+      }
       const now = ctx.currentTime;
-      while (i < plan.length && t0 + plan[i].t < now + BOX_AHEAD_S) {
+      const zero = (t0 ??= now + BOX_LEAD_S - (Date.now() - began) / 1000);
+      while (i < plan.length && zero + plan[i].t < now + BOX_AHEAD_S) {
         const n = plan[i++];
-        const at = t0 + n.t;
+        const at = zero + n.t;
         if (at >= now - 0.05) bell(ctx, out.node, n, at); // a timer that ran late skips notes, never piles them up
       }
       if (i >= plan.length) clearInterval(iv);
@@ -394,36 +509,42 @@ export function createSound(deps: SoundDeps) {
      * most FX_WAIT_MS after it started, at once when it was skipped or has nothing to play.
      */
     fx(id: SfxFile, o: FxOpts = {}): Promise<void> {
-      const who = deps.speaking();
-      if (who === 'elizabeth' || (who === 'story' && !o.duck)) return Promise.resolve();
-      const gr = graph();
-      if (!gr || mutedNow) return Promise.resolve();
-      const { ctx } = gr;
       const file = files.get(id);
-      if (!file && !o.fallback) return Promise.resolve();
-      const out = new Fader(ctx, 1, gr.fx.node);
-      const voice: FxVoice = { out, src: null };
+      if (!file) retry(id);
+      const gr = effectGraph(!!o.duck);
+      if (!gr) return Promise.resolve();
       let seconds: number;
       if (file) {
-        const src = ctx.createBufferSource();
+        const out = new Fader(gr.ctx, 1, gr.fx.node);
+        const src = gr.ctx.createBufferSource();
         src.buffer = file.buffer;
         src.connect(out.node);
-        src.start(ctx.currentTime);
-        voice.src = src;
+        src.start(gr.ctx.currentTime);
         seconds = file.buffer.duration;
+        keep({ out, src }, seconds);
+      } else if (o.fallback) {
+        seconds = synthVoice(gr, o.fallback);
       } else {
-        seconds = playSynth(ctx, out.node, o.fallback!, ctx.currentTime + 0.01) + 0.01;
+        return Promise.resolve();
       }
-      voices.add(voice);
-      setTimeout(() => {
-        if (voices.delete(voice)) setTimeout(() => out.node.disconnect(), 100);
-      }, (seconds + 0.1) * 1000);
       return wait(Math.min(seconds * 1000, FX_WAIT_MS));
+    },
+    /**
+     * A synthesised effect (audio.sfx: tick, pop, chime and the others). The rule of fx(): skipped while Elizabeth
+     * speaks or a letter sound plays, faded out when she starts. Under a story line it plays on the ducked bus (0.3).
+     * Resolves at its end, at once when skipped.
+     */
+    synth(name: Sfx): Promise<void> {
+      const gr = effectGraph(true);
+      if (!gr) return Promise.resolve();
+      return wait(synthVoice(gr, name) * 1000 + 50);
     },
     /** The background loop: day, night, or none. It fades over 2 s and keeps playing through audio.stop(). */
     ambience(kind: Ambience | null): void {
       wanted = kind;
       syncLoop();
+      const id = kind ? AMBIENCE_FILE[kind] : null;
+      if (id && !files.has(id)) retry(id);
     },
     /** A checked moment opens (true) or ends (false); while any is open the background loop is silent. Nests. */
     checked(on: boolean): void {
@@ -447,24 +568,35 @@ export function createSound(deps: SoundDeps) {
     preloadFx(): Promise<void> {
       const ctx = deps.context();
       if (!ctx) return Promise.resolve(); // no audio here (yet): a later call loads
-      if (!loading) loading = load(ctx);
+      if (!started) {
+        started = true;
+        listenAll = !!deps.listenAll?.();
+        loading = run(() => load(ctx));
+      } else if (!clips && !busy && due(MANIFEST)) {
+        loading = run(() => load(ctx));
+      }
       return loading;
     },
-    /** The music box tune for `ms`, ending on its last note at `ms`; it goes down to 0.1 under speech. */
+    /**
+     * The music box tune for `ms`, ending on its last note at `ms`; it goes down to 0.1 under speech. Its timer
+     * resolves `done` at `ms` and ends the tune there, so nothing of it is left to play when a suspended context wakes
+     * after the box. A box of no length (NaN, 0 or less) is silent and done at once.
+     */
     musicBox(ms: number): MusicBox {
+      const length = boxMs(ms);
       let resolve!: () => void;
       let over = false;
       const done = new Promise<void>((r) => (resolve = r));
-      const tune = startTune(ms);
-      const finish = (stop: boolean) => {
-        if (stop) tune?.stop();
+      const tune = length > 0 ? startTune(length) : null;
+      const finish = () => {
+        tune?.stop();
         if (over) return;
         over = true;
         clearTimeout(timer);
         resolve();
       };
-      const timer = setTimeout(() => finish(false), Math.max(0, ms));
-      return { stop: () => finish(true), done };
+      const timer = setTimeout(finish, length);
+      return { stop: finish, done };
     },
     /** For the test hook: the loop asked for, whether a checked moment silences it, who speaks, the loop playing. */
     state(): { ambience: Ambience | null; checked: boolean; speaker: Speaker | null; loop: string | null; files: number } {

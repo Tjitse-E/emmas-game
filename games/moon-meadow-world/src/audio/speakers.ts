@@ -61,15 +61,52 @@ export function createSpeakers(onChange: (who: Speaker | null) => void = () => u
   };
 }
 
-/** The shared player's speech, counted per speaker. A held letter sound counts until its done resolves. */
-export function countSpeakers(player: Speech, speakers: Speakers): Speech {
+/** The shared player's speech counted per speaker, with the cuts the shared player makes on its own. */
+export interface CountedSpeech extends Speech {
+  /**
+   * End the count of every held letter sound. The shared player cuts a held sound on stop() and when the next letter
+   * sound starts, but resolves the done of a sustained hold (and of a missing one) only when its stop() is called. So a
+   * hold that something else cut would keep counting as Elizabeth, and every effect would be skipped from then on.
+   */
+  cutHolds(): void;
+}
+
+/**
+ * The shared player's speech, counted per speaker. A held letter sound counts until its done resolves, until
+ * audio.stop() (index.ts calls cutHolds), or until the next letter sound without overlap or the next hold.
+ */
+export function countSpeakers(player: Speech, speakers: Speakers): CountedSpeech {
+  const holds = new Set<() => void>();
+  const cutHolds = () => {
+    for (const end of [...holds]) end();
+  };
   return {
     say: (id, o) => speakers.track(speakerOf([id]), player.say(id, o)),
     sayAll: (ids) => speakers.track(speakerOf(ids), player.sayAll(ids)),
-    sound: (g, o) => speakers.track('elizabeth', player.sound(g, o)),
+    sound(g, o) {
+      const p = speakers.track('elizabeth', player.sound(g, o));
+      if (!o?.overlap) cutHolds(); // counted first, so the speaker stays Elizabeth and nothing flickers up
+      return p;
+    },
     hold(g) {
       const h = player.hold(g);
-      return { stop: () => h.stop(), done: speakers.track('elizabeth', h.done) };
+      let end!: () => void;
+      const counted = speakers.track('elizabeth', new Promise<void>((r) => (end = r)));
+      cutHolds(); // the hold before this one
+      const settle = () => {
+        holds.delete(settle);
+        end();
+      };
+      holds.add(settle);
+      void h.done.then(settle, settle);
+      return {
+        stop() {
+          h.stop();
+          settle();
+        },
+        done: counted.then(() => h.done),
+      };
     },
+    cutHolds,
   };
 }

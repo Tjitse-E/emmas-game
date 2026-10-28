@@ -5,20 +5,26 @@ Usage, outside the sandbox, from anywhere in the repo (sfx.sh passes its argumen
     sh games/moon-meadow-world/tools/audio/sfx.sh --dry-run [--left N]   the plan and its credits; calls nothing
     sh games/moon-meadow-world/tools/audio/sfx.sh --probe                the 2 s probe and the real rate
     sh games/moon-meadow-world/tools/audio/sfx.sh [--only a,b] [--core]  make what has no file yet
+    sh games/moon-meadow-world/tools/audio/sfx.sh --full                 the whole pack after a probe said to shrink
     sh games/moon-meadow-world/tools/audio/sfx.sh --retake a,b           make these again
     sh games/moon-meadow-world/tools/audio/sfx.sh --approve a,b          Tjitse has listened; calls nothing
 
 - The list and the prompts are tools/audio/sfx.json. Its `later` list is never made.
 - An effect or loop is made when public/audio/sfx/<id>.mp3 does not exist, or with --retake. The API has no seed,
-  so a made file is kept, and a retake keeps the old file in .cache/sfx/old/.
+  so a made file is kept, and a retake keeps the old file in .cache/sfx/old/. Every raw file the API sent stays in
+  .cache/sfx/; when a run stopped after its POST (ffmpeg failed), the next run processes that raw file without a call.
 - Planned credits = seconds x sfxPerSecond (budget.json, never below 40). The run refuses when the ledger plus the
   plan passes the cap, or when the account would fall under the floor.
 - One attempt per call: POST /v1/sound-generation goes through the speech script's http() with tries=1, because a
   retried POST can be charged without being booked. Every attempt is booked in the ledger before its call, also one
   that fails, and a failed effect stops the run. The run has one ledger line, rewritten after each attempt.
-- --probe makes only the probe effect (sfx.json `probe`, bedtime-bell, 2 s). It reads the account counter before,
-  then every 30 s for up to 10 minutes until the counter moves, and writes sfxProbe and sfxPerSecond into
-  budget.json. It never writes a rate below 40; a counter that has not moved gives no rate.
+- --probe makes only the probe effect (sfx.json `probe`, bedtime-bell, 2 s). The counter lags a few minutes, so it
+  first reads the account counter until two reads 60 s apart agree (an earlier run's charge can still land; it gives
+  up after 10 minutes), then makes the probe and reads the counter every 30 s for up to 10 minutes until it moves.
+  It writes sfxProbe and sfxPerSecond into budget.json, never a rate below 40; a counter that has not moved gives no
+  rate.
+- Section 21: when the probe cost more than 50 credits a second (or 200 for the call), a run of the whole pack is
+  refused. Make the core effects and the day loop (--core) or name them (--only); --full overrides it.
 - The key: load_key, http, credits_left and read_ledger come from scripts/generate-audio.py (imported with
   importlib, so that script does not change), and the key is read only inside this process. Never printed.
 
@@ -46,12 +52,15 @@ API_PATH = '/v1/sound-generation'
 MIN_RATE = 40.0           # credits a second; ElevenLabs' price when duration_seconds is set, and the floor of any rate
 PROBE_POLL_S = 30
 PROBE_WAIT_S = 600        # the account counter lags a few minutes
+SETTLE_S = 60             # before the probe, two reads of the counter this far apart must agree
+SETTLE_WAIT_S = 600
 SHRINK_RATE = 50.0        # above this the pack shrinks to the core effects and the day loop (section 21)
 SHRINK_CALL = 200.0
 SAMPLE_RATE = 44100
 HEAD = f'aformat=sample_fmts=fltp:sample_rates={SAMPLE_RATE}:channel_layouts=mono'
 TAIL_TRIM = ('areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05:detection=peak,'
              'areverse')
+RAW_NAME = re.compile(r'^(?P<id>.+)-(?P<stamp>\d{8}T\d{6})\.mp3$')
 
 
 def speech_module():
@@ -97,6 +106,33 @@ def rate_of(budget):
         return MIN_RATE
 
 
+def must_shrink(budget):
+    """Section 21: the probe cost more than 50 credits a second, or 200 for the call."""
+    try:
+        rate = float(budget.get('sfxPerSecond') or 0)
+    except (TypeError, ValueError):
+        rate = 0.0
+    probe = budget.get('sfxProbe') or {}
+    try:
+        call = float(probe.get('credits') or 0)
+    except (TypeError, ValueError):
+        call = 0.0
+    return rate > SHRINK_RATE or call >= SHRINK_CALL
+
+
+def cached_raw(cache_dir, item_id):
+    """The newest raw file the API sent for `item_id` (.cache/sfx/<id>-<stamp>.mp3, not old/), or None."""
+    d = Path(cache_dir) if cache_dir else None
+    if not d or not d.is_dir():
+        return None
+    found = []
+    for f in d.iterdir():
+        m = RAW_NAME.match(f.name)
+        if f.is_file() and m and m['id'] == item_id:
+            found.append((m['stamp'], f))
+    return max(found)[1] if found else None
+
+
 def ids_arg(text):
     return [s.strip() for s in (text or '').split(',') if s.strip()]
 
@@ -106,8 +142,9 @@ def all_items(spec):
             + [dict(e, loop=True) for e in spec.get('loops', [])])
 
 
-def plan(spec, out_dir, rate, only=(), retake=(), core=False, probe=False):
-    """The effects and loops to make, each with its credits, and the ones skipped because their file exists.
+def plan(spec, out_dir, rate, only=(), retake=(), core=False, probe=False, cache_dir=None):
+    """The effects and loops to make, each with its credits, and the ones skipped because their file exists. One with
+    a raw file in the cache (an earlier run paid for it, then stopped) is made from it, for 0 credits.
 
     Raises SystemExit for an unknown id or one in `later`.
     """
@@ -132,7 +169,11 @@ def plan(spec, out_dir, rate, only=(), retake=(), core=False, probe=False):
         if item['id'] not in retake and (Path(out_dir) / f'{item["id"]}.mp3').exists():
             skipped.append(item['id'])
             continue
-        todo.append(dict(item, credits=round(float(item['seconds']) * rate, 2)))
+        raw = None if item['id'] in retake else cached_raw(cache_dir, item['id'])
+        if raw:
+            todo.append(dict(item, credits=0.0, raw=str(raw)))
+        else:
+            todo.append(dict(item, credits=round(float(item['seconds']) * rate, 2)))
     return todo, skipped
 
 
@@ -260,8 +301,8 @@ def default_process(item, raw, out):
 
 # ------------------------------------------------------------------------------------------------ the run
 
-def make_one(item, spec, api, paths, process, manifest):
-    """One attempt for one item: the POST (tries=1), the raw file kept, the processed file, the manifest entry."""
+def post_raw(item, spec, api, cache):
+    """One attempt: the POST (tries=1), and the raw file kept in the cache. Returns its path."""
     body = {'text': item['text'], 'duration_seconds': float(item['seconds']),
             'prompt_influence': spec.get('promptInfluence', 0.5), 'model_id': spec['model']}
     if item['loop']:
@@ -270,10 +311,17 @@ def make_one(item, spec, api, paths, process, manifest):
     if not audio or len(audio) < 500:
         raise RuntimeError(f'suspiciously small audio ({len(audio or b"")} bytes)')
     stamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
-    cache = Path(paths.cache)
-    cache.mkdir(parents=True, exist_ok=True)
     raw = cache / f'{item["id"]}-{stamp}.mp3'
     raw.write_bytes(audio)
+    return raw
+
+
+def make_one(item, spec, api, paths, process, manifest):
+    """One item: the raw file (a POST, or the cached raw of an earlier run), the processed file, the manifest entry."""
+    cache = Path(paths.cache)
+    cache.mkdir(parents=True, exist_ok=True)
+    raw = Path(item['raw']) if item.get('raw') else post_raw(item, spec, api, cache)
+    stamp = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
     out_dir = Path(paths.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / f'{item["id"]}.mp3'
@@ -293,6 +341,21 @@ def save_manifest(paths, spec, manifest):
     manifest['clips'] = {i: clips[i] for i in order if i in clips}
     manifest['updated'] = now_iso()
     write_json(Path(paths.out) / 'manifest.json', manifest)
+
+
+def settle(api, first, sleep):
+    """Read the account counter until two reads SETTLE_S apart agree, for up to SETTLE_WAIT_S. The counter lags a few
+    minutes, so a charge of an earlier run can land while the probe waits, and it would take that for its own cost.
+    Returns (the steady value or None when it kept moving, seconds waited)."""
+    prev, waited = first, 0
+    while waited < SETTLE_WAIT_S:
+        sleep(SETTLE_S)
+        waited += SETTLE_S
+        now, _ = api.credits_left()
+        if now == prev:
+            return now, waited
+        prev = now
+    return None, waited
 
 
 def probe_wait(api, before, sleep):
@@ -332,6 +395,7 @@ def main(argv=None, api=None, paths=None, sleep=time.sleep, process=default_proc
     ap.add_argument('--core', action='store_true', help='only the effects marked core, and the loops')
     ap.add_argument('--retake', default='', help='comma separated ids to make again (the old file is kept)')
     ap.add_argument('--approve', default='', help='comma separated ids Tjitse has listened to; calls nothing')
+    ap.add_argument('--full', action='store_true', help='the whole pack, although the probe said to shrink it')
     args = ap.parse_args(argv)
     paths = paths or default_paths()
 
@@ -343,7 +407,8 @@ def main(argv=None, api=None, paths=None, sleep=time.sleep, process=default_proc
     rate = rate_of(budget)
     only, retake = ids_arg(args.only), ids_arg(args.retake)
     try:
-        todo, skipped = plan(spec, paths.out, rate, only=only, retake=retake, core=args.core, probe=args.probe)
+        todo, skipped = plan(spec, paths.out, rate, only=only, retake=retake, core=args.core, probe=args.probe,
+                             cache_dir=paths.cache)
     except SystemExit as e:
         print(e)
         return 1
@@ -361,11 +426,19 @@ def main(argv=None, api=None, paths=None, sleep=time.sleep, process=default_proc
 
     print(f'Sound effects: {len(todo)} to make, {len(skipped)} already made, at {rate:g} credits a second.')
     for i in todo:
-        flags = ' '.join(f for f, on in (('loop', i['loop']), ('core', i.get('core')), ('retake', i['id'] in retake)) if on)
+        flags = ' '.join(f for f, on in (('loop', i['loop']), ('core', i.get('core')), ('retake', i['id'] in retake),
+                                         ('from the cached raw file, no call', i.get('raw'))) if on)
         print(f'  {i["id"]:<16} {float(i["seconds"]):>5.1f} s {i["credits"]:>8.2f} credits  {flags}')
     if skipped:
         print(f'  made before: {", ".join(skipped)}')
     print(f'Planned: {planned:g} credits. Ledger {used:g} of the cap {cap:g}, floor {floor:g}.')
+
+    whole = not (args.core or only or retake or args.probe)
+    if whole and must_shrink(budget) and not args.full and any(not i.get('raw') for i in todo):
+        print(f'Refusing: the probe cost more than {SHRINK_RATE:g} credits a second (or {SHRINK_CALL:g} for the call), '
+              'so the pack shrinks to the core effects and the day loop (section 21): sfx.sh --core. The rest waits '
+              'for 2.3.1. --full makes the whole pack anyway.')
+        return 1
 
     if args.dry_run:
         why = refusal(used, planned, cap, args.left, floor)
@@ -377,20 +450,33 @@ def main(argv=None, api=None, paths=None, sleep=time.sleep, process=default_proc
         print('Nothing to make.')
         return 0
 
-    api.load_key()  # stops here, before anything is booked, when the key is missing
-    before, _ = api.credits_left()
-    print(f'Credits left on the account: {before:g}')
-    why = refusal(used, planned, cap, before, floor)
-    if why:
-        print(why)
-        return 1
+    calls = [i for i in todo if not i.get('raw')]
+    before = None
+    if calls:
+        api.load_key()  # stops here, before anything is booked, when the key is missing
+        before, _ = api.credits_left()
+        print(f'Credits left on the account: {before:g}')
+        if args.probe:
+            print(f'Waiting until the account counter stands still (two reads {SETTLE_S} s apart), up to '
+                  f'{SETTLE_WAIT_S // 60} minutes.')
+            before, _ = settle(api, before, sleep)
+            if before is None:
+                print(f'The account counter kept moving for {SETTLE_WAIT_S // 60} minutes: an earlier run is still '
+                      'being charged, and the probe would measure it too. Run the probe again later.')
+                return 1
+            print(f'Credits left on the account: {before:g}, steady.')
+        why = refusal(used, planned, cap, before, floor)
+        if why:
+            print(why)
+            return 1
 
     ledger = Ledger(paths.ledger, before)
     manifest = read_json(Path(paths.out) / 'manifest.json', {'clips': {}})
     manifest.setdefault('note', 'Written by tools/audio/gen-sfx.py. approved is false until Tjitse has listened '
                                 '(sfx.sh --approve id); the game plays only approved files.')
     for item in todo:
-        ledger.book(item)  # booked before the call: a failed or cut-off attempt still counts against the cap
+        if not item.get('raw'):
+            ledger.book(item)  # booked before the call: a failed or cut-off attempt still counts against the cap
         try:
             make_one(item, spec, api, paths, process, manifest)
         except Exception as e:  # one attempt only: a failure stops the run
@@ -398,11 +484,17 @@ def main(argv=None, api=None, paths=None, sleep=time.sleep, process=default_proc
             print(f'Stopped. Booked {ledger.rec["credits"]:g} credits for {ledger.rec["attempts"]} attempt(s).')
             save_manifest(paths, spec, manifest)
             return 1
-        ledger.made()
+        if item.get('raw'):
+            print(f'  made {item["id"]} from {Path(item["raw"]).name}, which an earlier run paid for: no call')
+        else:
+            ledger.made()
+            print(f'  made {item["id"]}')
         save_manifest(paths, spec, manifest)
-        print(f'  made {item["id"]}')
 
-    if args.probe:
+    if args.probe and todo[0].get('raw'):
+        print(f'The probe was made from the raw file of an earlier run, so nothing was measured. sfxPerSecond stays '
+              f'{rate:g}.')
+    elif args.probe:
         item = todo[0]
         print(f'Waiting for the account counter to move (every {PROBE_POLL_S} s, up to {PROBE_WAIT_S // 60} minutes).')
         after, waited = probe_wait(api, before, sleep)
@@ -428,8 +520,9 @@ def main(argv=None, api=None, paths=None, sleep=time.sleep, process=default_proc
         budget['sfxProbe'] = record
         write_json(paths.budget, budget)
 
-    print(f'Done: {ledger.rec["made"]} made, {ledger.rec["credits"]:g} credits booked. Listen to each one, then '
-          f'sfx.sh --approve <ids>.')
+    cached = sum(1 for i in todo if i.get('raw'))
+    print(f'Done: {ledger.rec["made"] + cached} made ({cached} from cached raw files), {ledger.rec["credits"]:g} '
+          f'credits booked. Listen to each one, then sfx.sh --approve <ids>.')
     return 0
 
 
