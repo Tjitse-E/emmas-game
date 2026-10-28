@@ -1,4 +1,4 @@
-# Game lane: notes
+# Game: notes
 
 The level script (`src/game/level.ts`), the customiser part (`wardrobe-part.ts`), the side quests (`quests.ts`), what the moments share (`moments.ts`), touch input (`input.ts`), the door moments (`doors.ts`), shared state and helpers (`game.ts`), the save (`save.ts`), the reading level (`reading.ts`), the maths band (`band.ts`), the random streams (`streams.ts`), the address options (`options.ts`), the customiser's camera (`portrait.ts`), the results log (`results.ts`), `src/main.ts`, `src/test-hook.ts` and `index.html`.
 
@@ -6,11 +6,11 @@ The level script (`src/game/level.ts`), the customiser part (`wardrobe-part.ts`)
 
 | Part | What the script does |
 |---|---|
-| Start | The world is paused (`world.setPaused(true)`) behind the start screen; every shader program is compiled at boot (`renderer.compile`). Her saved look is applied at boot. The Play tap unpauses before the fade and counts a play in the save. The customiser's clips are preloaded first. The sweep takes 3.5 s. |
+| Start | The world is paused (`world.setPaused(true)`) behind the start screen; every shader program is compiled at boot (`renderer.compile`), the toy sprite's too: a herd unicorn holds a toy meanwhile. Her saved look is applied at boot. The Play tap unpauses before the fade and counts a play in the save. The customiser's clips are preloaded first. The sweep takes 3.5 s. |
 | Wardrobe | 2.2.0's customiser (`wardrobe-part.ts`). `g.free` is false, Lumi hidden, crown off, `hold(true)` and `portrait(true)` (not with `?portrait=0`). The two herd unicorns grazing near START (homes (-12, 7) and (-7, 9)) graze behind the camera at (-14, 12) and (-4, 12) until Done. The camera eases into the body portrait (900 ms) while the layer's panel slides in. Done: the look is saved with `seen.wardrobe`, a `kind=look` diag line goes out, she curtsies while the layer says "Lovely!", then `releaseFrame()`, `hold(false)`, `portrait(false)` and the herd walks home. |
 | Welcome | First play: as before. From the second play (`save.plays >= 2`): "Hello, Emma!", the crown at once with a sparkle, then "An egg is waiting." |
 | Eggs | Each egg from its own stream (`egg1`, `egg2`) in the current maths band, leaving out this play's sums and, while it can, the last play's totals. The nest glow goes off as soon as she reaches the nest. She stands beside the egg at its depth and turns a three-quarter face to the camera (also in the hatch and the naming). |
-| Wishes | Wish 1 (nest) is the dress-up wish: "Your baby wants to dress up like you!" first, the picture worn on the baby's head for 20 s, "Pretty!". The pond wish is the bath wish. Wish 2 (wild egg) is the picnic wish, with no line first ("I'm hungry!" before a food only would give the answer away); "Yum!" after a food, "Yay!" after a dish or a mug. The play's first wish is the warm-up, one reading level lower. |
+| Wishes | Wish 1 (nest) is the dress-up wish: "Your baby wants to dress up like you!" first, the picture worn on the baby's head for 20 s, "Pretty!". The pond wish is the bath wish. Wish 2 (wild egg) is the picnic wish, with no line first ("I'm hungry!" before a food only would give the answer away); "Yum!" after a food, "Yay!" after a dish or a mug, which stays at the baby's feet for 8 s (the bath toy stays for the swim). The play's first wish is the warm-up, one reading level lower. |
 | Pond | The tap line after 12 s without a slide, once more 20 s later, the egg comes at 45 s. After the first slide, 8 s more play, then the first baby's bath wish on the nearer of two shore spots (water behind them), result part `pond`. |
 | Wild egg | The camera frames the egg's landing spot, 9 m wide. |
 | Free play | The afternoon (`quests.ts`): see below. |
@@ -25,7 +25,7 @@ The level script (`src/game/level.ts`), the customiser part (`wardrobe-part.ts`)
 - `onFocus(row)`, and also `onLook` and `onPicked` for their row: eyes and hair things bring the face frame, the other rows the body frame (500 ms moves). After eyes, hair things and styles, the camera and her 25 degree side turn (hair things and styles, so a side clip or a ponytail shows) go back 2.5 s after the last touch there; `onFocus(null)` starts that wait again. Otherwise she faces the camera.
 - `onTurn(dxPx, ended)`: `dxPx` is the finger's horizontal move since the last call (as the ui lane sends it). 1 degree per 2 px, at most 170 degrees from facing the camera, through `princess.turnBy(delta)` with a positive angle for a finger moving right; on the end she faces the camera again (`face()` eases back).
 - `onPreviewTap()`: `wave`.
-- `portraitFrame(her, row, screen)` is pure and unit tested. `screen.panelLeft` comes from `panelLeftOf(w, h)` (right 16, 628 wide, in design px), a copy of the ui lane's `wardrobeLayout`. A window resize frames again at once.
+- `portraitFrame(her, row, screen)` is pure and unit tested. `screen.panelLeft` comes from `panelLeftOf(w, h)`, the panel's left edge from the ui's `wardrobeLayout`. A window resize frames again at once.
 
 ## The afternoon (`quests.ts`)
 
@@ -34,7 +34,7 @@ The level script (`src/game/level.ts`), the customiser part (`wardrobe-part.ts`)
 - A quest starts on a bubble tap, a tap on its place (`WorldPick` `picnic` or `rack` in `input.ts`) or when she walks within 2.5 m of its place (`PLACES.picnic`, `PLACES.rack`). `?quest=` asks it at once.
 - Free play's two minutes count only time without a quest. No quest starts after 3 minutes (the bubbles hide then); a running quest finishes. Both quests need two named babies. `skip()` ends the free-play wait.
 - Quiet prompts every 30 s without a touch: slide, follow, basket, bubbles (the bubbles line only while a bubble shows).
-- The picnic: her babies stop following, other followers step aside, the herd grazing by the gazebo walks behind the camera (`herdAside(g, true, { walk: true })`). She walks to `PICNIC.stand` (at once after 12 s), the babies to the seats (placed there after 4 s, facing the camera). The frame centres the rug 0.6 m east, 5.5 m wide, head tops at 45%. `lumi4-picnic`, then a wish per guest from the stream `picnic` with intro and goal `g4-give` (no warm-up; results `picnic1`, `picnic2`, strand `r`). The reward: `lumi4-picnic-done`, stars on her head, `princess.extra('rose')`, a twirl and hearts. The rose stays until the end of the play (`snapTo` takes it off).
+- The picnic: her babies stop following, her other followers wait west of the rug (`PICNIC.aside`, clear of the cushions and the close-up), the herd grazing by the gazebo walks behind the camera (`herdAside(g, true, { walk: true })`). She walks to `PICNIC.stand` (at once after 12 s), the babies to the seats (placed there after 4 s, facing the camera). The frame centres the rug 0.6 m east, 5.5 m wide, head tops at 45%. `lumi4-picnic`, then a wish per guest from the stream `picnic` with intro and goal `g4-give` (no warm-up; results `picnic1`, `picnic2`, strand `r`). The reward: `lumi4-picnic-done`, stars on her head, `princess.extra('rose')`, a twirl and hearts. The rose stays until the end of the play (`snapTo` takes it off).
 - The hay rack: she walks to her spot 2.2 m west of the rack (at `HAY_RACK.stand` she stood between the camera and the rack, behind the hay panel) and turns half to the camera; the sum from the stream `rack` in the current band. Frame: 0.3 m west of the rack centre (clear of the stone tray), 6 m wide, the rack's top (y 1.5) at 28% of the height. `react('munch')` (too many; `'hot'` too) makes a helper munch, `'look'` (too few; `'cold'` too) makes the helpers look, `'right'` (or `'warm'`) fills the rack (`stable.hay(1, 1200)`) and every helper and both babies munch with hearts. 3 s later the helpers graze at home again. Result `rack`, strand `m`; it moves the maths band.
 
 ## Reading level, maths band, streams and the save
@@ -67,14 +67,6 @@ The level script (`src/game/level.ts`), the customiser part (`wardrobe-part.ts`)
 - `world.onSlow(level => actors.setDetail(level))`; the `?perf=1` box shows the pixel ratio and the quality level.
 - No WebGL 2, or `createWorld` throws: `window.__mmwFallback()` from `index.html` shows a night picture with the home button. The same script shows it after 10 s when the game script never started (`main.ts` sets `window.__mmwStarted` first thing).
 - Baby close-ups (naming and wishes) pass her crown to `frameAt` as `keep`, so her crown stays on screen.
-- A picture shown by a baby (`showToy` in `moments.ts`) is taken away after its time only if no other picture replaced it meanwhile.
-
-## For the integrator: where this lane meets the others
-
-These calls are written against the target API of the other lanes, each in one place:
-
-- `planWish` (`moments.ts`) calls `wishSpec(kind, rand, exclude, { level, contrast })` through a cast (the reading lane's signature as of its branch; the step-0 stub ignores the fourth argument). `exclude` are this play's targets plus the last play's (`save.last.words`). While the step-0 content has no `dress` and `picnic` words (no `clips` on the spec), it falls back to food and bath; after the reading lane's merge that fallback never runs and can go.
-- `planEgg` (`moments.ts`) calls `eggSpec(kind, rand, { first, band, used: { totals, answers }, lastTotals })` (`EggAsk`, the maths lane's `MathsPick`); `planRack` (`quests.ts`) uses `rackSpec(rand, ask)` from `src/content/rack.ts` when that export exists, otherwise a warm egg's sum with `skin: 'hay'`. `band.ts` has its own `nextBand`, the same rule as the maths lane's export in `eggs.ts`; either may go.
-- `portrait.ts` `panelLeftOf(w, h)` copies the panel rule; once `src/ui/geometry.ts` has `wardrobeLayout`, `wardrobe-part.ts` may take `wardrobeLayout(w, h).panel` instead (the unit test pins 491 and 499 px).
-- `Unicorn.showToy(url, { on })` is called through the contract type (`moments.ts`), as the step-0 actor still takes one argument.
-- The test hook reads `layer.snapshot().wardrobe` loosely, so it compiles before and after the ui lane adds it.
+- A picture shown by a baby (`showToy` in `moments.ts`) is taken away after its time only if no other picture replaced it meanwhile. A greyscale picture shows in its tint (`WishItem.tint`).
+- World touches (`input.ts`) run on `press()`: a release only the window hears still taps; a cancel, a lost capture or the next touch ends the touch without a tap, and a carried unicorn lands where the finger last was. One lost release never blocks later world taps.
+- During a side quest a Lumi tap replays an open moment's goal; between the quest's moments she stays quiet (the basket is hidden).

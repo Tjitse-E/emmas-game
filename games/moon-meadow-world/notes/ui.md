@@ -1,13 +1,13 @@
-# ui lane: notes for the integrator
+# ui: notes
 
-The 2D layer lives in `src/ui/`. Entry: `createLayer(root, deps)` in `src/ui/index.ts`. It implements every member of `Layer` in `src/contracts.ts` as written. No contract change is needed.
+The 2D layer lives in `src/ui/`. Entry: `createLayer(root, deps)` in `src/ui/index.ts`. It implements every member of `Layer` in `src/contracts.ts`.
 
 ## Wiring
 
 1. Give the layer its own element above the canvas: `const layer = createLayer(document.getElementById('ui')!)`. The layer makes that element `position: fixed` over the whole viewport with `pointer-events: none`, so taps on empty space reach the canvas. `deps` is optional and not used.
 2. `createLayer` also installs the touch guards (no pinch or double-tap zoom, no long-press callout, no text selection, `touch-action: none` on `html` and `body`), the Andika font, the home button (top right) and the turn-the-iPad picture for portrait.
 3. Start: `await layer.start(() => void audio.unlock())`. The callback runs inside the Play button's `pointerdown`. Elizabeth's `platform-turn` line only plays after that tap.
-4. Lumi starts hidden. Call `layer.lumi.show(true)` when she should appear. A tap on her calls the handler from `layer.lumi.onTap(fn)`; without a handler it calls `layer.replay()`.
+4. Lumi starts hidden. Call `layer.lumi.show(true)` when she should appear. The layer never shows Lumi or the food basket by itself. A tap on her calls the handler from `layer.lumi.onTap(fn)`; without a handler it calls `layer.replay()`.
 5. Every moment closes its own panels before it resolves. Opening a new moment closes one that is still open.
 
 ## Anchors and camera framing
@@ -84,8 +84,3 @@ Files: `src/ui/wardrobe.ts` (the DOM), `src/ui/wardrobe-ctl.ts` (the rules witho
 ## Harness
 
 `dev/ui.html` with `src/ui/dev.ts`: a pastel stand-in world with a drifting fake baby and egg, and dev buttons for every part (hidden with the `clean` button or `document.body.classList.add('clean')`). `window.__ui` is the layer and `window.__dev.run(name)` runs a part. `wardrobe`, `wardrobe first` (with the ghost slide) and `wardrobe gifts` (three ribbons owned) open the customiser with a flat stand-in Princess Emma drawn from the swatch pictures; she twirls, tilts and zooms to her face like the game will. `__dev.look()` is her look. `offers` shows two drifting offer bubbles. Press Play first. In playwright-cli, do not return the promise of `__dev.run('wardrobe')` from `eval` (it waits for Done). Run `MMW_VITE_CACHE=node_modules/.vite-ui npx vite --port 8783 --strictPort --host 127.0.0.1` and open `http://127.0.0.1:8783/dev/ui.html`.
-
-## Not done
-
-- No new packages were installed.
-- The integrator decides when to show the food basket and Lumi; the layer never shows them by itself.

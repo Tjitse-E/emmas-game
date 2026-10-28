@@ -1,4 +1,4 @@
-# Content lane: notes for the integrator
+# Content: notes
 
 ## What is where
 
@@ -12,7 +12,7 @@
 | `tools/build-content.ts` | Reads v3's banks, clips, letter sounds, pictures, twins (`content/pairs.json`), `UNICORN_FOODS` and `tools/picture-check.json`. Stops with a list of problems instead of writing bad data, and when a wish kind has fewer than 6 strong targets. |
 | `tools/picture-check.json` | One entry per wish word: `ok` (target or decoy), `decoy` (decoy only) or `drop` (never used), with `by` and `why`. A word without an entry is left out. |
 | `tools/lines.ts` | The demo's own sentences and number patterns (`SENTENCES`, `lineFor(id)`), with no side effects, so tests can ask whether a clip that is not generated yet has a line. |
-| `tools/build-lines.ts` | Writes `public/audio/v4demo/lines.json` from `allClipIds()` minus v3's ok clips. Run it only after all lanes merge. |
+| `tools/build-lines.ts` | Writes `public/audio/v4demo/lines.json` from `allClipIds()` minus v3's ok clips. Run it when the clip list changes. |
 | `tools/audio/gen.sh`, `budget.json`, `ledger.jsonl` | The demo's audio budget (cap 4,000, floor 10,000). |
 | `public/audio/v4demo/` | The demo's own clips, `manifest.json`, `overrides.json`. |
 | `src/ui/contrast.ts` | `diffUnits()`: which printed units of two words differ (the miss contrast). Pure. |
@@ -30,7 +30,7 @@
   - `exclude`: words that cannot be the target (the last play's targets, `save.last.words`, plus the targets used earlier in this play). It can also go inside the options as `{ exclude }`. When every target is excluded, the wish still comes from the whole list.
   - `level`: the hidden reading level, 1 to 3 (default 2). Level 1 gives 4 items and asks only tier 1 and 2 words. Levels 2 and 3 give 5 items. Level 3 asks only words with a twin or a frame word; with none left it plays as level 2 and `spec.level` says 2. The warm-up (the first wish of a play one level lower) is the caller's: pass the lower level.
   - `contrast: false` (`?contrast=0`) leaves out `clips.again`, and the ui then keeps v3's rule (one miss gives the focused hint at once).
-- Each `WishItem` has `tier` and `react`: `wear` (every dress-up word), `munch` (picnic foods), `play` (pond toys, picnic dishes). `spec.decoys` gives why each wrong item is in the basket: `twin`, `frame`, `onset`, `rhyme`, `ending`, `length` or `other`.
+- Each `WishItem` has `tier`, `tint` (a greyscale picture only) and `react`: `wear` (every dress-up word), `munch` (picnic foods), `play` (pond toys, picnic dishes). `spec.decoys` gives why each wrong item is in the basket: `twin`, `frame`, `onset`, `rhyme`, `ending`, `length` or `other`.
 - Before a dress-up wish the level says `CLIPS.dressUp` ("Your baby wants to dress up like you!"). Before a picnic wish it says nothing: `CLIPS.hungry` before a food only would give the answer away. After the wish: `foal-pretty` for `wear`, `foal-yum` for `munch`, `foal-yay` for `play`.
 - Free play: `foods()` (plum, corn, cake, peach; react `munch`).
 - Every other line: `CLIPS` (see `src/content/clips.ts`). `wayTo(place)` gives the "this way" line for a `Place` (none for the gazebo, the rack and the picnic).
@@ -102,7 +102,7 @@ This section replaces the egg lines under Wiring. Design: [docs/v4/2.2.md](../..
 | `src/ui/ui.css` | The block marked "maths lane", inside the egg section. |
 | `tests/maths.test.ts` | Section 8.1 for maths. The old range, floor and three-stone tests left `content.test.ts` for it. |
 
-### Wiring (lane F)
+### Wiring
 
 - Per play: `const used = { totals: [], answers: [] }`. After each maths moment push `totalOf(spec)` (the number above ten) and `spec.answer`. `lastTotals` is the last play's totals from the save.
 - Band: `'a'` at the start of a play. After each egg or rack result, `band = nextBand(band, result.outcome)` (first goes to B, helped to A, miss stays). Door moments do not move it. `?maths=a|b` fixes it.
@@ -142,11 +142,11 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 ### Clips
 
 - `allEggClipIds()` and `allRackClipIds()` build specs of every sum in both bands with every wrong stone a tray can show, so they cannot drift from `eggSpec` and `rackSpec`. Miss distances go up to 6; `num-over`, `num-cold`, `num-still-warm` and `num-more` 1 to 6 all exist.
-- The only missing clips are the six band B take-away facts (`num-take-14-7`, `15-7`, `15-8`, `16-7`, `16-8`, `16-9`). `lineFor()` gives their lines through the `num-take` pattern, so `build-lines.ts` picks them up after the merge.
+- Every clip exists. The six band B take-away facts (`num-take-14-7`, `15-7`, `15-8`, `16-7`, `16-8`, `16-9`) were generated in 2.2.0 from the `num-take` pattern of `lineFor()`.
 
 ## Deviations from the brief
 
-- Warm egg facts reuse v3's `num-bond-<have>-<answer>` ("Eight and five make thirteen!"), the same text and ids v3's eggs use. Only "ten and some more" is new (`num-add-10-3` to `num-add-10-5`).
+- Warm egg facts reuse v3's `num-bond-<have>-<answer>` ("Eight and five make thirteen!"), the same text and ids v3's eggs use. A warm egg's `have` is now 3 to 9, so the demo's "ten and some more" clips are not used; `num-add-10-3` to `num-add-10-5` are still in `public/audio/v4demo/`, outside its manifest.
 - New line `g4-snow-egg` is the snow egg's intro; `h4-doors` is the focused door hint.
 - 2.2.0 reading: the seven decoy-only targets above, and the five extra look-alike groups.
 - A frame word is any other word with the same first and last letter (robe and rose count). This matches the design's level 3 lists; "another vowel" alone would drop robe and rose.
@@ -155,7 +155,7 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 - `'food'` stays as a kind for the old callers.
 - The reading level fold is tested with `src/game/reading.ts` in the game lane, not in `tests/reading.test.ts`.
 
-## Requested contract changes
+## Rough edges
 
 1. `src/assets.ts` reads `location` when it is imported, so node code that imports `wordPic` (the tests, `tools/build-lines.ts`) has to stub `location` first. Computing `V3` on first use would remove that.
 2. `src/audio/index.ts` uses a relative own-pack path (`audio/v4demo/`). A page under `dev/` needs `<base href="../">` (as `dev/content.html` has).
@@ -163,6 +163,6 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 
 ## Audio
 
-- The reading lane adds no new line. `fb-letters` and every pool word's clip are ok v3 clips. Seven 2.2.0 lines are not generated yet (`g4-ready`, `g4-look-tap`, `g4-ready-play`, `g4-dress-up`, `lumi4-picnic`, `lumi4-picnic-done`, `word-heart`); `dev/content.html` reports exactly those as missing.
+- `fb-letters` and every pool word's clip are ok v3 clips. The 13 new lines of 2.2.0 are generated; the demo's pack has 80 clips, and `dev/content.html` reports none missing.
 - The clips of sail, pail, reed, pie, leek, mat and dock passed speech-to-text only as homophones (Sale, Pale, Read, Pi, Leak, Matt, Doc). Tjitse listens to them once.
-- Booked so far: 1,861.48 credits in `tools/audio/ledger.jsonl` against the cap of 4,000.
+- Booked so far: 2,276.90 credits in `tools/audio/ledger.jsonl` against the cap of 4,000.

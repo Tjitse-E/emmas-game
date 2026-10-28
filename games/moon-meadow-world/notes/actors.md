@@ -1,4 +1,4 @@
-# Actors lane: notes for the integrator
+# Actors: notes
 
 The actors live in `src/actors/`. Entry: `createActors(scene, deps)` in `src/actors/index.ts`. It implements `Actors` from `src/contracts.ts` and adds a few optional extras (type `ActorsImpl`). The harness is `dev/actors.html` (with `src/actors/dev.ts`). Unit tests are in `tests/actors.test.ts`.
 

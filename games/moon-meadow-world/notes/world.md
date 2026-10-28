@@ -1,4 +1,4 @@
-# World lane: notes for the integrator
+# World: notes
 
 The world lives in `src/world/`. Entry: `createWorld(container)` in `src/world/index.ts`. It implements `World` from `src/contracts.ts` exactly and adds a few optional extras (type `WorldWithExtras`). The harness is `dev/world.html` (with `src/world/dev.ts`). Routing tests are in `tests/world-route.test.ts`, tap tests in `tests/world-pick.test.ts` and the 2.2.0 places' geometry tests in `tests/world-places.test.ts`.
 
@@ -68,7 +68,7 @@ Pastel picture-book style with the shared lights. Under those lights, faces that
 
 ## 2.2.0: the royal picnic and the hay rack
 
-Both stand where step 0 put them in `src/layout.ts` (`PICNIC`, `HAY_RACK`) and cost no draw call of their own.
+Both stand where `src/layout.ts` puts them (`PICNIC`, `HAY_RACK`) and cost no draw call of their own.
 
 - **The royal picnic** (`buildPicnic` in `src/world/places.ts`, 915 triangles, merged into the `sw` scenery region): a pink gingham rug of 8 x 6 checks with a gold border, a gold tassel at each corner and a flat gold crown in front, a plump lilac cushion and a plump mint cushion with gold pompoms on the two seats, and a wicker hamper (weave, lid, arched handle, gold clasp, a pink napkin) at `PICNIC.hamper`, turned a little towards her spot. No plates, cups or food: those are picnic wish words (design 3.2), and a 3D one on the rug could answer or muddle a wish. The rug is not an obstacle; the hamper is not one either (see requests).
 - **The hay rack** (`src/world/hayrack.ts`, wired in `stable.ts`): a slatted wooden crib, wide at the top, on a crossed trestle under each end with a bolt where the legs cross, like v3's `station-hay-rack.webp` that the arrow and the panel show. It is turned 0.2 rad (`RACK_YAW`) so the camera sees a little of its west end. The wood (300 triangles) is merged into the `stable` scenery region. It stays inside its 0.9 m obstacle circle.
@@ -119,9 +119,8 @@ Both stand where step 0 put them in `src/layout.ts` (`PICNIC`, `HAY_RACK`) and c
 
 Static scenery (ground, paths, fence, hedges, places, stable shell, grass and flowers) is merged per region into one mesh each with one shared Lambert material. Trees are four instanced meshes. Doors are one instanced mesh, the plaques one mesh with a texture atlas. Memory: 39 geometries, 10 textures.
 
-## Requests for other lanes
+## More to know
 
-- None for the contract. If the actors lane wants feet on the mound, `heightAt` is there as an extra; adding it to `World` would make it official.
-- Game lane (`src/game/input.ts`): `pick()` now returns `rack` and `picnic`. Until the game handles them, a tap on the rug or the rack does nothing (the switch has no case for them), where before it walked her there. Handle both as the quest triggers, or walk her to `PICNIC.stand` / `HAY_RACK.stand`. Unicorns are picked before `world.pick`, so a tap on a baby on its cushion still reaches the baby.
-- Game lane: the hamper at `PICNIC.hamper` is not an obstacle. A baby walking from behind her to its seat can pass through it for a moment; the moment places the babies at the seats after 4 s anyway. If that shows, start their walks from the rug's west side or route them to `PICNIC.seats` from the south.
-- Game lane: the babies at the seats stand 9 to 12 cm up on the cushions through `heightAt`. Turn them to the camera there; nothing else is needed.
+- `pick()` returns `rack` and `picnic`; `input.ts` starts that quest (or walks her there). Unicorns are picked before `world.pick`, so a tap on a baby on its cushion still reaches the baby.
+- The hamper at `PICNIC.hamper` is not an obstacle. A baby walking from behind her to its seat can pass through it for a moment; the picnic places the babies at the seats after 4 s anyway.
+- The babies at the seats stand 9 to 12 cm up on the cushions through `heightAt`.
