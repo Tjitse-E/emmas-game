@@ -172,6 +172,62 @@ describe('wishes', () => {
   });
 });
 
+// The phrase wish of the Dressing Corner's gate (2.3.0, docs/v4/2.3.md section 18); its planner and guessers are in
+// tests/reading.test.ts.
+describe('phrase wishes', () => {
+  const load = async () => {
+    const P = await import('../src/content/phrases.ts');
+    const { PALETTE } = await import('../src/wardrobe.ts');
+    return { P, pic: (c: string) => (PALETTE as Record<string, { pic?: string }>)[c].pic };
+  };
+
+  it('baskets show v3 word pictures in the colour\'s picture tint, every item worn, with the wish\'s lines', async () => {
+    const { P, pic } = await load();
+    for (const s of seeds) {
+      const level = ((s % 3) + 1) as 1 | 2 | 3;
+      const spec = P.phraseSpec(C.seeded(s), { level, all: true });
+      expect(spec.basket.map((b) => b.word)).toContain(spec.target.word);
+      for (const b of spec.basket) {
+        const [c, t] = b.word.split(' ');
+        const thing = DATA.phraseThings.find((x) => x.word === t)!;
+        expect(b.pic).toBe(`/v3/art/words/${thing.pic}.webp`);
+        expect(existsSync(join(v3, 'public/art/words', `${thing.pic}.webp`))).toBe(true);
+        expect(b.tint).toBe(pic(c));
+        expect(b.react).toBe('wear');
+      }
+      expect(spec.clips.goal).toEqual(['g4-give']);
+      expect(spec.clips.right).toEqual(['fb-yes']);
+      expect(spec.clips.hint).toEqual(['h-sounds']);
+      expect(spec.clips.again).toEqual(['fb-letters']);
+    }
+  });
+
+  it('every clip a phrase wish can say is in allClipIds, and exists or has a line for gen.sh', async () => {
+    const { P } = await load();
+    const all = new Set(C.allClipIds());
+    for (const s of seeds) {
+      const spec = P.phraseSpec(C.seeded(s), { level: ((s % 3) + 1) as 1 | 2 | 3, all: true });
+      for (const id of C.wishClipIds(spec)) {
+        expect(all.has(id), id).toBe(true);
+        expect(clipExists(id) || !!lineFor(id), id).toBe(true);
+      }
+    }
+    // A tap on the printed "the" says v3's word-the.
+    expect(all.has('word-the')).toBe(true);
+    expect(clipExists('word-the')).toBe(true);
+    for (const [c, t] of P.phraseCombos()) expect(all.has(P.phraseClip(c, t))).toBe(true);
+  });
+
+  it('every letter sound of a phrase is in allGraphemes', async () => {
+    const { P } = await load();
+    const sounds = new Set(C.allGraphemes());
+    for (const g of P.allPhraseGraphemes()) {
+      expect(sounds.has(g), g).toBe(true);
+      expect(phonics.has(g), g).toBe(true);
+    }
+  });
+});
+
 describe('names', () => {
   const herd: HerdMember[] = C.herd();
 

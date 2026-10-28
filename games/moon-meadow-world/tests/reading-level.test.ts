@@ -1,7 +1,8 @@
-// The reading level (src/game/reading.ts): a hidden fold over her reading results with a warm-up per play.
+// The reading level (src/game/reading.ts): a hidden fold over her reading results with a warm-up per play. 2.3.0:
+// the phrase wish has its own level (docs/v4/2.3.md section 18).
 import { describe, expect, it } from 'vitest';
-import type { Outcome } from '../src/contracts';
-import { type ReadingState, foldReading, parseLevel, readingLevelFor, startReading } from '../src/game/reading';
+import type { Outcome, WishSpec } from '../src/contracts';
+import { type ReadingState, foldReading, foldReadingFor, levelOf, parseLevel, readingLevelFor, startReading } from '../src/game/reading';
 
 const fold = (s: ReadingState, outcomes: Outcome[]): ReadingState => outcomes.reduce(foldReading, s);
 
@@ -43,5 +44,41 @@ describe('reading level', () => {
 
   it('reads a level from a URL option or a save', () => {
     expect([parseLevel('1'), parseLevel('3'), parseLevel(2), parseLevel('4'), parseLevel('x'), parseLevel(null)]).toEqual([1, 3, 2, null, null, null]);
+  });
+});
+
+describe('the phrase level', () => {
+  const WORD_KINDS: WishSpec['kind'][] = ['dress', 'bath', 'picnic', 'food'];
+  const both = (): { reading: ReadingState; phrases: ReadingState } => ({ reading: { level: 2, recent: [] }, phrases: { level: 2, recent: [] } });
+  const fold = (kind: WishSpec['kind'], outcomes: Outcome[]) => outcomes.reduce((s, o) => foldReadingFor(s, kind, o), both());
+
+  it('moves only on phrase reads, by the same rule as the word level', () => {
+    expect(fold('phrase', ['first', 'first', 'first'])).toEqual({ reading: { level: 2, recent: [] }, phrases: { level: 3, recent: [] } });
+    expect(fold('phrase', ['miss', 'helped'])).toEqual({ reading: { level: 2, recent: [] }, phrases: { level: 1, recent: [] } });
+    // The phrase level is the word level's fold over the phrase reads alone.
+    const outcomes: Outcome[] = ['first', 'miss', 'first', 'first', 'first', 'helped', 'helped', 'first'];
+    expect(fold('phrase', outcomes).phrases).toEqual(outcomes.reduce(foldReading, { level: 2, recent: [] }));
+  });
+
+  it('never moves the word level, and word reads never move it', () => {
+    for (const outcomes of [['miss', 'miss'], ['first', 'first', 'first'], ['helped', 'first', 'helped', 'helped']] as Outcome[][]) {
+      expect(fold('phrase', outcomes).reading).toEqual(both().reading);
+      for (const kind of WORD_KINDS) {
+        expect(fold(kind, outcomes).phrases, kind).toEqual(both().phrases);
+        expect(fold(kind, outcomes).reading, kind).toEqual(outcomes.reduce(foldReading, both().reading));
+      }
+    }
+    expect(levelOf('phrase')).toBe('phrases');
+    for (const kind of WORD_KINDS) expect(levelOf(kind)).toBe('reading');
+  });
+
+  it('a mixed play keeps the two apart', () => {
+    let s = both();
+    // A play: three word wishes right, two gate phrases missed, two picnic guests right.
+    for (const [kind, o] of [['dress', 'first'], ['bath', 'first'], ['picnic', 'first'], ['phrase', 'miss'], ['phrase', 'miss'], ['picnic', 'first']] as [WishSpec['kind'], Outcome][]) {
+      s = foldReadingFor(s, kind, o);
+    }
+    expect(s.reading).toEqual({ level: 3, recent: ['first'] });
+    expect(s.phrases).toEqual({ level: 1, recent: [] });
   });
 });

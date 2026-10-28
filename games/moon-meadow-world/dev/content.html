@@ -48,6 +48,21 @@
   .badge.wish { background: #e8dcff; color: #5a3aa0; }
   .word.drop, .word.none { opacity: 0.6; }
   .note { font-size: 13px; max-width: 900px; }
+  /* The phrase pictures (2.3.md section 18): a contact sheet of every colour on every thing, big enough to show Emma. */
+  .phrase-sheet { display: grid; grid-template-columns: 90px repeat(5, minmax(120px, 170px)); gap: 10px; align-items: stretch; }
+  .phrase-sheet .head { font-size: 22px; font-weight: 700; align-self: end; text-align: center; }
+  .phrase-sheet .row-name { font-size: 22px; font-weight: 700; align-self: center; }
+  .phrase-sheet .row-name small { display: block; font-size: 12px; font-weight: 400; opacity: 0.75; }
+  .phrase { text-align: center; padding: 8px 6px 10px; }
+  .phrase .pic { width: 120px; height: 120px; margin: 0 auto 4px; }
+  .phrase .w { font-size: 19px; font-weight: 700; }
+  /* For Emma: the words hide, so she names each picture without reading it. */
+  .phrase-sheet.for-emma .w, .phrase-sheet.for-emma .badge, .phrase-sheet.for-emma .row-name { visibility: hidden; }
+  #phrase-toggle { font: inherit; font-size: 14px; padding: 4px 12px; border-radius: 10px; border: 2px solid var(--line); background: #fff; margin: 0 0 8px; }
+  .phrase.drop, .phrase.none { opacity: 0.55; }
+  .phrase.ref { background: #fff; border-style: dashed; }
+  .badge.emma { background: #ffe0f0; color: #a0306a; }
+  .badge.claude { background: #e6eefc; color: #3a4f90; }
 </style>
 </head>
 <body>
@@ -64,6 +79,11 @@
 <h2>Wish words: the picture check</h2>
 <p class="note">Every word a wish can show, with Claude's verdict from <code>tools/picture-check.json</code>: <b>ok</b> (it can be the wish), <b>decoy</b> (only a wrong picture), <b>drop</b> (never used). A purple <b>wish</b> badge marks the words a wish of that kind asks for, with the reading levels (L1 to L3) that use it. Tap a card to hear Elizabeth. Change an entry where Emma does not know the picture, then run <code>node tools/build-content.ts</code>.</p>
 <div id="sheets"></div>
+<h2>Phrase pictures: the tinted picture check (2.3)</h2>
+<p class="note">The Dressing Corner's phrase wish ("the green sock") shows these 30 pictures: every phrase colour on every phrase thing, in the colour's picture tint. Show them to Emma and ask what each one is ("What colour is it? What is it?"). <b>Gold against yellow above all</b>: the dashed yellow row is not in the game; it is there so she can say whether gold looks different from yellow. Each pair she names right becomes <code>"by": "emma"</code> in <code>tools/phrase-check.json</code> (or <code>"verdict": "drop"</code> when she does not know it); then run <code>node tools/build-content.ts</code>. Until at least 6 phrases are strong among Emma's pairs, the gate plays two dress-up word wishes. Tap a picture to hear its phrase (its word until the phrase clip is made).</p>
+<div id="phrase-status" class="note"></div>
+<button id="phrase-toggle" type="button">Hide the words (for Emma)</button>
+<div id="phrases" class="phrase-sheet"></div>
 <h2>Wishes (sample baskets per reading level)</h2>
 <div class="row" id="wishes"></div>
 <h2>Doors</h2>
@@ -74,6 +94,8 @@
   import { V3 } from '/src/assets.ts';
   import { DATA } from '/src/content/data.ts';
   import checks from '/tools/picture-check.json';
+  import phraseChecks from '/tools/phrase-check.json';
+  import * as P from '/src/content/phrases.ts';
   import { tintedPicStyle } from '/src/ui/geometry.ts';
 
   const $ = (id) => document.getElementById(id);
@@ -177,6 +199,48 @@
     $('sheets').append(sheet);
   }
 
+  // The phrase contact sheet: a row per colour, a column per thing, with the check's verdict, checker and reason.
+  const things = DATA.phraseThings.map((t) => t.word);
+  $('phrases').append(el('div', ''), ...things.map((t) => el('div', 'head', t)));
+  const phraseCard = (c, t) => {
+    const key = `${c} ${t}`;
+    const check = phraseChecks[key];
+    const verdict = check ? check.verdict : 'none';
+    const it = P.phraseItem(c, t);
+    const badges = `<span class="badge ${verdict}">${check ? verdict : 'no entry'}</span>${check ? `<span class="badge ${check.by}">${check.by}</span>` : ''}`;
+    const card = el('div', `card phrase ${verdict}`, `${picHtml(it.pic, it.tint)}<div class="w">${key}</div><div>${badges}</div>`);
+    card.dataset.pair = key;
+    card.title = check ? check.why : 'No picture check yet: left out.';
+    card.addEventListener('pointerdown', async () => {
+      if (!unlocked) { audio.unlock(); unlocked = true; }
+      audio.sayAll([(await audio.has(it.clip)) ? it.clip : `word-${t}`]);
+    });
+    return card;
+  };
+  for (const c of DATA.phraseColours) {
+    $('phrases').append(el('div', 'row-name', `${c.word}<small>${c.target ? 'can be the wish' : 'wrong pictures only'}</small>`), ...things.map((t) => phraseCard(c.word, t)));
+    if (c.word === 'gold') {
+      // A yellow row to compare gold with; never in the game.
+      $('phrases').append(el('div', 'row-name', 'yellow<small>not in the game: to compare with gold</small>'), ...DATA.phraseThings.map((t) => {
+        const it = P.phraseItem('gold', t.word);
+        return el('div', 'card phrase ref', `${picHtml(it.pic, '#f9d65c')}<div class="w">yellow ${t.word}</div>`);
+      }));
+    }
+  }
+  $('phrase-toggle').addEventListener('click', () => {
+    const on = $('phrases').classList.toggle('for-emma');
+    $('phrase-toggle').textContent = on ? 'Show the words' : 'Hide the words (for Emma)';
+  });
+  const strongEmma = P.phraseTargets({ all: false });
+  const strongAll = P.phraseTargets({ all: true });
+  $('phrase-status').innerHTML = `Strong phrases: <b>${strongEmma.length}</b> with Emma's checks, <b>${strongAll.length}</b> with Claude's too (<code>?phrases=all</code>). `
+    + `The live gate plays <b>${P.gateKind({ all: false }) === 'phrase' ? 'phrase wishes' : 'two dress-up word wishes'}</b>.`;
+
+  for (const level of [1, 2, 3]) {
+    const w = P.phraseSpec(C.seeded(level * 13), { level, all: true });
+    const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}">${picHtml(i.pic, i.tint)}<b>${i.word}</b><small>${w.decoys[i.word] ?? 'wish'}</small></span>`).join('');
+    $('wishes').append(playable(el('div', 'card basket', `<b>phrase</b> level ${w.level} wants <span class="tag">the ${w.target.word}</span><br>${items}`), [...w.clips.intro, w.target.clip]));
+  }
   for (const kind of ['dress', 'bath', 'picnic', 'food']) {
     for (const level of [1, 2, 3]) {
       const w = C.wishSpec(kind, C.seeded(level * 31 + kind.length), [], { level });

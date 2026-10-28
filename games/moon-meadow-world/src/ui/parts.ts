@@ -1,8 +1,8 @@
 // The touchable parts the moments share, ported from v3's Svelte parts to plain DOM: number stones, letter gems,
-// gem slots, the star slider, a printed word with sound dots, the crown and v3's pictures.
+// gem slots, the star slider, a printed word with sound dots, a printed phrase (2.3.0), the crown and v3's pictures.
 import { v3Art } from '../assets';
 import { audio } from '../audio';
-import { dicePoints, gemKind, nearestIndex, printUnits, type Point, type PrintUnit } from './geometry';
+import { dicePoints, gemKind, nearestIndex, phraseUnits, printUnits, type PhrasePart, type Point, type PrintUnit } from './geometry';
 import { el, img } from './dom';
 import { press } from './press';
 
@@ -257,6 +257,101 @@ export function printEl(word: string, gpcs: string[], o: { onTouch?(): void; ena
     pulse,
     glow: (on) => box.classList.toggle('glow', on),
     glowUnits: (indexes) => unitEls.forEach((e, i) => e.classList.toggle('diff', indexes.includes(i))),
+    destroy: unpress,
+  };
+}
+
+export interface PhrasePrint extends Print {
+  /** Each word's unit indexes in `units`, in order: "the", the colour, the thing. */
+  readonly words: number[][];
+  /** The units of the words read whole ("the"): no dots, never sounded out, never lit by the contrast. */
+  readonly whole: number[];
+}
+
+/**
+ * The phrase wish's print (docs/v4/2.3.md section 18): "the green sock" on one line, every word in the normal print
+ * ink (never in its own colour, or she could match the picture without reading). The colour and the thing have a
+ * dot under each grapheme and play its letter sound under the finger, as printEl does. "the" has no dots: a touch
+ * on it says the whole word (`wholeClip`, v3's word-the), because it is a tricky word she sees, not one she decodes.
+ */
+export function phrasePrintEl(parts: readonly PhrasePart[], o: { onTouch?(): void; enabled?(): boolean; wholeClip?: string } = {}): PhrasePrint {
+  const perWord = phraseUnits(parts);
+  const units = perWord.flat();
+  const box = el('div', 'print phrase touch');
+  box.setAttribute('aria-label', `word ${parts.map((p) => p.word).join(' ')}`);
+  const words: number[][] = [];
+  const whole: number[] = [];
+  const unitEls: HTMLElement[] = [];
+  perWord.forEach((list, w) => {
+    const isWhole = parts[w].word.toLowerCase() === 'the';
+    const wordEl = el('span', `pword${isWhole ? ' whole' : ''}`, box);
+    words.push(list.map((un) => {
+      const i = unitEls.length;
+      const e = el('span', `unit${un.digraph && !isWhole ? ' digraph' : ''}${un.tail ? ' tail' : ''}`, wordEl);
+      e.dataset.i = String(i);
+      el('span', 'txt', e).textContent = un.text;
+      el('span', 'bar', e);
+      el('span', 'dot', e).setAttribute('aria-label', isWhole ? '' : `dot ${un.g}`);
+      unitEls.push(e);
+      if (isWhole) whole.push(i);
+      return i;
+    }));
+  });
+  const wordOf = (i: number) => words.findIndex((w) => w.includes(i));
+  let lastPlayed = -1;
+  let lastWhole = -1;
+  const pulse = (i: number) => {
+    const e = unitEls[i];
+    if (!e) return;
+    e.classList.remove('pulse');
+    void e.offsetWidth;
+    e.classList.add('pulse');
+  };
+  const at = (p: Point) => {
+    for (let i = 0; i < unitEls.length; i++) {
+      const r = unitEls[i].getBoundingClientRect();
+      if (p.x < r.left || p.x > r.right) continue;
+      if (i === lastPlayed) return;
+      lastPlayed = i;
+      if (whole.includes(i)) {
+        // The whole word once per touch, however many of its letters the finger passes.
+        const w = wordOf(i);
+        if (w === lastWhole) return;
+        lastWhole = w;
+        words[w].forEach(pulse);
+        if (o.wholeClip) void audio.say(o.wholeClip);
+        return;
+      }
+      lastWhole = -1;
+      if (units[i].tail) return;
+      pulse(i);
+      void audio.sound(units[i].g);
+      return;
+    }
+  };
+  const unpress = press(box, {
+    down: (e) => {
+      if (o.enabled && !o.enabled()) return false;
+      lastPlayed = -1;
+      lastWhole = -1;
+      o.onTouch?.();
+      at({ x: e.clientX, y: e.clientY });
+    },
+    move: (e) => at({ x: e.clientX, y: e.clientY }),
+    end: () => {
+      lastPlayed = -1;
+      lastWhole = -1;
+    },
+  });
+  return {
+    el: box,
+    units,
+    words,
+    whole,
+    dot: (i) => unitEls[i].querySelector('.dot') as HTMLElement,
+    pulse,
+    glow: (on) => box.classList.toggle('glow', on),
+    glowUnits: (indexes) => unitEls.forEach((e, i) => e.classList.toggle('diff', indexes.includes(i) && !whole.includes(i))),
     destroy: unpress,
   };
 }

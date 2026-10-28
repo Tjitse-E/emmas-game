@@ -6,20 +6,29 @@
 // letters again." The sounds of the wish word come only after she waits (the next idle). A spec without
 // clips.again keeps v3's rule: one miss gives the focused hint at once (?contrast=0). A touch on a dot or an item
 // stops Elizabeth first, then plays its sound.
+//
+// The phrase wish (2.3.0, docs/v4/2.3.md section 18) prints "the green sock" on one line in the normal print ink. Its
+// miss tag has two lines (the colour over the thing, no "the"), and the contrast lights per word what differs from
+// the wish's colour and thing. Elizabeth says the wrong item's phrase. The focused hint sounds the colour, pauses,
+// then sounds the thing; "the" is never sounded and never lights.
 import type { MomentHooks, MomentResult, WishItem, WishSpec } from '../contracts';
 import { audio } from '../audio';
-import { bubbleBox, inBox, printUnits, type Box, type Point } from './geometry';
+import { bubbleBox, inBox, phraseUnits, printUnits, type Box, type Point, type PrintUnit } from './geometry';
 import { HintRunner } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, img, onTick, play, sleep, u, wordPicEl } from './dom';
 import { Life, QUICK_MS, leave, target, type LayerCtx, type OpenMoment } from './moment';
-import { PIC, printEl } from './parts';
-import { diffUnits } from './contrast';
+import { PIC, phrasePrintEl, printEl, type PhrasePrint } from './parts';
+import { diffPhrase, diffUnits } from './contrast';
 
 /** The baby's giggle at a wrong item (v3 core, "[giggles] Silly!"; the level preloads it). */
 const SILLY = 'foal-silly';
 /** How long the differing letters of the wish word glow after a miss. */
 const GLOW_MS = 3600;
+/** A touch on the printed "the" of a phrase says it whole (v3's word clip; the game preloads it). */
+const THE_CLIP = 'word-the';
+/** The phrase hint's pause between the colour's letter sounds and the thing's, on top of the usual gap. */
+const WORD_GAP_MS = 400;
 
 /** How the baby takes an item: the item's own reaction, or by the kind as in the demo. */
 function reactionOf(spec: WishSpec, it: WishItem): 'munch' | 'play' | 'wear' {
@@ -41,7 +50,8 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
     // ---- the bubble over the baby, following it every frame and kept on screen
     const bubble = el('div', 'wish-bubble', root);
     bubble.setAttribute('aria-label', 'bubble');
-    const print = printEl(spec.target.word, spec.target.gpcs, {
+    const parts = spec.kind === 'phrase' ? spec.target.parts : undefined;
+    const printOpts = {
       enabled: () => !busy && life.alive,
       onTouch: () => {
         if (firstItemAt === null) printTouched = true;
@@ -49,7 +59,11 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
         audio.stop();
         print.glowUnits([]);
       },
-    });
+    };
+    const phrase: PhrasePrint | null = parts ? phrasePrintEl(parts, { ...printOpts, wholeClip: THE_CLIP }) : null;
+    const print = phrase ?? printEl(spec.target.word, spec.target.gpcs, printOpts);
+    /** A unit that plays no letter sound: a silent tail e, or a letter of "the". */
+    const silent = (i: number): boolean => print.units[i].tail || !!phrase?.whole.includes(i);
     life.own(() => print.destroy());
     bubble.appendChild(print.el);
     el('span', 'bubble-tail', bubble);
@@ -109,12 +123,17 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
     };
 
     const slowSounds = async (still: () => boolean) => {
-      for (let i = 0; i < print.units.length; i++) {
-        if (!still() || !life.alive) return;
-        if (print.units[i].tail) continue;
-        print.pulse(i);
-        await audio.sound(print.units[i].g);
-        await sleep(500);
+      // A word, or a phrase word by word: the colour's sounds, a pause, the thing's sounds ("the" is never sounded).
+      const words = phrase ? phrase.words.filter((w) => !w.some((i) => phrase.whole.includes(i))) : [print.units.map((_, i) => i)];
+      for (const [k, word] of words.entries()) {
+        if (k > 0) await sleep(WORD_GAP_MS);
+        for (const i of word) {
+          if (!still() || !life.alive) return;
+          if (silent(i)) continue;
+          print.pulse(i);
+          await audio.sound(print.units[i].g);
+          await sleep(500);
+        }
       }
     };
 
@@ -123,24 +142,49 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
     let glowTimer: ReturnType<typeof setTimeout> | null = null;
     life.own(() => { if (glowTimer) clearTimeout(glowTimer); });
     const wishUnits = printUnits(spec.target.word.toLowerCase(), spec.target.gpcs.map((g) => g.toLowerCase()));
+    const wordUnits = (it: WishItem) => printUnits(it.word.toLowerCase(), it.gpcs.map((g) => g.toLowerCase()));
+    const wishWords = parts ? phraseUnits(parts) : [];
+    /** A phrase item's units per word, and what differs from the wish per word (diffPhrase). */
+    const phraseDiff = (it: WishItem) => {
+      const words = phraseUnits(it.parts ?? []);
+      return { words, diff: diffPhrase(wishWords, words) };
+    };
+    const tagUnits = (line: HTMLElement, units: readonly PrintUnit[], diff: readonly number[]) => {
+      units.forEach((un, i) => {
+        el('span', diff.includes(i) ? 'tag-unit diff' : 'tag-unit', line).textContent = un.text;
+      });
+    };
 
-    /** A small white tag at the bottom of the cell with the item's own word; it stays until the moment ends. */
+    /**
+     * A small white tag at the bottom of the cell with the item's own word; it stays until the moment ends. A phrase
+     * gets two lines, the colour over the thing, without "the".
+     */
     const tagCell = (x: (typeof items)[number]) => {
       if (x.tag) return x.tag;
-      const units = printUnits(x.it.word.toLowerCase(), x.it.gpcs.map((g) => g.toLowerCase()));
-      const diff = diffUnits(wishUnits, units);
-      const tag = el('span', 'contrast-tag', x.cell);
+      const tag = el('span', phrase ? 'contrast-tag two' : 'contrast-tag', x.cell);
       tag.dataset.word = x.it.word;
-      units.forEach((un, i) => {
-        el('span', diff.b.includes(i) ? 'tag-unit diff' : 'tag-unit', tag).textContent = un.text;
-      });
+      if (phrase && x.it.parts) {
+        const { words, diff } = phraseDiff(x.it);
+        words.forEach((units, w) => {
+          if (x.it.parts![w].word.toLowerCase() === 'the') return;
+          tagUnits(el('span', 'tag-line', tag), units, diff.b[w]);
+        });
+        x.cell.classList.add('two');
+      } else {
+        const units = wordUnits(x.it);
+        tagUnits(tag, units, diffUnits(wishUnits, units).b);
+      }
       x.cell.classList.add('tagged');
       x.tag = tag;
       return tag;
     };
     const glowDiff = (x: (typeof items)[number]) => {
-      const units = printUnits(x.it.word.toLowerCase(), x.it.gpcs.map((g) => g.toLowerCase()));
-      print.glowUnits(diffUnits(wishUnits, units).a);
+      if (phrase) {
+        const { diff } = phraseDiff(x.it);
+        print.glowUnits(diff.a.flatMap((list, w) => list.map((k) => phrase.words[w][k])));
+      } else {
+        print.glowUnits(diffUnits(wishUnits, wordUnits(x.it)).a);
+      }
       x.tag?.classList.remove('shine');
       void x.tag?.offsetWidth;
       x.tag?.classList.add('shine');
@@ -271,7 +315,7 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
           targets: [
             ...items.map((x) => target(`item ${x.it.word}`, x.cell)),
             target('bubble', bubble),
-            ...print.units.flatMap((un, i) => (un.tail ? [] : [target(`dot ${i + 1} ${un.g}`, print.dot(i))])),
+            ...print.units.flatMap((un, i) => (silent(i) ? [] : [target(`dot ${i + 1} ${un.g}`, print.dot(i))])),
             { name: 'baby', x: Math.round(b.x + b.w / 2), y: Math.round(b.y + b.h / 2), w: Math.round(b.w), h: Math.round(b.h) },
           ],
         };

@@ -227,6 +227,26 @@ export function printUnits(word: string, gpcs: string[]): PrintUnit[] {
   return out;
 }
 
+/** A printed word of a phrase (WishItem.parts): its graphemes and, where they differ, the letter sounds it says. */
+export type PhrasePart = { word: string; gpcs: string[]; sounds?: string[] };
+
+/**
+ * The printed units of a phrase, one list per word ("the", the colour, the thing; docs/v4/2.3.md section 18). A unit
+ * prints its written letters and says its letter sound (`sounds` where given: the o of gold says oa). The print is
+ * the same ink for every word; nothing here knows a colour.
+ */
+export function phraseUnits(parts: readonly PhrasePart[]): PrintUnit[][] {
+  return parts.map((p) => {
+    let k = 0;
+    return printUnits(p.word.toLowerCase(), p.gpcs.map((g) => g.toLowerCase())).map((u) => {
+      if (u.tail) return u;
+      const g = p.sounds?.[k]?.toLowerCase() ?? u.g;
+      k++;
+      return { ...u, g };
+    });
+  });
+}
+
 // ------------------------------------------------------------------------------------------------ placement
 
 /**

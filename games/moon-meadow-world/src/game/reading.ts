@@ -1,7 +1,11 @@
 // The reading level (docs/v4/2.2.md 3.1): a pure fold over her reading results, kept in the save. Nothing on screen
 // shows it. It decides the wish basket: level 1 has 4 items of the easier graphemes, levels 2 and 3 have 5, and level 3
-// prefers targets with a twin or a frame word. Every checked reading moment feeds it: the three wishes and the two
-// picnic guests.
+// prefers targets with a twin or a frame word. Every checked word read feeds it: the three wishes and the two picnic
+// guests (and the gate's two dress-up wishes before Emma's picture check).
+//
+// 2.3.0: the phrase wish at the Dressing Corner has its own level, `save.phrases`, the same fold over the gate's
+// phrase reads (docs/v4/2.3.md section 18). A phrase read never moves the word level, and a word read never moves the
+// phrase level, so a hard start with the new two-word form never makes her word baskets easier.
 import type { Outcome } from '../contracts';
 
 export type ReadingLevel = 1 | 2 | 3;
@@ -48,4 +52,15 @@ export function foldReading(s: ReadingState, outcome: Outcome): ReadingState {
 export function readingLevelFor(s: ReadingState, o: { warmUp: boolean; forced?: ReadingLevel | null }): ReadingLevel {
   if (o.forced) return o.forced;
   return o.warmUp ? clampLevel(s.level - 1) : s.level;
+}
+
+/** Which level a reading result moves: a phrase read its own phrase level, every word read the word level. */
+export function levelOf(kind: string): 'phrases' | 'reading' {
+  return kind === 'phrase' ? 'phrases' : 'reading';
+}
+
+/** Both reading levels after one result of a wish of `kind`: only the level of that kind moves. */
+export function foldReadingFor<S extends { reading: ReadingState; phrases: ReadingState }>(s: S, kind: string, outcome: Outcome): S {
+  const which = levelOf(kind);
+  return { ...s, [which]: foldReading(s[which], outcome) };
 }
