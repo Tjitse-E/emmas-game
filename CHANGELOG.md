@@ -9,6 +9,24 @@ show the newest version, bottom right. `scripts/deploy.sh` refuses to deploy a v
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.2.0] - 2026-10-28
+
+### Added
+- Moon Meadow World: Emma dresses Princess Emma before she plays. She picks hair colour, eyes, gown, hair style and a hair thing (bows, a unicorn clip, flowers, stars, butterflies or hearts) from rows of pictures, and Princess Emma shows each choice in 3D. The game remembers her look on this iPad.
+- Moon Meadow World: two side quests in free play, both optional. At a royal picnic by Lumi's gazebo two babies each wish for something she reads, and she gets a rose for her hair. At a new hay rack by the stable the herd is hungry, with a maths moment.
+- Moon Meadow World: new words. The babies' wishes come from about 80 words in three kinds (dress-up, pond and picnic) and change every play.
+- Moon Meadow World: the goodnight ribbons are a collection. Each play adds a ribbon colour, and she keeps the ones she has.
+
+### Changed
+- Moon Meadow World: guessing is harder. Wish baskets hold 4, then 5 pictures whose words look alike (seal, sail, shell). After a wrong pick, that picture shows its own word and the letters that differ light up. The game follows how well she reads and makes the baskets easier after two struggles.
+- Moon Meadow World: the eggs have 4 or 5 number stones, and the wrong stones are real mistakes (one off, or the number she just heard). The stones wake only after Elizabeth has said both numbers. The sums change every play and never repeat within a play.
+- Moon Meadow World: the second naming has one more wrong letter gem, and the first gem can be a near capital (B for P).
+- Moon Meadow World: from the second play, Lumi's welcome is shorter.
+
+### Fixed
+- Moon Meadow World: taps, the name star, the sound dots, the home button and the play-again moon always finish, also when the iPad loses the finger's release. A lost release on the home button no longer takes her out of the game.
+- Moon Meadow World: one lost release on the meadow no longer blocks every later tap in the world.
+
 ## [2.1.0] - 2026-10-26
 
 ### Added
