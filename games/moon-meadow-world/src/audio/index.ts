@@ -4,6 +4,7 @@
 import '@emma/audio-player';
 import { V3 } from '../assets';
 import { type Ambience, type FxOpts, type MusicBox, type SfxFile, type Speaker, createSound } from './sound';
+import { countSpeakers, createSpeakers } from './speakers';
 
 export type { Ambience, FxOpts, MusicBox, SfxFile, Speaker };
 
@@ -26,12 +27,28 @@ interface EmmaAudioApi {
   onMissing(fn: (id: string) => void): () => void;
   readonly speaking: boolean;
   readonly missing: string[];
+  readonly muted: boolean;
+  readonly context: AudioContext | null;
 }
 
 const A = (window as unknown as { EmmaAudio: EmmaAudioApi }).EmmaAudio;
-// Step 0 counts all speech as Elizabeth's and misses letter sounds. The sound lane counts the pending say, sayAll,
-// sound and hold calls here per speaker (sound.ts isStoryLine), so a letter sound counts as Elizabeth speaking.
-const sound = createSound({ speaking: () => (A.speaking ? 'elizabeth' : null), sfx: (name) => A.sfx(name) });
+
+/** The effect files and the background loops: public/audio/sfx/ (tools/audio/gen-sfx.py). */
+export const SFX_BASE = 'audio/sfx/';
+
+// Every say, sayAll, sound and hold goes through `speech`, which counts the pending calls per speaker (speakers.ts):
+// a clip of Lumi or a foal is a story line, every other clip and every letter sound is Elizabeth's. The channel
+// hears each change, so an effect still sounding fades out the moment she starts.
+const speakers = createSpeakers(() => sound.speakerChanged());
+const speech = countSpeakers(A, speakers);
+const sound = createSound({
+  speaking: () => speakers.now(),
+  context: () => A.context ?? null,
+  muted: () => !!A.muted,
+  base: SFX_BASE,
+  // ?sfx=all also plays the files Tjitse has not listened to yet, in the game and on dev/sound.html.
+  listenAll: () => /[?&]sfx=all(&|$)/.test(location.search),
+});
 
 /** v3 packs the demo speaks from, searched after the demo's own pack. */
 export const V3_PACKS = ['core', 'numbers', 'names-t1', 'words-phase2', 'words-phase3-4', 'words-year1', 'places'] as const;
@@ -76,13 +93,13 @@ export const audio = {
   say(id: string, o?: { queue?: boolean }): Promise<void> {
     setup();
     if (!o?.queue) cuts++;
-    return A.say(id, o);
+    return speech.say(id, o);
   },
   /** Stop current speech, then play the clips in order. */
   sayAll(ids: string[]): Promise<void> {
     setup();
     cuts++;
-    return A.sayAll(ids);
+    return speech.sayAll(ids);
   },
   /**
    * sayAll, resolving true when the clips played to their end and false when later speech or stop() cut them (the
@@ -91,16 +108,16 @@ export const audio = {
   sayWhole(ids: string[]): Promise<boolean> {
     setup();
     const mine = ++cuts;
-    return A.sayAll(ids).then(() => cuts === mine);
+    return speech.sayAll(ids).then(() => cuts === mine);
   },
   /** A pure letter sound (shared phonics clips). */
   sound(grapheme: string, o?: { overlap?: boolean }): Promise<void> {
     setup();
-    return A.sound(soundKey(grapheme), o);
+    return speech.sound(soundKey(grapheme), o);
   },
   hold(grapheme: string): { stop(): void; done: Promise<void> } {
     setup();
-    return A.hold(soundKey(grapheme));
+    return speech.hold(soundKey(grapheme));
   },
   sfx(name: Sfx): Promise<void> {
     setup();
@@ -124,6 +141,7 @@ export const audio = {
   },
   /** Load the effect files and the day loop, after the speech. */
   preloadFx(): Promise<void> {
+    setup();
     return sound.preloadFx();
   },
   /** The wardrobe's music box tune for `ms`. Only its own stop() ends it early. */
@@ -139,6 +157,7 @@ export const audio = {
   stop(): void {
     cuts++;
     A.stop();
+    sound.stopFx();
   },
   has(id: string): Promise<boolean> {
     setup();

@@ -1,0 +1,4 @@
+{
+ "note": "Written by tools/audio/gen-sfx.py. approved is false until Tjitse has listened (sfx.sh --approve id); the game plays only approved files.",
+ "clips": {}
+}
