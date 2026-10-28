@@ -89,10 +89,10 @@ export interface PlayLine {
   /** Since the Play tap. */
   playMs: number;
   checkedMs: number;
-  /** The start mirror's time, and the Corner's music box time (its dressing). */
+  /** The start mirror's time, and the Corner's music box time (its dressing, clock.dressMs.corner). */
   mirrorMs: number;
   cornerDressMs: number;
-  /** The whole Corner visit: the walk, the gate, the gift and the wardrobe. */
+  /** The whole Corner visit: the walk, the gate, the gift and the wardrobe (cv; its gate is also checked time). */
   cornerMs: number;
   /** Free play's free time (the Corner's music box included). */
   freeMs: number;
@@ -109,15 +109,15 @@ export interface PlayLine {
 const secs = (ms: number): number => Math.round(ms / 1000);
 
 /**
- * The kind=play line's fields: v, pl plays, min play minutes, ck checked s, dr dressing s (mirror and Corner), mi
- * mirror s, co Corner s, fr free s, gk the gate's kind, gt gate first tries, q quests finished, gf gifts as field:id,
- * rl reading level, ph phrase level, mb maths band, pt pattern level. After three plays these show whether dressing is
- * pushing out learning, and the play's length (2.3 section 9).
+ * The kind=play line's fields: v, pl plays, min play minutes, ck checked s, dr dressing s (mi + co), mi mirror s, co
+ * the Corner's dressing s (its music box), cv the whole Corner visit s, fr free s, gk the gate's kind, gt gate first
+ * tries, q quests finished, gf gifts as field:id, rl reading level, ph phrase level, mb maths band, pt pattern level.
+ * After three plays these show whether dressing is pushing out learning, and the play's length (2.3 section 9).
  */
 export function playFields(p: PlayLine): Record<string, Field> {
   return {
     kind: 'play', v: p.v, pl: p.plays, min: Math.round(p.playMs / 6000) / 10, ck: secs(p.checkedMs),
-    dr: secs(p.mirrorMs + p.cornerDressMs), mi: secs(p.mirrorMs), co: secs(p.cornerMs), fr: secs(p.freeMs),
+    dr: secs(p.mirrorMs + p.cornerDressMs), mi: secs(p.mirrorMs), co: secs(p.cornerDressMs), cv: secs(p.cornerMs), fr: secs(p.freeMs),
     gk: p.gate?.kind, gt: p.gate?.first, q: p.quests.join(','), rl: p.reading, ph: p.phrases, mb: p.band, pt: p.patterns,
     gf: p.gifts.map((i) => `${i.field}:${i.id}`).join(','),
   };

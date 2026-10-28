@@ -47,10 +47,10 @@ describe('the kind=play line (2.3 section 17.5)', () => {
     reading: 2, phrases: 1, band: 'b', patterns: 2,
   };
 
-  it('writes the checked, dressing, mirror, Corner and free time, the gate, the quests, the gifts and the levels', () => {
+  it('writes the checked, dressing, mirror, Corner dressing, Corner visit and free time, the gate, the quests, the gifts and the levels', () => {
     const q = Object.fromEntries(new URLSearchParams(diagQuery(playFields(play))));
     expect(q).toEqual({
-      kind: 'play', v: '2.3.0', pl: '3', min: '21.4', ck: '571', dr: '105', mi: '45', co: '74', fr: '148', gk: 'phrase', gt: '1',
+      kind: 'play', v: '2.3.0', pl: '3', min: '21.4', ck: '571', dr: '105', mi: '45', co: '60', cv: '74', fr: '148', gk: 'phrase', gt: '1',
       q: 'picnic,beads,corner', rl: '2', ph: '1', mb: 'b', pt: '2', gf: 'crown:tiara,earrings:drops,style:lowbun',
     });
   });
@@ -70,5 +70,12 @@ describe('the kind=play line (2.3 section 17.5)', () => {
     expect(q.has('gk')).toBe(false);
     expect(q.has('gt')).toBe(false);
     expect(q.get('co')).toBe('0');
+    expect(q.get('cv')).toBe('0');
+  });
+
+  it('counts only the music box as the Corner dressing, so dressing is the mirror plus the Corner', () => {
+    const q = new URLSearchParams(diagQuery(playFields(play)));
+    expect(Number(q.get('dr'))).toBe(Number(q.get('mi')) + Number(q.get('co')));
+    expect(Number(q.get('cv'))).toBeGreaterThan(Number(q.get('co')));
   });
 });

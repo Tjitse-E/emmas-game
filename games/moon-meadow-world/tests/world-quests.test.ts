@@ -1,17 +1,30 @@
 // The afternoon's rules (docs/v4/2.3.md section 17): the free-play clocks of 17.3, the maths quest's rotation, which
 // quest may start, gifts that are saved at the pick and kept on, a full set that keeps paying, every quest resolving
-// framed with the gift picker before its release, the Dressing Corner's visit, and the trunk tap after it. A small
-// fake game stands in for the world, the actors and the layer; the game code under test is the real one.
+// framed with the gift picker before its release, the Dressing Corner's visit (its gate before Emma's picture check
+// too), and the trunk tap after it. A small fake game stands in for the world, the actors and the layer; the game code
+// under test is the real one.
 import * as THREE from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GiftItem, Owned, PrincessLook } from '../src/contracts';
 
+/** What the narrator said (audio.sayAll), and how the phrase planner answers the gate ('real', or as before Emma's check). */
+const t = vi.hoisted(() => ({ said: [] as string[][], phrases: 'real' as 'real' | 'throw' | 'dress' }));
 vi.mock('../src/audio', () => ({
   audio: {
-    sfx: async () => {}, say: async () => {}, sayAll: async () => {}, sayWhole: async () => true, preload: async () => [],
-    fx: async () => {}, checked: () => {}, stop: () => {}, speaking: false,
+    sfx: async () => {}, say: async () => {}, sayAll: async (ids: string[]) => void t.said.push(ids), sayWhole: async () => true,
+    preload: async () => [], fx: async () => {}, checked: () => {}, stop: () => {}, speaking: false,
   },
 }));
+// Before Emma's picture check the reading lane's planner gives no phrase: it finds no pair to pick from (step 0's
+// pick() throws on an empty list), or it gives the dress-up word wish itself.
+vi.mock('../src/game/moments', async (importOriginal) => {
+  const m = await importOriginal<typeof import('../src/game/moments')>();
+  const planWish: typeof m.planWish = (g, kind, label, o) => {
+    if (kind === 'phrase' && t.phrases === 'throw') throw new Error('pick from an empty list');
+    return m.planWish(g, kind === 'phrase' && t.phrases === 'dress' ? 'dress' : kind, label, o);
+  };
+  return { ...m, planWish };
+});
 vi.hoisted(() => {
   (globalThis as { location?: unknown }).location ??= { pathname: '/games/moon-meadow-world/index.html' };
 });
@@ -19,12 +32,13 @@ vi.hoisted(() => {
 import { DEFAULT_LOOK, GIFT_SETS, START_OWNED, copyOwned, owns, stillToEarn, withItem } from '../src/wardrobe';
 import { BEAD_TREE, CORNER, PICNIC } from '../src/layout';
 import {
-  CORNER_MAX_MS, CORNER_MIN_MS, FREE_PLAY_MS, QUEST_CUTOFF_MS, cornerLimitMs, fillsOwnSet, freePlayOver, giftOffer,
+  CORNER_MAX_MS, CORNER_MIN_MS, FREE_PLAY_MS, QUEST_CUTOFF_MS, cornerLimitMs, fillsSet, freePlayOver, giftOffer,
   giveGift, mathsQuestFor, pastCutoff, tickFree,
 } from '../src/game/quest-kit';
 import { type Game, startClock, startQuests } from '../src/game/game';
 import { askQuest, badgeOf, canQuest, placeAt, runQuest } from '../src/game/quests';
 import { cornerQuest, trunkTap } from '../src/game/corner';
+import { dressClips } from '../src/game/wardrobe-part';
 import { createSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
 import { createStreams } from '../src/game/streams';
@@ -70,7 +84,7 @@ function fakeGame(o: { search?: string; owned?: Owned } = {}): { g: Game; calls:
       her.position.set(end.x, 0, end.z);
       return true;
     },
-    face: () => {}, emote: async () => {}, hold: () => {}, portrait: () => {}, turnBy: () => {}, crown: () => {},
+    face: () => {}, emote: async () => {}, hold: () => {}, portrait: () => {}, turnBy: () => {}, crown: () => {}, extra: () => {},
     point: (_p: string, out = new THREE.Vector3()) => out.set(her.position.x, 1, her.position.z),
   };
   const save = createSave(() => null, true);
@@ -90,18 +104,26 @@ function fakeGame(o: { search?: string; owned?: Owned } = {}): { g: Game; calls:
       }),
       toScreen: () => ({ x: 500, y: 300, visible: true }),
       corner: { lid: vi.fn(async () => {}), open: 0 },
+      stable: { hay: () => {} },
     },
     actors: {
       princess: her,
-      fx: { sparkle: () => {}, hearts: () => {} },
+      fx: { sparkle: () => {}, hearts: () => {}, starfall: async () => {} },
       herd: { get: () => undefined },
       placePrincess: (at: { x: number; z: number }) => void her.position.set(at.x, 0, at.z),
     },
     layer: {
-      lumi: { speak: async () => {}, show: vi.fn() },
+      lumi: {
+        speak: vi.fn(async (ids: string[]) => void calls.order.push(`lumi ${ids.join(',')}`)),
+        show: vi.fn(),
+      },
       wish: vi.fn(async () => {
-        calls.order.push('wish');
+        calls.order.push(calls.framed ? 'wish framed' : 'wish unframed');
         return { outcome: 'first', misses: 0, ms: 900 };
+      }),
+      egg: vi.fn(async () => {
+        calls.order.push(calls.framed ? 'sum framed' : 'sum unframed');
+        return { outcome: 'first', misses: 0, ms: 1500 };
       }),
       gift: vi.fn(async (go: { items: GiftItem[] }) => {
         calls.order.push(calls.framed ? 'gift framed' : 'gift unframed');
@@ -151,6 +173,8 @@ function fakeGame(o: { search?: string; owned?: Owned } = {}): { g: Game; calls:
 }
 
 beforeEach(() => {
+  t.said.length = 0;
+  t.phrases = 'real';
   vi.stubGlobal('innerWidth', 1080);
   vi.stubGlobal('innerHeight', 740);
   vi.stubGlobal('addEventListener', () => {});
@@ -324,7 +348,7 @@ describe('gifts', () => {
     expect(giftOffer('picnic', owned, rand).items).toEqual([]);
   });
 
-  it('are saved at the pick and kept on, and the full set gets its sticker line', async () => {
+  it('are saved at the pick and kept on', async () => {
     const { g } = fakeGame();
     const item = await giveGift(g, 'beads');
     expect(item).not.toBeNull();
@@ -332,7 +356,40 @@ describe('gifts', () => {
     expect(g.save.data.look[item!.field]).toBe(item!.id);
     expect(g.actors.princess.look[item!.field]).toBe(item!.id);
     expect(g.quests.gifts).toEqual([item]);
-    expect(fillsOwnSet('beads', g.save.data.owned)).toBe(false);
+  });
+
+  /** How often Lumi said the sticker line. */
+  const stickers = (g: Game): number => vi.mocked(g.layer.lumi.speak).mock.calls.filter(([ids]) => ids.includes('lumi4-sticker')).length;
+
+  it('give the sticker line once, on the pick that fills a set, and never again for that set', async () => {
+    // The picnic's crowns, one play after another: the fake picker takes the last card each time.
+    let owned = copyOwned(START_OWNED);
+    const left = stillToEarn('crowns', owned).length;
+    expect(left).toBeGreaterThan(1);
+    for (let k = 1; k <= left + 2; k++) {
+      const { g } = fakeGame({ owned });
+      const item = await giveGift(g, 'picnic');
+      expect(item).not.toBeNull();
+      // Only the pick that took the last crown says it. The gifts after it come from the hair set: no line.
+      expect(stickers(g), `picnic gift ${k}`).toBe(k === left ? 1 : 0);
+      if (k > left) expect(GIFT_SETS.hair.items).toContainEqual(item);
+      owned = g.save.data.owned;
+    }
+    expect(stillToEarn('crowns', owned)).toEqual([]);
+  });
+
+  it('say the sticker line for the set the gift came from, also when it is not the quest own set', async () => {
+    // Every set full but the jewels, with one jewel left: the picnic pays from the jewels and fills them.
+    let owned = copyOwned(START_OWNED);
+    for (const s of Object.values(GIFT_SETS)) for (const i of s.items) owned = withItem(owned, i);
+    const last = GIFT_SETS.jewels.items[GIFT_SETS.jewels.items.length - 1];
+    owned = { ...copyOwned(owned), [last.field]: owned[last.field].filter((id) => id !== last.id) };
+    expect(stillToEarn('jewels', owned)).toEqual([last]);
+    const { g } = fakeGame({ owned });
+    expect(await giveGift(g, 'picnic')).toEqual(last);
+    expect(stickers(g)).toBe(1);
+    expect(fillsSet('jewels', owned, g.save.data.owned)).toBe(true);
+    expect(fillsSet('jewels', g.save.data.owned, g.save.data.owned)).toBe(false);
   });
 
   it('keep paying once the quest own set is full: the picnic then gives from the set with the most left', async () => {
@@ -342,7 +399,7 @@ describe('gifts', () => {
     const item = await giveGift(g, 'picnic');
     // The hair set has 8 items left, the jewels 6 and the shoes 3.
     expect(GIFT_SETS.hair.items).toContainEqual(item);
-    expect(fillsOwnSet('picnic', g.save.data.owned)).toBe(true);
+    expect(stickers(g)).toBe(0);
   });
 
   it('give no picker when every set is full', async () => {
@@ -356,18 +413,46 @@ describe('gifts', () => {
 
 // ---- quests resolve framed (17.2) ----------------------------------------------------------------------------------
 
-describe('every quest', () => {
-  for (const id of ['picnic', 'rack', 'beads'] as const) {
-    it(`${id}: the gift picker runs in the quest's frame, before its release`, async () => {
-      const { g, calls } = fakeGame();
-      await runQuest(g, id, async (gg) => {
-        await gg.world.frame({ x: 0, z: 0 }, 6);
-        calls.order.push('quest');
-        return () => gg.world.releaseFrame();
-      });
-      expect(calls.order).toEqual(['quest', 'gift framed', 'release']);
-    });
+/** Run a real quest of the table to its end; the run's sleeps and the walks' timers pass on fake timers. */
+async function runReal(g: Game, id: QuestId): Promise<void> {
+  vi.useFakeTimers();
+  try {
+    const done = runQuest(g, id);
+    for (let k = 0; k < 40 && vi.mocked(g.world.releaseFrame).mock.calls.length === 0; k++) await vi.advanceTimersByTimeAsync(500);
+    await done;
+  } finally {
+    vi.useRealTimers();
   }
+}
+
+describe('every quest', () => {
+  it('picnic: two guest reads in its frame, then the gift picker in that frame, then the release', async () => {
+    const { g, calls } = fakeGame();
+    await runReal(g, 'picnic');
+    expect(calls.order).toEqual(['wish framed', 'wish framed', 'lumi lumi4-picnic-done', 'gift framed', 'release']);
+    expect(g.results.lines.map((r) => r.part)).toEqual(['picnic1', 'picnic2']);
+    expect(GIFT_SETS.crowns.items).toContainEqual(g.quests.gifts[0]);
+    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', 'baby-14']);
+  });
+
+  it('rack: the sum in its frame, then the gift picker in that frame, then the release', async () => {
+    const { g, calls } = fakeGame({ search: '?seed=3&quest=rack' });
+    g.quests.maths = 'rack';
+    await runReal(g, 'rack');
+    expect(calls.order).toEqual(['sum framed', 'gift framed', 'release']);
+    expect(g.results.lines.map((r) => r.part)).toEqual(['rack']);
+    expect(GIFT_SETS.shoes.items).toContainEqual(g.quests.gifts[0]);
+  });
+
+  it('beads: the gift picker runs in the quest frame, before its release (the bead moment is the patterns lane)', async () => {
+    const { g, calls } = fakeGame();
+    await runQuest(g, 'beads', async (gg) => {
+      await gg.world.frame({ x: 0, z: 0 }, 6);
+      calls.order.push('quest');
+      return () => gg.world.releaseFrame();
+    });
+    expect(calls.order).toEqual(['quest', 'gift framed', 'release']);
+  });
 
   it('corner: runs its own picker, so the afternoon runs none after it', async () => {
     const { g, calls } = fakeGame();
@@ -386,9 +471,11 @@ describe('the Corner visit', () => {
     g.quests.done.add('picnic');
     g.quests.freeMs = 70_000;
     const release = await cornerQuest(g);
-    expect(calls.order).toEqual(['wish', 'wish', 'gift framed', 'wardrobe framed']);
+    expect(calls.order).toEqual(['lumi lumi4-corner', 'wish framed', 'wish framed', 'gift framed', 'wardrobe framed']);
     expect(g.results.lines.map((r) => r.part)).toEqual(['gate1', 'gate2']);
+    expect(g.results.lines.map((r) => r.detail.kind)).toEqual(['phrase', 'phrase']);
     expect(g.quests.gate).toEqual({ kind: 'phrase', first: 2 });
+    expect(t.said.flat()).not.toContain('g4-dress-up');
     const w = calls.wardrobe!;
     // The gift came from the hair set, and she wears it into the wardrobe.
     const gift = g.quests.gifts[0];
@@ -406,6 +493,32 @@ describe('the Corner visit', () => {
     release();
     expect(g.world.releaseFrame).toHaveBeenCalledTimes(1);
     expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', 'baby-14']);
+  });
+
+  // Before Emma's picture check (2.3 section 18): the gate plays two 2.2 dress-up word wishes and the Corner still opens.
+  for (const how of ['throw', 'dress'] as const) {
+    it(`gates with two dress-up word wishes when the phrase planner gives no phrase (${how === 'throw' ? 'no pair to pick' : 'it gives a dress-up wish'})`, async () => {
+      t.phrases = how;
+      const { g, calls } = fakeGame({ search: '?seed=3' });
+      g.quests.done.add('picnic');
+      await cornerQuest(g);
+      expect(g.results.lines.map((r) => `${r.part}:${String(r.detail.kind)}`)).toEqual(['gate1:dress', 'gate2:dress']);
+      expect(g.quests.gate).toEqual({ kind: 'word', first: 2 });
+      // "Your baby wants to dress up like you!" once, before the first read.
+      expect(t.said.filter((ids) => ids.includes('g4-dress-up'))).toHaveLength(1);
+      expect(calls.order.slice(0, 4)).toEqual(['lumi lumi4-corner', 'wish framed', 'wish framed', 'gift framed']);
+      expect(calls.wardrobe).not.toBeNull();
+    });
+  }
+
+  it('says no "Let\'s get you ready" and no "tap play" in the Corner wardrobe: a pause is her dressing time', async () => {
+    const { g, calls } = fakeGame({ search: '?seed=3&phrases=all' });
+    await cornerQuest(g);
+    expect(calls.wardrobe!.clips.idle).toEqual([]);
+    expect(calls.wardrobe!.clips.ready).toEqual([]);
+    expect(calls.wardrobe!.clips.nearly).toEqual(['g4-nearly']);
+    expect(dressClips('mirror').idle).toEqual(['g4-ready-play']);
+    expect(dressClips('mirror').ready).toEqual(['g4-ready']);
   });
 
   it('takes ?box= as the music box', async () => {

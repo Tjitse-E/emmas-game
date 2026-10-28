@@ -141,12 +141,13 @@ export const HAY_RACK = {
 /**
  * The royal picnic south of the gazebo step (side quest, section 5): a rug of 2.4 x 1.8 m, two seats on it for the
  * babies, her spot east of it and the hamper at the rug's south-east corner beside her. Not an obstacle: the babies
- * walk onto the rug. 2.3.0 moved the hamper 0.9 m south: the Dressing Corner's close-up camera stands over the rug,
- * and there the hamper stood in the bottom of the picture.
+ * walk onto the rug. 2.3.0 moved the hamper 0.9 m south and the seats 0.15 m south: the Dressing Corner's close-up
+ * camera stands over the rug, and there the hamper and the east cushion's back edge stood in the bottom of the
+ * picture.
  */
 export const PICNIC = {
   rug: { center: v2(-14, 4.6), halfX: 1.2, halfZ: 0.9 },
-  seats: [v2(-14.7, 4.1), v2(-13.3, 4.1)] as Vec2[],
+  seats: [v2(-14.7, 4.25), v2(-13.3, 4.25)] as Vec2[],
   stand: v2(-12.2, 5.0),
   hamper: v2(-12.7, 5.3),
   /** Where her other followers wait during the picnic: west of the rug, clear of the cushions and the 5.5 m frame. */
@@ -159,7 +160,8 @@ export const PICNIC = {
  * (they move round to 0.2 and 0.8 pi). She dresses at `stand`, 2.0 s from START; the babies stand at `babies` for the
  * gate's two phrase reads, in front of the trunk and the mirror; her other followers wait at `aside` (the picnic's
  * spots, west of the rug). The trunk and the mirror are small obstacles (`radius`). `herd`: the grazing homes near the
- * step and where those unicorns step aside to (quest-kit.ts herdAsideAt).
+ * step and where those unicorns step aside to (quest-kit.ts herdAsideAt). `watch`: where the two babies watch her
+ * dress, outside her close-up and clear of the followers' spots (west of the rug, and east of the mirror).
  */
 export const CORNER = {
   stand: v2(-14, 2.7),
@@ -169,6 +171,7 @@ export const CORNER = {
   babies: [v2(-15.2, 3.4), v2(-12.8, 3.4)] as Vec2[],
   aside: [v2(-17, 4.0), v2(-17.3, 5.1), v2(-16.8, 2.9)] as Vec2[],
   herd: [[v2(-12, 7), v2(-14, 12)], [v2(-7, 9), v2(-4, 12)], [v2(-16, -7), v2(-17, -13)]] as [Vec2, Vec2][],
+  watch: [v2(-15.8, 4.5), v2(-11.6, 3.1)] as Vec2[],
 } as const;
 
 /**

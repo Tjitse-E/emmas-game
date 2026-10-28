@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { GiftItem, GiftSet, Owned, PrincessLook, Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { CORNER, GRAZE_HOMES, dist2 } from '../layout';
-import { giftChoices, giftSetFor, setOfQuest, stillToEarn, withItem } from '../wardrobe';
+import { copyOwned, giftChoices, giftSetFor, stillToEarn, withItem } from '../wardrobe';
 import { CLIPS } from '../content';
 import { type Game, type QuestState, flat, lumiSay, princessAt, synth, walkTo } from './game';
 import type { QuestId } from './options';
@@ -114,10 +114,13 @@ export function giftOffer(quest: string, owned: Owned, rand: () => number): { se
   return { set, items: set ? giftChoices(set, owned, rand) : [] };
 }
 
-/** Did this gift fill its quest's own set? Then Lumi puts a sticker on the trunk lid ("You found them all!"). */
-export function fillsOwnSet(quest: string, owned: Owned): boolean {
-  const own = setOfQuest(quest);
-  return !!own && stillToEarn(own, owned).length === 0;
+/**
+ * Did this pick fill the set the gift came from (items left before it, none after)? Then Lumi puts a sticker on the
+ * trunk lid ("You found them all!"). Once per set: a later gift comes from another set, and a set that was already
+ * full before the pick never counts again.
+ */
+export function fillsSet(set: GiftSet, before: Owned, after: Owned): boolean {
+  return stillToEarn(set, before).length > 0 && stillToEarn(set, after).length === 0;
 }
 
 /** Her look with a gift on top: she keeps wearing it (2.3 section 17.2). */
@@ -132,21 +135,22 @@ const TRAIL = { n: 9, ms: 70, maxM: 6 } as const;
  * A quest's gift (2.3 sections 5 and 17.2), in the quest's frame: the set it pays from now and one or two items from
  * it on the picker's cards ("Pick one present!"). The picked item is saved at once in what she owns and on her look,
  * and she keeps wearing it. She twirls, the fanfare plays (never over Elizabeth), and a sparkle trail flies from her
- * to the trunk. When the gift filled the quest's own set, Lumi says "You found them all! A sticker for your trunk."
- * Resolves with the item, or null when every set is full (no picker).
+ * to the trunk. When the pick filled the set it came from, Lumi says "You found them all! A sticker for your trunk.",
+ * once per set. Resolves with the item, or null when every set is full (no picker).
  */
 export async function giveGift(g: Game, quest: QuestId): Promise<GiftItem | null> {
   const { actors, layer, world } = g;
   const her = actors.princess;
-  const { items } = giftOffer(quest, g.save.data.owned, g.randFor(`gift-${quest}`));
-  if (!items.length) return null;
+  const before = copyOwned(g.save.data.owned);
+  const { set, items } = giftOffer(quest, before, g.randFor(`gift-${quest}`));
+  if (!set || !items.length) return null;
   const chest = new THREE.Vector3();
   const item = await g.run.w(layer.gift({ items, look: { ...her.look }, clips: CLIPS.gift, to: () => world.toScreen(her.point('dress', chest)) }));
   wearGift(g, item);
   synth('fanfare');
   sparkleTrail(g);
   await g.run.w(her.emote('twirl'));
-  if (fillsOwnSet(quest, g.save.data.owned)) await lumiSay(g, CLIPS.sticker);
+  if (fillsSet(set, before, g.save.data.owned)) await lumiSay(g, CLIPS.sticker);
   return item;
 }
 

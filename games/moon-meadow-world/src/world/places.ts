@@ -484,13 +484,15 @@ export function buildPicnic(scenery: Scenery): void {
   const add = (g: Geo, o: Parameters<typeof place>[1], ox = center.x, oz = center.z): void =>
     scenery.add(place(g, { ...o, x: ox + (o.x ?? 0), z: oz + (o.z ?? 0) }), region);
 
-  // The rug: 8 x 6 checks of 30 cm, a gold border a little above it and a tassel at each corner.
+  // The rug: 8 x 6 checks of 30 cm, a gold border a little above it and a tassel at each front corner. The back
+  // corners have none: the Dressing Corner's portrait camera stands over the rug, and the north-east tassel showed as
+  // a gold blob under the wardrobe panel.
   add(gingham(halfX * 2, halfZ * 2, 8, 6), { y: RUG_Y });
   const BORDER = 0.06;
   for (const sz of [-1, 1]) add(paintY(new THREE.BoxGeometry(halfX * 2 + BORDER, 0.03, BORDER), '#e9b543', '#f8d778', -0.015, 0.015), { y: 0.016, z: sz * halfZ });
   for (const sx of [-1, 1]) add(paintY(new THREE.BoxGeometry(BORDER, 0.03, halfZ * 2 - BORDER), '#e9b543', '#f8d778', -0.015, 0.015), { x: sx * halfX, y: 0.016 });
-  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-    // A tassel on each corner: a gold knot and a skirt fanning out on the grass.
+  for (const [sx, sz] of [[-1, 1], [1, 1]]) {
+    // A tassel on each front corner: a gold knot and a skirt fanning out on the grass.
     add(paint(new THREE.SphereGeometry(0.05, 5, 3), '#f8d778'), { x: sx * (halfX + 0.03), y: 0.04, z: sz * (halfZ + 0.03) });
     add(aim(paint(new THREE.ConeGeometry(0.06, 0.14, 5), '#f0c24f'), -sx, 0.3, -sz), { x: sx * (halfX + 0.11), y: 0.045, z: sz * (halfZ + 0.11) });
   }

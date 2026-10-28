@@ -10,7 +10,7 @@
 //
 // After her visit a tap on the trunk or the mirror opens the lid on the treasure board for 3.5 s (trunkTap). It is
 // never a refusal and never starts the Corner again.
-import type { BoardSpec, Vec2 } from '../contracts';
+import type { BoardSpec, Vec2, WishSpec } from '../contracts';
 import { CORNER } from '../layout';
 import { v3Art, wordPic } from '../assets';
 import { CLIPS, wishClipIds } from '../content';
@@ -23,11 +23,6 @@ import { dressUp } from './wardrobe-part';
 const SEAT_MS = 4000;
 /** The frame at the step: its centre, 5.5 m across, the babies' head tops at 45% and her crown kept. */
 const CORNER_FRAME = { center: { x: -14, z: 3.0 } as Vec2, width: 5.5, frac: 0.45 };
-/**
- * While she dresses, her babies watch from beside the trunk and the mirror, outside her close-up: at their gate
- * spots the left one would stand in the preview.
- */
-const WATCH: readonly Vec2[] = [{ x: -16.4, z: 3.1 }, { x: -11.6, z: 3.1 }];
 /** The treasure board after her visit (Layer.board). */
 export const BOARD_MS = 3500;
 
@@ -52,18 +47,37 @@ function walkFacing(g: Game, u: ReturnType<typeof guests>[number], s: Vec2): Pro
 }
 
 /**
- * The gate: each baby wants to dress up first. A phrase wish ("the green sock") each, or, while too few phrases have
- * Emma's picture check, the reading lane's planner gives two 2.2 dress-up word wishes instead (2.3 section 18); the
- * kind is read from the spec. Results gate1 and gate2. Returns the kind and how many reads were first tries.
+ * One gate read's wish: a phrase wish ("the green sock") while the phrases are ready, else the 2.2 dress-up word
+ * wish, `planWish(g, 'dress', part)` (2.3 section 18). The phrases are not ready while fewer than 6 strong ones have
+ * Emma's picture check and ?phrases=all is off: the reading lane's planner then gives no phrase. It may give the
+ * dress-up wish itself, or find no pair to pick from and throw. Either way the gate asks for the dress-up wish here,
+ * so the Corner always opens. `word`: a read of this visit already was a word wish, so this one is too.
+ */
+export function gateWish(g: Game, part: string, word: boolean): WishSpec {
+  if (!word) {
+    try {
+      const spec = planWish(g, 'phrase', part, { wish: false });
+      if (spec.kind === 'phrase' || spec.kind === 'dress') return spec;
+    } catch (e) {
+      console.info('[mmw corner] no phrase wish, a dress-up word wish instead:', e instanceof Error ? e.message : String(e));
+    }
+  }
+  return planWish(g, 'dress', part, { wish: false });
+}
+
+/**
+ * The gate: each baby wants to dress up first. A phrase wish each, or two dress-up word wishes before Emma's picture
+ * check (gateWish), with "Your baby wants to dress up like you!" before the first. Results gate1 and gate2. Returns
+ * the kind (word when a read was a word wish) and how many reads were first tries.
  */
 async function gate(g: Game, babies: ReturnType<typeof guests>): Promise<{ kind: 'phrase' | 'word'; first: number }> {
   let kind: 'phrase' | 'word' = 'phrase';
   let first = 0;
   for (const [k, u] of babies.entries()) {
     const part = `gate${k + 1}`;
-    const spec = planWish(g, 'phrase', part, { wish: false });
-    kind = spec.kind === 'phrase' ? 'phrase' : 'word';
-    const before = kind === 'word' && k === 0 ? CLIPS.dressUp : [];
+    const spec = gateWish(g, part, kind === 'word');
+    const before = spec.kind !== 'phrase' && kind === 'phrase' ? CLIPS.dressUp : [];
+    if (spec.kind !== 'phrase') kind = 'word';
     await preload(g, [...wishClipIds(spec), ...afterWish(spec), ...before]);
     await say(g, before);
     u.lookAt(flat(g.actors.princess.position));
@@ -104,7 +118,7 @@ export async function cornerQuest(g: Game): Promise<() => void> {
   // The wardrobe at her spot, in the portrait frame. Her babies watch from the sides; Lumi's portrait steps away, as
   // at the start mirror. The music box gets the free time that is left (30 to 60 s); its time is free-play time.
   babies.forEach((u, k) => {
-    void u.goTo(world.route(flat(u.position), WATCH[k])).then((there) => there && u.lookAt(flat(actors.princess.position)));
+    void u.goTo(world.route(flat(u.position), CORNER.watch[k])).then((there) => there && u.lookAt(flat(actors.princess.position)));
   });
   layer.lumi.show(false);
   q.boards++;

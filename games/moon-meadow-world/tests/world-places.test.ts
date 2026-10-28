@@ -6,6 +6,9 @@ import { CRIB, hayDepth, hayGeometry, rackGeometry } from '../src/world/hayrack'
 import { BEAD_TREE_SHAPE, beadTreeGeometry, buildBeadTree } from '../src/world/beadtree';
 import { meadowMist } from '../src/world/sky';
 import { BEHIND_Z } from '../src/world/route';
+import { FOV } from '../src/world/camera';
+import { panelLeftOf, portraitFrame } from '../src/game/portrait';
+import { wardrobeLayout } from '../src/ui/geometry';
 import {
   CORNER_REGION, LID_KEY, TRUNK, buildCorner, buildPicnic, cornerLid, lidGeometry, mirrorGeometry, picnicHeight, signGeometry,
 } from '../src/world/places';
@@ -66,6 +69,33 @@ describe('the royal picnic', () => {
         const h = picnicHeight(x, z);
         expect(Number.isFinite(h)).toBe(true);
         expect(h).toBeLessThan(0.15);
+      }
+    }
+  });
+
+  it('keeps the cushions, the tassels and the hamper under the bottom edge of the Dressing Corner wardrobe picture', () => {
+    // Her body frame at the Corner (the camera over the rug), at both of her iPad's sizes and the Air 2's. Only the
+    // flat rug and its border may show; nothing raised more than 5 cm may show anywhere the panel does not cover.
+    for (const [w, h] of [[1080, 740], [1080, 810], [1024, 690]]) {
+      const { panel } = wardrobeLayout(w, h);
+      const f = portraitFrame(CORNER.stand, null, { w, h, panelLeft: panelLeftOf(w, h) });
+      const cam = new THREE.PerspectiveCamera(FOV, w / h, 0.5, 700);
+      cam.position.set(f.camera.x, f.camera.y, f.camera.z);
+      cam.lookAt(f.look.x, f.look.y, f.look.z);
+      cam.updateMatrixWorld();
+      const v = new THREE.Vector3();
+      for (const { geo } of parts) {
+        const pos = geo.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          v.fromBufferAttribute(pos, i);
+          if (v.y < 0.05) continue;
+          const at = `${w}x${h}: ${v.x.toFixed(2)},${v.y.toFixed(2)},${v.z.toFixed(2)}`;
+          v.project(cam);
+          const x = ((v.x + 1) / 2) * w;
+          const y = ((1 - v.y) / 2) * h;
+          const covered = x >= panel.x && x <= panel.x + panel.w && y >= panel.y && y <= panel.y + panel.h;
+          expect(x >= 0 && x <= w && y >= 0 && y <= h && !covered, at).toBe(false);
+        }
       }
     }
   });

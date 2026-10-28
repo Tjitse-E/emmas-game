@@ -265,7 +265,7 @@ describe('the 2.2.0 places: the hay rack and the picnic', () => {
 describe('the 2.3.0 places: the Dressing Corner, the bead tree and the saddle sign', () => {
   const straight = (a: Vec2, b: Vec2): number => Math.hypot(a.x - b.x, a.z - b.z);
   const doors = Array.from({ length: 20 }, (_, i) => doorFront(i + 1));
-  const spots = [CORNER.stand, ...CORNER.babies, ...CORNER.aside, BEAD_TREE.stand, BEAD_TREE.baby, ...BEAD_TREE.aside, MIST.signStand];
+  const spots = [CORNER.stand, ...CORNER.babies, ...CORNER.aside, ...CORNER.watch, BEAD_TREE.stand, BEAD_TREE.baby, ...BEAD_TREE.aside, MIST.signStand];
   const herdAside = [...CORNER.herd, ...BEAD_TREE.herd].map(([, to]) => to);
   /** The level's spots, so a quest can start from wherever she and the herd are. */
   const everywhere = [
@@ -279,6 +279,14 @@ describe('the 2.3.0 places: the Dressing Corner, the bead tree and the saddle si
     // The mist lies behind the stables' back line, where nobody walks.
     expect(isWalkable(MIST.center)).toBe(false);
     expect(MIST.center.z + MIST.rz * 0.5).toBeLessThan(BEHIND_Z + 1);
+  });
+
+  it('lets the babies watch her dress clear of her parked followers, the cushions and her spot', () => {
+    for (const p of CORNER.watch) {
+      for (const q of CORNER.aside) expect(straight(p, q), `${p.x},${p.z} to ${q.x},${q.z}`).toBeGreaterThanOrEqual(1.2);
+      for (const q of PICNIC.seats) expect(straight(p, q), `${p.x},${p.z}`).toBeGreaterThan(1);
+      expect(straight(p, CORNER.stand)).toBeGreaterThan(1.5);
+    }
   });
 
   it('reaches every new spot from every spot of the level', { timeout: 30_000 }, () => {

@@ -48,6 +48,16 @@ const SIDE_TABS: readonly LookTab[] = ['sparkles', 'hair'];
 /** Done: the curtsy, then "Lovely!" (said by the layer) may take this long before the welcome. */
 const LOVELY_MS = 1800;
 
+/**
+ * The panel's lines. The start mirror says "Let's get you ready, Princess Emma!" on every open and "When you are
+ * ready, tap play." after 25 s without a touch (2.3 section 16). The Corner says neither: she comes from Lumi's gift
+ * with the board showing, and a pause there is her own dressing time, never a cue to stop.
+ */
+export function dressClips(at: DressOpts['at']): { ready: string[]; firstTime: string[]; idle: string[]; nearly: string[]; done: string[] } {
+  const mirror = at === 'mirror';
+  return { ready: mirror ? CLIPS.ready : [], firstTime: CLIPS.lookTap, idle: mirror ? CLIPS.readyPlay : [], nearly: CLIPS.nearly, done: CLIPS.lovely };
+}
+
 /** The part's clips: preloaded first at the start, before everything else. */
 export function wardrobePartClipIds(): string[] {
   return [...CLIPS.ready, ...CLIPS.lookTap, ...CLIPS.readyPlay, ...CLIPS.nearly, ...CLIPS.lovely, ...wardrobeClipIds()];
@@ -188,7 +198,7 @@ export async function dressUp(g: Game, o: DressOpts): Promise<{ look: PrincessLo
       firstTime: o.firstTime,
       limitMs: o.limitMs,
       board: o.board,
-      clips: { ready: CLIPS.ready, firstTime: CLIPS.lookTap, idle: CLIPS.readyPlay, nearly: CLIPS.nearly, done: CLIPS.lovely },
+      clips: dressClips(o.at),
       onLook(look, field) {
         her.setLook(look);
         touch(tabOf(field));
