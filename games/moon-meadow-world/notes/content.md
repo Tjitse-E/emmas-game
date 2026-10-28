@@ -8,7 +8,7 @@
 | `src/content/data.json` | Names and wish words checked against v3 and the picture check. Made by `node tools/build-content.ts`. Never edit it by hand. |
 | `src/content/looks.ts` | The herd's looks (door order) and `babyLook()`. |
 | `src/content/eggs.ts`, `naming.ts`, `wishes.ts`, `doors.ts`, `clips.ts`, `rand.ts` | One file per moment, the clip list and the seeded random. |
-| `src/content/rack.ts` | The hay rack moment (maths lane): `rackSpec()` and `allRackClipIds()`. |
+| `src/content/rack.ts` | The hay rack moment: `rackSpec()` and `allRackClipIds()`. |
 | `tools/build-content.ts` | Reads v3's banks, clips, letter sounds, pictures, twins (`content/pairs.json`), `UNICORN_FOODS` and `tools/picture-check.json`. Stops with a list of problems instead of writing bad data, and when a wish kind has fewer than 6 strong targets. |
 | `tools/picture-check.json` | One entry per wish word: `ok` (target or decoy), `decoy` (decoy only) or `drop` (never used), with `by` and `why`. A word without an entry is left out. |
 | `tools/lines.ts` | The demo's own sentences and number patterns (`SENTENCES`, `lineFor(id)`), with no side effects, so tests can ask whether a clip that is not generated yet has a line. |
@@ -23,7 +23,7 @@
 
 - One seed per play. Each moment draws from its own stream: `stream(seed, 'wish1')` and so on (`g.randFor()`).
 - Start: `herd()` gives 12 `HerdMember`s in doors 1 to 12.
-- Eggs, hatch and doors: see `eggs.ts`, `looks.ts` and `doors.ts` (unchanged by the reading lane).
+- Eggs, hatch and doors: see `eggs.ts`, `looks.ts` and `doors.ts`, and Maths below for the eggs.
 - Naming 1: `namingSpec(rand, [], 3)`. Naming 2: `namingSpec(rand, [firstName], 4)`. The count can also be `{ decoys: 4 }`; the default is 3. After the moment, `newborn(choice, look, 13)` (and 14) makes the `HerdMember`.
 - Wishes: `wishSpec(kind, rand, exclude, { level, contrast })`.
   - `kind`: `'dress'` (wish 1 at the nest), `'bath'` (the pond wish), `'picnic'` (wish 2 and both picnic guests). `'food'` still works: the picnic pool with only foods as targets and v3's hungry lines.
@@ -42,10 +42,11 @@ Claude looked at every candidate picture as a 6-year-old Dutch girl learning Eng
 
 v3 draws some word pictures greyscale and colours them at runtime (cape, coat, dress, hat, sock, bead, cup, mug). `build-content.ts` copies their `tint.default` from v3's `public/art/manifest.json` into `words[].tint`, and `WishItem.tint` carries it.
 
-Seven design targets became decoys only:
+Eight design targets became decoys only:
 
 | Word | Why |
 |---|---|
+| crown | "Dress up like you" with her own crown on screen points at it without reading. |
 | curl | The picture is a pink ribbon curl, not hair. |
 | pail | A metal bucket; children say bucket. |
 | float | A swimming kickboard; a child says board. |
@@ -54,14 +55,16 @@ Seven design targets became decoys only:
 | cream | A pot of face cream, not food, and a baby would munch it. |
 | pot | A flower pot; a reader may look for a cooking pot, and a Dutch "pot" is a jar. |
 
+Three words are dropped, because the miss contrast prints and says a decoy's word and these pair a picture with an American meaning: vest (a sleeveless jumper; a British vest is an undershirt), braid (a British child says plait) and dock (a small jetty; a British dock is a harbour basin). Robe stays a target on purpose: its picture is a dressing gown, which British shops also sell as a robe, and without it dress would have 10 targets and 4 at level 3.
+
 New look-alike groups from the picture check, next to the design's: rose and clip (pink flowers), lime and grape (green fruit balls), toast and loaf (bread), mint and treat (sweets), shark with fish and whale (blue plush sea toys). A word can be in more than one group; two words clash when one group holds both (`WordData.alike`).
 
 What the build gives (all strong, all `ok`):
 
 | Kind | Pictures | Targets | Level 1 | Level 3 |
 |---|---|---|---|---|
-| dress | 26 | crown ring bell shell cape cloak robe belt rose boot sock coat | crown ring bell shell cloak belt boot sock coat | cape robe belt rose boot |
-| bath | 27 | ship shell frog seal sail soap raft pool plug shark sand rock | all but seal | ship shell seal sail soap pool |
+| dress | 24 | ring bell shell cape cloak robe belt rose boot sock coat | ring bell shell cloak belt boot sock coat | cape robe belt rose boot |
+| bath | 26 | ship shell frog seal sail soap raft pool plug shark sand rock | all but seal | ship shell seal sail soap pool |
 | picnic | 32 | plum corn cake peach pie toast leek milk mint tart lime mug plate mat pan | plum corn toast leek milk mint tart mug mat pan | pie toast mint tart plate mat |
 
 ## The basket planner (`planBasket` in `wishes.ts`)
@@ -77,7 +80,7 @@ What the build gives (all strong, all `ok`):
 - Naming 1 has 3 wrong gems: a near capital for the crowned slot, a near vowel and a near consonant. Naming 2 has 4: the capital, both near vowels and a near consonant. With a 4-letter name the tray holds 8 gems (960 design px).
 - Capital pairs: P→B, B→D, D→B, M→N, N→M, T→D, K→G, G→K, C→G, F→V, V→F, J→Y. `SAME_SOUND` still blocks the name's own sound families, and a capital whose sound is in the name is never used: Bud gets P instead of D.
 
-## The ui side (reading lane files in `src/ui/`)
+## The ui side (reading, in `src/ui/`)
 
 - `wish.ts`: 4 or 5 items; the root has the classes `kind-<kind>` and `n4` or `n5` (`kind-picnic` draws the gingham hamper). A miss with `clips.again`: shake and giggle, the item flies home with a tag of its own word, Elizabeth says that word, the differing letters glow gold in the tag and the bubble, then `fb-letters`. No sounds of the wish word until the next idle. A `wear` item flies onto the baby's head. The `wish` log has `level`, `n`, `printTouched` (the word or a dot touched before any item) and `quick` (the first item touched within 1.5 s of input opening, with no print touch); `wish-miss` has `decoy`.
 - The contrast tag is not a touch target. Flows find it as `layer.snapshot().moment.tags` (a list of words; an extra field on the wish snapshot) or as `.contrast-tag[data-word]` in the DOM.
@@ -86,9 +89,9 @@ What the build gives (all strong, all `ok`):
 - `naming.ts`: the slider is destroyed with the moment; the first-time gem demo drags a small-letter gem, never the wrong capital.
 - `ui.css`: in the naming section the gem tray gap is 16; in the wish section the contrast tag, the gold diff glow and the picnic hamper.
 
-## Maths (2.2.0, lane D)
+## Maths (2.2.0)
 
-This section replaces the egg lines under Wiring. Design: [docs/v4/2.2.md](../../../docs/v4/2.2.md) sections 4.1 to 4.3.
+Design: [docs/v4/2.2.md](../../../docs/v4/2.2.md) sections 4.1 to 4.3.
 
 ### What is where
 
@@ -148,12 +151,12 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 
 - Warm egg facts reuse v3's `num-bond-<have>-<answer>` ("Eight and five make thirteen!"), the same text and ids v3's eggs use. A warm egg's `have` is now 3 to 9, so the demo's "ten and some more" clips are not used; `num-add-10-3` to `num-add-10-5` are still in `public/audio/v4demo/`, outside its manifest. So is `lumi4-picnic` ("A royal picnic! Who is hungry?"): nothing is said before the first picnic guest, as before every picnic wish.
 - New line `g4-snow-egg` is the snow egg's intro; `h4-doors` is the focused door hint.
-- 2.2.0 reading: the seven decoy-only targets above, and the five extra look-alike groups.
+- 2.2.0 reading: the eight decoy-only targets and the three dropped words above, and the five extra look-alike groups.
 - A frame word is any other word with the same first and last letter (robe and rose count). This matches the design's level 3 lists; "another vowel" alone would drop robe and rose.
 - Strong also asks that the two words with the same first letter can share one basket (not one look-alike group).
 - The planner's look-ahead (above) is new; the design's order is kept.
 - `'food'` stays as a kind for the old callers.
-- The reading level fold is tested with `src/game/reading.ts` in the game lane, not in `tests/reading.test.ts`.
+- The reading level fold lives in `src/game/reading.ts` and is tested in `tests/reading-level.test.ts`, not in `tests/reading.test.ts`.
 
 ## Rough edges
 

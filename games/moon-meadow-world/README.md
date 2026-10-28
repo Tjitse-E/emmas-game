@@ -62,7 +62,7 @@ Sit next to her and note. New in 2.2.0:
 
 - The customiser: does she dress Princess Emma by herself, use every row and find the big pink play button? Does a palm on the right edge change her look by accident? The `kind=look` line shows the rows she touched and how long she took. The ribbon tap (on the hair thing she wears) only does something once she owns a second colour.
 - The baskets of 4 and 5: does she read before she drags, or pick at once (`q=1`)? After a wrong item, does she look at its word and the gold letters (the contrast), or wait for the sounds (`pt=1` when she touches a sound dot first)?
-- The sleeping stones: do they read as "wait"? They wake with a hop when Elizabeth has said both numbers. A stone dropped within 1.5 s of the wake shows as `q=1`.
+- The sleeping stones: do they read as "wait"? They wake with a hop when Elizabeth has said both numbers. A first stone touch within 1.5 s of the wake shows as `q=1`.
 - The quests: does she find the bubbles in the afternoon, and take the picnic and the hay rack? Skipping them is fine.
 - On the second play: is the short welcome enough, and does her saved look come back?
 

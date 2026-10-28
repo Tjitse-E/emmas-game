@@ -23,7 +23,7 @@ The level script (`src/game/level.ts`), the customiser part (`wardrobe-part.ts`)
 - `onLook(look, row)`: `princess.setLook(look)` at once (the layer delays gown and style by 150 ms itself).
 - `onPicked(look, row)`: the row's reaction (`toss`, `blink`, `twirl`, `show`, `tilt`), a sparkle at `princess.point()` of the changed part in its new colour, and a save 300 ms later (a quick second pick saves once).
 - `onFocus(row)`, and also `onLook` and `onPicked` for their row: eyes and hair things bring the face frame, the other rows the body frame (500 ms moves). After eyes, hair things and styles, the camera and her 25 degree side turn (hair things and styles, so a side clip or a ponytail shows) go back 2.5 s after the last touch there; `onFocus(null)` starts that wait again. Otherwise she faces the camera.
-- `onTurn(dxPx, ended)`: `dxPx` is the finger's horizontal move since the last call (as the ui lane sends it). 1 degree per 2 px, at most 170 degrees from facing the camera, through `princess.turnBy(delta)` with a positive angle for a finger moving right; on the end she faces the camera again (`face()` eases back).
+- `onTurn(dxPx, ended)`: `dxPx` is the finger's horizontal move since the last call (as the ui sends it). 1 degree per 2 px, at most 170 degrees from facing the camera, through `princess.turnBy(delta)` with a positive angle for a finger moving right; on the end she faces the camera again (`face()` eases back).
 - `onPreviewTap()`: `wave`.
 - `portraitFrame(her, row, screen)` is pure and unit tested. `screen.panelLeft` comes from `panelLeftOf(w, h)`, the panel's left edge from the ui's `wardrobeLayout`. A window resize frames again at once.
 
