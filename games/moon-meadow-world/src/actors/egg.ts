@@ -1,5 +1,6 @@
 // The egg: a smooth lathe shell (bottom and top halves, split along a zigzag crack line) with a painted canvas
-// texture, and a sleepy face drawn from the shared parts. It wobbles, steams, frosts and hatches.
+// texture, and a sleepy face drawn from the shared parts. It wobbles, steams, frosts and hatches, and glows more with
+// each of its three hearts (docs/v4/2.3.md sections 12 and 19.1).
 import * as THREE from 'three';
 import type { Egg3D } from '../contracts';
 import { B, PartList, Xf, col, rimLambert } from './parts';
@@ -152,6 +153,21 @@ export interface EggImpl extends Egg3D {
   update(dt: number, t: number): void;
 }
 
+/**
+ * The glow and the idle rock of each number of lit hearts: the warm egg glows a warmer gold, the snow egg a frostier
+ * blue (its story is that it is too warm, so a heart makes it more of a snow egg). `glow` is the shell's emissive
+ * strength, `edge` how much of the rim takes the glow colour, `rock` the idle rocking in radians.
+ */
+export const HEART_GLOW = {
+  colour: { warm: '#ffb52e', snow: '#9fd6ff' },
+  glow: [0, 0.14, 0.26, 0.4],
+  edge: [0, 0.25, 0.4, 0.55],
+  rock: [0, 0.03, 0.055, 0.085],
+} as const;
+/** The snow egg's own blue rim (deeper, so the pale egg shows on the sand) and its frosty rim with hearts. */
+const SNOW_EDGE = '#5d9ee6';
+const FROST_EDGE = '#c9ecff';
+
 export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -174,7 +190,10 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
     );
   };
   mat.customProgramCacheKey = () => 'egg-shell';
-  const snowEdge = new THREE.Color('#5d9ee6');
+  const snowEdge = new THREE.Color(SNOW_EDGE);
+  const frostEdge = new THREE.Color(FROST_EDGE);
+  const heartColour = new THREE.Color();
+  const edgeColour = new THREE.Color();
   const bottom = new THREE.Mesh(shellPiece(() => 0, crackS, 12), mat);
   const top = new THREE.Mesh(shellPiece(crackS, () => 1, 6), mat);
   for (const m of [bottom, top]) {
@@ -198,6 +217,9 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
   let popT = -1; // seconds since the top popped off
   let burst = 1; // bottom shell scale after the burst
   let breathe = 0;
+  /** Hearts lit (0 to 3), and the glow easing towards them. */
+  let lit = 0;
+  let glow = 0;
   const frostTint = col('#bfe0ff');
   const white = col('#ffffff');
   const lash = col('#6b3c3a');
@@ -225,8 +247,8 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
       popT = -1;
       burst = 1;
       heat = cold = 0;
-      if (k === 'snow') edge.value.set(snowEdge.r, snowEdge.g, snowEdge.b, 0.6);
-      else edge.value.set(0, 0, 0, 0);
+      lit = 0;
+      glow = 0;
       repaint();
       // `at` is the egg's centre; a point on the grass (y near 0) lifts it so it rests on the ground.
       position.set(at.x, Math.max(at.y, H / 2), at.z);
@@ -235,6 +257,8 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
     },
     hide() {
       shown = false;
+      lit = 0;
+      glow = 0;
       bottom.visible = top.visible = false;
     },
     async wobble() {
@@ -242,13 +266,15 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
       wobbleRate = 10;
       await wait(800);
     },
-    // Step 0 of 2.3.0: the hearts' glow is the actors lane's (docs/v4/2.3.md section 19.1): warmer gold on the warm
-    // egg, frostier blue on the snow egg. Until then it only wobbles.
-    hearts(lit) {
-      if (lit > 0) {
+    // A heart lights: a happy wobble and a sparkle in the glow colour, then it glows and rocks a little more.
+    hearts(n) {
+      const next = Math.max(0, Math.min(3, Math.round(n)));
+      if (next > lit && shown) {
         wobbleAmp = 0.12;
         wobbleRate = 10;
+        fx.sparkle(position.clone().setY(position.y + 0.15), { count: 10 + next * 4, colour: HEART_GLOW.colour[kind] });
       }
+      lit = next;
     },
     async steam() {
       heat = 1;
@@ -298,8 +324,19 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
         if (Math.random() < dt * 10) fx.frost(position);
       }
       mat.color.copy(white).lerp(frostTint, cold * 0.75);
+      // The hearts' glow breathes gently, so the egg looks alive and warm (or frosty) inside.
+      glow = damp(glow, lit, 3, dt);
+      const g = glowAt(HEART_GLOW.glow, glow) * (1 + 0.15 * Math.sin(t * 3.1));
+      heartColour.set(HEART_GLOW.colour[kind]);
+      mat.emissive.copy(heartColour);
+      mat.emissiveIntensity = g;
+      const e = glowAt(HEART_GLOW.edge, glow);
+      if (kind === 'snow') {
+        edgeColour.copy(snowEdge).lerp(frostEdge, e / HEART_GLOW.edge[3]);
+        edge.value.set(edgeColour.r, edgeColour.g, edgeColour.b, 0.6);
+      } else edge.value.set(heartColour.r, heartColour.g, heartColour.b, e);
       const shiver = frostLeft > 0 ? Math.sin(t * 60) * 0.02 * cold : 0;
-      const rock = Math.sin(t * wobbleRate) * wobbleAmp;
+      const rock = Math.sin(t * wobbleRate) * wobbleAmp + Math.sin(t * 3.4) * glowAt(HEART_GLOW.rock, glow);
       if (popT >= 0) {
         popT += dt;
         burst = Math.max(0, 1 - popT / 0.25);
@@ -363,3 +400,9 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
 }
 
 const _s = new THREE.Matrix4();
+
+/** A table of four values (0 to 3 hearts) at a fractional number of hearts. */
+function glowAt(table: readonly number[], at: number): number {
+  const i = Math.min(2, Math.floor(at));
+  return table[i] + (table[i + 1] - table[i]) * (at - i);
+}

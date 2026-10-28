@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import type { Unicorn, UnicornEmote, UnicornLook, UnicornMode, Vec2 } from '../contracts';
 import { POND, SLIDE, dist2, doorFront, doorIsUpper, inPond, pondSpot, stallSpot } from '../layout';
-import { audio } from '../audio';
+import { slideSounds } from './sounds';
 import type { Beam, FxImpl } from './fx';
 import type { Leader } from './princess';
 import { PartList, Xf } from './parts';
@@ -20,6 +20,8 @@ export interface HerdCtx {
   leader: Leader;
   scene: THREE.Scene;
   sounds(): boolean;
+  /** A baby's happy nicker (the herd keeps it rare and out of checked moments). */
+  nicker?(): void;
   /** Everyone in the water, to splash. */
   swimmers(): { position: THREE.Vector3; unicorn?: UnicornActor }[];
   toyTexture(url: string): THREE.Texture;
@@ -322,6 +324,7 @@ export class UnicornActor implements Unicorn {
   emote(kind: UnicornEmote): Promise<void> {
     this.emoteNow?.resolve();
     if (kind === 'happy' || kind === 'nuzzle') this.ctx.fx.hearts(this.headTop(_v).setY(_v.y - 0.1));
+    if ((kind === 'hop' || kind === 'happy') && this.look.stage === 'baby' && this.ctx.sounds()) this.ctx.nicker?.();
     return new Promise((resolve) => (this.emoteNow = { kind, t: 0, resolve }));
   }
 
@@ -614,7 +617,7 @@ export class UnicornActor implements Unicorn {
           q.free(this);
           s.stage = 'slide';
           s.v = SLIDE_V0;
-          if (this.ctx.sounds()) void audio.sfx('whoosh');
+          if (this.ctx.sounds()) slideSounds.whoosh();
         }
         break;
       case 'slide':
@@ -624,7 +627,7 @@ export class UnicornActor implements Unicorn {
         if (s.u >= 1) {
           this.position.y = POND.waterY;
           this.ctx.fx.splash(this.position);
-          if (this.ctx.sounds()) void audio.sfx('splash');
+          if (this.ctx.sounds()) slideSounds.splash();
           const resolve = s.resolve;
           this.startSwim(s.short ? rand(4, 7) : rand(6, 12));
           resolve();
@@ -666,7 +669,7 @@ export class UnicornActor implements Unicorn {
       this.position.y = THREE.MathUtils.lerp(0, POND.waterY, ease(k)) + Math.sin(Math.PI * k) * 0.35;
       if (k >= 1) {
         this.ctx.fx.splash(this.position);
-        if (this.ctx.sounds()) void audio.sfx('splash');
+        if (this.ctx.sounds()) slideSounds.splash();
         this.startSwim(w.until);
       }
       return;
@@ -704,7 +707,7 @@ export class UnicornActor implements Unicorn {
       if (best) {
         this.desiredYaw = headingOf(best.position.x - this.position.x, best.position.z - this.position.z);
         this.ctx.fx.spray(this.position, best.position);
-        if (this.ctx.sounds()) void audio.sfx('splash');
+        if (this.ctx.sounds()) slideSounds.splash();
         if (best.unicorn) void best.unicorn.emote('shake');
         void this.emote('happy');
       }
@@ -744,7 +747,7 @@ export class UnicornActor implements Unicorn {
       this.desiredYaw = this.yaw = slideDir(SEAT_U + 0.04).heading;
     } else if (land.outcome === 'pond') {
       this.ctx.fx.splash(this.position);
-      if (this.ctx.sounds()) void audio.sfx('splash');
+      if (this.ctx.sounds()) slideSounds.splash();
       this.startSwim(rand(6, 12));
     } else {
       this.ctx.fx.sparkle(this.position.clone().setY(0.2), { count: 8 });

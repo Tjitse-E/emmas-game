@@ -350,6 +350,9 @@ export const DRESS_ROWS: Record<DressShape, readonly DressRow[]> = {
   ],
 };
 
+/** The hem's radius at the front of each shape (where the toe tips peek out under a floor-length gown). */
+export const HEM_FRONT: Record<DressShape, number> = { party: 0.374, ball: 0.44, tutu: 0.41 };
+
 /** Radial segments of every dress. */
 export const DRESS_RADIAL = 24;
 
@@ -389,33 +392,159 @@ export function paintDress(g: THREE.BufferGeometry, shape: DressShape, colourOf:
 
 const _c = new THREE.Color();
 
-/** A small crown: a band with five points, base at y = 0, radius 1 (it is scaled to the head). Double sided. */
-export function crown(): THREE.BufferGeometry {
-  const seg = 40;
+// --- the crowns (docs/v4/2.3.md section 15) ---------------------------------------------------------------------------
+
+export type CrownShapeId = 'lumi' | 'tiara' | 'star' | 'heart' | 'flower';
+
+/** A gem or a tip ball on a crown, in the crown's own units (the crown matrix scales them with the band). */
+export interface CrownPart {
+  at: readonly [number, number, number];
+  size: readonly [number, number, number];
+}
+
+/**
+ * A crown shape: one double-sided band (with white vertex colours, painted by `paintCrown`), a rim line round its foot
+ * and, on some shapes, a flat motif at the front. All five have the same attributes (position, normal, colour of item
+ * size 3), so swapping shapes never compiles a new program. `rimFrom` is the first vertex of the rim line, `parts` the
+ * gems and tips the princess draws as Lo parts in the outline colour.
+ */
+export interface CrownBuild {
+  geometry: THREE.BufferGeometry;
+  rimFrom: number;
+  parts: readonly CrownPart[];
+}
+
+const CROWN_SEG = 40;
+/** The band leans out from radius 1 at its foot to this at its top edge. */
+const CROWN_TOP_R = 1.08;
+/** The rim line round the foot of the band: a strip just outside it, in the outline colour. */
+const RIM = { r0: 1.035, r1: 1.045, y0: -0.01, y1: 0.13 };
+
+/** The top edge of each band (height at angle th, 0 at the front, +x at PI / 2). */
+const CROWN_TOP: Record<CrownShapeId, (th: number) => number> = {
+  // Lumi's crown (2.2): five points.
+  lumi: (th) => {
+    const f = ((th / (Math.PI * 2)) * 5) % 1;
+    return 0.42 + Math.max(0, 1 - Math.abs(f - 0.5) * 2.4) * 0.62;
+  },
+  // A tiara: a low arch at the front with three small points, low at the back.
+  tiara: (th) => {
+    const c = Math.max(0, Math.cos(th));
+    const a = Math.atan2(Math.sin(th), Math.cos(th));
+    const point = (at: number, w: number) => Math.max(0, 1 - Math.abs(a - at) / w);
+    return 0.22 + 0.36 * c * c + 0.24 * point(0, 0.2) + 0.13 * point(0.5, 0.15) + 0.13 * point(-0.5, 0.15);
+  },
+  // Low scallops round a big star at the front.
+  star: (th) => 0.36 + 0.06 * Math.cos(th * 8),
+  // Low scallops round a heart at the front.
+  heart: (th) => 0.34 + 0.05 * Math.cos(th * 10),
+  // Five round petals, one at the front.
+  flower: (th) => 0.3 + 0.68 * Math.pow((1 + Math.cos(th * 5)) / 2, 0.5),
+};
+
+/** A flat motif standing at the front of the band: its outline in the xy plane around (0, 0), unit size. */
+function starOutline(): [number, number][] {
+  return Array.from({ length: 10 }, (_, i) => {
+    const r = i % 2 ? 0.42 : 1;
+    const a = Math.PI / 2 + (i / 10) * Math.PI * 2;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  });
+}
+function heartOutline(): [number, number][] {
+  return Array.from({ length: 24 }, (_, i) => {
+    const t = (i / 24) * Math.PI * 2;
+    const x = 16 * Math.sin(t) ** 3;
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    return [x / 17, (y + 2) / 17];
+  });
+}
+const MOTIF: Partial<Record<CrownShapeId, { outline: () => [number, number][]; y: number; size: number }>> = {
+  star: { outline: starOutline, y: 0.84, size: 0.5 },
+  heart: { outline: heartOutline, y: 0.8, size: 0.46 },
+};
+
+const tip = (th: number, y: number, s: number): CrownPart => ({ at: [Math.sin(th) * 1.08, y, Math.cos(th) * 1.08], size: [s, s, s] });
+
+/** The gems and tips of each crown (the outline colour), in the order the princess draws them. */
+const CROWN_PARTS: Record<CrownShapeId, readonly CrownPart[]> = {
+  // 2.2's crown: a gem at the front and a ball on each of the five points.
+  lumi: [
+    { at: [0, 0.3, 1.1], size: [0.2, 0.24, 0.1] },
+    ...Array.from({ length: 5 }, (_, i) => tip(((i + 0.5) / 5) * Math.PI * 2, 1.0, 0.11)),
+  ],
+  tiara: [
+    { at: [0, 0.42, 1.12], size: [0.17, 0.22, 0.09] },
+    { at: [Math.sin(0.5) * 1.1, 0.36, Math.cos(0.5) * 1.1], size: [0.1, 0.12, 0.07] },
+    { at: [Math.sin(-0.5) * 1.1, 0.36, Math.cos(-0.5) * 1.1], size: [0.1, 0.12, 0.07] },
+    tip(0, CROWN_TOP.tiara(0) + 0.03, 0.09),
+    tip(0.5, CROWN_TOP.tiara(0.5) + 0.03, 0.07),
+    tip(-0.5, CROWN_TOP.tiara(-0.5) + 0.03, 0.07),
+  ],
+  star: [
+    { at: [0, MOTIF.star!.y, 1.15], size: [0.14, 0.14, 0.08] },
+    ...[Math.PI / 2, -Math.PI / 2, (3 * Math.PI) / 4, (-3 * Math.PI) / 4, Math.PI].map((th) => tip(th, CROWN_TOP.star(th) + 0.04, 0.09)),
+  ],
+  heart: [
+    { at: [0, MOTIF.heart!.y, 1.15], size: [0.13, 0.13, 0.08] },
+    ...[0.94, -0.94, 1.88, -1.88, Math.PI].map((th) => tip(th, CROWN_TOP.heart(th) + 0.04, 0.085)),
+  ],
+  // A flower centre on every petal.
+  flower: Array.from({ length: 5 }, (_, i) => {
+    const th = (i / 5) * Math.PI * 2;
+    return { at: [Math.sin(th) * 1.11, 0.68, Math.cos(th) * 1.11] as const, size: [0.13, 0.13, 0.07] as const };
+  }),
+};
+
+/** One crown shape (built once by the princess, the first time she wears it). */
+export function crownBuild(shape: CrownShapeId): CrownBuild {
   const pos: number[] = [];
-  for (let k = 0; k < seg; k++) {
-    const th = (k / seg) * Math.PI * 2;
-    const f = ((k / seg) * 5) % 1;
-    const spike = Math.max(0, 1 - Math.abs(f - 0.5) * 2.4);
-    pos.push(Math.sin(th), 0, Math.cos(th), Math.sin(th) * 1.08, 0.42 + spike * 0.62, Math.cos(th) * 1.08);
-  }
   const index: number[] = [];
-  for (let k = 0; k < seg; k++) {
-    const a = k * 2;
-    const b = ((k + 1) % seg) * 2;
-    index.push(a, b, a + 1, b, b + 1, a + 1);
+  const top = CROWN_TOP[shape];
+  // The band.
+  for (let k = 0; k < CROWN_SEG; k++) {
+    const th = (k / CROWN_SEG) * Math.PI * 2;
+    pos.push(Math.sin(th), 0, Math.cos(th), Math.sin(th) * CROWN_TOP_R, top(th), Math.cos(th) * CROWN_TOP_R);
   }
+  strip(index, 0, CROWN_SEG);
+  // A flat motif at the front, a little outside the band.
+  const motif = MOTIF[shape];
+  if (motif) {
+    const c = pos.length / 3;
+    pos.push(0, motif.y, 1.13);
+    const pts = motif.outline();
+    for (const [x, y] of pts) pos.push(x * motif.size, motif.y + y * motif.size, 1.13);
+    for (let i = 0; i < pts.length; i++) index.push(c, c + 1 + i, c + 1 + ((i + 1) % pts.length));
+  }
+  // The rim line round the foot.
+  const rimFrom = pos.length / 3;
+  for (let k = 0; k < CROWN_SEG; k++) {
+    const th = (k / CROWN_SEG) * Math.PI * 2;
+    pos.push(Math.sin(th) * RIM.r0, RIM.y0, Math.cos(th) * RIM.r0, Math.sin(th) * RIM.r1, RIM.y1, Math.cos(th) * RIM.r1);
+  }
+  strip(index, rimFrom, CROWN_SEG);
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setIndex(index);
   g.computeVertexNormals();
-  return g;
+  withColour(g);
+  return { geometry: g, rimFrom, parts: CROWN_PARTS[shape] };
 }
 
-/** The tips of the crown's five points (for the little gold balls), in the crown's own units. */
-export function crownTips(): THREE.Vector3[] {
-  return Array.from({ length: 5 }, (_, i) => {
-    const th = ((i + 0.5) / 5) * Math.PI * 2;
-    return new THREE.Vector3(Math.sin(th) * 1.08, 1.04, Math.cos(th) * 1.08);
-  });
+/** Two rows of `seg` vertices (bottom, top, bottom, top...) from `from`, closed round. */
+function strip(index: number[], from: number, seg: number): void {
+  for (let k = 0; k < seg; k++) {
+    const a = from + k * 2;
+    const b = from + ((k + 1) % seg) * 2;
+    index.push(a, b, a + 1, b, b + 1, a + 1);
+  }
+}
+
+/** Paint a crown: the band (and its motif) in `band`, the rim line in `rim`. */
+export function paintCrown(c: CrownBuild, band: THREE.Color, rim: THREE.Color): void {
+  const a = c.geometry.getAttribute('color') as THREE.BufferAttribute;
+  for (let i = 0; i < a.count; i++) {
+    const k = i < c.rimFrom ? band : rim;
+    a.setXYZ(i, k.r, k.g, k.b);
+  }
+  a.needsUpdate = true;
 }
