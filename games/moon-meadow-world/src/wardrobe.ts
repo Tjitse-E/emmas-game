@@ -1,8 +1,7 @@
 // Princess Emma's wardrobe (docs/v4/2.3.md section 15): one palette for every coloured part, the shapes of
 // each part, the six tabs and their rails, her default look, what she owns at the start and the four gift sets.
 // Shared by every lane, like layout.ts: the ui draws the swatches from it, the actors take the hex values, the game
-// saves the ids. The 3D shapes live in src/actors/. The 2.2.0 catalogue is in wardrobe-legacy.ts until the lanes
-// have moved over.
+// saves the ids. The 3D shapes live in src/actors/. A 2.2.0 look comes in once, through fromLegacy.
 import type {
   Colour, CrownShape, Earrings, EyeColour, GiftItem, GiftSet, GownExtra, GownShape, HairColour, HairStyle, HairThing,
   LookField, LookTab, Necklace, Owned, OwnedField, PrincessLook, Ribbon, ShoeShape,
@@ -137,6 +136,8 @@ export const COLOUR_FIELDS: readonly LookField[] = ['hair', 'gownColour', 'crown
  * silent, as 2.2's styles did. Colours have theirs in PALETTE.
  */
 const SHAPE_WORDS: { readonly [F in LookField]?: Partial<Record<PrincessLook[F], LookWord>> } = {
+  // Eyes are not a palette field, but the three eye colours that are palette words say them (section 15).
+  eyes: { blue: PALETTE.blue.word, green: PALETTE.green.word, brown: PALETTE.brown.word },
   gown: { party: word('dress'), ball: word('gown'), gala: word('gown') },
   extra: { wings: word('wings'), bow: word('bow') },
   style: { bun: word('bun'), lowbun: word('bun') },
@@ -182,12 +183,20 @@ export interface RailSpec {
   row: number;
 }
 
-/** A field's options she owns, in rail order: earned fields keep 'none' and what she owns, the rest are all hers. */
+const isOwnedField = (f: LookField): f is OwnedField => (OWNED_FIELDS as readonly string[]).includes(f);
+
+/**
+ * A field's options she owns, in rail order. Fields that are not earned are all hers. An earned field shows 'none'
+ * (when it has one), then its start items in catalogue order, then what she earned in the order she earned it, so a
+ * new item always lands after every cell she knows, whatever order the gifts come in.
+ */
 export function ownedOptions(field: LookField, owned: Owned): readonly string[] {
   const all = OPTIONS[field] as readonly string[];
-  if (!(OWNED_FIELDS as readonly string[]).includes(field)) return all;
-  const mine = owned[field as OwnedField] as readonly string[];
-  return all.filter((id) => id === 'none' || mine.includes(id));
+  if (!isOwnedField(field)) return all;
+  const mine = (owned[field] as readonly string[]).filter((id) => id !== 'none' && all.includes(id));
+  const start = START_OWNED[field] as readonly string[];
+  const first = all.filter((id) => id === 'none' || (start.includes(id) && mine.includes(id)));
+  return [...first, ...new Set(mine.filter((id) => !start.includes(id)))];
 }
 
 /** The rows a field always takes on its tab: enough for every option it has, owned or not. */
@@ -342,18 +351,17 @@ export function parseOwned(raw: unknown): Owned {
 }
 
 /**
- * A look from anything (a save, a URL option): each unknown or missing field falls back to `base`. With `owned`, an
- * earned item she does not own falls back too, so a look never shows what is not in her trunk.
+ * A look from anything (a save, a URL option): each unknown or missing field falls back to `base`, and then to the
+ * default look. With `owned`, an earned item she does not own falls back too (also one in `base`), so a look never
+ * shows what is not in her trunk. The default look holds only start items, which she always owns.
  */
 export function normaliseLook(raw: unknown, base: PrincessLook = DEFAULT_LOOK, owned?: Owned): PrincessLook {
   const r = (raw !== null && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
-  const out = { ...base } as Record<LookField, string>;
-  for (const f of Object.keys(OPTIONS) as LookField[]) {
-    const v = r[f];
-    if (typeof v !== 'string' || !(OPTIONS[f] as readonly string[]).includes(v)) continue;
-    if (owned && (OWNED_FIELDS as readonly string[]).includes(f) && v !== 'none' && !(owned[f as OwnedField] as readonly string[]).includes(v)) continue;
-    out[f] = v;
-  }
+  const wearable = (f: LookField, v: unknown): v is string =>
+    typeof v === 'string' && (OPTIONS[f] as readonly string[]).includes(v) &&
+    (!owned || !isOwnedField(f) || v === 'none' || (owned[f] as readonly string[]).includes(v));
+  const out = {} as Record<LookField, string>;
+  for (const f of Object.keys(OPTIONS) as LookField[]) out[f] = [r[f], base[f]].find((v) => wearable(f, v)) ?? DEFAULT_LOOK[f];
   return out as unknown as PrincessLook;
 }
 

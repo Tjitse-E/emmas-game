@@ -57,6 +57,13 @@ export function defaultSave(): Save {
 }
 
 const isObj = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
+const json = (raw: string): unknown => {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
 const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 const levelState = (raw: unknown, base: { level: ReadingLevel; recent: Outcome[] }) => {
   if (!isObj(raw)) return base;
@@ -72,14 +79,7 @@ const levelState = (raw: unknown, base: { level: ReadingLevel; recent: Outcome[]
  * defaults. A v1 save (2.2.0) is migrated: its look through fromLegacy, and Lumi gave the crown on its first play.
  */
 export function parseSave(raw: unknown): Save {
-  let r: unknown = raw;
-  if (typeof raw === 'string') {
-    try {
-      r = JSON.parse(raw);
-    } catch {
-      r = null;
-    }
-  }
+  const r: unknown = typeof raw === 'string' ? json(raw) : raw;
   const s = defaultSave();
   if (!isObj(r)) return s;
   // 2.2.0 wrote v 1; a newer save is read as far as it is understood.
@@ -143,8 +143,8 @@ export interface SaveStore {
 
 /**
  * The save for this page. `storage` is called on every read and write, inside try/catch, because Safari may throw on
- * the access itself (blocked storage). With `fresh` it never touches the storage. A missing mmw.save2 starts from
- * mmw.save (2.2.0) when there is one.
+ * the access itself (blocked storage). With `fresh` it never touches the storage. A missing or broken mmw.save2
+ * starts from mmw.save (2.2.0) when there is one. Nothing here ever writes or removes mmw.save.
  */
 export function createSave(storage: () => KeyStore | null, fresh = false): SaveStore {
   const memory = memoryStore();
@@ -156,13 +156,18 @@ export function createSave(storage: () => KeyStore | null, fresh = false): SaveS
       return null;
     }
   };
-  const read = (): Save => {
+  const get = (key: string): string | null => {
     try {
-      const st = store();
-      return parseSave(st?.getItem(SAVE_KEY) ?? st?.getItem(SAVE_KEY_V1) ?? null);
+      return store()?.getItem(key) ?? null;
     } catch {
-      return defaultSave();
+      return null;
     }
+  };
+  // mmw.save2 wins whenever it holds a save. 2.2's mmw.save is read only without one: on her first 2.3 play, or when
+  // mmw.save2 is broken, so a bad entry never costs her the look she made in 2.2.
+  const read = (): Save => {
+    const v2 = get(SAVE_KEY);
+    return v2 !== null && isObj(json(v2)) ? parseSave(v2) : parseSave(get(SAVE_KEY_V1));
   };
   let data = read();
   return {
