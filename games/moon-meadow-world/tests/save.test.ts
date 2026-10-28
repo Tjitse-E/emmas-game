@@ -86,6 +86,24 @@ describe('parseSave', () => {
     expect(s.last).toEqual(old.last);
   });
 
+  it('gives the crown to a 2.2 save only after a play', () => {
+    expect(parseSave({ v: 1, plays: 0 }).seen.crown).toBe(false);
+    expect(parseSave({ v: 1 }).seen.crown).toBe(false);
+    expect(parseSave({ v: 1, plays: 1 }).seen.crown).toBe(true);
+  });
+
+  it('reads data from mmw.save2 without a v as 2.3, and data that says v 1 as 2.2', () => {
+    const raw = { look: { ...DEFAULT_LOOK, crown: 'tiara', gownColour: 'green', shoes: 'boots', earrings: 'studs' }, owned: { crown: ['lumi', 'tiara'], shoes: ['slippers', 'boots'], earrings: ['studs'] }, plays: 2 };
+    const s = parseSave(raw, true);
+    expect(s.look).toMatchObject({ crown: 'tiara', gownColour: 'green', shoes: 'boots', earrings: 'studs' });
+    expect(s.owned.crown).toEqual(['lumi', 'tiara']);
+    expect(s.seen.crown).toBe(false);
+    // Without the flag (2.2's key), the same data is 2.2's.
+    expect(parseSave(raw).owned).toEqual(START_OWNED);
+    const old = { v: 1, look: { gown: 'tutu' }, plays: 3 };
+    expect(parseSave(old, true)).toEqual(parseSave(old));
+  });
+
   it('keeps every field it understands from a newer shape', () => {
     const s = parseSave(JSON.stringify({ v: 3, look: { hair: 'midnight', cape: 'red' }, plays: 2, pets: ['cat'], seen: { wardrobe: true, trunk: true } }));
     expect(s.v).toBe(2);
@@ -150,6 +168,21 @@ describe('createSave', () => {
     s.clear();
     expect(createSave(() => mem).data.plays).toBe(0);
     expect(mem.getItem(SAVE_KEY_V1)).toBe(old);
+  });
+
+  it('keeps a mmw.save2 entry without a v as it is, also through a write', () => {
+    const mem = memoryStore();
+    mem.setItem(SAVE_KEY_V1, JSON.stringify({ v: 1, look: { gown: 'tutu' }, plays: 7 }));
+    mem.setItem(SAVE_KEY, JSON.stringify({ look: { ...DEFAULT_LOOK, crown: 'tiara', crownColour: 'red' }, owned: { crown: ['lumi', 'tiara'] }, plays: 2 }));
+    const s = createSave(() => mem);
+    expect(s.data.plays).toBe(2);
+    expect(s.data.look).toMatchObject({ crown: 'tiara', crownColour: 'red' });
+    expect(s.data.owned.crown).toEqual(['lumi', 'tiara']);
+    s.write((x) => void (x.plays += 1));
+    const back = createSave(() => mem).data;
+    expect(back.plays).toBe(3);
+    expect(back.look.crown).toBe('tiara');
+    expect(back.owned.crown).toEqual(['lumi', 'tiara']);
   });
 
   it('plays on with the defaults when the storage throws', () => {

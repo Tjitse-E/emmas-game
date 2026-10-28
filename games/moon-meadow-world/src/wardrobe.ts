@@ -109,7 +109,11 @@ export const EYE_HEX: Record<EyeColour, string> = {
 /** The dress shape of each gown cell (actors/shapes.ts): the gala gown is the ball gown with white gloves. */
 export const GOWN_DRESS: Record<GownShape, 'party' | 'ball' | 'tutu'> = { party: 'party', ball: 'ball', gala: 'ball', tutu: 'tutu' };
 
-/** Every option of every field, in rail order. Earned items come last, so a new one never moves a cell she knows. */
+/**
+ * Every option of every field, in catalogue order. A rail shows the start items in this order and then the earned
+ * ones in the order she earned them (ownedOptions), so a new one never moves a cell she knows. Do not read this as
+ * the rail order of a look with earned items.
+ */
 export const OPTIONS: { readonly [F in LookField]: readonly PrincessLook[F][] } = {
   hair: HAIR_COLOURS,
   style: ['ponytails', 'high', 'plaits', 'bun', 'low', 'side', 'curly', 'bunches', 'long', 'curls', 'plait', 'lowbun'],

@@ -349,6 +349,18 @@ describe('the gift sets', () => {
     }
   });
 
+  it('pays from the first set in GIFT_SETS order when two sets have the most left', () => {
+    expect(SETS).toEqual(['crowns', 'shoes', 'jewels', 'hair']);
+    const earn = (items: readonly GiftItem[]) => items.reduce<Owned>((o, i) => withItem(o, i), START_OWNED);
+    // Crowns full; shoes 3 left, jewels 3 left, hair 2 left: the picnic pays from shoes, not jewels.
+    const a = earn([...GIFT_SETS.crowns.items, ...GIFT_SETS.jewels.items.slice(0, 3), ...GIFT_SETS.hair.items.slice(0, 6)]);
+    expect(giftSetFor('picnic', a)).toBe('shoes');
+    // Crowns and shoes full; jewels 3 left, hair 3 left: the picnic and the rack pay from jewels, not hair.
+    const b = earn([...GIFT_SETS.crowns.items, ...GIFT_SETS.shoes.items, ...GIFT_SETS.jewels.items.slice(0, 3), ...GIFT_SETS.hair.items.slice(0, 5)]);
+    expect(giftSetFor('picnic', b)).toBe('jewels');
+    expect(giftSetFor('rack', b)).toBe('jewels');
+  });
+
   it('offers two different gifts she does not own, then the last one, then none, to the end of every set', () => {
     for (const r of [seeded(7), () => 0, () => 0.9999999]) {
       let owned = START_OWNED;
@@ -396,15 +408,22 @@ describe('the goodnight ribbons', () => {
 });
 
 describe('the crown on her hair', () => {
+  // Section 15's number, written here and not read from the code, so lowering CROWN_CONTRAST to pass a tuned shade fails.
+  const MIN = 1.8;
+
   it('has an outline that stands out from every one of the 18 hair colours, in every one of the 12 crown colours', () => {
+    expect(CROWN_CONTRAST).toBe(MIN);
     let pairs = 0;
     for (const h of HAIR_COLOURS) {
       for (const c of COLOURS) {
         const o = crownOutline(h, c);
+        const at = `${c} crown on ${h} hair`;
         expect(o).toMatch(/^#[0-9a-f]{6}$/);
-        expect(contrast(o, HAIR_HEX[h].base), `${c} crown on ${h} hair`).toBeGreaterThanOrEqual(CROWN_CONTRAST);
-        // White, as in 2.2, wherever white stands out.
-        if (contrast('#ffffff', HAIR_HEX[h].base) >= CROWN_CONTRAST) expect(o, `${c} crown on ${h} hair`).toBe('#ffffff');
+        expect(contrast(o, HAIR_HEX[h].base), at).toBeGreaterThanOrEqual(MIN);
+        // Section 15's order: white (as in 2.2), the crown's deep shade, dark gold, dark purple. The first that stands out.
+        const first = ['#ffffff', PALETTE[c].deep, '#b8860b', '#5a3d8a'].find((x) => contrast(x, HAIR_HEX[h].base) >= MIN);
+        expect(first, at).toBeDefined();
+        expect(o, at).toBe(first);
         pairs++;
       }
     }

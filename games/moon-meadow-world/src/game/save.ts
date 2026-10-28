@@ -1,6 +1,6 @@
 // The save (docs/v4/2.2.md 2.7, 2.3.md section 15). Since 2.3.0 it lives under mmw.save2, next to 2.2's
-// mmw.save, which is read once to start from and never written again, so going back to 2.2.0 finds its own save as
-// it was. v3 shares the origin but keeps its own keys. Every read and write is in try/catch: a missing, blocked or
+// mmw.save, which is read only while mmw.save2 is missing or broken and is never written, so going back to 2.2.0
+// finds its own save as it was. v3 shares the origin but keeps its own keys. Every read and write is in try/catch: a missing, blocked or
 // broken entry gives the defaults and a first visit (the middle reading level, the first-visit wardrobe). Emma's home
 // server, the test servers and a renamed host are separate origins, and Safari may clear the storage after 7 days
 // without a visit; both start fresh (main.ts asks the browser to keep it, navigator.storage.persist()).
@@ -11,7 +11,7 @@ import { QUEST_IDS, type QuestId } from './options';
 
 /** The 2.3.0 save. */
 export const SAVE_KEY = 'mmw.save2';
-/** 2.2.0's save: read when mmw.save2 is missing, never written. */
+/** 2.2.0's save: read when mmw.save2 is missing or broken (not a JSON object), never written or removed. */
 export const SAVE_KEY_V1 = 'mmw.save';
 
 export interface Save {
@@ -77,13 +77,16 @@ const levelState = (raw: unknown, base: { level: ReadingLevel; recent: Outcome[]
  * A save from whatever the store held: a JSON string, an object, null or junk. Pure and tolerant: each field is
  * read on its own, so a newer or older shape keeps every field it understands and the rest falls back to the
  * defaults. A v1 save (2.2.0) is migrated: its look through fromLegacy, and Lumi gave the crown on its first play.
+ * `fromV2` says the data came from mmw.save2 (or the game's own memory): then it is a 2.3 save unless it says v 1.
+ * Without it, data without a `v` is taken as 2.2's.
  */
-export function parseSave(raw: unknown): Save {
+export function parseSave(raw: unknown, fromV2 = false): Save {
   const r: unknown = typeof raw === 'string' ? json(raw) : raw;
   const s = defaultSave();
   if (!isObj(r)) return s;
-  // 2.2.0 wrote v 1; a newer save is read as far as it is understood.
-  const v1 = r.v === 1 || r.v === undefined;
+  // 2.2.0 wrote v 1; a newer save is read as far as it is understood. Data from mmw.save2 without a v is 2.3's, so
+  // its look and what she owns are never put through the 2.2 migration.
+  const v1 = r.v === 1 || (!fromV2 && r.v === undefined);
   s.owned = v1 ? copyOwned(START_OWNED) : parseOwned(r.owned);
   s.look = v1 ? fromLegacy(r.look) : normaliseLook(r.look, DEFAULT_LOOK, s.owned);
   s.ribbons = [...new Set(list(r.ribbons).filter((x): x is Ribbon => GIFT_ORDER.includes(x as Ribbon)))];
@@ -167,7 +170,7 @@ export function createSave(storage: () => KeyStore | null, fresh = false): SaveS
   // mmw.save2 is broken, so a bad entry never costs her the look she made in 2.2.
   const read = (): Save => {
     const v2 = get(SAVE_KEY);
-    return v2 !== null && isObj(json(v2)) ? parseSave(v2) : parseSave(get(SAVE_KEY_V1));
+    return v2 !== null && isObj(json(v2)) ? parseSave(v2, true) : parseSave(get(SAVE_KEY_V1));
   };
   let data = read();
   return {
@@ -176,9 +179,9 @@ export function createSave(storage: () => KeyStore | null, fresh = false): SaveS
     },
     memoryOnly: fresh,
     write(change) {
-      const next = parseSave(JSON.parse(JSON.stringify(data)));
+      const next = parseSave(JSON.parse(JSON.stringify(data)), true);
       change(next);
-      data = parseSave(next);
+      data = parseSave(next, true);
       try {
         store()?.setItem(SAVE_KEY, JSON.stringify(data));
       } catch {
