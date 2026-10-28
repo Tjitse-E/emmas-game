@@ -425,23 +425,6 @@
     "how": "exact"
    }
   },
-  "lumi4-picnic": {
-   "hash": "c0f047c62ea2147a8ecf9207d98f57a9ae8890189075d39bfc5e8368b6148c38",
-   "speaker": "queen",
-   "text": "A royal picnic! Who is hungry?",
-   "file": "lumi4-picnic.mp3",
-   "model": "eleven_multilingual_v2",
-   "seed": 11,
-   "duration_ms": 1806,
-   "generated": "2026-10-28T00:45:09",
-   "ok": true,
-   "stt": {
-    "hash": "c0f047c62ea2147a8ecf9207d98f57a9ae8890189075d39bfc5e8368b6148c38",
-    "text": "A royal picnic. Who is hungry?",
-    "match": true,
-    "how": "exact"
-   }
-  },
   "lumi4-picnic-done": {
    "hash": "c3b8c6aaa212737e454e77a3cac004e05d9a2f80b61fc29f3eda7a9e909d9deb",
    "speaker": "queen",

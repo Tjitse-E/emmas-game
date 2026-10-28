@@ -26,7 +26,6 @@
     {"id":"g4-ready-play","speaker":"narrator","text":"When you are ready, tap play.","note":"Customiser, once after 25 s without a touch."},
     {"id":"g4-dress-up","speaker":"narrator","text":"Your baby wants to dress up like you!","note":"Dress-up wish."},
     {"id":"word-heart","speaker":"narrator","text":"Heart.","expect":["Hart."],"note":"Customiser: the hearts hair thing."},
-    {"id":"lumi4-picnic","speaker":"queen","text":"A royal picnic! Who is hungry?","note":"Picnic side quest starts."},
     {"id":"lumi4-picnic-done","speaker":"queen","text":"What a lovely picnic! A rose for your hair.","note":"Picnic side quest reward."},
     {"id":"num-still-warm-1","speaker":"narrator","text":"One cup is still too warm.","note":"Snow stone too small."},
     {"id":"num-still-warm-2","speaker":"narrator","text":"Two cups are still too warm.","note":"Snow stone too small."},

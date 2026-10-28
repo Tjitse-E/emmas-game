@@ -31,7 +31,7 @@
   - `level`: the hidden reading level, 1 to 3 (default 2). Level 1 gives 4 items and asks only tier 1 and 2 words. Levels 2 and 3 give 5 items. Level 3 asks only words with a twin or a frame word; with none left it plays as level 2 and `spec.level` says 2. The warm-up (the first wish of a play one level lower) is the caller's: pass the lower level.
   - `contrast: false` (`?contrast=0`) leaves out `clips.again`, and the ui then keeps v3's rule (one miss gives the focused hint at once).
 - Each `WishItem` has `tier`, `tint` (a greyscale picture only) and `react`: `wear` (every dress-up word), `munch` (picnic foods), `play` (pond toys, picnic dishes). `spec.decoys` gives why each wrong item is in the basket: `twin`, `frame`, `onset`, `rhyme`, `ending`, `length` or `other`.
-- Before a dress-up wish the level says `CLIPS.dressUp` ("Your baby wants to dress up like you!"). Before a picnic wish it says nothing: `CLIPS.hungry` before a food only would give the answer away. After the wish: `foal-pretty` for `wear`, `foal-yum` for `munch`, `foal-yay` for `play`.
+- Before a dress-up wish the level says `CLIPS.dressUp` ("Your baby wants to dress up like you!"). Before a picnic wish it says nothing, also before the royal picnic's first guest: `CLIPS.hungry` or Lumi's "Who is hungry?" before a food only would give the answer away. After the wish: `foal-pretty` for `wear`, `foal-yum` for `munch`, `foal-yay` for `play`.
 - Free play: `foods()` (plum, corn, cake, peach; react `munch`).
 - Every other line: `CLIPS` (see `src/content/clips.ts`). `wayTo(place)` gives the "this way" line for a `Place` (none for the gazebo, the rack and the picnic).
 - Preloading: `allClipIds()` lists every clip the level can use. Preload `CLIPS` and the herd names at start, and each moment's own clips just before it with `eggClipIds(spec)`, `namingClipIds(spec)`, `wishClipIds(spec)` and `doorClipIds(specs)`. `wishClipIds` includes every basket word, so the contrast's word clip and `fb-letters` are ready. `allGraphemes()` lists the letter sounds for `audio.preloadSounds()`, including the capitals' sounds.
@@ -146,7 +146,7 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 
 ## Deviations from the brief
 
-- Warm egg facts reuse v3's `num-bond-<have>-<answer>` ("Eight and five make thirteen!"), the same text and ids v3's eggs use. A warm egg's `have` is now 3 to 9, so the demo's "ten and some more" clips are not used; `num-add-10-3` to `num-add-10-5` are still in `public/audio/v4demo/`, outside its manifest.
+- Warm egg facts reuse v3's `num-bond-<have>-<answer>` ("Eight and five make thirteen!"), the same text and ids v3's eggs use. A warm egg's `have` is now 3 to 9, so the demo's "ten and some more" clips are not used; `num-add-10-3` to `num-add-10-5` are still in `public/audio/v4demo/`, outside its manifest. So is `lumi4-picnic` ("A royal picnic! Who is hungry?"): nothing is said before the first picnic guest, as before every picnic wish.
 - New line `g4-snow-egg` is the snow egg's intro; `h4-doors` is the focused door hint.
 - 2.2.0 reading: the seven decoy-only targets above, and the five extra look-alike groups.
 - A frame word is any other word with the same first and last letter (robe and rose count). This matches the design's level 3 lists; "another vowel" alone would drop robe and rose.
@@ -163,6 +163,6 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 
 ## Audio
 
-- `fb-letters` and every pool word's clip are ok v3 clips. The 13 new lines of 2.2.0 are generated; the demo's pack has 80 clips, and `dev/content.html` reports none missing.
+- `fb-letters` and every pool word's clip are ok v3 clips. The 13 new lines of 2.2.0 are generated and 12 are used; the demo's pack has 79 clips, and `dev/content.html` reports none missing.
 - The clips of sail, pail, reed, pie, leek, mat and dock passed speech-to-text only as homophones (Sale, Pale, Read, Pi, Leak, Matt, Doc). Tjitse listens to them once.
 - Booked so far: 2,276.90 credits in `tools/audio/ledger.jsonl` against the cap of 4,000.

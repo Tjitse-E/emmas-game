@@ -4,7 +4,7 @@ One playable level of v4 in 3D: "Emma's first day in Moon Meadow" ([docs/v4/demo
 
 Her look, her ribbon colours, a hidden reading level and the last play's words and sums are saved in the browser (`localStorage`, key `mmw.save`). On the next play she taps Play, sees her saved look in the customiser and taps the play button once; Lumi's welcome is shorter. Each address (Emma's server, a test server, another host name) has its own save, and Safari may clear it after 7 days without a visit: she then starts fresh with the default look and the middle reading level.
 
-The demo is throwaway. It shows Tjitse how v4 plays, whether Emma likes it, and how the iPad Air 2 copes with 14 code-built unicorns, the pond and the slide. Vite 8, TypeScript 6 and three.js 0.186.1, built for Safari 15. Speech is pre-generated ElevenLabs audio: v3's clips and pictures from `games/moon-meadow-home/`, and the demo's own 80 clips in `public/audio/v4demo/`.
+The demo is throwaway. It shows Tjitse how v4 plays, whether Emma likes it, and how the iPad Air 2 copes with 14 code-built unicorns, the pond and the slide. Vite 8, TypeScript 6 and three.js 0.186.1, built for Safari 15. Speech is pre-generated ElevenLabs audio: v3's clips and pictures from `games/moon-meadow-home/`, and the demo's own 79 clips in `public/audio/v4demo/`.
 
 ## Play it on Emma's iPad
 
@@ -18,7 +18,7 @@ http://<LocalHostName>.local:8765/games/moon-meadow-world/dist/
 
 `scutil --get LocalHostName` gives the name. Emma's server (`games/moon-meadow-home/tools/go-live.sh`) serves the whole repo, so nothing else is needed. The demo takes v3's clips from Emma's promoted v3 build.
 
-Listen to the new clips before Emma plays (in `public/audio/v4demo/`): the 13 lines of 2.2.0 (docs/v4/2.2.md section 6, among them `g4-ready`, `g4-dress-up`, `lumi4-picnic`, `lumi4-picnic-done` and `word-heart`), and the demo's earlier `lumi4-another-egg`, `lumi4-ribbons` and `g4-snow-egg`.
+Listen to the new clips before Emma plays (in `public/audio/v4demo/`): the 12 lines of 2.2.0 the game uses (docs/v4/2.2.md section 6, among them `g4-ready`, `g4-dress-up`, `lumi4-picnic-done` and `word-heart`), and the demo's earlier `lumi4-another-egg`, `lumi4-ribbons` and `g4-snow-egg`.
 
 ## Address options
 

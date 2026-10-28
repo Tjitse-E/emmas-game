@@ -34,7 +34,6 @@ export const SENTENCES: Line[] = [
   { id: 'g4-dress-up', speaker: 'narrator', text: 'Your baby wants to dress up like you!', note: 'Dress-up wish.' },
   // Speech-to-text may only hear "Hart", so Tjitse listens to it once.
   { id: 'word-heart', speaker: 'narrator', text: 'Heart.', expect: ['Hart.'], note: 'Customiser: the hearts hair thing.' },
-  { id: 'lumi4-picnic', speaker: 'queen', text: 'A royal picnic! Who is hungry?', note: 'Picnic side quest starts.' },
   { id: 'lumi4-picnic-done', speaker: 'queen', text: 'What a lovely picnic! A rose for your hair.', note: 'Picnic side quest reward.' },
 ];
 

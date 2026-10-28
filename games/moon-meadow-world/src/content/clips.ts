@@ -47,8 +47,7 @@ export const CLIPS = {
   basket: ['g4-basket'],
   /** Once per play, when the side quests' offer bubbles first show. */
   bubbles: ['mw-bubbles-explain'],
-  // The royal picnic (side quest)
-  picnic: ['lumi4-picnic'],
+  // The royal picnic (side quest). No line before the first guest: "Who is hungry?" would point at the foods.
   picnicDone: ['lumi4-picnic-done'],
   /** When the basket opens: "Tap a food to hear its name. Then give it to a baby." */
   tray: ['g-tray'],

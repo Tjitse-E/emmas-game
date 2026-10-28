@@ -12,7 +12,7 @@ import { GRAZE_HOMES, HAY_RACK, PICNIC, PLACES, dist2 } from '../layout';
 import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
 import { CLIPS, eggClipIds, foods, rackSpec, wishClipIds } from '../content';
-import { type Game, flat, frameAt, lumiSay, preload, princessAt, say, sayAside, v3, walkTo } from './game';
+import { type Game, flat, frameAt, preload, princessAt, say, sayAside, v3, walkTo } from './game';
 import { afterWish, crownKeep, eggAsk, momentLog, noteMaths, parkFollowers, planWish, runWish } from './moments';
 import { useSum } from './band';
 import { herdAside } from './wardrobe-part';
@@ -249,12 +249,12 @@ async function picnicQuest(g: Game): Promise<void> {
   actors.princess.face({ x: PICNIC.rug.center.x, z: PICNIC.rug.center.z + 3 });
   const rug = PICNIC.rug.center;
   await frameAt(g, { x: rug.x + PICNIC_FRAME.east, z: rug.z }, PICNIC_FRAME.width, babies[0].headTop(), PICNIC_FRAME.frac, 1000, undefined, crownKeep(g));
-  await lumiSay(g, CLIPS.picnic);
 
-  // Guest 1, then guest 2: two different targets from the picnic pool.
+  // Guest 1, then guest 2: two different targets from the picnic pool. Nothing is said first, by Lumi ("Who is
+  // hungry?") or a guest ("I'm hungry!"): four of the 15 targets are dishes (mug, plate, mat, pan), and a food cue
+  // would send her to the foods without reading (docs/v4/2.2.md 3.2).
   for (const [k, u] of babies.entries()) {
     const spec = guestWish(g);
-    // No "I'm hungry!" first: before a food only, it would give the answer away (docs/v4/2.2.md 3.2).
     await preload(g, [...wishClipIds(spec), ...afterWish(spec)]);
     await runWish(g, u, spec, `picnic${k + 1}`, { frame: false });
     u.lookAt(null);
