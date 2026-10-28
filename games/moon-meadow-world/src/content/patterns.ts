@@ -14,7 +14,7 @@
 // shape and the wrong colour at some gap). Claude's calls on top of the doc: the three gaps never all take the same
 // bead (so repeating her last right bead never wins), no gap is at place 0 (there is no bead on its left to go on
 // from), the strings of level 1 start with their unit, and at every gap one full repeat of the pattern can be seen
-// whole, so the hints always have a repeat to light (repeatFor).
+// whole, so the hints always have a repeat to light (repeatFor, contrastFor).
 //
 // The pattern level is its own small level (game/beads.ts, save.patterns); it never moves the maths band.
 import type { Bead, BeadShape, Colour, MomentResult, Outcome, PatternDecoy, PatternKind, PatternSpec } from '../contracts.ts';
@@ -69,32 +69,57 @@ export const SPREAD_GAPS: readonly (readonly number[])[] = (() => {
   return out;
 })();
 
+/** A repeat the hints can light for gap `i`: its places, left to right, and the index in it of the place that matches. */
+type Window = { places: number[]; at: number; dist: number };
+
 /**
- * The full repeat of the pattern the hints light for gap `i` (its places, left to right) and the place in it that
- * matches the gap. The repeat is `periodOf(kind)` places in a row she can see when gap `i` is open: no gap from `i` on
- * among them (the earlier gaps are filled by then). The nearest one to the gap wins, the one on its left on a tie.
- * Null when no full repeat can be seen; the planner never returns such a string.
+ * Every full repeat of the pattern she can see when gap `i` is open: `periodOf(kind)` places in a row with no gap from
+ * `i` on among them (the earlier gaps are filled by then). `dist` is how far it is from the gap (the one on its left
+ * wins a tie), and `at` is the index of the place in it that matches the gap.
  */
-export function repeatFor(spec: { kind: PatternKind; gaps: readonly number[] }, i: number): { places: number[]; match: number } | null {
+function windowsFor(spec: { kind: PatternKind; gaps: readonly number[] }, i: number): Window[] {
   const n = periodOf(spec.kind);
   const g = spec.gaps[i];
-  if (g === undefined) return null;
+  if (g === undefined) return [];
   const open = new Set(spec.gaps.slice(i));
-  let best: number[] | null = null;
-  let bestDist = Infinity;
+  const out: Window[] = [];
   for (let s = 0; s + n <= STRING_LENGTH; s++) {
     const places = Array.from({ length: n }, (_, k) => s + k);
     if (places.some((p) => open.has(p))) continue;
     const end = s + n - 1;
-    const dist = end < g ? g - end : s - g + 0.5;
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = places;
-    }
+    out.push({ places, at: (((g - s) % n) + n) % n, dist: end < g ? g - end : s - g + 0.5 });
   }
-  if (!best) return null;
-  const match = best.find((p) => (((p - g) % n) + n) % n === 0);
-  return match === undefined ? null : { places: best, match };
+  return out;
+}
+
+/**
+ * The full repeat the focused hint lights for gap `i` (its places, left to right) and the place in it that matches
+ * the gap, which then pulses gold: the repeat nearest the gap, the one on its left on a tie. Null when no full repeat
+ * can be seen; the planner never returns such a string.
+ */
+export function repeatFor(spec: { kind: PatternKind; gaps: readonly number[] }, i: number): { places: number[]; match: number } | null {
+  let best: Window | null = null;
+  for (const w of windowsFor(spec, i)) if (!best || w.dist < best.dist) best = w;
+  return best ? { places: best.places, match: best.places[best.at] } : null;
+}
+
+/**
+ * The full repeat the light contrast lights for gap `i` after a first miss. It must not show the answer, as the
+ * nearest repeat would: that one ends just left of the gap, so its first bead is always the gap's bead. So `rand`
+ * picks among the nearest repeat for each place the match can take in it. Then no place in the lit order holds the
+ * answer much more often than the pattern's own mix of beads does (about 1 in 2; tested). Null when no full repeat
+ * can be seen.
+ */
+export function contrastFor(spec: { kind: PatternKind; gaps: readonly number[] }, i: number, rand: Rand): { places: number[]; match: number } | null {
+  const nearest = new Map<number, Window>();
+  for (const w of windowsFor(spec, i)) {
+    const b = nearest.get(w.at);
+    if (!b || w.dist < b.dist) nearest.set(w.at, w);
+  }
+  const options = [...nearest.values()].sort((a, b) => a.at - b.at);
+  if (!options.length) return null;
+  const w = options[Math.min(options.length - 1, Math.floor(rand() * options.length))];
+  return { places: w.places, match: w.places[w.at] };
 }
 
 /**
@@ -169,9 +194,26 @@ export function beadsVisit(o: { seen: boolean; level: PatternLevel; forced?: Pat
   return { level: o.forced ?? o.level, demo: !o.seen, store: !o.forced };
 }
 
+/** The result of the demo's first gap, which the ghost filled: helped, and it never moves the level. */
+export const DEMO_RESULT: Readonly<MomentResult> = { outcome: 'helped', misses: 0, ms: 0 };
+
+/** Is gap `i` of this visit the demo's (her first visit ever, the first gap)? Its result line gets `demo: 1`. */
+export const demoGap = (visit: { demo: boolean }, i: number): boolean => visit.demo && i === 0;
+
 /** The gap results that move the pattern level, in gap order: all of them but the demo's first gap. */
 export function levelOutcomes(results: readonly MomentResult[], demo: boolean): Outcome[] {
-  return results.filter((_, i) => !(demo && i === 0)).map((r) => r.outcome);
+  return results.filter((_, i) => !demoGap({ demo }, i)).map((r) => r.outcome);
+}
+
+/**
+ * The save after a visit (game/beads.ts, inside save.write): the bead tree is seen, and unless `?pl=` forced the level
+ * every gap result but the demo's folds into the pattern level with `fold` (foldReading). Never the maths band.
+ */
+export function saveVisit<S>(
+  s: { seen: { beads: boolean }; patterns: S }, results: readonly MomentResult[], visit: { demo: boolean; store: boolean }, fold: (p: S, o: Outcome) => S,
+): void {
+  s.seen.beads = true;
+  if (visit.store) for (const o of levelOutcomes(results, visit.demo)) s.patterns = fold(s.patterns, o);
 }
 
 /** Every clip the bead tree can say. */

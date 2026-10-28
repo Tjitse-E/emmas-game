@@ -12,7 +12,7 @@
 import type { MomentResult, PatternSpec } from '../contracts';
 import { BEAD_TREE, dist2 } from '../layout';
 import { CLIPS } from '../content';
-import { allPatternClipIds, beadKey, beadsVisit, levelOutcomes, patternSpec } from '../content/patterns';
+import { allPatternClipIds, beadKey, beadsVisit, demoGap, patternSpec, saveVisit } from '../content/patterns';
 import { type Game, checked, flat, frameAt, preload, say, v3 } from './game';
 import { babyReact, momentLog, parkFollowers } from './moments';
 import { followAgain, guests, herdAsideAt, walkThere } from './quest-kit';
@@ -71,7 +71,7 @@ export async function beadsQuest(g: Game): Promise<() => void> {
     },
     log: (e, d) => t.log(e, d),
     gap: (i, r) => {
-      const demo = visit.demo && i === 0;
+      const demo = demoGap(visit, i);
       g.results.add(`beads${i + 1}`, 'm', r, {
         kind: 'pattern', pattern: spec.kind, level: spec.level, gap: spec.gaps[i], tray: spec.tray.map(beadKey), decoys: decoysByBead(spec, i),
         tried: t.tried, ...t.flags, ...(demo ? { demo: 1 } : {}),
@@ -80,10 +80,7 @@ export async function beadsQuest(g: Game): Promise<() => void> {
     },
   }, { demo: visit.demo }));
   g.openSpec = null;
-  g.save.write((s) => {
-    s.seen.beads = true;
-    if (visit.store) for (const o of levelOutcomes(results, visit.demo)) s.patterns = foldReading(s.patterns, o);
-  });
+  g.save.write((s) => saveVisit(s, results, visit, foldReading));
 
   // The baby hops with hearts in its new necklace and says "Pretty!".
   void baby.emote('hop');

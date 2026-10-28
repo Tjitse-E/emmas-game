@@ -2,15 +2,16 @@
 // middle with 3 gaps, and a tray of 3 or 4 beads on the right, as the stones. She drags a bead anywhere onto the
 // string and it goes to the glowing gap. Each gap is its own checked choice with its own hint ladder (HintRunner
 // 'maths', miss step 'contrast'):
-//   a right bead   clinks into place (bead-clink) and sparkles, and the next gap glows
-//   a wrong bead   wobbles at the gap and rolls back to the tray, with no sound; the first miss runs the light
-//                  contrast: one full repeat of the pattern lights bead by bead, "Look at the pattern again."
+//   a right bead   clinks into place (bead-clink, a pop until the file exists) and sparkles, and the next gap glows
+//   a wrong bead   wobbles at the gap and slides back to the tray, with no sound; the first miss runs the light
+//                  contrast: one full repeat of the pattern lights bead by bead, "Look at the pattern again." It is
+//                  not the repeat next to the gap (contrastFor), so the first bead to light is not the answer
 //   idle (15 s)    the goal again, then the focused hint: "Let's look at the pattern.", the repeat lights with a tick
 //                  per bead and the place in it that matches the gap pulses gold (helped)
 //   a second miss  the ghost carries the right bead into the gap (helped)
 // A tray bead never runs out. The tray sleeps (dimmed, a touch only wiggles it) while Elizabeth says the goal. On her
-// first visit ever (`demo`) the ghost carries the right bead into the first gap after the goal, as the first egg's
-// "Drag one stone" did; she fills gaps 2 and 3. After the third gap the string sparkles and Elizabeth says "What a
+// first visit ever (`demo`) the ghost carries the right bead into the first gap after the goal, before the tray wakes,
+// as the first egg's "Drag one stone" did; then the goal again, the tray wakes and she fills gaps 2 and 3. After the third gap the string sparkles and Elizabeth says "What a
 // pretty necklace!"; the moment resolves with the three results in gap order.
 //
 // The panel never says anything over Elizabeth: the clink only follows a bead (no speech then), the line after the
@@ -19,7 +20,7 @@ import './beads.css';
 import type { Bead, Layer, MomentResult, PatternSpec } from '../contracts';
 import { audio } from '../audio';
 import { PALETTE } from '../wardrobe';
-import { beadKey, repeatFor } from '../content/patterns';
+import { DEMO_RESULT, beadKey, contrastFor, repeatFor } from '../content/patterns';
 import { HintRunner } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, html, play, sleep, u } from './dom';
@@ -157,9 +158,8 @@ export function runBeads(
     const gapEl = (): HTMLElement => places[spec.gaps[gap]];
     const onString = (p: Point): boolean => inBox(p, boxOf(str), u(30));
 
-    /** Light the full repeat for the open gap one bead after another; with `tick` also the matching place. */
-    const lightRepeat = async (still: () => boolean, tick: boolean): Promise<void> => {
-      const r = repeatFor(spec, gap);
+    /** Light a full repeat one bead after another; with `tick` (the focused hint) also the matching place. */
+    const lightRepeat = async (r: { places: number[]; match: number } | null, still: () => boolean, tick: boolean): Promise<void> => {
       if (!r) return;
       try {
         for (const x of r.places) {
@@ -184,15 +184,16 @@ export function runBeads(
         busy: () => audio.speaking,
         repeat: () => audio.sayAll(spec.clips.goal),
         contrast: async (still) => {
-          // "Look at the pattern again." while one full repeat lights up, bead by bead.
+          // "Look at the pattern again." while one full repeat lights up, bead by bead: not always the one next to
+          // the gap, whose first bead is the answer, so the order of the lights does not tell her which bead to take.
           const line = audio.sayAll(spec.clips.again);
-          await lightRepeat(still, false);
+          await lightRepeat(contrastFor(spec, gap, Math.random), still, false);
           await line;
         },
         focused: async (_reason, still) => {
           await audio.sayAll(spec.clips.hint);
           if (!still() || !life.alive) return;
-          await lightRepeat(still, true);
+          await lightRepeat(repeatFor(spec, gap), still, true);
         },
         ghost: async () => {
           const cell = cells[wantIndex()];
@@ -234,7 +235,6 @@ export function runBeads(
         const pic = f.el.firstElementChild ?? f.el;
         await wobble(pic);
         if (!life.alive) return;
-        void play(pic, [{ transform: 'rotate(0)' }, { transform: 'rotate(-360deg)' }], { duration: 560, easing: 'ease-in-out' });
         await f.home(560);
         if (!life.alive) return;
         touched.clear();
@@ -251,9 +251,9 @@ export function runBeads(
       slot.innerHTML = beadSvg(b);
       void play(slot, [{ transform: 'scale(1.25)' }, { transform: 'scale(0.92)', offset: 0.6 }, { transform: 'scale(1)' }], { duration: 360, easing: 'ease-out' });
       sparkleBurst(ctx.drag, at, 7);
-      const clink = audio.fx('bead-clink');
+      const clink = audio.fx('bead-clink', { fallback: 'pop' });
       let r: MomentResult;
-      if (by === 'demo') r = { outcome: 'helped', misses: 0, ms: 0 };
+      if (by === 'demo') r = { ...DEMO_RESULT };
       else {
         ladder?.chose(touched.get(beadKey(b)) ?? performance.now());
         r = ladder!.finish();
@@ -351,15 +351,16 @@ export function runBeads(
     setOpen(handle);
 
     // ---- the opening: the panel comes in with the tray asleep while Elizabeth says the intro (the first time in a
-    // play; it ends with the goal) or the goal. Then the tray wakes; on her first visit ever the ghost fills the first
-    // gap, and the goal hands the next one to her.
+    // play; it ends with the goal) or the goal. The panel owns the intro, so the quest says nothing before it. On her
+    // first visit ever the ghost then fills the first gap while the tray still sleeps (a touch only wiggles a bead),
+    // and the goal hands the next gap to her. Then the tray wakes with a chime, after Elizabeth, and input is on.
+    const say = (clips: string[]) => Promise.race([audio.sayAll(clips), sleep(WAKE_CAP_MS)]);
     void (async () => {
       const introKey = 'beads-intro';
       const clips = ctx.seen.has(introKey) ? spec.clips.goal : spec.clips.intro;
       ctx.seen.add(introKey);
-      await Promise.race([audio.sayAll(clips), sleep(WAKE_CAP_MS)]);
+      await say(clips);
       if (!life.alive) return;
-      wake();
       gapEl().classList.add('current');
       if (o.demo) {
         await sleep(450);
@@ -372,11 +373,11 @@ export function runBeads(
         if (!life.alive) return;
         await sleep(500);
         if (!life.alive) return;
-        const l = openGap();
-        await audio.sayAll(spec.clips.goal);
-        if (life.alive) l.restartIdle();
-        return;
+        gapEl().classList.add('current');
+        await say(spec.clips.goal);
+        if (!life.alive) return;
       }
+      wake();
       openGap();
     })();
   });
