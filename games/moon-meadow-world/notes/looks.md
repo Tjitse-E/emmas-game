@@ -30,4 +30,23 @@ The looks lane of [docs/v4/2.3.md](../../../docs/v4/2.3.md) (sections 15, 16, 17
 
 ## Shade tuning (integrator, after the actors lane)
 
-Not tuned yet. Record each change here: the colour, the shade, the old and new hex, and why (seen in `dev/actors.html` at 1080 × 740). Run `npx vitest run tests/wardrobe.test.ts` after every change, for the crown outline pairs.
+Tuned once at the actors merge (2026-10-29), against `dev/actors.html` at 1080 × 740: the `gowns` and `small` line-ups (party gown, every colour on the gown, crown, shoes, hair things and jewels) and the `hair` line-up under the gold, white and lilac crowns. Only hex values in `src/wardrobe.ts` changed. `tests/wardrobe.test.ts` (the 18 × 12 crown outline pairs) and `tests/actors.test.ts` pass after the change.
+
+| Colour | Shade | Old | New | Why |
+|---|---|---|---|---|
+| gold | base | #ffe08a | #f6c86c | The gown's lower tier read as pale lemon yellow. Warmer and a little darker, it reads as pale gold next to orange's peach. |
+| gold | deep | #ffc83a | #ecb238 | The bodice and upper tier read as plain yellow. Now a warm amber gold. It stays under 1.8 against white and rainbow hair (1.73 and 1.69), so a gold crown keeps its dark gold gems there instead of gems in its own colour. |
+| gold (hair) | base | #ffc83a | #f2b233 | Gold hair read as bright yellow. It now takes the gold picture tint, so it reads as gold and stays apart from honey (beige) and sunny (pale blonde). |
+| gold (hair) | light | #ffe28a | #fbd77e | Goes with the new base. |
+| green | base | #b8ecc7 | #a4e3b2 | The gown's main tier read as mint. Now a clear pale green. Green hair (#5cc27a) already read as green. |
+| silver | base | #dfe6fa | #e2e6f2 | The silver gown read as pale blue next to the blue gown. Less blue, it reads as silver grey. |
+| silver | deep | #c3cff0 | #c6cddf | Same reason: the upper tier read as periwinkle. |
+
+**Effect on the crown outline.** Only gold hair changes. All 12 crowns on gold hair now take white gems and a white rim (contrast 1.88) instead of dark gold, the crown's deep shade or dark purple. A white crown now has white gems on 14 hair colours instead of 13 (section 15 updated). Her default look (sunny hair, Lumi's gold crown) keeps its dark gold outline, and the gold `small` shade (#ffb62e, her crown) is unchanged.
+
+**Looked at and left as they are.**
+
+- The crown outline shows on every hair under the gold, white and lilac crowns. The white crown with white gems on dark and coloured hair shows as a white crown. On sunny, white, silver and rainbow hair the gems are dark gold. The lilac crown on sunny hair has dark gold gems, which show.
+- Pink, red, orange, blue, lilac, purple, white, brown and rainbow read as their names on the gown, the crown, the shoes, the hair things and the jewels.
+- Rainbow on the small parts (the six bands) is pale on sunny hair: the yellow band of a hair thing almost disappears, the pink, mint and blue bands show. The bands are the hair tubes' and 2.2's rainbow dress's too, so they stay. Worth a look on her iPad.
+- Run `npx vitest run tests/wardrobe.test.ts tests/actors.test.ts` after any later shade change.
