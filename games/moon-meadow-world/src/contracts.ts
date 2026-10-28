@@ -632,7 +632,8 @@ export interface Layer {
    * The gift picker (2.3 sections 5 and 17.2): one or two big cards with a gift each, after a quest. A card acts on
    * pointerdown; the other card fades, the chosen one pops open and its sparkles fly to `to` (Princess Emma on
    * screen, who puts it on and keeps it). `clips` play first ("Pick one present!"). Resolves with the chosen item once
-   * the sparkles have landed.
+   * the sparkles have landed (about 1.6 s after the pick); the caller saves it then. `items` is never empty: with no
+   * items it rejects at once (no picker when every set is full).
    */
   gift(o: { items: GiftItem[]; look: PrincessLook; clips: string[]; to: () => ScreenPoint }): Promise<GiftItem>;
   /**

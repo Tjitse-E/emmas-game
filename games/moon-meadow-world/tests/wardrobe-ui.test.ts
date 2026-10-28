@@ -526,6 +526,7 @@ describe('the one sound of a pick', () => {
     const cases: [LookTab, LookField, string][] = [
       ['gown', 'gownColour', 'green'], ['gown', 'gown', 'ball'], ['gown', 'extra', 'wings'], ['crown', 'crown', 'star'],
       ['hair', 'hair', 'blue'], ['shoes', 'shoes', 'boots'], ['sparkles', 'thingColour', 'gold'], ['eyes', 'earrings', 'hearts'],
+      ['eyes', 'eyes', 'green'],
     ];
     for (const [tab, field, id] of cases) {
       const r = railsWith();
