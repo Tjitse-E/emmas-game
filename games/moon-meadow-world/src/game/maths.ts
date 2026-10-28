@@ -2,7 +2,7 @@
 // rackSpec read beyond `first`, planning an egg's three sums (or the hay rack's one) from its own stream in the
 // current band, and noting a maths result (the results log with the tray, and the band move).
 import type { EggSpec, MomentResult } from '../contracts';
-import { eggSums } from '../content/eggs';
+import { eggSums, fitEggPlans } from '../content/eggs';
 import type { Game } from './game';
 import type { MomentLog } from './moments';
 import { type Band, noteBand, useSum } from './band';
@@ -13,9 +13,13 @@ export interface EggAsk {
   first?: boolean;
   /** The hard sum's and the hay rack's band: 4 stones and the narrower ranges (a), or 5 and the wider ones (b). */
   band: Band;
-  /** Totals and answers asked earlier this play: never again while other sums are left. */
+  /**
+   * Totals and answers asked earlier this play. The hay rack asks neither again while other sums are left (2.2). An
+   * egg's sum gives way to one just like it whose total was not asked, while there is one; its answers differ only
+   * within the egg (eggSums).
+   */
   used: { totals: number[]; answers: number[] };
-  /** The last play's totals, left out while other sums are left. */
+  /** The last play's totals: the hay rack leaves them out while other sums are left. The eggs do not (freshCell). */
   lastTotals: number[];
 }
 
@@ -41,7 +45,8 @@ export function planEggs(g: Game, kind: EggSpec['kind'], label: string, first: b
  */
 export function noteMaths(g: Game, part: string, spec: EggSpec, r: MomentResult, t: MomentLog): void {
   g.results.add(part, 'm', r, {
-    kind: spec.kind, grade: spec.grade, round: spec.round?.index, need: spec.need, have: spec.have, answer: spec.answer, band: spec.band ?? g.maths.band,
+    // An easy or a middle sum has no band (19.1), so its line has none either.
+    kind: spec.kind, grade: spec.grade, round: spec.round?.index, need: spec.need, have: spec.have, answer: spec.answer, band: spec.band,
     stones: spec.stones, place: spec.stones.indexOf(spec.answer), decoys: spec.decoys ?? {}, tried: t.tried, ...t.flags,
   });
   if (movesBand(spec)) noteBand(g.maths, r.outcome);
@@ -50,4 +55,14 @@ export function noteMaths(g: Game, part: string, spec: EggSpec, r: MomentResult,
 /** True for the sums that move the maths band: an egg's hard sum and the hay rack (no grade). */
 export function movesBand(spec: Pick<EggSpec, 'grade'>): boolean {
   return !spec.grade || spec.grade === 'hard';
+}
+
+/**
+ * The egg plans are fitted once the page is idle after its start, so the fitting never runs on the walk to an egg
+ * (docs/v4/2.3.md section 19.1; a few milliseconds per kind and band). Only in a browser.
+ */
+if (typeof window !== 'undefined') {
+  const idle = (window as { requestIdleCallback?: (f: () => void) => number }).requestIdleCallback;
+  if (idle) idle.call(window, fitEggPlans);
+  else setTimeout(fitEggPlans, 400);
 }

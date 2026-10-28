@@ -35,15 +35,19 @@ The eggs and the hay rack. 2.3.0 gives each egg three sums (docs/v4/2.3.md secti
 
 The three sums of one egg never share an answer, and easy, middle and snow hard A all draw answers from 3 to 6. Planned one by one, the later sums lose places: after an easy 3, the middle sum has fewer ways to be the smallest stone. A first version planned each sum on its own and broke the bounds (snow hard A: "nearest five" 42%, "lower middle" 37%).
 
-So `eggSums` draws a whole egg from a plan. A cell is one place and one answer of a grade (the sums that can show that answer there). A plan is one cell per grade with three different answers. Each kind and band has a few hundred plans, fitted once by iterative proportional fitting:
+So `eggSums` draws a whole egg from a plan. A cell is one sum of a grade with its answer at one place of the tray. A plan is one cell per grade with three different answers; its weight is the product of the cells' factors. The factors are fitted once per kind and band by iterative proportional fitting. A grade's share of a cell is its factor times the weight of the other two grades' different answers, so the fitting takes about 5 ms per kind and band on a Mac. `game/maths.ts` fits all four when the page is first idle, so it never runs on the walk to an egg. The bounds:
 
-- each grade's places to `gradePlaces`: even over the places it can reach, and half a share for a place only one sum can reach (the warm easy answer is the biggest stone only as 9 = 3 + 6 on 3, 4, 5, 6);
-- "the stone nearest five" at most 29% with 4 stones and 24% with 5 (`PLAN_FIVE_CAP`);
-- no one sum above 22% of its grade (`PLAN_SUM_CAP`), so 12 = 6 + 6 does not come back play after play.
+- each grade's places to `gradePlaces`: even over the places it can reach, and a third or two thirds of a share for a place only one or two sums can reach (the warm easy answer is the biggest stone only as 9 = 3 + 6 on 3, 4, 5, 6; the snow easy one only as 10 - 4);
+- "the stone nearest five" at most 29% with 4 stones and 24% with 5;
+- the number she heard (the warm cups, the snow egg's need) is the answer at most 21% with 4 stones and 15% with 5, under blind odds, so dragging the number Elizabeth just said never beats a blind guess (8 - 4 = 4, 10 - 5 = 5, 12 = 6 + 6);
+- at most 36% of the snow egg's easy sums take away from 10, the bond she knows (the table has 4 in 10);
+- no sum above 1.4 even shares of its grade.
 
-Then each cell picks one of its sums, fresh as 2.2's `freshCombos` says, and the tray as 2.2 does. Within a cell every sum has the same answer, so across the play only the totals can be kept fresh (this play's, then the last play's). An answer may repeat one from the other egg. The bounds hold for every grade and every place in the egg, whatever came before.
+Tighter bounds leave the snow egg's easy sums no plan: only 10 - 4 shows its answer as the biggest stone, and only 9 - 4, 10 - 5 and 10 - 4 as the upper middle one.
 
-Measured over 10,000 plays per band (`tests/maths.test.ts` checks it): places at most 33.9% (snow hard A has three places), "nearest five" at most 29.8% with 4 stones and 21.2% with 5, every sum of every grade comes up, no sum above 26% of its grade.
+**Fresh sums.** A sum whose total the warm egg already asked gives way to a sum just like it: the same place and answer, the same heard number as the answer or not, the same take-away from 10 or not (`freshCell`). So freshness never changes a guess rule. When there is none, the sum stays and the total repeats (about 1 snow sum in 8). The last play's totals are not left out. The old rule (within the planned place and answer, any sum with a fresh total) pushed the snow egg's sums onto the totals the warm egg cannot ask: 65% of snow easy sums started from 10, and 30% had the heard number as the answer (10 - 5 whenever the warm egg had asked 9). Leaving the last play's totals out as well pushed the snow hard B sums onto 16 - 10 (twice its even share). The spread bound keeps a sum from coming back. About 12% of sums repeat a sum of the last play (10% with the old rule). The hay rack keeps 2.2's `freshCombos` with both.
+
+Measured over 10,000 plays per band, one after another (`tests/maths.test.ts` checks it): places at most 33.7% (snow hard A has three places), "nearest five" at most 29.4% with 4 stones and 22.3% with 5, the heard number at most 21.2% with 4 stones and 15.6% with 5, 35.8% of snow easy sums from 10, every sum of every grade comes up, and none above 1.44 even shares.
 
 ## Clips
 

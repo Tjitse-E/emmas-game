@@ -262,11 +262,12 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
     const root = reuse?.root ?? el('div', `egg-moment kind-${spec.kind}${hay ? ' skin-hay' : ''}`, ctx.moments);
     if (!reuse) frame.own(() => root.remove());
     for (const e of reuse?.stale ?? []) e.remove();
-    // The next sum's cups and stones come in on the panel that stayed, without its pop-in.
-    root.classList.toggle('next', !!reuse);
     const hearts = reuse?.hearts ?? (round ? heartsEl(root, round.index, round.of) : null);
     const skin = hay ? haySkin(ctx, spec, root, life) : cupsSkin(ctx, spec, root, life);
     const panel = skin.panel;
+    // The next sum's cups come in on the panel that stayed, without its pop-in. The shake of a wrong stone (.hot,
+    // .cold) still wins over it, as over the first sum's pop-in (ui.css).
+    if (reuse) panel.classList.add('next-in');
 
     // ---- the stones: 4 (band A) or 5 (band B) below the home button; 5 are smaller cells so the tray still fits
     const n = spec.stones.length;
@@ -337,6 +338,8 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
     };
     const onTarget = (p: Point): boolean => {
       if (inBox(p, boxOf(panel), u(36))) return true;
+      // The hearts sit on the panel's rim and look part of it, so a stone let go on them counts too.
+      if (hearts && inBox(p, boxOf(hearts.el), u(36))) return true;
       const a = hooks.anchor();
       return Math.hypot(p.x - a.x, p.y - a.y) < u(170);
     };
@@ -510,8 +513,11 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
     // new kind). When it ends the stones wake and input is on, so decision time starts there. Then, for the first warm
     // egg, how to play; the first egg ever shows how a stone is dragged with a stone that is not the answer, halfway.
     void (async () => {
+      // The kind's intro is said once per layer. An egg's first sum ends its intro with the hearts line ("Fill all
+      // three hearts", content/eggs.ts sumClips), which every egg says, so a second egg of a kind keeps it.
       const introKey = `egg-intro:${hay ? 'hay' : spec.kind}`;
-      const clips = ctx.seen.has(introKey) ? spec.clips.goal : [...spec.clips.intro, ...spec.clips.goal];
+      const everyEgg = round?.index === 0 ? spec.clips.intro.slice(-1) : [];
+      const clips = [...(ctx.seen.has(introKey) ? everyEgg : spec.clips.intro), ...spec.clips.goal];
       ctx.seen.add(introKey);
       await Promise.race([audio.sayAll(clips), sleep(WAKE_CAP_MS)]);
       if (!life.alive) return;

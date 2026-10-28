@@ -49,7 +49,7 @@ const SAME_SOUND = [['c', 'k', 'ck'], ['s', 'ss'], ['l', 'll'], ['f', 'ff'], ['z
 const sameSound = (a: string, b: string): boolean => a === b || SAME_SOUND.some((f) => f.includes(a) && f.includes(b));
 
 // The eggs' three sums (2.3.0); content/index.ts is the integrator's, so they come from eggs.ts itself.
-const { eggSums } = await import('../src/content/eggs.ts');
+const { HEARTS_CLIP, eggSums } = await import('../src/content/eggs.ts');
 
 function eggs(kind: 'warm' | 'snow'): EggSpec[] {
   return seeds.flatMap((s) => {
@@ -110,6 +110,8 @@ describe('eggs', () => {
       // Not the first egg of its kind: only the hearts line.
       expect(eggSums('warm', C.seeded(s))[0].clips.intro).toEqual(['g4-hearts']);
     }
+    // eggs.ts cannot import CLIPS (clips.ts imports eggs.ts), so its copy of the hearts line's id is checked here.
+    expect(C.CLIPS.hearts).toEqual([HEARTS_CLIP]);
   });
 
   it('an egg\'s sums say their own goal and fact, the snow egg\'s easy one within 10 too', () => {
