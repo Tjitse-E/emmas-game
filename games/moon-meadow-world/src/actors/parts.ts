@@ -215,7 +215,8 @@ export class Parts {
   /** The canvas size in CSS pixels at the last frame (for the herd's minimum tap size on screen). */
   readonly viewSize = new THREE.Vector2(1024, 768);
 
-  constructor() {
+  /** `scale` multiplies every batch's capacity (the harness's line-up of princesses; the game uses 1). */
+  constructor(scale = 1) {
     this.group.name = 'actors-parts';
     const lit = rimLambert({}, 'instanced');
     const flat = new THREE.MeshBasicMaterial({ vertexColors: true });
@@ -229,7 +230,7 @@ export class Parts {
     for (const k of Object.keys(mats).map(Number) as BatchId[]) {
       const g = GEOMETRY[k]();
       const m = mats[k];
-      const b = new Batch(g, m, CAPACITY[k], NAMES[k]);
+      const b = new Batch(g, m, Math.ceil(CAPACITY[k] * scale), NAMES[k]);
       b.mesh.name = 'actors-' + NAMES[k];
       // Shadows, cheeks and ripples draw after the world's own transparent things (the pond water).
       if (k === B.Soft || k === B.Ripple) b.mesh.renderOrder = 2;
