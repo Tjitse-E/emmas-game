@@ -1,9 +1,9 @@
-// The customiser's camera (src/game/portrait.ts): the frame helper puts the camera where the design says, and she
-// stands in the middle of the preview at every iPad size.
+// The wardrobe's camera (src/game/portrait.ts): the frame helper puts the camera where the design says, and she
+// stands in the middle of the preview at every iPad size, at the start mirror and at the Dressing Corner's step.
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { FOV } from '../src/world/camera';
-import { START } from '../src/layout';
+import { CORNER, START } from '../src/layout';
 import { PORTRAIT, panelLeftOf, portraitFrame, portraitKind } from '../src/game/portrait';
 
 const SIZES: [number, number][] = [[1080, 810], [1080, 740], [1024, 768], [1024, 690], [1180, 820], [1366, 1024]];
@@ -76,6 +76,21 @@ describe('portraitFrame', () => {
     expect(portraitKind(null)).toBe('body');
     const tabs = ['hair', 'eyes', 'gown', 'crown', 'shoes', 'sparkles'] as const;
     expect(tabs.map((t) => portraitKind(t))).toEqual(['body', 'face', 'body', 'body', 'body', 'face']);
+  });
+
+  it('frames her at the Dressing Corner step the same way, with the trunk and the mirror behind her', () => {
+    for (const [w, h] of SIZES) {
+      const panelLeft = panelLeftOf(w, h);
+      for (const row of [null, 'eyes'] as const) {
+        const f = portraitFrame(CORNER.stand, row, { w, h, panelLeft });
+        const cam = rigCamera(f, w, h);
+        const her = onScreen(cam, CORNER.stand.x, PORTRAIT[f.kind].lookY, CORNER.stand.z, w, h);
+        expect(Math.abs(her.x - panelLeft / 2)).toBeLessThan(0.5);
+        // The camera is south of her, and the trunk and the mirror stand north of her: never between them.
+        expect(f.camera.z).toBeGreaterThan(CORNER.stand.z);
+        for (const p of [CORNER.trunk, CORNER.mirror]) expect(p.z).toBeLessThan(CORNER.stand.z);
+      }
+    }
   });
 
   it('places the panel where the ui lane draws it', () => {
