@@ -140,13 +140,15 @@ export const HAY_RACK = {
 
 /**
  * The royal picnic south of the gazebo step (side quest, section 5): a rug of 2.4 x 1.8 m, two seats on it for the
- * babies, her spot east of it and the hamper between. Not an obstacle: the babies walk onto the rug.
+ * babies, her spot east of it and the hamper at the rug's south-east corner beside her. Not an obstacle: the babies
+ * walk onto the rug. 2.3.0 moved the hamper 0.9 m south: the Dressing Corner's close-up camera stands over the rug,
+ * and there the hamper stood in the bottom of the picture.
  */
 export const PICNIC = {
   rug: { center: v2(-14, 4.6), halfX: 1.2, halfZ: 0.9 },
   seats: [v2(-14.7, 4.1), v2(-13.3, 4.1)] as Vec2[],
   stand: v2(-12.2, 5.0),
-  hamper: v2(-12.7, 4.4),
+  hamper: v2(-12.7, 5.3),
   /** Where her other followers wait during the picnic: west of the rug, clear of the cushions and the 5.5 m frame. */
   aside: [v2(-17, 4.0), v2(-17.3, 5.1), v2(-16.8, 2.9)] as Vec2[],
 } as const;
@@ -188,13 +190,16 @@ export const BEAD_TREE = {
 /**
  * The moon mist in the north-east corner, with a saddle sign in front of it: what opens in 2.4 (2.3.md section 17.1). The mist
  * bank lies behind the stables' back line (z below -16.7), where nobody walks, so it needs no obstacle and the routes
- * do not change; the sign stands on the grass in front of it.
+ * do not change; the sign stands on the grass in front of it. Its post is a small obstacle (`signRadius`); `signStand`
+ * is the grass in front of it, where she reads it.
  */
 export const MIST = {
   center: v2(21.5, -19.8),
   rx: 4.5,
   rz: 2.8,
   sign: v2(19.4, -15.6),
+  signRadius: 0.25,
+  signStand: v2(19.4, -14.2),
 } as const;
 
 /** The big trees inside the fence (the world draws one on each). Obstacles. */
@@ -209,7 +214,7 @@ export const TREES: { center: Vec2; radius: number }[] = [
 
 /**
  * Round obstacles for walking (the gazebo, the nest, the trees, the hay rack, the Corner's trunk and mirror, the bead
- * tree). The pond is handled by inPond.
+ * tree, the saddle sign's post). The pond is handled by inPond.
  */
 export const OBSTACLES: { center: Vec2; radius: number }[] = [
   { center: GAZEBO.center, radius: GAZEBO.radius },
@@ -219,6 +224,7 @@ export const OBSTACLES: { center: Vec2; radius: number }[] = [
   { center: CORNER.trunk, radius: CORNER.radius },
   { center: CORNER.mirror, radius: CORNER.radius },
   { center: BEAD_TREE.center, radius: BEAD_TREE.radius },
+  { center: MIST.sign, radius: MIST.signRadius },
 ];
 
 /** Stable buildings as rectangles (obstacles): x from centerX - 3.9 to + 3.9, z from frontZ - depth to frontZ. */

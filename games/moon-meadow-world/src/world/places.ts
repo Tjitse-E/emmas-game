@@ -1,7 +1,8 @@
-// Lumi's gazebo, the royal picnic, the nest on its mound, the pond with its toys and the slide. Static parts go into
-// the merged scenery; the water, the ducks and the boat are their own small meshes because they move.
+// Lumi's gazebo, the Dressing Corner at its step, the saddle sign, the royal picnic, the nest on its mound, the pond
+// with its toys and the slide. Static parts go into the merged scenery; the water, the ducks and the boat are their own
+// small meshes because they move. The trunk lid moves inside its merged region (cornerLid), with no mesh of its own.
 import * as THREE from 'three';
-import { GAZEBO, NEST, PICNIC, POND, SLIDE, SLIDE_CURVE } from '../layout';
+import { CORNER, GAZEBO, MIST, NEST, PICNIC, POND, SLIDE, SLIDE_CURVE } from '../layout';
 import { Scenery, blob, canvasTexture, faceUp, merge, paint, paintBy, paintY, place, rng, type Geo } from './geo';
 import { MOUND, grassColour, groundHeight, moundHeight } from './terrain';
 
@@ -87,20 +88,10 @@ export function buildGazebo(scenery: Scenery): void {
     at(paint(new THREE.SphereGeometry(0.16, 10, 8), '#f6d277'), { y: 5.35 });
     at(heart(0.32, 0.1, '#ff7fb0'), { y: 5.85 });
   }
-  // The wardrobe trunk inside, with a cushion: a little dressing corner for later.
-  {
-    const tx = 0.5;
-    const tz = 0.55;
-    at(paintY(new THREE.BoxGeometry(1.0, 0.52, 0.6), '#b99ae8', '#d6c3fb', -0.26, 0.26), { x: tx, y: 0.6, z: tz, ry: -0.25 });
-    at(paint(new THREE.CylinderGeometry(0.3, 0.3, 1.0, 12, 1, false, 0, Math.PI), '#cdb5fb'), { x: tx, y: 0.86, z: tz, rz: Math.PI / 2, ry: -0.25 });
-    for (const dx of [-0.32, 0.32]) {
-      at(paint(new THREE.BoxGeometry(0.09, 0.56, 0.62), '#f2cf74'), { x: tx + Math.cos(0.25) * dx, y: 0.62, z: tz + Math.sin(0.25) * dx, ry: -0.25 });
-    }
-    at(heart(0.09, 0.04, '#f5c95c'), { x: tx + 0.08, y: 0.74, z: tz + 0.33, ry: -0.25 });
-    at(paintY(new THREE.SphereGeometry(0.42, 10, 6), '#ff9cc4', '#ffc4dc', -0.2, 0.2), { x: -0.7, y: 0.42, z: 0.9, sy: 0.38 });
-  }
-  // Pots of pink flowers at the step.
-  for (const a of [Math.PI * 0.35, Math.PI * 0.65]) {
+  // A cushion inside. The lilac trunk moved out to the south step (2.3.0): the Dressing Corner, buildCorner below.
+  at(paintY(new THREE.SphereGeometry(0.42, 10, 6), '#ff9cc4', '#ffc4dc', -0.2, 0.2), { x: -0.7, y: 0.42, z: 0.9, sy: 0.38 });
+  // Pots of pink flowers round the step, moved out to 0.2 and 0.8 pi so the trunk and the mirror have the step.
+  for (const a of [Math.PI * 0.2, Math.PI * 0.8]) {
     const px = Math.cos(a) * 3.15;
     const pz = Math.sin(a) * 3.15;
     at(paint(new THREE.CylinderGeometry(0.24, 0.18, 0.32, 10), '#f4b183'), { x: px, y: 0.16, z: pz });
@@ -110,8 +101,257 @@ export function buildGazebo(scenery: Scenery): void {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// The royal picnic
+// The Dressing Corner (2.3.0) at the gazebo's south step: the lilac trunk and a standing mirror
 // ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * The trunk: body and lid sizes in metres, and its turn (towards the south-east, so its front faces her spot and the
+ * camera). The lid is a half cylinder hinged along the body's back top edge; open, it stands up behind it.
+ */
+export const TRUNK = { w: 0.76, h: 0.4, d: 0.46, yaw: 0.75, openAngle: -1.95 } as const;
+/** The mirror turns towards her spot from the east side of the step. */
+export const MIRROR = { yaw: -0.75, y: 1.12, rx: 0.36, ry: 0.5 } as const;
+/** The key of the lid among the scenery's movable parts. */
+export const LID_KEY = 'trunk-lid';
+/** The region the Corner is merged into (the meadow's middle west). */
+export const CORNER_REGION = Scenery.regionOf(CORNER.trunk.x, CORNER.trunk.z);
+
+const LILAC = { deep: '#a98ae0', base: '#c3a9f2', light: '#dccbff' } as const;
+const GOLD = '#f2cf74';
+
+/** The trunk's body, gold bands and heart clasp, in the trunk's own space (front towards +z). */
+function trunkBody(): Geo[] {
+  const { w, h, d } = TRUNK;
+  const parts: Geo[] = [];
+  // The top face is the pink satin inside, seen when the lid opens; the sides a lilac gradient.
+  const body = paint(new THREE.BoxGeometry(w, h, d).toNonIndexed(), LILAC.base);
+  parts.push(place(paintFaces(body, (_x, y, _z, out) => {
+    if (y > h / 2 - 1e-3) out.set('#ffd2e6');
+    else out.set(LILAC.deep).lerp(tmp.set(LILAC.light), THREE.MathUtils.clamp((y + h / 2) / h, 0, 1));
+  }), { y: h / 2 }));
+  for (const dx of [-0.25, 0.25]) parts.push(place(paint(new THREE.BoxGeometry(0.07, h + 0.01, d + 0.02), GOLD), { x: dx, y: h / 2 }));
+  parts.push(place(heart(0.07, 0.03, '#f5c95c'), { y: h - 0.1, z: d / 2 + 0.015 }));
+  // Little gold feet.
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    parts.push(place(paint(new THREE.SphereGeometry(0.035, 5, 3), GOLD), { x: sx * (w / 2 - 0.05), y: 0.02, z: sz * (d / 2 - 0.05) }));
+  }
+  return parts;
+}
+
+/**
+ * The lid in the hinge's own space: the hinge line is the x axis, the closed lid lies towards +z. A half cylinder
+ * with its satin underside, the gold bands over it and a gold lip at the front.
+ */
+export function lidGeometry(): Geo {
+  const { w, d } = TRUNK;
+  const r = d / 2;
+  const parts: Geo[] = [];
+  // The half cylinder lies along x, its dome up (as 2.2's trunk lid).
+  parts.push(place(paintY(new THREE.CylinderGeometry(r, r, w, 10, 1, false, 0, Math.PI), LILAC.base, LILAC.light, -r, r), { z: r, rz: Math.PI / 2 }));
+  parts.push(place(paint(new THREE.PlaneGeometry(w, d), '#ffc4dc'), { y: 0.002, z: r, rx: Math.PI / 2 }));
+  for (const dx of [-0.25, 0.25]) {
+    parts.push(place(paint(new THREE.CylinderGeometry(r + 0.012, r + 0.012, 0.07, 10, 1, true, 0, Math.PI), GOLD), { x: dx, z: r, rz: Math.PI / 2 }));
+  }
+  parts.push(place(paint(new THREE.BoxGeometry(0.14, 0.05, 0.025), GOLD), { y: 0.01, z: d + 0.01 }));
+  return merge(parts);
+}
+
+/** Where the hinge stands in the world, and its turn. */
+export function hingeMatrix(out = new THREE.Matrix4()): THREE.Matrix4 {
+  const { h, d, yaw } = TRUNK;
+  const m = new THREE.Matrix4().makeTranslation(CORNER.trunk.x, 0, CORNER.trunk.z).multiply(new THREE.Matrix4().makeRotationY(yaw));
+  return out.copy(m.multiply(new THREE.Matrix4().makeTranslation(0, h, -d / 2)));
+}
+
+/** The standing mirror in its own space (glass towards +z): a base, a post, an oval gold frame and the glass. */
+export function mirrorGeometry(): Geo[] {
+  const { y, rx, ry } = MIRROR;
+  const parts: Geo[] = [];
+  parts.push(place(paintY(new THREE.CylinderGeometry(0.24, 0.29, 0.07, 10), '#e9c766', '#f8e3a0', -0.035, 0.035), { y: 0.035 }));
+  parts.push(place(paint(new THREE.CylinderGeometry(0.032, 0.045, y - ry, 6), GOLD), { y: (y - ry) / 2 + 0.05 }));
+  parts.push(place(paintBy(new THREE.TorusGeometry(1, 0.11, 5, 20), (px, py, _z, out) => {
+    out.set('#f0c75c').lerp(tmp.set('#fff0b8'), THREE.MathUtils.clamp(0.5 + 0.5 * (py - px) * 0.7, 0, 1));
+  }), { y, sx: rx, sy: ry, sz: 0.4 }));
+  // The glass: a soft lilac sky with a white glint, and a lilac back.
+  parts.push(place(paintBy(new THREE.CircleGeometry(1, 18), (px, py, _z, out) => {
+    out.set('#d8e6ff').lerp(tmp.set('#f4ecff'), THREE.MathUtils.clamp(0.5 + py * 0.5, 0, 1));
+    if (Math.abs(px + py * 0.6 + 0.25) < 0.16) out.set('#ffffff');
+  }), { y, z: 0.01, sx: rx * 0.97, sy: ry * 0.97 }));
+  parts.push(place(paint(new THREE.CircleGeometry(1, 12), LILAC.deep), { y, z: -0.012, ry: Math.PI, sx: rx, sy: ry }));
+  parts.push(place(paint(new THREE.SphereGeometry(0.05, 6, 4), '#ff9cc8'), { y: y + ry + 0.06 }));
+  return parts;
+}
+
+/**
+ * The Dressing Corner's trunk and mirror, merged into the middle west region with the gazebo: no draw call of their
+ * own. The lid is a movable part of that region (cornerLid moves it).
+ */
+export function buildCorner(scenery: Scenery): void {
+  const trunk = new THREE.Matrix4().makeTranslation(CORNER.trunk.x, 0, CORNER.trunk.z).multiply(new THREE.Matrix4().makeRotationY(TRUNK.yaw));
+  for (const g of trunkBody()) scenery.add(g.applyMatrix4(trunk), CORNER_REGION);
+  scenery.addMovable(lidGeometry().applyMatrix4(hingeMatrix()), CORNER_REGION, LID_KEY);
+  const mirror = new THREE.Matrix4().makeTranslation(CORNER.mirror.x, 0, CORNER.mirror.z).multiply(new THREE.Matrix4().makeRotationY(MIRROR.yaw));
+  for (const g of mirrorGeometry()) scenery.add(g.applyMatrix4(mirror), CORNER_REGION);
+}
+
+export interface CornerLid {
+  /** Open (true) or close the lid over `ms` (0.6 s). Resolves when it is there. */
+  set(open: boolean, ms?: number): Promise<void>;
+  /** 0 closed, 1 open. */
+  readonly open: number;
+  update(dt: number): void;
+}
+
+/**
+ * The trunk lid's hinge: it rewrites the lid's vertices inside the merged region mesh (only that range is uploaded),
+ * so opening it costs no draw call.
+ */
+export function cornerLid(scenery: Scenery): CornerLid {
+  const part = scenery.movable(LID_KEY);
+  const local = lidGeometry();
+  const lp = local.attributes.position;
+  const ln = local.attributes.normal;
+  const hinge = hingeMatrix();
+  const turn = new THREE.Matrix4();
+  const m = new THREE.Matrix4();
+  const nm = new THREE.Matrix3();
+  const v = new THREE.Vector3();
+  let open = 0;
+  let tween: { from: number; to: number; ms: number; t: number; done: () => void } | null = null;
+  const pose = (k: number): void => {
+    if (!part) return;
+    const geo = part.mesh.geometry;
+    const pos = geo.attributes.position as THREE.BufferAttribute;
+    const nor = geo.attributes.normal as THREE.BufferAttribute;
+    m.multiplyMatrices(hinge, turn.makeRotationX(TRUNK.openAngle * k));
+    nm.getNormalMatrix(m);
+    for (let i = 0; i < part.count; i++) {
+      v.fromBufferAttribute(lp, i).applyMatrix4(m);
+      pos.setXYZ(part.start + i, v.x, v.y, v.z);
+      v.fromBufferAttribute(ln, i).applyMatrix3(nm).normalize();
+      nor.setXYZ(part.start + i, v.x, v.y, v.z);
+    }
+    for (const a of [pos, nor]) {
+      a.clearUpdateRanges();
+      a.addUpdateRange(part.start * 3, part.count * 3);
+      a.needsUpdate = true;
+    }
+  };
+  const ease = (x: number): number => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
+  return {
+    get open() {
+      return open;
+    },
+    set(on, ms = 600) {
+      tween?.done();
+      const to = on ? 1 : 0;
+      if (ms <= 0 || to === open) {
+        tween = null;
+        open = to;
+        pose(open);
+        return Promise.resolve();
+      }
+      return new Promise((done) => {
+        tween = { from: open, to, ms, t: 0, done };
+      });
+    },
+    update(dt) {
+      if (!tween) return;
+      const tw = tween;
+      tw.t += dt * 1000;
+      const k = Math.min(1, tw.t / tw.ms);
+      // Opening swings up with a little overshoot feel (ease), closing comes down softly.
+      open = tw.from + (tw.to - tw.from) * ease(k);
+      pose(open);
+      if (k >= 1) {
+        tween = null;
+        tw.done();
+      }
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The saddle sign at the moon mist (2.3.0): what opens next
+// ---------------------------------------------------------------------------------------------------------------
+
+/** The sign's board, in metres: its picture's size and height. */
+export const SIGN = { board: { w: 1.0, h: 0.78, y: 1.32 }, pic: { w: 0.86, h: 0.64 } } as const;
+
+/** The sign's post and wooden board frame, merged into its region (the north-east). */
+export function signGeometry(): Geo[] {
+  const { board } = SIGN;
+  const parts: Geo[] = [];
+  parts.push(place(paintY(new THREE.BoxGeometry(0.1, board.y, 0.1), '#9b6a42', '#c08a5c', -board.y / 2, board.y / 2), { y: board.y / 2 }));
+  parts.push(place(paintY(new THREE.BoxGeometry(board.w, board.h, 0.07), '#b57d4e', '#d9a46f', -board.h / 2, board.h / 2), { y: board.y }));
+  // A little gold star on top: the sign of something new.
+  parts.push(place(paint(new THREE.OctahedronGeometry(0.09), '#ffd36b'), { y: board.y + board.h / 2 + 0.1, sz: 0.4 }));
+  return parts;
+}
+
+export interface SignBoard {
+  readonly mesh: THREE.Mesh;
+  /** A soft glow over the picture for a moment (a tap). */
+  shimmer(): void;
+  update(dt: number, t: number): void;
+}
+
+/**
+ * The saddle sign at MIST.sign: the post and frame in the scenery, the picture (v3's saddle on a cream board) its
+ * own small mesh, drawn only while in view. Its material has the stable plaques' features (a map, an emissive map and
+ * an alpha test), so it compiles no new shader program.
+ */
+export function buildSign(scenery: Scenery, picUrl: string): SignBoard {
+  const at = new THREE.Matrix4().makeTranslation(MIST.sign.x, 0, MIST.sign.z);
+  for (const g of signGeometry()) scenery.add(g.applyMatrix4(at), Scenery.regionOf(MIST.sign.x, MIST.sign.z));
+  const W = 256;
+  const H = 192;
+  const drawBoard = (ctx: CanvasRenderingContext2D, img?: HTMLImageElement): void => {
+    ctx.fillStyle = '#fff6e2';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#ff9cc8';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(5, 5, W - 10, H - 10);
+    if (img && img.naturalWidth) {
+      const k = Math.min((W - 36) / img.naturalWidth, (H - 32) / img.naturalHeight);
+      const iw = img.naturalWidth * k;
+      const ih = img.naturalHeight * k;
+      ctx.drawImage(img, (W - iw) / 2, (H - ih) / 2, iw, ih);
+    }
+  };
+  let ctx2d: CanvasRenderingContext2D | null = null;
+  const tex = canvasTexture(W, H, (ctx) => {
+    ctx2d = ctx;
+    drawBoard(ctx);
+  });
+  if (typeof Image !== 'undefined') {
+    const img = new Image();
+    img.onload = () => {
+      if (!ctx2d) return;
+      drawBoard(ctx2d, img);
+      tex.needsUpdate = true;
+    };
+    img.src = picUrl;
+  }
+  const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.5, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0.12 });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(SIGN.pic.w, SIGN.pic.h), mat);
+  mesh.name = 'sign-picture';
+  mesh.position.set(MIST.sign.x, SIGN.board.y, MIST.sign.z + 0.037);
+  mesh.updateMatrix();
+  mesh.matrixAutoUpdate = false;
+  let glow = 0;
+  return {
+    mesh,
+    shimmer() {
+      glow = 1;
+    },
+    update(dt, t) {
+      if (glow <= 0) return;
+      glow = Math.max(0, glow - dt / 1.6);
+      mat.emissiveIntensity = 0.12 + glow * (0.45 + 0.25 * Math.sin(t * 14));
+    },
+  };
+}
 
 /** The rug's top, and the round-cornered square cushions on its two seats. */
 const RUG_Y = 0.022;

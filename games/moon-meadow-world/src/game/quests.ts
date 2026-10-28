@@ -1,35 +1,40 @@
-// The afternoon (docs/v4/2.2.md section 5): free play with two optional side quests. It starts with two offer bubbles:
-// a picnic over the rug by the gazebo and a hay bundle over the hay rack by the stable, explained once a play. Then the
-// basket line and the food basket, as before. A bubble tap, a tap on the place or walking within 2.5 m of it starts
-// that quest; free play itself is never checked, and a skipped quest costs nothing.
+// The afternoon (docs/v4/2.2.md section 5, 2.3.md sections 5 and 17): free play with its side quests. It starts with
+// the offer bubbles: a picnic over the rug by the gazebo, and this play's maths quest (the hay rack and the bead tree in
+// turn, quest-kit.ts mathsQuestFor), explained once a play. Then the basket line and the food basket, as before. A
+// bubble tap, a tap on the place or walking within 2.5 m of it starts that quest; free play itself is never checked,
+// and a skipped quest costs nothing. Each bubble carries the swatch of a gift its quest can still give (the badge).
 //
-// Time: free play ends after two minutes without a quest running (a quest pauses the clock), once no quest runs. No
-// quest starts later than three minutes after free play began, and a running quest always finishes. Both quests need
-// her two named babies. The bubbles hide while a quest runs, once it is done, after three minutes and at bedtime.
+// Every quest resolves still framed with a release function: the gift picker runs in that frame, then the release.
+// After her first finished quest (once its gift is picked) the trunk bubble shows over the Dressing Corner, with Lumi's
+// "Come and try my Dressing Corner!" once a play; it stays until the Corner is done or free play ends.
+//
+// Time (17.3, quest-kit.ts): free time runs while no quest runs and while the Corner's music box plays. Free play
+// ends once there is 120 s of it, no quest runs and the wardrobe is closed (so at most 150 s). No picnic or maths quest
+// starts after 90 s of free time without dressing; a running quest always finishes. Every quest needs her two named
+// babies. The bubbles hide while a quest runs, once it is done, past the cutoff and at bedtime.
 import type { EggSpec, MomentHooks, Vec2, WishSpec } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { BEAD_TREE, CORNER, GRAZE_HOMES, HAY_RACK, PICNIC, PLACES, dist2 } from '../layout';
+import { PALETTE, giftSetFor, stillToEarn } from '../wardrobe';
+import { giftSwatchUrl } from '../ui/swatches';
 import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
 import { CLIPS, eggClipIds, foods, rackSpec, wishClipIds } from '../content';
-import { type Game, checked, flat, frameAt, preload, princessAt, say, sayAside, v3 } from './game';
+import { type Game, checked, flat, frameAt, lumiSay, preload, princessAt, say, sayAside, synth, v3 } from './game';
 import { afterWish, crownKeep, momentLog, parkFollowers, planWish, runWish } from './moments';
 import { eggAsk, noteMaths } from './maths';
 import { useSum } from './band';
 import { herdAside } from './wardrobe-part';
-import { followAgain, guests, walkThere } from './quest-kit';
+import { FREE_PLAY_MS, followAgain, freePlayOver, giveGift, guests, pastCutoff, tickFree, walkThere } from './quest-kit';
 import { beadsQuest } from './beads';
 import { cornerQuest } from './corner';
-import type { QuestId } from './options';
+import { QUEST_IDS, type QuestId } from './options';
 
-const QUESTS: readonly QuestId[] = ['picnic', 'rack'];
-/** Free play's own time, not counting quests. */
-export const FREE_PLAY_MS = 120_000;
-/** No quest starts this long after free play began. */
-export const QUEST_CUTOFF_MS = 180_000;
+export { FREE_PLAY_MS, QUEST_CUTOFF_MS } from './quest-kit';
+
 /** A quiet while without a touch brings the next suggestion. */
 const FREE_PROMPT_MS = 30_000;
-/** Walking this near a quest's place starts it. */
+/** Walking this near a quest's place starts it (the nearest one when two are near). */
 const NEAR_M = 2.5;
 /** The picnic guests sit down on their cushions after this long at the latest. */
 const SEAT_MS = 4000;
@@ -48,19 +53,26 @@ const RACK_SIDE: Vec2 = { x: HAY_RACK.center.x - 2.2, z: HAY_RACK.center.z + 0.4
 /** After a full rack, the herd and her babies munch with hearts this long before going home. */
 const MUNCH_MS = 3000;
 
-/** The bubble pictures (v3 art) and where each bubble floats. */
-const OFFER: Record<QuestId, { pic: () => string; at: { x: number; y: number; z: number } }> = {
+/** The bubble pictures (v3 art), their tint, and where each bubble floats. */
+const OFFER: Record<QuestId, { pic: (g: Game) => string; tint?: string; at: { x: number; y: number; z: number } }> = {
   picnic: { pic: () => wordPic('picnic'), at: { x: PICNIC.rug.center.x, y: 1.3, z: PICNIC.rug.center.z } },
   rack: { pic: () => v3Art('items/item-hay-bundle.webp'), at: { x: HAY_RACK.center.x, y: 2.3, z: HAY_RACK.center.z } },
-  // 2.3.0: the quests-world lane sets the bead tree's tinted bead and the trunk's gift picture.
-  beads: { pic: () => wordPic('bead'), at: { x: BEAD_TREE.center.x, y: 2.6, z: BEAD_TREE.center.z } },
-  corner: { pic: () => v3Art('items/place-dressing.webp'), at: { x: CORNER.trunk.x, y: 1.6, z: CORNER.trunk.z } },
+  // v3's bead picture tinted pink over the tree.
+  beads: { pic: () => wordPic('bead'), tint: PALETTE.pink.pic, at: { x: BEAD_TREE.center.x, y: 3.0, z: BEAD_TREE.center.z } },
+  // Over the trunk: the newest gift's swatch (it waits in the trunk), or v3's dressing place picture.
+  corner: {
+    pic: (g) => {
+      const last = g.quests.gifts[g.quests.gifts.length - 1];
+      return last ? giftSwatchUrl(last, g.actors.princess.look) : v3Art('items/place-dressing.webp');
+    },
+    at: { x: CORNER.trunk.x, y: 1.6, z: CORNER.trunk.z },
+  },
 };
 
 /**
  * Each quest's moment (2.3 section 17.2). It walks, frames and runs its moments, and resolves while the camera is
  * still framed and its guests, the followers and the herd are still aside, with the function that lets them go. The
- * afternoon runs the gift picker in that frame, then calls it.
+ * afternoon runs the gift picker in that frame, then calls it (the Corner runs its own picker, after its gate).
  */
 const RUN: Record<QuestId, (g: Game) => Promise<() => void>> = {
   picnic: (g) => picnicQuest(g),
@@ -71,10 +83,16 @@ const RUN: Record<QuestId, (g: Game) => Promise<() => void>> = {
 
 const bothNamed = (g: Game): boolean => !!g.babies[0]?.member && !!g.babies[1]?.member;
 
+/** The Dressing Corner opens after her first finished quest (once its gift is picked), or at once with ?quest=corner. */
+const cornerOpen = (g: Game): boolean => g.options.quest === 'corner' || [...g.quests.done].some((id) => id !== 'corner');
+
 /** May this quest start now? */
 export function canQuest(g: Game, id: QuestId): boolean {
   const q = g.quests;
-  return g.part === 'free' && !g.bedtime && bothNamed(g) && !q.done.has(id) && !q.running && q.wallMs < QUEST_CUTOFF_MS;
+  if (g.part !== 'free' || g.bedtime || q.over || !bothNamed(g) || q.done.has(id) || q.running) return false;
+  if (id === 'corner') return cornerOpen(g);
+  if (id !== 'picnic' && id !== q.maths) return false;
+  return !pastCutoff(g);
 }
 
 /** Start a quest at the afternoon's next frame (a bubble tap, a tap on its place, walking near). False when it cannot. */
@@ -84,29 +102,47 @@ export function askQuest(g: Game, id: QuestId): boolean {
   return true;
 }
 
-/** Show the bubble of every quest that can start, hide the others. */
-function showOffers(g: Game): void {
+/**
+ * A bubble's badge: the swatch of the first gift its quest can still give (from the set it pays from now), so the
+ * prize shows without reading. None for the Corner (its picture is the gift) and none when every set is full.
+ */
+export function badgeOf(g: Game, id: QuestId): string | undefined {
+  if (id === 'corner') return undefined;
+  const set = giftSetFor(id, g.save.data.owned);
+  const item = set ? stillToEarn(set, g.save.data.owned)[0] : undefined;
+  return item ? giftSwatchUrl(item, g.actors.princess.look) : undefined;
+}
+
+/** Show the bubble of every quest that can start, hide the others. Returns true when the trunk bubble is new. */
+function showOffers(g: Game): boolean {
   const q = g.quests;
-  for (const id of QUESTS) {
+  let trunk = false;
+  for (const id of QUEST_IDS) {
     if (canQuest(g, id)) {
       if (q.offered.has(id)) continue;
       q.offered.add(id);
-      const p = v3({ x: OFFER[id].at.x, z: OFFER[id].at.z }, OFFER[id].at.y);
-      g.layer.offer(id, { pic: OFFER[id].pic(), at: () => g.world.toScreen(p), onTap: () => void askQuest(g, id) });
+      if (id === 'corner') trunk = true;
+      const o = OFFER[id];
+      const p = v3({ x: o.at.x, z: o.at.z }, o.at.y);
+      g.layer.offer(id, { pic: o.pic(g), tint: o.tint, badge: badgeOf(g, id), at: () => g.world.toScreen(p), onTap: () => void askQuest(g, id) });
     } else hideOffer(g, id);
   }
+  return trunk;
 }
 
 function hideOffer(g: Game, id: QuestId): void {
-  g.quests.offered.delete(id);
+  if (!g.quests.offered.delete(id)) return;
   g.layer.offer(id, null);
 }
 
 export function hideOffers(g: Game): void {
-  for (const id of QUESTS) hideOffer(g, id);
+  for (const id of QUEST_IDS) {
+    g.quests.offered.delete(id);
+    g.layer.offer(id, null);
+  }
 }
 
-/** The free-play food basket: tap a food to hear it, drop it on any unicorn to feed it. */
+/** The free-play food basket: tap a food to hear it, drop it on any unicorn to feed it (with the munch). */
 function showBasket(g: Game): void {
   const { actors, world } = g;
   g.layer.foodBasket({
@@ -116,6 +152,7 @@ function showBasket(g: Game): void {
       const u = actors.herd.pick(world.ray(x, y));
       if (!u || u.mode === 'stall' || u.mode === 'carried') return false;
       void u.emote('munch');
+      synth('munch');
       actors.fx.hearts(u.headTop().setY(u.headTop().y - 0.1));
       sayAside(CLIPS.yum[0]);
       console.info('[mmw free] fed', item.word, 'to', u.name);
@@ -136,7 +173,31 @@ function trayLineOnce(g: Game): void {
   g.run.defer(() => btn.removeEventListener('pointerdown', on));
 }
 
-/** Part 11, free play: the afternoon with its two side quests. */
+/**
+ * The quest place she is at: the nearest within NEAR_M, offered or not, or null. The Corner's step and the picnic rug
+ * are 1.9 m apart, so the nearest one counts.
+ */
+export function placeAt(here: Vec2): QuestId | null {
+  let best: QuestId | null = null;
+  let bestD = NEAR_M;
+  for (const id of QUEST_IDS) {
+    const d = dist2(here, PLACES[id]);
+    if (d <= bestD) [best, bestD] = [id, d];
+  }
+  return best;
+}
+
+/**
+ * One quest from the table: it runs and resolves framed; the gift picker runs in that frame (not after the Corner,
+ * which has its own), then the release. A jump during it ends the run before the release (snapTo resets everything).
+ */
+export async function runQuest(g: Game, id: QuestId, run: (g: Game) => Promise<() => void> = RUN[id]): Promise<void> {
+  const release = await run(g);
+  if (id !== 'corner') await giveGift(g, id);
+  release();
+}
+
+/** Part 11, free play: the afternoon with its side quests. */
 export async function afternoon(g: Game): Promise<void> {
   const { layer, world } = g;
   const q = g.quests;
@@ -165,36 +226,46 @@ export async function afternoon(g: Game): Promise<void> {
     basketOnce();
   }
 
-  // The afternoon's clocks, the walk-near trigger and the three-minute cut-off for new quests.
+  // The afternoon's clocks, the walk-near trigger and the cutoff for new picnic and maths quests. Walking near starts
+  // a quest when she comes to its place, not while she still stands where the last quest left her (after the Corner
+  // she stands 1.9 m from the picnic rug).
+  let at = placeAt(princessAt(g));
   const offClock = world.onFrame((dt) => {
-    q.wallMs += dt * 1000;
-    if (!q.running) q.freeMs += dt * 1000;
-    if (q.offered.size && q.wallMs >= QUEST_CUTOFF_MS) hideOffers(g);
-    if (q.running || q.asked) return;
-    const here = princessAt(g);
-    for (const id of q.offered) {
-      if (dist2(here, PLACES[id]) <= NEAR_M && askQuest(g, id)) break;
+    tickFree(g, dt * 1000);
+    if (!q.cut && pastCutoff(g)) {
+      q.cut = true;
+      if (!q.running) showOffers(g);
     }
+    const now = placeAt(princessAt(g));
+    const came = now !== at;
+    at = now;
+    if (q.running || q.asked || !came || !now || !q.offered.has(now)) return;
+    askQuest(g, now);
   });
   g.run.defer(offClock);
   if (canQuest(g, 'rack')) hungryHerd(g);
 
-  // After a quiet while without a touch: the slide, a follower, the basket or the bubbles, in turn.
-  const prompts = [CLIPS.slideTap, CLIPS.follow, CLIPS.basket, CLIPS.bubbles];
+  // After a quiet while without a touch: the slide, a follower, the basket, the bubbles, and Lumi's Corner line while
+  // the trunk bubble shows, in turn.
+  const prompts: (() => boolean)[] = [
+    () => (void audio.sayAll(CLIPS.slideTap), true),
+    () => (void audio.sayAll(CLIPS.follow), true),
+    () => (void audio.sayAll(CLIPS.basket), true),
+    () => q.offered.size > 0 && (void audio.sayAll(CLIPS.bubbles), true),
+    () => q.offered.has('corner') && (void layer.lumi.speak(CLIPS.cornerOpen), true),
+  ];
   let next = 0;
   let prompted = performance.now();
   const prompt = () => {
     const now = performance.now();
     if (now - Math.max(g.lastTouch, prompted) < FREE_PROMPT_MS || audio.speaking) return;
-    let ids = prompts[next++ % prompts.length];
-    if (ids === CLIPS.bubbles && !q.offered.size) ids = prompts[next++ % prompts.length];
-    void audio.sayAll(ids);
+    for (let k = 0; k < prompts.length && !prompts[next++ % prompts.length](); k++);
     prompted = now;
   };
 
   for (;;) {
     const left = FREE_PLAY_MS - q.freeMs;
-    // The free-play wait is the one skip() ends (the flows skip the two minutes).
+    // The free-play wait is the one skip() ends (the flows skip the two minutes). A running quest is never skipped.
     if (left <= 0 || !(await g.run.until(() => (prompt(), q.asked !== null), left))) break;
     const id = q.asked!;
     q.asked = null;
@@ -202,21 +273,29 @@ export async function afternoon(g: Game): Promise<void> {
     layer.foodBasket({ show: false });
     q.running = id;
     try {
-      const release = await RUN[id](g);
-      // 2.3.0: the quests-world lane runs the gift picker here, in the quest's frame.
-      release();
+      await runQuest(g, id);
     } finally {
       q.running = null;
+      q.dressing = false;
     }
     q.done.add(id);
     g.free = true;
     basketOnce();
-    showOffers(g);
+    // The trunk bubble after her first finished quest: Lumi invites her once a play.
+    if (showOffers(g) && !q.cornerSaid) {
+      q.cornerSaid = true;
+      await lumiSay(g, CLIPS.cornerOpen);
+    }
     prompted = performance.now();
+    if (freePlayOver(g)) break;
   }
+  q.over = true;
   offClock();
   hideOffers(g);
   layer.foodBasket({ show: false });
+  // This play's afternoon: the next play's maths quest comes from it (quest-kit.ts mathsQuestFor).
+  const done = [...q.done];
+  g.save.write((s) => void (s.afternoon = { maths: q.maths, done }));
 }
 
 // ---- the royal picnic (reading) -------------------------------------------------------------------------------------

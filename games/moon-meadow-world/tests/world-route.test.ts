@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BOUNDS, GAZEBO, GRAZE_HOMES, HAY_RACK, NEST, OBSTACLES, PICNIC, PLACES, POND, SLIDE, STABLE, START, WILD_EGG,
-  doorFront, inPond, inStableBuilding, v2, type Vec2,
+  BEAD_TREE, BOUNDS, CORNER, GAZEBO, GRAZE_HOMES, HAY_RACK, MIST, NEST, OBSTACLES, PICNIC, PLACES, POND, SLIDE, STABLE, START,
+  WILD_EGG, doorFront, inPond, inStableBuilding, v2, type Vec2,
 } from '../src/layout';
 import { BEHIND_Z, SLIDE_BLOCK, STABLE_BLOCK, isWalkable, lineOfSight, nearestWalkable, route } from '../src/world/route';
 
@@ -259,5 +259,61 @@ describe('the 2.2.0 places: the hay rack and the picnic', () => {
     expectClear(r);
     expect(len(r)).toBeLessThan(straight(west, doorFront(1)) + 0.8);
     expect(isWalkable(v2(-10.3, -11.6))).toBe(true);
+  });
+});
+
+describe('the 2.3.0 places: the Dressing Corner, the bead tree and the saddle sign', () => {
+  const straight = (a: Vec2, b: Vec2): number => Math.hypot(a.x - b.x, a.z - b.z);
+  const doors = Array.from({ length: 20 }, (_, i) => doorFront(i + 1));
+  const spots = [CORNER.stand, ...CORNER.babies, ...CORNER.aside, BEAD_TREE.stand, BEAD_TREE.baby, ...BEAD_TREE.aside, MIST.signStand];
+  const herdAside = [...CORNER.herd, ...BEAD_TREE.herd].map(([, to]) => to);
+  /** The level's spots, so a quest can start from wherever she and the herd are. */
+  const everywhere = [
+    START, STABLE.emmaStand, NEST.stand, SLIDE.ladderBase, WILD_EGG.stand, POND.exits[1], POND.exits[2], ...GRAZE_HOMES,
+    HAY_RACK.stand, PICNIC.stand, doorFront(1), doorFront(10), doorFront(15), doorFront(20), ...spots,
+  ];
+
+  it('lets her, the babies, the followers and the herd stand at every new spot; the trunk, mirror, tree and post are solid', () => {
+    for (const p of [...spots, ...herdAside]) expect(isWalkable(p), `${p.x},${p.z}`).toBe(true);
+    for (const p of [CORNER.trunk, CORNER.mirror, BEAD_TREE.center, MIST.sign]) expect(isWalkable(p), `${p.x},${p.z}`).toBe(false);
+    // The mist lies behind the stables' back line, where nobody walks.
+    expect(isWalkable(MIST.center)).toBe(false);
+    expect(MIST.center.z + MIST.rz * 0.5).toBeLessThan(BEHIND_Z + 1);
+  });
+
+  it('reaches every new spot from every spot of the level', { timeout: 30_000 }, () => {
+    for (const to of spots) {
+      for (const a of everywhere) {
+        const r = route(a, to);
+        expectClear(r);
+        expect(near(r[r.length - 1], to), `${a.x},${a.z} to ${to.x},${to.z}`).toBe(true);
+      }
+    }
+  });
+
+  it('keeps the walks short: the Corner 2 s from the start, the tree under 10 s from where the afternoon starts', () => {
+    // She walks 2.6 m a second (actors/princess.ts WALK_SPEED); the afternoon starts beside the slide (level.ts snapTo).
+    const afternoon = v2(SLIDE.ladderBase.x - 1.5, SLIDE.ladderBase.z + 2.5);
+    expect(len(route(START, CORNER.stand))).toBeLessThan(2.1 * 2.6);
+    expect(len(route(afternoon, BEAD_TREE.stand))).toBeLessThan(10 * 2.6);
+    expect(len(route(START, BEAD_TREE.stand))).toBeLessThan(24);
+    expect(len(route(WILD_EGG.stand, BEAD_TREE.stand))).toBeLessThan(24);
+  });
+
+  it('never blocks the doors, the stable stand, the gazebo or the picnic from the new spots', { timeout: 30_000 }, () => {
+    for (const a of spots) {
+      for (const to of [...doors, STABLE.emmaStand, PICNIC.stand, nearestWalkable(GAZEBO.center)]) {
+        const r = route(a, to);
+        expectClear(r);
+        expect(near(r[r.length - 1], to), `${a.x},${a.z} to ${to.x},${to.z}`).toBe(true);
+        if (a.x < 3 && to.x < 3) expect(len(r), `${a.x},${a.z} to ${to.x},${to.z}`).toBeLessThan(straight(a, to) * 1.4 + 2);
+      }
+    }
+  });
+
+  it('walks from her Corner spot to the picnic and back to the start on short routes', () => {
+    expect(len(route(CORNER.stand, PICNIC.stand))).toBeLessThan(straight(CORNER.stand, PICNIC.stand) + 0.5);
+    // The mirror stands close to the straight line: a small step round it.
+    expect(len(route(CORNER.stand, START))).toBeLessThan(straight(CORNER.stand, START) + 1);
   });
 });

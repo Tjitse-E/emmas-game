@@ -1,9 +1,9 @@
 // The start mirror (docs/v4/2.2.md 2.1 to 2.4, 2.3.md section 16): the first part after the sweep, before
-// Lumi's welcome. Princess Emma stands at START, close up on the left of the screen; the layer's tabs and rails are on
+// Lumi's welcome. dressUp is shared with the Dressing Corner (corner.ts), which dresses her at the gazebo step. Princess Emma stands at START, close up on the left of the screen; the layer's tabs and rails are on
 // the right. Nothing is checked or refused. Every pick changes her at once, a released pick plays her reaction and is
 // saved, and the big pink play button (Done) or the end of the music box (45 s) ends the part with a curtsy. Lumi
 // stays hidden, the home button stays. Her crown shows once Lumi has given it (the crown tab too).
-import type { LookField, LookTab, PrincessEmote, PrincessLook, Vec2 } from '../contracts';
+import type { BoardSpec, LookField, LookTab, PrincessEmote, PrincessLook, Vec2 } from '../contracts';
 import { GRAZE_HOMES, dist2 } from '../layout';
 import { EYE_HEX, HAIR_HEX, lookFields, tabOf, wardrobeClipIds } from '../wardrobe';
 import { audio } from '../audio';
@@ -76,17 +76,28 @@ function sparkleColour(look: PrincessLook, field: LookField): string {
   return hair.bands?.[0] ?? hair.light;
 }
 
-export async function wardrobe(g: Game): Promise<void> {
+/** Where she dresses and how (2.3 sections 16 and 17.4): the start mirror, or the Dressing Corner with its board. */
+export interface DressOpts {
+  at: 'mirror' | 'corner';
+  limitMs: number;
+  firstTime: boolean;
+  /** The trunk lid's treasure board, shown before the rails take touches (the Corner). */
+  board?: BoardSpec;
+  /** The music box started (true) or stopped (false): the Corner's free time is the box's time. */
+  onBox?(on: boolean): void;
+}
+
+/**
+ * Princess Emma dresses where she stands, in the portrait frame, until Done or the end of the music box. Her look is
+ * saved as it is, one kind=look line goes out, she curtsies while the layer chimes and says "Lovely!". Resolves with
+ * the look and how it ended; the frame stays (the caller releases it).
+ */
+export async function dressUp(g: Game, o: DressOpts): Promise<{ look: PrincessLook; end: 'done' | 'time'; ms: number }> {
   const { actors, layer, world } = g;
   const her = actors.princess;
   const at = flat(her.position);
-  g.free = false;
-  layer.lumi.show(false);
-  her.crown(g.save.data.seen.crown);
-  her.setLook(g.save.data.look);
   her.hold(true);
   if (g.options.portrait) her.portrait(true);
-  herdAside(g, true);
 
   // The camera: the body frame; eyes and hair things bring it to her face, and it goes back to the body 2.5 s after
   // the last touch on those rows. A resize or a rotation frames again (frame() measures with the aspect of the moment).
@@ -159,6 +170,7 @@ export async function wardrobe(g: Game): Promise<void> {
     removeEventListener('resize', onResize);
     her.hold(false);
     her.portrait(false);
+    o.onBox?.(false);
   };
   g.run.defer(close);
 
@@ -170,11 +182,12 @@ export async function wardrobe(g: Game): Promise<void> {
   const touched = new Set<LookTab>();
   const { look, end } = await g.run.w(
     layer.wardrobe({
-      look: { ...g.save.data.look },
+      look: { ...her.look },
       owned: g.save.data.owned,
       crownTab: g.save.data.seen.crown,
-      firstTime: !g.save.data.seen.wardrobe,
-      limitMs: g.options.boxMs ?? MIRROR_MS,
+      firstTime: o.firstTime,
+      limitMs: o.limitMs,
+      board: o.board,
       clips: { ready: CLIPS.ready, firstTime: CLIPS.lookTap, idle: CLIPS.readyPlay, nearly: CLIPS.nearly, done: CLIPS.lovely },
       onLook(look, field) {
         her.setLook(look);
@@ -211,10 +224,13 @@ export async function wardrobe(g: Game): Promise<void> {
       onPreviewTap() {
         void her.emote('wave');
       },
+      onBox: o.onBox,
     }),
   );
 
-  // Done: her look is saved at once, then the curtsy while the layer chimes and says "Lovely!".
+  // Done or the end of the music box: her look is saved at once, as it is (nothing is taken off), then the curtsy
+  // while the layer chimes and says "Lovely!".
+  o.onBox?.(false);
   if (saving) clearTimeout(saving);
   saving = null;
   her.setLook(look);
@@ -223,15 +239,26 @@ export async function wardrobe(g: Game): Promise<void> {
     s.seen.wardrobe = true;
   });
   const ms = Math.round(performance.now() - opened);
-  g.clock.dressMs.mirror += ms;
-  sendDiag(diagQuery({ kind: 'look', at: 'mirror', end, tabs: [...touched].join(','), ms, ...lookFields(look) }));
-  console.info('[mmw look]', JSON.stringify({ at: 'mirror', end, tabs: [...touched], ms, look }));
+  sendDiag(diagQuery({ kind: 'look', at: o.at, end, tabs: [...touched].join(','), ms, ...lookFields(look) }));
+  console.info('[mmw look]', JSON.stringify({ at: o.at, end, tabs: [...touched], ms, look }));
   focus = null;
   stopBack();
   restFace();
   await g.run.w(her.emote('curtsy'));
   await g.run.until(() => !audio.speaking, LOVELY_MS);
   close();
+  return { look, end, ms };
+}
+
+export async function wardrobe(g: Game): Promise<void> {
+  const { actors, layer, world } = g;
+  g.free = false;
+  layer.lumi.show(false);
+  actors.princess.crown(g.save.data.seen.crown);
+  actors.princess.setLook(g.save.data.look);
+  herdAside(g, true);
+  const { ms } = await dressUp(g, { at: 'mirror', limitMs: g.options.boxMs ?? MIRROR_MS, firstTime: !g.save.data.seen.wardrobe });
+  g.clock.dressMs.mirror += ms;
   world.releaseFrame();
   herdAside(g, false);
 }

@@ -7,7 +7,9 @@ import { buildGlows } from './beacon';
 import { CameraRig, FOV } from './camera';
 import { Scenery } from './geo';
 import { buildPicker } from './pick';
-import { buildGazebo, buildNest, buildPicnic, buildPond, buildSlide, nestFlowerSpots, picnicHeight } from './places';
+import { buildBeadTree } from './beadtree';
+import { buildCorner, buildGazebo, buildNest, buildPicnic, buildPond, buildSign, buildSlide, cornerLid, nestFlowerSpots, picnicHeight } from './places';
+import { wordPic } from '../assets';
 import { isWalkable, nearestWalkable, route } from './route';
 import { FOG_FAR, buildSky } from './sky';
 import { buildStable } from './stable';
@@ -32,6 +34,15 @@ export interface WorldExtras {
   heightAt(p: Vec2): number;
   /** The hay rack's current fill (0 empty to 1 full), eased by stable.hay(). For flows and the harness. */
   readonly hayFill: number;
+  /**
+   * The Dressing Corner's trunk (2.3.0): its lid opens on a hinge over 0.6 s (the wardrobe's treasure board, a trunk
+   * tap after her visit) and closes again. `open` is 0 closed to 1 open.
+   */
+  readonly corner: { lid(open: boolean, ms?: number): Promise<void>; readonly open: number };
+  /** The saddle sign at the moon mist (2.3.0): a soft glow over its picture for a moment, on a tap. */
+  readonly sign: { shimmer(): void };
+  /** The ground point the camera holds (a frame), or null while it follows. For the flows. */
+  readonly framedAt: Vec2 | null;
 }
 
 export type WorldWithExtras = World & WorldExtras;
@@ -80,7 +91,10 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
   const hedgeFlowers: HedgeFlowers = { at: [] };
   buildHedges(scenery, hedgeFlowers);
   buildGazebo(scenery);
+  buildCorner(scenery);
   buildPicnic(scenery);
+  buildBeadTree(scenery);
+  const sign = buildSign(scenery, wordPic('saddle'));
   buildNest(scenery);
   buildSlide(scenery);
   const pond = buildPond(scenery, material);
@@ -88,6 +102,8 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
   const sky = buildSky(scene, scenery, hemi, sun);
   buildGrowth(scenery, hedgeFlowers, nestFlowerSpots());
   for (const mesh of scenery.build(material, 'scenery')) scene.add(mesh);
+  const lid = cornerLid(scenery);
+  scene.add(sign.mesh);
   for (const mesh of buildTrees(material)) scene.add(mesh);
   scene.add(pond.water, ...pond.toys);
   const glows = buildGlows(scene);
@@ -185,6 +201,8 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
     sky.update(dt, elapsed, camera);
     pond.update(dt, elapsed);
     stable.update(dt, elapsed);
+    lid.update(dt);
+    sign.update(dt, elapsed);
     glows.update(dt, elapsed);
     if (!paused) renderer.render(scene, camera);
   };
@@ -212,6 +230,16 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
     },
     get hayFill() {
       return stable.hayFill;
+    },
+    corner: {
+      lid: (open, ms) => lid.set(open, ms),
+      get open() {
+        return lid.open;
+      },
+    },
+    sign: { shimmer: () => sign.shimmer() },
+    get framedAt() {
+      return rig.framedAt;
     },
     onFrame(fn) {
       callbacks.add(fn);

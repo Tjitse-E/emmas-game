@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { GAZEBO, HAY_RACK, PICNIC, STABLE, START, doorCenter, v2, type Vec2 } from '../src/layout';
+import { BEAD_TREE, CORNER, GAZEBO, HAY_RACK, MIST, PICNIC, STABLE, START, doorCenter, v2, type Vec2 } from '../src/layout';
 import { CameraRig, FOV } from '../src/world/camera';
 import { buildPicker } from '../src/world/pick';
 
@@ -105,5 +105,56 @@ describe('pick: the picnic', () => {
       }
     }
     expect(gazebo).toBeGreaterThan(6);
+  });
+});
+
+describe('pick: the Dressing Corner, the bead tree and the saddle sign (2.3.0)', () => {
+  const at = (p: Vec2, y: number) => new THREE.Vector3(p.x, y, p.z);
+
+  it('picks the Corner at the trunk, the mirror and the step, from her spot, the start and the picnic', () => {
+    for (const from of [CORNER.stand, START, PICNIC.stand]) {
+      follow(from);
+      const spots = [at(CORNER.trunk, 0.25), at(CORNER.trunk, 0.6), at(CORNER.mirror, 0.4), at(CORNER.mirror, 1.2), at(CORNER.mirror, 1.7)];
+      spots.push(new THREE.Vector3(CORNER.stand.x, 0.3, 1.8));
+      for (const p of spots) expect(tapAt(p), `${p.x},${p.y},${p.z} from ${from.x},${from.z}`).toEqual({ kind: 'corner' });
+    }
+  });
+
+  it('in the Corner frame too, and leaves her spot, the picnic and the gazebo dome as they were', () => {
+    frame({ x: -14, z: 3 }, 5.5);
+    expect(tapAt(at(CORNER.trunk, 0.3))).toEqual({ kind: 'corner' });
+    expect(tapAt(at(CORNER.mirror, 1.1))).toEqual({ kind: 'corner' });
+    for (const from of [CORNER.stand, START]) {
+      follow(from);
+      expect(tapAt(at(CORNER.stand, 0))?.kind).toBe('ground');
+      expect(tapAt(at(PICNIC.rug.center, 0.05))).toEqual({ kind: 'picnic' });
+      expect(tapAt(new THREE.Vector3(GAZEBO.center.x, 2, GAZEBO.center.z + GAZEBO.radius - 0.3))).toEqual({ kind: 'gazebo' });
+    }
+  });
+
+  it('picks the bead tree at its crown, its strings and its trunk, and leaves the grass round it to walking', () => {
+    for (const from of [BEAD_TREE.stand, v2(8, -6), STABLE.emmaStand]) {
+      follow(from);
+      for (const p of [at(BEAD_TREE.center, 2.1), at(BEAD_TREE.center, 0.5), new THREE.Vector3(BEAD_TREE.center.x, 1.1, BEAD_TREE.center.z + 0.55)]) {
+        const hit = tapAt(p);
+        if (hit === undefined) continue;
+        expect(hit, `${p.y} from ${from.x},${from.z}`).toEqual({ kind: 'beads' });
+      }
+    }
+    follow(BEAD_TREE.stand);
+    for (const p of [BEAD_TREE.stand, BEAD_TREE.baby, v2(BEAD_TREE.center.x + 2.2, BEAD_TREE.center.z)]) expect(tapAt(at(p, 0))?.kind).toBe('ground');
+  });
+
+  it('picks the saddle sign at its board and post, and never takes a door tap', () => {
+    for (const from of [MIST.signStand, v2(16, -11)]) {
+      follow(from);
+      for (const y of [0.4, 1.3, 1.6]) expect(tapAt(at(MIST.sign, y)), `${y} from ${from.x},${from.z}`).toEqual({ kind: 'sign' });
+    }
+    let seen = 0;
+    for (const from of [BEAD_TREE.stand, MIST.signStand, v2(12, -12)]) {
+      follow(from);
+      seen += expectDoors();
+    }
+    expect(seen).toBeGreaterThan(10);
   });
 });

@@ -1,16 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { HAY_RACK, PICNIC, START } from '../src/layout';
+import { BEAD_TREE, CORNER, HAY_RACK, MIST, PICNIC, START } from '../src/layout';
 import { Scenery, type Geo } from '../src/world/geo';
 import { CRIB, hayDepth, hayGeometry, rackGeometry } from '../src/world/hayrack';
-import { buildPicnic, picnicHeight } from '../src/world/places';
+import { BEAD_TREE_SHAPE, beadTreeGeometry, buildBeadTree } from '../src/world/beadtree';
+import { meadowMist } from '../src/world/sky';
+import { BEHIND_Z } from '../src/world/route';
+import {
+  CORNER_REGION, LID_KEY, TRUNK, buildCorner, buildPicnic, cornerLid, lidGeometry, mirrorGeometry, picnicHeight, signGeometry,
+} from '../src/world/places';
 
 const triangles = (g: Geo): number => (g.index ? g.index.count : g.attributes.position.count) / 3;
 
 /** Collect what a build adds to the scenery, with the region it asks for. */
 function collect(build: (s: Scenery) => void): { geo: Geo; region?: string }[] {
   const out: { geo: Geo; region?: string }[] = [];
-  build({ add: (geo: Geo, region?: string) => out.push({ geo, region }) } as unknown as Scenery);
+  const add = (geo: Geo, region?: string) => void out.push({ geo, region });
+  build({ add, addMovable: add } as unknown as Scenery);
   return out;
 }
 
@@ -106,6 +112,109 @@ describe('the hay rack', () => {
   it('stands where the layout says, clear of the stand and the eat spots', () => {
     for (const p of [HAY_RACK.stand, ...HAY_RACK.eat]) {
       expect(Math.hypot(p.x - HAY_RACK.center.x, p.z - HAY_RACK.center.z)).toBeGreaterThan(HAY_RACK.radius);
+    }
+  });
+});
+
+describe('the Dressing Corner (2.3.0)', () => {
+  const parts = collect(buildCorner);
+
+  it('merges the trunk, its lid and the mirror into the gazebo region: no draw call of its own', () => {
+    expect(CORNER_REGION).toBe(Scenery.regionOf(-14, -1));
+    for (const p of parts) expect(p.region).toBe(CORNER_REGION);
+    // The mirror is about 300 triangles; the whole Corner well under a thousand.
+    expect(mirrorGeometry().reduce((s, g) => s + triangles(g), 0)).toBeLessThan(400);
+    expect(parts.reduce((s, p) => s + triangles(p.geo), 0)).toBeLessThan(1000);
+  });
+
+  it('keeps the trunk and the mirror inside their obstacle circles, standing on the grass', () => {
+    const v = new THREE.Vector3();
+    for (const { geo } of parts) {
+      const pos = geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+        const d = Math.min(Math.hypot(v.x - CORNER.trunk.x, v.z - CORNER.trunk.z), Math.hypot(v.x - CORNER.mirror.x, v.z - CORNER.mirror.z));
+        expect(d).toBeLessThan(CORNER.radius + 0.15);
+        // The trunk's little feet sink a little into the grass.
+        expect(v.y).toBeGreaterThanOrEqual(-0.02);
+        expect(v.y).toBeLessThan(1.9);
+      }
+    }
+  });
+
+  it('opens the lid on its hinge inside the merged region and closes it back exactly', () => {
+    const scenery = new Scenery();
+    buildCorner(scenery);
+    const meshes = scenery.build(new THREE.MeshBasicMaterial(), 'test');
+    expect(meshes).toHaveLength(1);
+    const part = scenery.movable(LID_KEY)!;
+    expect(part.count).toBe(lidGeometry().attributes.position.count);
+    const pos = part.mesh.geometry.attributes.position;
+    const read = () => Array.from({ length: part.count }, (_, i) => new THREE.Vector3().fromBufferAttribute(pos, part.start + i));
+    const closed = read();
+    const lid = cornerLid(scenery);
+    void lid.set(true, 0);
+    expect(lid.open).toBe(1);
+    const open = read();
+    // Open, the lid stands up over the body's back edge: higher, and its dome only just reaches below the rim.
+    expect(Math.max(...open.map((p) => p.y))).toBeGreaterThan(Math.max(...closed.map((p) => p.y)) + 0.15);
+    for (const p of open) expect(p.y).toBeGreaterThan(TRUNK.h - 0.05);
+    void lid.set(false, 0);
+    read().forEach((p, i) => expect(p.distanceTo(closed[i])).toBeLessThan(1e-5));
+    // An eased opening reaches the end in about 0.6 s.
+    const done = lid.set(true);
+    for (let t = 0; t < 0.7; t += 0.05) lid.update(0.05);
+    return done.then(() => expect(lid.open).toBe(1));
+  });
+});
+
+describe('the bead tree (2.3.0)', () => {
+  it('stays under 1,000 triangles in one scenery region (no draw call of its own)', () => {
+    const parts = collect(buildBeadTree);
+    expect(parts.reduce((s, p) => s + triangles(p.geo), 0)).toBeLessThan(1000);
+    const region = Scenery.regionOf(BEAD_TREE.center.x, BEAD_TREE.center.z);
+    for (const p of parts) expect(p.region).toBe(region);
+  });
+
+  it('is 2.6 m high, with everything below the crown inside its obstacle circle', () => {
+    const v = new THREE.Vector3();
+    let top = 0;
+    for (const g of beadTreeGeometry()) {
+      const pos = g.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+        top = Math.max(top, v.y);
+        expect(v.y).toBeGreaterThanOrEqual(-0.01);
+        if (v.y < 1.3) expect(Math.hypot(v.x, v.z)).toBeLessThan(BEAD_TREE.radius);
+      }
+    }
+    expect(top).toBeGreaterThan(BEAD_TREE_SHAPE.height - 0.15);
+    expect(top).toBeLessThan(BEAD_TREE_SHAPE.height + 0.1);
+  });
+});
+
+describe('the moon mist and the saddle sign (2.3.0)', () => {
+  it('lays the mist behind the stables\' back line, over its ellipse, low', () => {
+    const quads = meadowMist();
+    expect(quads.length).toBeGreaterThan(2);
+    for (const q of quads) {
+      expect(q.z).toBeLessThan(BEHIND_Z);
+      expect(Math.abs(q.x - MIST.center.x)).toBeLessThanOrEqual(MIST.rx);
+      expect(Math.abs(q.z - MIST.center.z)).toBeLessThanOrEqual(MIST.rz);
+      expect(q.y + q.h / 2).toBeLessThan(2.5);
+    }
+  });
+
+  it('builds a small sign post and board, inside its obstacle circle at walking height', () => {
+    const parts = signGeometry();
+    expect(parts.reduce((s, g) => s + triangles(g), 0)).toBeLessThan(80);
+    const v = new THREE.Vector3();
+    for (const g of parts) {
+      const pos = g.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+        if (v.y < 0.9) expect(Math.hypot(v.x, v.z)).toBeLessThan(MIST.signRadius);
+      }
     }
   });
 });

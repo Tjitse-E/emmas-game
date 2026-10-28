@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installInput } from '../src/game/input';
 import type { Game } from '../src/game/game';
 import { FakeElement, FakeTarget } from './fixtures/events';
+import { startQuests } from '../src/game/game';
+import { defaultSave } from '../src/game/save';
 
 // A carry starts with a sparkle sound; the audio module needs a browser. The picture paths read the page address.
 vi.mock('../src/audio', () => ({ audio: { sfx: async () => {}, say: async () => {}, speaking: false } }));
@@ -24,7 +26,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function setup() {
+function setup(extra: { game?: Record<string, unknown>; world?: Record<string, unknown>; layer?: Record<string, unknown> } = {}) {
   const canvas = new FakeElement();
   const unicorn = { mode: 'graze', lift: vi.fn(), carryTo: vi.fn(), drop: vi.fn() };
   const rideSlide = vi.fn();
@@ -37,14 +39,16 @@ function setup() {
       pick: () => w.picked,
       toScreen: () => ({ x: -999, y: -999, visible: false }),
       groundAt: (x: number, y: number) => ({ x: x / 10, z: y / 10 }),
+      ...extra.world,
     },
     actors: { herd: { pick: () => w.under }, egg: { visible: false }, princess: { rideSlide } },
-    layer: { snapshot: () => ({ moment: null }) },
+    layer: { snapshot: () => ({ moment: null }), ...extra.layer },
     followers: { sync: () => {} },
     free: true,
     door: null,
     bedtime: false,
     goal: null,
+    ...extra.game,
   };
   installInput(g as unknown as Game);
   /** A finger down on the canvas: the window and the document see it first (capture phase). */
@@ -121,5 +125,27 @@ describe('the world touch', () => {
     expect(p.unicorn.drop).toHaveBeenCalledTimes(1);
     expect(p.unicorn.drop.mock.calls[0][0].x).toBeCloseTo(25);
     expect(p.unicorn.drop.mock.calls[0][0].z).toBeCloseTo(12);
+  });
+});
+
+
+describe('a tap on the Dressing Corner after her visit (2.3.0)', () => {
+  it('opens the trunk on the treasure board, and never starts the Corner again', () => {
+    const quests = startQuests('beads');
+    quests.done.add('picnic');
+    quests.done.add('corner');
+    const board = vi.fn(async () => {});
+    const lid = vi.fn(async () => {});
+    const p = setup({
+      game: { quests, save: { data: defaultSave() }, part: 'free', babies: [] },
+      world: { corner: { lid, open: 0 }, route: (a: unknown, b: unknown) => [a, b] },
+      layer: { board },
+    });
+    p.w.picked = { kind: 'corner' };
+    p.touch(1);
+    win.fire('pointerup', 1, 100, 100);
+    expect(board).toHaveBeenCalledTimes(1);
+    expect(lid).toHaveBeenCalledWith(true);
+    expect(quests.asked).toBeNull();
   });
 });

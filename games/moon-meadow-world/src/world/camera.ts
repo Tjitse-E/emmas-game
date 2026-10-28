@@ -139,6 +139,14 @@ export class CameraRig {
     void this.start(this.current, () => this.followPose(), 800, 'follow');
   }
 
+  /** The ground point of the frame the camera holds or is heading to, or null while it follows (or goes back to it). */
+  get framedAt(): Vec2 | null {
+    const holding = this.mode === 'hold' || (this.mode === 'tween' && this.tween?.then === 'hold');
+    if (!holding || !this.holdGoal) return null;
+    const g = this.holdGoal();
+    return { x: g.x, z: g.z };
+  }
+
   /** Hold the opening shot (behind the start screen). */
   introStart(): void {
     void this.start(this.current, () => this.introPose(), 0, 'hold');

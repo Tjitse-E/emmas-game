@@ -1,7 +1,9 @@
 // The level script: "Emma's first day in Moon Meadow" (docs/v4/demo.md section 1, docs/v4/2.2.md). Each part is an
 // async step on the current Run; jump(part) stops the run, snaps the world into that part's state and starts from
 // there. 2.2.0 adds the customiser before the welcome (wardrobe-part.ts), the dress-up, pond and picnic wishes, and
-// the afternoon's side quests (quests.ts); the shared moment code is in moments.ts.
+// the afternoon's side quests (quests.ts); the shared moment code is in moments.ts. 2.3.0 adds the effects of the
+// welcome crown, the bedtime bell and the goodnight owl (each line waits for its effect, at most 1 s) and one kind=play
+// line per play before the end screen.
 import * as THREE from 'three';
 import type { EndMember, NameChoice, Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
@@ -24,6 +26,7 @@ import { afterWish, babyReact, crownKeep, dropToyAfter, momentLog, parkFollowers
 import { HATCH_SPOT, NEST_EGG, SIDE, WILD_EGG_AT, egg } from './eggs-part';
 import { herdAside, wardrobe, wardrobePartClipIds } from './wardrobe-part';
 import { afternoon, hideOffers } from './quests';
+import { type PlayLine, diagQuery, playFields, sendDiag } from './results';
 
 /** Width of ground across the screen for each framing. */
 const BABY_WIDTH = 5.5;
@@ -89,12 +92,13 @@ async function welcome(g: Game): Promise<void> {
   actors.princess.face({ x: p.x, z: p.z + 6 });
   await frameAt(g, p, CROWN_WIDTH, actors.princess.position.clone().setY(1.2), 0.42, 1000);
   const head = actors.princess.position.clone().setY(1.6);
-  const crown = actors.fx.starfall(head).then(() => {
-    actors.princess.crown(true);
-    actors.fx.sparkle(head, { count: 16 });
-  });
+  // The stars fall and the crown appears with its twinkle, before Lumi's line (2.3 section 20: a line waits for an
+  // effect, at most 1 s).
+  await g.run.w(actors.fx.starfall(head));
+  actors.princess.crown(true);
+  actors.fx.sparkle(head, { count: 16 });
+  await g.run.w(audio.fx('crown-twinkle'));
   await lumiSay(g, CLIPS.crown);
-  await g.run.w(crown);
   // From now on the wardrobe has its crown tab (2.3 section 16).
   g.save.write((s) => void (s.seen.crown = true));
   await g.run.w(actors.princess.emote('clap'));
@@ -124,6 +128,7 @@ async function welcomeBack(g: Game): Promise<void> {
   const head = actors.princess.position.clone().setY(1.6);
   actors.princess.crown(true);
   actors.fx.sparkle(head, { count: 16 });
+  await g.run.w(audio.fx('crown-twinkle'));
   actors.egg.place(NEST_EGG, 'warm');
   actors.fx.sparkle(NEST_EGG.clone().setY(1), { count: 18 });
   world.nestGlow(true);
@@ -289,6 +294,8 @@ async function bedtime(g: Game): Promise<void> {
   stable.lanterns(true);
   audio.ambience('night');
   await g.run.w(setTime(g, 0.5, 3000));
+  // The bedtime bell after the dusk fade; "The sun is going down." waits for it.
+  await g.run.w(audio.fx('bedtime-bell'));
   await say(g, CLIPS.dusk);
   // The herd walks to the yard; her two babies come with her.
   for (const h of g.herd) {
@@ -384,6 +391,32 @@ async function moveInBaby(g: Game, i: 0 | 1): Promise<void> {
   stable.glow(null);
 }
 
+/** The version the build says on its start screen, without the v (dev builds say dev). */
+const VERSION = (typeof __MMW_VERSION__ === 'string' ? __MMW_VERSION__ : 'dev').replace(/^v/, '');
+
+/** This play for its kind=play line: the clocks, the gate, the quests, the gifts and the levels. */
+export function playOf(g: Game): PlayLine {
+  const s = g.save.data;
+  const q = g.quests;
+  return {
+    v: VERSION,
+    plays: s.plays,
+    playMs: performance.now() - g.clock.startedAt,
+    checkedMs: g.clock.checkedMs,
+    mirrorMs: g.clock.dressMs.mirror,
+    cornerDressMs: g.clock.dressMs.corner,
+    cornerMs: q.cornerMs,
+    freeMs: q.freeMs,
+    gate: q.gate,
+    quests: [...q.done],
+    gifts: q.gifts,
+    reading: g.options.readingLevel ?? s.reading.level,
+    phrases: s.phrases.level,
+    band: g.maths.band,
+    patterns: g.options.patternLevel ?? s.patterns.level,
+  };
+}
+
 /** Every unicorn for the end screen: the two new babies first, then the herd. */
 function endMembers(g: Game): EndMember[] {
   const babies = g.babies.filter((b) => b.member).map((b) => ({ name: b.member!.name, body: b.look.body, mane: b.look.mane, isNew: true }));
@@ -404,10 +437,13 @@ async function goodnight(g: Game): Promise<void> {
   await say(g, CLIPS.herdCount(14));
   await g.run.w(sky);
   await g.run.sleep(800);
+  // An owl hoots after the sky shot, while the camera comes down to her; Lumi's ribbons line waits for it.
+  const owl = audio.fx('owl');
   // The ribbons: she stands in front of the door rows, the peeking heads behind her.
   const p = princessAt(g);
   actors.princess.face({ x: p.x, z: p.z + 6 });
   await frameAt(g, p, RIBBONS.width, actors.princess.position.clone().setY(1.0), RIBBONS.frac, 1400, RIBBONS.pitch);
+  await g.run.w(owl);
   const head = actors.princess.position.clone().setY(1.6);
   const talk = g.layer.lumi.speak(CLIPS.ribbons);
   await g.run.sleep(1800);
@@ -436,6 +472,8 @@ async function goodnight(g: Game): Promise<void> {
   g.save.write((s) => {
     s.last = { words: [...g.today.words], totals: [...g.maths.used.totals] };
   });
+  // One kind=play line per play, before the end screen and its reload (2.3 section 17.5).
+  sendDiag(diagQuery(playFields(playOf(g))));
   const end = layer.theEnd({ herd: 14, members: endMembers(g) });
   // Once the end screen covers the world, the world stops drawing.
   const pause = setTimeout(() => world.setPaused(true), 1100);
@@ -583,6 +621,7 @@ export function snapTo(g: Game, part: Part): void {
   void setTime(g, part === 'goodnight' ? 0.5 : 0, 0);
   world.stable.lanterns(part === 'goodnight');
   world.stable.hay(0, 0);
+  void world.corner.lid(false, 0);
   audio.ambience(part === 'bedtime' || part === 'goodnight' ? 'night' : 'day');
   hideOffers(g);
   layer.lumi.show(part !== 'welcome' && part !== 'wardrobe');

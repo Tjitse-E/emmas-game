@@ -7,7 +7,7 @@ import type { WorldWithExtras } from '../world';
 import type { LayerExtras } from '../ui';
 import { PITCH } from '../world/camera';
 import { NEST, STABLE, SLIDE, WILD_EGG, dist2, doorCenter, doorIsUpper } from '../layout';
-import { audio } from '../audio';
+import { type Sfx, audio } from '../audio';
 import { type Rand, wayTo } from '../content';
 import { Followers } from './followers';
 import { Results } from './results';
@@ -16,6 +16,7 @@ import { type MathsState, startMaths } from './band';
 import type { GameOptions, QuestId } from './options';
 import type { SaveStore } from './save';
 import { type Streams, createStreams } from './streams';
+import { mathsQuestFor } from './quest-kit';
 
 /** The parts of the level, in order (docs/v4/demo.md section 1; the wardrobe is 2.2.0's customiser). */
 export const PARTS = ['wardrobe', 'welcome', 'egg1', 'naming1', 'wish1', 'pond', 'egg2', 'naming2', 'wish2', 'free', 'bedtime', 'goodnight'] as const;
@@ -67,7 +68,10 @@ export interface QuestState {
   running: QuestId | null;
   /** Asked by a bubble tap, a tap on its place or walking near it: the afternoon starts it at its next frame. */
   asked: QuestId | null;
-  /** Time since free play began (ms), and the part of it without a quest running. */
+  /**
+   * Time since free play began (ms, for the log), and free time: while no quest runs and while the Corner's music box
+   * plays (2.3 section 17.3, quest-kit.ts tickFree).
+   */
   wallMs: number;
   freeMs: number;
   /** "When you see a bubble, someone is waiting for you." has played this play. */
@@ -83,12 +87,25 @@ export interface QuestState {
   dressing: boolean;
   /** The gifts she got today, in order. */
   gifts: GiftItem[];
+  /** Free play has ended: no quest starts any more. */
+  over: boolean;
+  /** Past the quest cutoff: the picnic and maths bubbles have gone. */
+  cut: boolean;
+  /** The Corner's gate: a phrase or (before Emma's picture check) a word wish, and how many reads were first tries. */
+  gate: { kind: 'phrase' | 'word'; first: number } | null;
+  /** Lumi has said "Come and try my Dressing Corner!" this play, and "Soon you can ride here!" at the sign. */
+  cornerSaid: boolean;
+  signSaid: boolean;
+  /** How often the treasure board showed (the Corner and trunk taps), the sign was tapped, and the Corner's time (ms). */
+  boards: number;
+  signs: number;
+  cornerMs: number;
 }
 
 export function startQuests(maths: QuestState['maths'] = 'beads'): QuestState {
   return {
     offered: new Set(), done: new Set(), running: null, asked: null, wallMs: 0, freeMs: 0, explained: false, helpers: [], rose: false, hay: 0,
-    maths, dressing: false, gifts: [],
+    maths, dressing: false, gifts: [], over: false, cut: false, gate: null, cornerSaid: false, signSaid: false, boards: 0, signs: 0, cornerMs: 0,
   };
 }
 
@@ -163,7 +180,8 @@ export function createGame(o: {
     maths: startMaths(o.options.band),
     today: { wishes: 0, words: [] },
     clock: startClock(),
-    quests: startQuests(),
+    // This play's maths quest: the rotation from the last play's afternoon, or ?quest=rack|beads (2.3 section 17.2).
+    quests: startQuests(mathsQuestFor(o.save.data.afternoon, o.options.quest)),
     openSpec: null,
     babies: [],
     part: 'start',
@@ -310,6 +328,19 @@ export function sayWay(g: Game): void {
   if (g.goal) {
     const ids = wayTo(g.goal.place);
     if (ids.length) void audio.sayAll(ids);
+  }
+}
+
+/**
+ * A synthesised effect of the shared player (munch, fanfare) when nobody speaks: no effect plays over or under
+ * Elizabeth (2.3 section 8). It never waits.
+ */
+export function synth(name: Sfx): void {
+  if (audio.speaking) return;
+  try {
+    void audio.sfx(name).catch(() => undefined);
+  } catch {
+    /* a missing effect stays silent */
   }
 }
 

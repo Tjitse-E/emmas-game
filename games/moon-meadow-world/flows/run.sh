@@ -24,7 +24,14 @@ mkdir -p "$MMW_SHOTS"
 if [ -z "${MMW_SKIP_BUILD:-}" ]; then (cd "$HERE/.." && npm run build >/dev/null); fi
 
 cd "$REPO"
-PORT="$PORT" HOST=127.0.0.1 MOON_DIST=dist-test-gate node games/moon-meadow-home/server/serve.ts >"${TMPDIR:-/tmp}/mmw-server-$PORT.log" 2>&1 &
+# v3's clips and pictures come from its test build. A lane worktree has no build of v3 (builds are not in git), so it
+# serves the main checkout's, read only (serve.ts resolves an absolute MOON_DIST as it is).
+V3_DIST=dist-test-gate
+if [ ! -d "$REPO/games/moon-meadow-home/$V3_DIST" ]; then
+  MAIN="$(cd "$(git -C "$HERE" rev-parse --git-common-dir)/.." && pwd)"
+  [ -d "$MAIN/games/moon-meadow-home/$V3_DIST" ] && V3_DIST="$MAIN/games/moon-meadow-home/$V3_DIST"
+fi
+PORT="$PORT" HOST=127.0.0.1 MOON_DIST="$V3_DIST" node games/moon-meadow-home/server/serve.ts >"${TMPDIR:-/tmp}/mmw-server-$PORT.log" 2>&1 &
 SERVER=$!
 disown "$SERVER"
 trap 'kill $SERVER 2>/dev/null || true; playwright-cli -s="$SESSION" close >/dev/null 2>&1 || true' EXIT

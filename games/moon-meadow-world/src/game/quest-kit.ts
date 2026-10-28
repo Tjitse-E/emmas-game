@@ -1,9 +1,15 @@
 // What the afternoon's quests share (moved out of quests.ts in 2.3.0, so the bead tree and the Dressing Corner can use
-// it from their own files): walking to a quest's spot, her babies as guests, and following again afterwards.
-import type { Vec2 } from '../contracts';
+// it from their own files): walking to a quest's spot, her babies as guests, following again afterwards and the herd
+// stepping aside; and the pure rules of the afternoon (docs/v4/2.3.md section 17): the free-play clocks, the maths
+// quest's rotation and the gifts.
+import * as THREE from 'three';
+import type { GiftItem, GiftSet, Owned, PrincessLook, Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
-import { GRAZE_HOMES, dist2 } from '../layout';
-import { type Game, flat, princessAt, walkTo } from './game';
+import { CORNER, GRAZE_HOMES, dist2 } from '../layout';
+import { giftChoices, giftSetFor, setOfQuest, stillToEarn, withItem } from '../wardrobe';
+import { CLIPS } from '../content';
+import { type Game, type QuestState, flat, lumiSay, princessAt, synth, walkTo } from './game';
+import type { QuestId } from './options';
 
 /** The longest walk to a quest's spot; after that she is there at once. */
 const WALK_MS = 12_000;
@@ -41,4 +47,129 @@ export function herdAsideAt(g: Game, pairs: readonly (readonly [Vec2, Vec2])[], 
       u.graze(pair[1]);
     } else u.graze(GRAZE_HOMES[i]);
   });
+}
+
+// ---- the free-play clocks (docs/v4/2.3.md section 17.3) ------------------------------------------------------------
+
+/** Free play's own time: it ends once this much has passed, no quest runs and the wardrobe is closed. */
+export const FREE_PLAY_MS = 120_000;
+/** No picnic or maths quest starts after this much free time, not counting the Corner's dressing. */
+export const QUEST_CUTOFF_MS = 90_000;
+/** The Corner's music box gets the free time that is left, at least and at most this long. */
+export const CORNER_MIN_MS = 30_000;
+export const CORNER_MAX_MS = 60_000;
+
+/** What the clocks read and write: the afternoon's state and the play clock's dressing time. */
+export interface FreeClocks {
+  quests: Pick<QuestState, 'freeMs' | 'wallMs' | 'running' | 'dressing'>;
+  clock: { dressMs: { corner: number } };
+}
+
+/**
+ * One frame of the afternoon: wall time always (for the log), free time while no quest runs and while the Corner's
+ * music box plays, and that same music box time as the Corner's dressing time.
+ */
+export function tickFree(c: FreeClocks, ms: number): void {
+  const q = c.quests;
+  q.wallMs += ms;
+  if (!q.running || q.dressing) q.freeMs += ms;
+  if (q.dressing) c.clock.dressMs.corner += ms;
+}
+
+/** Free time without the Corner's dressing: what the quest cutoff counts. */
+export const freeWithoutDressing = (c: FreeClocks): number => c.quests.freeMs - c.clock.dressMs.corner;
+
+/** Past the cutoff: no new picnic or maths quest. The Corner may still start while free play is on. */
+export const pastCutoff = (c: FreeClocks): boolean => freeWithoutDressing(c) >= QUEST_CUTOFF_MS;
+
+/** Free play is over: its time is up, no quest runs (the Corner runs until its wardrobe closes) and nobody dresses. */
+export const freePlayOver = (c: FreeClocks): boolean => c.quests.freeMs >= FREE_PLAY_MS && !c.quests.running && !c.quests.dressing;
+
+/** The Corner's music box when it starts: the free time that is left, at least 30 s and at most 60 s. */
+export function cornerLimitMs(freeMs: number): number {
+  return Math.min(CORNER_MAX_MS, Math.max(CORNER_MIN_MS, FREE_PLAY_MS - freeMs));
+}
+
+// ---- the maths quest's rotation (17.2) ------------------------------------------------------------------------------
+
+/**
+ * This play's maths quest: last play's when she did not finish it, else the other one. A save without an afternoon
+ * (2.2's, a first play) gets the bead tree. `?quest=rack|beads` sets it.
+ */
+export function mathsQuestFor(last: { maths: 'rack' | 'beads' | null; done: readonly string[] }, forced: string | null = null): 'rack' | 'beads' {
+  if (forced === 'rack' || forced === 'beads') return forced;
+  if (!last.maths) return 'beads';
+  if (!last.done.includes(last.maths)) return last.maths;
+  return last.maths === 'rack' ? 'beads' : 'rack';
+}
+
+// ---- gifts (17.2) ---------------------------------------------------------------------------------------------------
+
+/**
+ * A quest's gift: the set it pays from now (its own while it has items left, else the set with the most left) and
+ * the one or two items she picks from, from the stream 'gift-<quest>'. No items when every set is full.
+ */
+export function giftOffer(quest: string, owned: Owned, rand: () => number): { set: GiftSet | null; items: GiftItem[] } {
+  const set = giftSetFor(quest, owned);
+  return { set, items: set ? giftChoices(set, owned, rand) : [] };
+}
+
+/** Did this gift fill its quest's own set? Then Lumi puts a sticker on the trunk lid ("You found them all!"). */
+export function fillsOwnSet(quest: string, owned: Owned): boolean {
+  const own = setOfQuest(quest);
+  return !!own && stillToEarn(own, owned).length === 0;
+}
+
+/** Her look with a gift on top: she keeps wearing it (2.3 section 17.2). */
+export function wearing(look: PrincessLook, item: GiftItem): PrincessLook {
+  return { ...look, [item.field]: item.id };
+}
+
+/** The sparkle trail from her to the trunk: this many sparkles, this far apart in time, over at most this length. */
+const TRAIL = { n: 9, ms: 70, maxM: 6 } as const;
+
+/**
+ * A quest's gift (2.3 sections 5 and 17.2), in the quest's frame: the set it pays from now and one or two items from
+ * it on the picker's cards ("Pick one present!"). The picked item is saved at once in what she owns and on her look,
+ * and she keeps wearing it. She twirls, the fanfare plays (never over Elizabeth), and a sparkle trail flies from her
+ * to the trunk. When the gift filled the quest's own set, Lumi says "You found them all! A sticker for your trunk."
+ * Resolves with the item, or null when every set is full (no picker).
+ */
+export async function giveGift(g: Game, quest: QuestId): Promise<GiftItem | null> {
+  const { actors, layer, world } = g;
+  const her = actors.princess;
+  const { items } = giftOffer(quest, g.save.data.owned, g.randFor(`gift-${quest}`));
+  if (!items.length) return null;
+  const chest = new THREE.Vector3();
+  const item = await g.run.w(layer.gift({ items, look: { ...her.look }, clips: CLIPS.gift, to: () => world.toScreen(her.point('dress', chest)) }));
+  wearGift(g, item);
+  synth('fanfare');
+  sparkleTrail(g);
+  await g.run.w(her.emote('twirl'));
+  if (fillsOwnSet(quest, g.save.data.owned)) await lumiSay(g, CLIPS.sticker);
+  return item;
+}
+
+/** The gift goes on and stays on: saved in what she owns and in her look at the pick, and today's gifts. */
+export function wearGift(g: Game, item: GiftItem): void {
+  const look = wearing(g.actors.princess.look, item);
+  g.actors.princess.setLook(look);
+  g.save.write((s) => {
+    s.owned = withItem(s.owned, item);
+    s.look = { ...look };
+  });
+  g.quests.gifts.push(item);
+}
+
+/** Sparkles fly from her head towards the trunk (off screen when the trunk is far: they go its way). */
+function sparkleTrail(g: Game): void {
+  const from = g.actors.princess.position.clone().setY(1.3);
+  const to = new THREE.Vector3(CORNER.trunk.x, 0.6, CORNER.trunk.z);
+  const d = from.distanceTo(to);
+  if (d > TRAIL.maxM) to.sub(from).setLength(TRAIL.maxM).add(from);
+  for (let k = 1; k <= TRAIL.n; k++) {
+    const p = from.clone().lerp(to, k / TRAIL.n);
+    p.y += Math.sin((k / TRAIL.n) * Math.PI) * 0.6;
+    setTimeout(() => g.actors.fx.sparkle(p, { count: 4, colour: k % 2 ? '#fff1b8' : '#ffc4e1' }), k * TRAIL.ms);
+  }
 }
