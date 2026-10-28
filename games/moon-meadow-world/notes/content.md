@@ -164,5 +164,5 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 ## Audio
 
 - `fb-letters` and every pool word's clip are ok v3 clips. The 13 new lines of 2.2.0 are generated and 12 are used; the demo's pack has 79 clips, and `dev/content.html` reports none missing.
-- The clips of sail, pail, reed, pie, leek, mat and dock passed speech-to-text only as homophones (Sale, Pale, Read, Pi, Leak, Matt, Doc). Tjitse listens to them once.
+- The clips of sail, pail, reed, pie, leek and mat passed speech-to-text only as homophones (Sale, Pale, Read, Pi, Leak, Matt). Tjitse listens to them once.
 - Booked so far: 2,276.90 credits in `tools/audio/ledger.jsonl` against the cap of 4,000.

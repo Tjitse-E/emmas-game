@@ -108,9 +108,8 @@ describe('pools and the picture check', () => {
         expect(near.length, t.word).toBeGreaterThan(0);
       }
     }
-    // The twins of 3.2.
+    // The twins of 3.2 (duck/dock went with dock).
     expect(word('seal').twins).toContain('sail');
-    expect(word('duck').twins).toContain('dock');
     expect(word('boot').twins).toContain('boat');
   });
 

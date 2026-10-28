@@ -253,12 +253,12 @@ describe('the rails', () => {
 
   it('ends a gesture once, with the reaction and the word only at the end', () => {
     const r = railsWith();
-    r.rails.down('style', 2);
+    r.rails.down('style', 3);
     expect(r.log.some((l) => l.startsWith('picked') || l.startsWith('word'))).toBe(false);
     r.rails.end();
     r.rails.end();
-    expect(r.log.filter((l) => l.startsWith('picked'))).toEqual(['picked style plaits']);
-    expect(r.words.map((w) => w.clip)).toEqual(['word-braid']);
+    expect(r.log.filter((l) => l.startsWith('picked'))).toEqual(['picked style bun']);
+    expect(r.words.map((w) => w.clip)).toEqual(['word-bun']);
   });
 
   it('plays the reaction and a hop when she taps what she wears, without a pop', () => {

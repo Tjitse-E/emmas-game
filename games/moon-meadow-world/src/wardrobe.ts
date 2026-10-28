@@ -116,7 +116,8 @@ export const LOOK_ROWS: readonly LookRowSpec[] = [
     options: [
       { id: 'ponytails', swatch: [] },
       { id: 'high', swatch: [] },
-      { id: 'plaits', swatch: [], word: word('braid') },
+      // No word: braid is the American word for a plait, and v3 has no plait clip.
+      { id: 'plaits', swatch: [] },
       { id: 'bun', swatch: [], word: word('bun') },
     ],
   },
