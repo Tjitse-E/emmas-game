@@ -11,7 +11,7 @@ export { eggSpec, eggClipIds, eggCombos, nextBand, totalOf, type Band, type Math
 export { rackSpec, allRackClipIds } from './rack.ts';
 export { namingSpec } from './naming.ts';
 export { wishSpec, foods, wishTargets, planBasket, reactOf, BASKET_SIZE, type WishOpts, type WordKind } from './wishes.ts';
-export { phraseSpec, allPhraseClipIds } from './phrases.ts';
+export { phraseSpec, allPhraseClipIds, gateKind, phraseTargets, phraseItem, phraseCombos, theClip, MIN_PHRASES } from './phrases.ts';
 export { patternSpec, allPatternClipIds, type PatternLevel } from './patterns.ts';
 export { moveIn, doorVisit, rollCall, newborn, NEWBORN_DOORS, type DoorAsk } from './doors.ts';
 export { CLIPS, wayTo, allClipIds, allGraphemes, namingClipIds, wishClipIds, doorClipIds } from './clips.ts';
