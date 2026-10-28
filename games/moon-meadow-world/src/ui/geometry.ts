@@ -1,5 +1,6 @@
 // Pure layout and rule helpers for the 2D layer. No DOM here, so tests/ui.test.ts can check them in node.
-import { LEGACY_ROWS as LOOK_ROWS, type LegacyRow as LookRow } from '../wardrobe-legacy';
+import type { LookTab } from '../contracts';
+import { TABS } from '../wardrobe';
 
 export type Point = { x: number; y: number };
 export type Box = { x: number; y: number; w: number; h: number };
@@ -360,18 +361,21 @@ export function menuUrl(pathname: string): string {
 // ------------------------------------------------------------------------------------------------ wardrobe
 
 /**
- * The customiser's sizes in design px (docs/v4/2.2.md 2.2). The panel hangs from the right edge under the home
- * button; each row has a picture tile and a rail of swatches. A rail box starts half a gap before its first swatch
- * and is `pitch` wide per cell, so the cell under a finger is a plain division (cellAt).
+ * The wardrobe's sizes in design px (docs/v4/2.3.md section 16). The panel hangs from the right edge under the home
+ * button: six tab tiles in its icon column and five rows of rails. A rail box starts half a gap before its first
+ * swatch and is `pitch` wide per cell, so the cell under a finger is a plain division (cellAt). The music box sits at
+ * the bottom left of the preview, clear of Done.
  */
 export const WARDROBE = {
   panel: { right: 16, top: 112, w: 628, h: 550, border: 5, pad: 20 },
   rowH: 100,
+  rows: 5,
+  cells: 6,
   /**
-   * The row's picture tile, from the panel's outer left edge. 78 instead of the design's 72, so it is a 64 CSS px
-   * target at 1024 x 690 too.
+   * The six tab tiles in the icon column, from the panel's outer left edge, at a pitch of 83 from the inside top
+   * (6 x 83 = 498 of its 500). 78, so a tile is 65.6 CSS px at 1024 x 690.
    */
-  icon: { x: 12, size: 78 },
+  tab: { x: 12, size: 78, pitch: 83 },
   /** The rail box, from the panel's outer left edge (its first swatch starts at 100). */
   rail: { x: 96, pitch: 86, track: 88 },
   swatch: 78,
@@ -379,19 +383,25 @@ export const WARDROBE = {
   done: { size: 140, bottom: 18 },
   preview: { gap: 12, top: 112, bottom: 180 },
   pill: { top: 14, h: 60 },
+  /** The music box: 120 round at the bottom left of the preview, six moon beads on a ring inside its edge. */
+  box: { x: 24, bottom: 24, size: 120, bead: 24, ring: 46 },
   /** The home button (hud.ts): right 16, top 16, 80 round, and its hold ring 17 beyond that. */
   home: { right: 16, top: 16, size: 80 },
 } as const;
 
+export interface WardrobeTabBox {
+  tab: LookTab;
+  box: Box;
+}
+
 export interface WardrobeRowBox {
-  row: LookRow;
+  /** 0 to 4: RailSpec.row. */
+  row: number;
   /** The whole row inside the panel. */
   box: Box;
-  /** The picture tile (a tap frames the row). */
-  icon: Box;
-  /** The rail: the touch target, the full row height, `pitch` wide per cell. */
+  /** A full rail of six cells: the touch target, the full row height, `pitch` wide per cell. */
   rail: Box;
-  /** Each swatch. */
+  /** Its six swatches. */
   cells: Box[];
 }
 
@@ -399,6 +409,9 @@ export interface WardrobeLayout {
   /** One design px in CSS px. */
   unit: number;
   panel: Box;
+  /** The six tab tiles in TABS order (the crown tab's place is kept even while it is empty). */
+  tabs: WardrobeTabBox[];
+  /** The five rows of rails. */
   rows: WardrobeRowBox[];
   /** Cell pitch, swatch and knob sizes in CSS px. */
   pitch: number;
@@ -412,29 +425,36 @@ export interface WardrobeLayout {
   pill: { x: number; y: number; h: number };
   /** The home button (without its hold ring). */
   home: Box;
+  /** The music box (never a target) and its six moon beads, clockwise from the top. */
+  box: Box;
+  beads: Box[];
 }
 
 /**
- * Every box of the customiser for a screen of w x h CSS px, in CSS px. The game uses it to place Princess Emma (she
- * stands at x = panel.x / 2) and the tests check it at every iPad size. `counts` is the number of options per row.
+ * Every box of the wardrobe for a screen of w x h CSS px, in CSS px. The game uses it to place Princess Emma (she
+ * stands at x = panel.x / 2) and the tests check it at every iPad size.
  */
-export function wardrobeLayout(w: number, h: number, counts: readonly number[] = LOOK_ROWS.map((r) => r.options.length)): WardrobeLayout {
+export function wardrobeLayout(w: number, h: number): WardrobeLayout {
   const W = WARDROBE;
   const k = unitFor(Math.max(w, h), Math.min(w, h));
   const px = (n: number) => n * k;
   const panel: Box = { x: w - px(W.panel.right + W.panel.w), y: px(W.panel.top), w: px(W.panel.w), h: px(W.panel.h) };
   const top = panel.y + px(W.panel.border + W.panel.pad);
-  const rows = LOOK_ROWS.map((spec, i): WardrobeRowBox => {
+  const inside = W.panel.h - 2 * (W.panel.border + W.panel.pad);
+  const tabTop = top + px((inside - TABS.length * W.tab.pitch) / 2 + (W.tab.pitch - W.tab.size) / 2);
+  const tabs = TABS.map(({ tab }, i): WardrobeTabBox => ({
+    tab,
+    box: { x: panel.x + px(W.tab.x), y: tabTop + px(i * W.tab.pitch), w: px(W.tab.size), h: px(W.tab.size) },
+  }));
+  const inset = (W.rail.pitch - W.swatch) / 2;
+  const rows = Array.from({ length: W.rows }, (_, i): WardrobeRowBox => {
     const y = top + px(i * W.rowH);
-    const n = counts[i] ?? spec.options.length;
-    const rail: Box = { x: panel.x + px(W.rail.x), y, w: px(n * W.rail.pitch), h: px(W.rowH) };
-    const inset = (W.rail.pitch - W.swatch) / 2;
+    const rail: Box = { x: panel.x + px(W.rail.x), y, w: px(W.cells * W.rail.pitch), h: px(W.rowH) };
     return {
-      row: spec.row,
+      row: i,
       box: { x: panel.x + px(W.panel.border), y, w: panel.w - px(2 * W.panel.border), h: px(W.rowH) },
-      icon: { x: panel.x + px(W.icon.x), y: y + px((W.rowH - W.icon.size) / 2), w: px(W.icon.size), h: px(W.icon.size) },
       rail,
-      cells: Array.from({ length: n }, (_, c) => ({
+      cells: Array.from({ length: W.cells }, (_, c) => ({
         x: rail.x + px(c * W.rail.pitch + inset),
         y: y + px((W.rowH - W.swatch) / 2),
         w: px(W.swatch),
@@ -445,9 +465,17 @@ export function wardrobeLayout(w: number, h: number, counts: readonly number[] =
   const done: Box = { x: panel.x / 2 - px(W.done.size / 2), y: h - px(W.done.bottom + W.done.size), w: px(W.done.size), h: px(W.done.size) };
   const previewTop = px(W.preview.top);
   const preview: Box = { x: 0, y: previewTop, w: Math.max(0, panel.x - px(W.preview.gap)), h: Math.max(0, h - px(W.preview.bottom) - previewTop) };
+  const box: Box = { x: px(W.box.x), y: h - px(W.box.bottom + W.box.size), w: px(W.box.size), h: px(W.box.size) };
+  const beads = Array.from({ length: 6 }, (_, i): Box => {
+    const a = -Math.PI / 2 + (i * Math.PI) / 3;
+    const cx = box.x + box.w / 2 + Math.cos(a) * px(W.box.ring);
+    const cy = box.y + box.h / 2 + Math.sin(a) * px(W.box.ring);
+    return { x: cx - px(W.box.bead / 2), y: cy - px(W.box.bead / 2), w: px(W.box.bead), h: px(W.box.bead) };
+  });
   return {
     unit: k,
     panel,
+    tabs,
     rows,
     pitch: px(W.rail.pitch),
     swatch: px(W.swatch),
@@ -456,7 +484,15 @@ export function wardrobeLayout(w: number, h: number, counts: readonly number[] =
     preview,
     pill: { x: preview.w / 2, y: px(W.pill.top), h: px(W.pill.h) },
     home: { x: w - px(W.home.right + W.home.size), y: px(W.home.top), w: px(W.home.size), h: px(W.home.size) },
+    box,
+    beads,
   };
+}
+
+/** A rail of `n` cells in a row: the touch box ends after its last cell, so cellAt divides it by n. */
+export function railIn(row: WardrobeRowBox, n: number): { rail: Box; cells: Box[] } {
+  const pitch = row.rail.w / WARDROBE.cells;
+  return { rail: { ...row.rail, w: pitch * n }, cells: row.cells.slice(0, n) };
 }
 
 /**
@@ -473,4 +509,47 @@ export function cellAt(x: number, rail: { x: number; w: number }, n: number, pit
 /** True when two boxes share any area. */
 export function overlaps(a: Box, b: Box): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+}
+
+/**
+ * The treasure board inside the trunk lid (section 16), in design px: centred on the preview side, below Lumi's moon,
+ * a lid arch on top, then one row per gift set and the ribbons. Each row has a sticker place on the left and its places after it.
+ */
+export const BOARD = { w: 508, top: 150, arch: 30, pad: 22, rowH: 60, place: 46, pitch: 51, sticker: 44, gap: 10 } as const;
+
+export interface BoardLayout {
+  board: Box;
+  rows: { box: Box; sticker: Box; places: Box[] }[];
+}
+
+/** The board's boxes in CSS px for rows of `counts` places (4, 3, 6, 8 and the 5 ribbons). Nothing on it is a target. */
+export function boardLayout(w: number, h: number, counts: readonly number[]): BoardLayout {
+  const B = BOARD;
+  const L = wardrobeLayout(w, h);
+  const px = (n: number) => n * L.unit;
+  const bh = B.arch + 2 * B.pad + counts.length * B.rowH;
+  const board: Box = { x: L.panel.x / 2 - px(B.w / 2), y: px(B.top), w: px(B.w), h: px(bh) };
+  const rows = counts.map((n, i) => {
+    const y = board.y + px(B.arch + B.pad + i * B.rowH);
+    const x = board.x + px(B.pad);
+    const mid = (B.rowH - B.place) / 2;
+    return {
+      box: { x, y, w: board.w - px(2 * B.pad), h: px(B.rowH) },
+      sticker: { x, y: y + px((B.rowH - B.sticker) / 2), w: px(B.sticker), h: px(B.sticker) },
+      places: Array.from({ length: n }, (_, j) => ({ x: x + px(B.sticker + B.gap + j * B.pitch), y: y + px(mid), w: px(B.place), h: px(B.place) })),
+    };
+  });
+  return { board, rows };
+}
+
+/** The gift picker's cards (section 16): one or two of 220 x 260 design px, centred on the screen, 60 apart. */
+export const GIFT_CARD = { w: 220, h: 260, gap: 60 } as const;
+
+export function giftCards(w: number, h: number, n: number): Box[] {
+  const k = unitFor(Math.max(w, h), Math.min(w, h));
+  const cw = GIFT_CARD.w * k;
+  const ch = GIFT_CARD.h * k;
+  const gap = GIFT_CARD.gap * k;
+  const total = n * cw + Math.max(0, n - 1) * gap;
+  return Array.from({ length: n }, (_, i) => ({ x: (w - total) / 2 + i * (cw + gap), y: (h - ch) / 2, w: cw, h: ch }));
 }

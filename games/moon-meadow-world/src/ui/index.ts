@@ -4,7 +4,7 @@
 import '@fontsource/andika/400.css';
 import '@fontsource/andika/700.css';
 import './ui.css';
-import type { Layer, LayerDeps } from '../contracts';
+import type { Layer, LayerDeps, PrincessLook } from '../contracts';
 import { audio } from '../audio';
 import { skyWash, unitFor } from './geometry';
 import { el, setUnit } from './dom';
@@ -18,11 +18,11 @@ import { runEgg } from './egg';
 import { runNaming } from './naming';
 import { runWish } from './wish';
 import { runWardrobe, type WardrobeHandle, type WardrobeSnapshot } from './wardrobe';
-import { runGift } from './gift';
-import { showBoard } from './board';
+import { runGift, type GiftHandle } from './gift';
+import { BOARD_MS, showBoard, type BoardHandle } from './board';
 import { runBeads } from './beads';
 import { createOffers } from './offer';
-import { LEGACY_FIELD, LEGACY_TAB, applyLegacy, applyLegacyAll, legacyOf } from '../wardrobe-legacy';
+import { DEFAULT_LOOK } from '../wardrobe';
 import type { LayerCtx, MomentSnapshot, OpenMoment, UiTarget } from './moment';
 import { target } from './moment';
 
@@ -93,6 +93,10 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
   // Offer bubbles follow places in the world like the name tags, under the moment panels.
   const offers = createOffers(tagsLayer, screen);
   let wardrobe: WardrobeHandle | null = null;
+  let gift: GiftHandle | null = null;
+  let board: BoardHandle | null = null;
+  /** The look she wore at the last wardrobe or gift picker: the board on its own draws her gifts in its colours. */
+  let lastLook: PrincessLook = { ...DEFAULT_LOOK };
   const curtain = createCurtain(screens);
   const turn = createTurn(screens);
 
@@ -159,28 +163,29 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
     tag: (name, at, ms) => tags.show(name, at, ms),
     wardrobe: (o) => {
       wardrobe?.close();
-      // Step 0 of 2.3.0: the 2.2 panel on the legacy catalogue, its picks laid over the 2.3 look. The music box, the
-      // tabs and the board come with the wardrobe-ui lane (docs/v4/2.3.md section 16).
-      let look = o.look;
-      const picked = runWardrobe(
-        { parent: moments, ghost, screen },
-        {
-          look: legacyOf(o.look), ribbons: ['pink', 'lilac', 'sky', 'mint', 'gold', 'coral'], firstTime: o.firstTime,
-          clips: { ready: o.clips.ready, firstTime: o.clips.firstTime, idle: o.clips.idle, done: o.clips.done },
-          onLook: (l, row) => o.onLook((look = applyLegacy(look, l, row)), LEGACY_FIELD[row]),
-          onPicked: (l, row) => o.onPicked((look = applyLegacy(look, l, row)), LEGACY_FIELD[row]),
-          onFocus: (row) => o.onFocus(row ? LEGACY_TAB[row] : null),
-          onTurn: (dx, ended) => o.onTurn(dx, ended),
-          onPreviewTap: () => o.onPreviewTap(),
-        },
-        (h) => {
-          wardrobe = h;
-        },
-      );
-      return picked.then((l) => ({ look: applyLegacyAll(look, l), end: 'done' as const }));
+      lastLook = { ...o.look };
+      return runWardrobe({ parent: moments, ghost, screen }, o, (h) => {
+        wardrobe = h;
+      }).then((r) => {
+        lastLook = { ...r.look };
+        return r;
+      });
     },
-    gift: (o) => runGift(moments, o),
-    board: (spec, ms = 3500) => showBoard(moments, spec, ms),
+    gift: (o) => {
+      gift?.close();
+      lastLook = { ...o.look };
+      return runGift({ parent: moments, ghost, screen }, o, (h) => {
+        gift = h;
+      });
+    },
+    board: (spec, ms = BOARD_MS) => {
+      board?.close();
+      const b = showBoard(moments, spec, ms, { look: lastLook, screen });
+      board = b;
+      return b.done.then(() => {
+        if (board === b) board = null;
+      });
+    },
     beads: (spec, hooks, o) => {
       open?.close();
       return runBeads(ctx, spec, hooks, setOpen, o);
@@ -202,6 +207,10 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       open = null;
       wardrobe?.close();
       wardrobe = null;
+      gift?.close();
+      gift = null;
+      board?.close();
+      board = null;
       offers.reset();
       ghost.hide();
       releaseDrags();
@@ -231,12 +240,12 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       hudLayer.querySelectorAll('.food-tray.open .food').forEach((f) => add(f.getAttribute('aria-label') ?? 'food', f));
       add('play', screens.querySelector('.screen.start .play'));
       add('play again', screens.querySelector('.screen.end .end-moon'));
-      targets.push(...(wardrobe?.targets() ?? []), ...offers.targets());
+      targets.push(...(wardrobe?.targets() ?? []), ...(gift?.targets() ?? []), ...offers.targets());
       return { moment: m, wardrobe: wardrobe?.snapshot() ?? null, targets };
     },
     idleNow: () => {
       const l = open?.ladder;
-      if (!l) return wardrobe?.idleNow() ?? false;
+      if (!l) return (gift?.idleNow() ?? false) || (wardrobe?.idleNow() ?? false);
       l.idleNow();
       return true;
     },
