@@ -1,0 +1,53 @@
+/* The bead tree's pattern moment (src/ui/beads.ts, docs/v4/2.3.md 19.2). Design px times --u, as ui.css. The string
+   hangs across the top middle, between Lumi (top left, to 150) and the home button (top right); its box is 852 x 200
+   and starts 8 left of the centre, so at 1180 x 820 it runs from 156 to 1008. The tray of 3 or 4 beads of 120 sits on
+   the right, near the bottom, like the stones, clear of the string's right end (whose beads end at 104 from the top). */
+
+.beads-moment { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; }
+
+.bead-string {
+  position: absolute; left: 50%; top: 0; width: calc(852 * var(--u)); height: calc(200 * var(--u));
+  margin-left: calc(-434 * var(--u));
+  animation: mmw-bead-drop 600ms cubic-bezier(.3, 1.3, .5, 1) both;
+}
+@keyframes mmw-bead-drop { from { opacity: 0; transform: translateY(calc(-60 * var(--u))); } }
+.bead-thread { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.bead-thread svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.bead-place {
+  position: absolute; width: calc(84 * var(--u)); height: calc(84 * var(--u)); border-radius: 50%;
+  filter: drop-shadow(0 calc(4 * var(--u)) calc(3 * var(--u)) rgba(80, 50, 120, 0.28));
+}
+.bead-place svg, .bead-pic svg { display: block; width: 100%; height: 100%; }
+/* A gap: an empty ring on the thread. The open gap glows gold and breathes. */
+.bead-place.gap {
+  background: rgba(255, 250, 242, 0.72); border: calc(5 * var(--u)) dashed #b9a2ea; filter: none;
+  box-shadow: inset 0 calc(3 * var(--u)) calc(6 * var(--u)) rgba(120, 90, 180, 0.22);
+}
+.bead-place.gap.current { border-color: #ffc93a; background: rgba(255, 246, 214, 0.9); animation: mmw-glow-ring 1.6s ease-in-out infinite; }
+/* The hints: the repeat lights bead by bead; the place that matches the gap pulses gold. */
+.bead-place.lit { filter: drop-shadow(0 0 calc(10 * var(--u)) #ffd25e) drop-shadow(0 0 calc(4 * var(--u)) #fff3c4); transform: scale(1.12); transition: transform 200ms ease-out; }
+.bead-place.match { animation: mmw-bead-match 700ms ease-in-out infinite; }
+@keyframes mmw-bead-match {
+  0%, 100% { transform: scale(1.12); box-shadow: 0 0 0 calc(5 * var(--u)) rgba(255, 210, 94, 0.9); }
+  50% { transform: scale(1.24); box-shadow: 0 0 0 calc(10 * var(--u)) rgba(255, 210, 94, 0.35); }
+}
+.bead-string.done .bead-place { animation: mmw-bead-done 1.2s ease-in-out 2; }
+@keyframes mmw-bead-done { 50% { filter: drop-shadow(0 0 calc(12 * var(--u)) #fff1b8) drop-shadow(0 0 calc(4 * var(--u)) #ffd25e); transform: translateY(calc(-6 * var(--u))); } }
+
+/* The tray: on the right, bottom 30, as the stone tray's look. */
+.bead-tray {
+  position: absolute; right: calc(20 * var(--u)); bottom: calc(30 * var(--u));
+  display: flex; flex-direction: column; gap: calc(14 * var(--u)); padding: calc(18 * var(--u)) calc(16 * var(--u));
+  background: rgba(255, 250, 242, 0.9); border: calc(5 * var(--u)) solid var(--lilac); border-radius: calc(40 * var(--u));
+  box-shadow: 0 calc(7 * var(--u)) 0 rgba(172, 146, 214, 0.45), 0 calc(14 * var(--u)) calc(30 * var(--u)) rgba(90, 60, 130, 0.18);
+  animation: mmw-bead-tray-in 500ms 120ms cubic-bezier(.3, 1.3, .5, 1) both;
+}
+@keyframes mmw-bead-tray-in { from { opacity: 0; transform: translateX(calc(60 * var(--u))); } }
+.bead-cell { position: relative; width: calc(120 * var(--u)); height: calc(120 * var(--u)); }
+.bead-cell .bead-pic { position: absolute; left: calc(6 * var(--u)); top: calc(6 * var(--u)); width: calc(108 * var(--u)); height: calc(108 * var(--u)); filter: drop-shadow(0 calc(5 * var(--u)) calc(3 * var(--u)) rgba(80, 50, 120, 0.3)); }
+.bead-tray .bead-cell { transition: opacity 320ms ease-out, filter 320ms ease-out; }
+.bead-tray.asleep .bead-cell { opacity: 0.55; filter: saturate(0.25); }
+
+.beads-moment.leaving .bead-string, .beads-moment.leaving .bead-tray { transition: opacity 400ms ease, transform 400ms ease; opacity: 0; }
+.beads-moment.leaving .bead-string { transform: translateY(calc(-30 * var(--u))); }
