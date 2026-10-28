@@ -9,15 +9,18 @@
 | `src/content/looks.ts` | The herd's looks (door order) and `babyLook()`. |
 | `src/content/eggs.ts`, `naming.ts`, `wishes.ts`, `doors.ts`, `clips.ts`, `rand.ts` | One file per moment, the clip list and the seeded random. |
 | `src/content/rack.ts` | The hay rack moment: `rackSpec()` and `allRackClipIds()`. |
+| `src/content/phrases.ts` | The phrase wish of the Dressing Corner's gate (2.3.0): the strong rule, the planner per level, `gateKind()`, `phraseItem()`, the clip and sound lists. |
 | `tools/build-content.ts` | Reads v3's banks, clips, letter sounds, pictures, twins (`content/pairs.json`), `UNICORN_FOODS` and `tools/picture-check.json`. Stops with a list of problems instead of writing bad data, and when a wish kind has fewer than 6 strong targets. |
 | `tools/picture-check.json` | One entry per wish word: `ok` (target or decoy), `decoy` (decoy only) or `drop` (never used), with `by` and `why`. A word without an entry is left out. |
+| `tools/phrase-check.json` | The tinted picture check (2.3.0): one entry per colour on a thing ("green sock"), `ok` or `drop`, `by` (`claude` or `emma`) and `why`. 30 entries; a pair without one is left out. |
 | `tools/lines.ts` | The demo's own sentences and number patterns (`SENTENCES`, `lineFor(id)`), with no side effects, so tests can ask whether a clip that is not generated yet has a line. |
 | `tools/build-lines.ts` | Writes `public/audio/v4demo/lines.json` from `allClipIds()` minus v3's ok clips. Run it when the clip list changes. |
 | `tools/audio/gen.sh`, `budget.json`, `ledger.jsonl` | The demo's audio budget (cap 4,000, floor 10,000). |
 | `public/audio/v4demo/` | The demo's own clips, `manifest.json`, `overrides.json`. |
 | `src/ui/contrast.ts` | `diffUnits()`: which printed units of two words differ (the miss contrast). Pure. |
-| `dev/content.html` | A check page: the herd, newborns, eggs, name bells with their wrong gems, the picture-check contact sheets (every wish word with its picture, verdict and reason, tap to hear), sample baskets per kind and reading level, doors, and a check of every clip, letter sound and picture through the real audio packs. |
-| `tests/reading.test.ts` | Pools, the picture check, strong targets, the planner per kind and level, the guessers, the ladder's contrast step, the units diff and the naming gems. |
+| `dev/content.html` | A check page: the herd, newborns, eggs, name bells with their wrong gems, the picture-check contact sheets (every wish word with its picture, verdict and reason, tap to hear), the phrase contact sheet (30 tinted pictures with a yellow row to compare gold with, and a button that hides the words for Emma), sample baskets per kind and reading level (phrases too), doors, and a check of every clip, letter sound and picture through the real audio packs. |
+| `tests/reading.test.ts` | Pools, the picture check, strong targets, the planner per kind and level, the guessers, the ladder's contrast step, the units diff and the naming gems; for the phrase wish its check entries and clip lines, the strong rule, the baskets per level, the guessers, Emma's checks and the fallback, the two-word diff and the hint's sounds. |
+| `tests/reading-level.test.ts` | The reading level fold and the phrase level beside it. |
 
 ## Wiring
 
@@ -34,6 +37,7 @@
 - Before a dress-up wish the level says `CLIPS.dressUp` ("Your baby wants to dress up like you!"). Before a picnic wish it says nothing, also before the royal picnic's first guest: `CLIPS.hungry` or Lumi's "Who is hungry?" before a food only would give the answer away. After the wish: `foal-pretty` for `wear`, `foal-yum` for `munch`, `foal-yay` for `play`.
 - Free play: `foods()` (plum, corn, cake, peach; react `munch`).
 - Every other line: `CLIPS` (see `src/content/clips.ts`). `wayTo(place)` gives the "this way" line for a `Place` (none for the gazebo, the rack and the picnic).
+- The phrase wish (2.3.0): `planWish(g, 'phrase', 'gate1', { wish: false })` in `game/moments.ts`. See "Phrases" below.
 - Preloading: `allClipIds()` lists every clip the level can use. Preload `CLIPS` and the herd names at start, and each moment's own clips just before it with `eggClipIds(spec)`, `namingClipIds(spec)`, `wishClipIds(spec)` and `doorClipIds(specs)`. `wishClipIds` includes every basket word, so the contrast's word clip and `fb-letters` are ready. `allGraphemes()` lists the letter sounds for `audio.preloadSounds()`, including the capitals' sounds.
 
 ## Wish words (2.2.md 3.2) and the picture check
@@ -88,6 +92,55 @@ What the build gives (all strong, all `ok`):
 - `parts.ts`: `printEl` and `starSlider` run on `press()`, so a lost release (window pointerup or pointercancel, lost capture, the next touch) always ends them. A star slid to the end checks the build however the slide ended. `print.glowUnits(indexes)` lights units; `print.destroy()` and `slider.destroy()` remove the window listeners (the moments call them when they end).
 - `naming.ts`: the slider is destroyed with the moment; the first-time gem demo drags a small-letter gem, never the wrong capital.
 - `ui.css`: in the naming section the gem tray gap is 16; in the wish section the contrast tag, the gold diff glow and the picnic hamper.
+
+## Phrases (2.3.0, docs/v4/2.3.md sections 6 and 18)
+
+### Content
+
+- `build-content.ts` checks the six colours (green, gold, blue, brown as targets; red, pink as decoys only), the five things (bag, bead, bow, sock, shirt) and "the" against v3: one syllable, at most five letters, letter sounds, an ok clip for the things and `word-the`, a greyscale picture with a tint for the things, a picture tint in `PALETTE` for the colours, and a line in `tools/lines.ts` for all 30 phrase clips. Gold and brown are not in v3's packs; their graphemes are in the script (`o.oa`: the o of gold says oa). Bow is v3's `ow.oa`. data.json gets `phraseThe`, `phraseColours`, `phraseThings` (with `sounds` where the sound differs from the print) and `phrasePairs` (every ok pair and who checked it).
+- The build prints the strong count for Emma's pairs and for all pairs, and warns below 6. Now: 30 ok pairs, all by Claude; 0 strong for Emma, 20 with `?phrases=all`.
+- Picture tints come from `PALETTE[colour].pic` at runtime, so the integrator's shade tuning reaches the pictures. If a `pic` value changes, Emma's check of that colour should be done again.
+
+### The strong rule (`strongPhrases`)
+
+A phrase is strong when its colour is a target colour with a sibling, its thing has a partner, it passed the check, it has a level 1 grid and a level 2 grid whose four items are all strong themselves, and red or pink on its thing passed the check. The script removes phrases until every one left keeps its grids (the largest such set), so every grid item of every basket can be the wish. Strong phrases come in grids of 2 colours by 2 things, so a count between 1 and 7 cannot happen: the gate needs at least 8 in practice.
+
+### Baskets (`phraseSpec`)
+
+| Level | Basket | Both first letters | Colour word only | Thing word only |
+|---|---|---|---|---|
+| 1 | {colour, a target colour of another letter} x {thing, partner}: 4 | 50% | 50% | 50% |
+| 2 | {colour, sibling} x {thing, partner} + red or pink on the thing: 5 | 25% | 50% | 33% |
+| 3 | the level 2 grid + a third b-thing in one of the two colours: 5 (sock and shirt play and log 2) | 22% | 45% | 43% |
+
+Measured over 10,000 baskets per level with `?phrases=all`; the tests hold them to 55% (level 1) and 40% (levels 2 and 3) for both first letters, and 55% for one word only. Decoy kinds for the log: level 1's other-colour items `other` and the partner thing `onset`; levels 2 and 3 grid items `onset`, red or pink `other`, the third thing `onset`.
+
+### The game (`game/moments.ts`, `game/reading.ts`)
+
+- `planWish(g, 'phrase', label, { wish: false })` plans at the phrase level (`save.phrases`; `?rl=` forces it), with `?phrases=all` from the options. While `gateKind(g)` is `'word'` it plans a dress-up word wish at the word level instead, whose intro is "Your baby wants to dress up like you!" and the goal; the caller runs either one the same way, so the Corner says nothing of its own before it.
+- `noteReading(g, outcome, kind)` folds a phrase result into `save.phrases` and every word result into `save.reading` (`foldReadingFor`). The gate's word wishes move the word level.
+- `wishExtraClipIds(spec)` adds `word-the` for a phrase; `runWish` preloads it too.
+
+### The ui side
+
+- `parts.ts` `phrasePrintEl(parts)`: "the green sock" on one line at the word print size, a word gap, every word in the print ink. "the" has no dots; a touch on it says `word-the`, once per touch. The colour and the thing play their letter sounds (`sounds` where given).
+- `wish.ts`: the miss tag has two lines, the colour over the thing (Andika 30, no "the"); the picture shrinks above it. The contrast lights per word what differs (`diffPhrase` in `contrast.ts`): the colour against the wish's colour, the thing against its thing; "the" never lights. Elizabeth says the wrong item's phrase, then `fb-letters`. The focused hint: `h-sounds`, the colour's sounds, 400 ms more than the usual gap, the thing's sounds. After a right pick: `fb-yes` and the phrase.
+- `geometry.ts` `phraseUnits(parts)`: the printed units per word, each saying its sound. Checked by `tests/ui.test.ts`, which also checks that ui.css gives the print and the tag no colour of their own.
+- `dev/ui.html` has `wish phrase 1`, `2` and `3`.
+
+### Emma's picture check
+
+1. Open `dev/content.html` and scroll to "Phrase pictures". "Hide the words" hides the labels, so she names each picture without reading it. Ask what each one is and what colour it is; gold against yellow above all (the dashed yellow row is only there to compare).
+2. For each pair she names right, set `"by": "emma"` in `tools/phrase-check.json`; for one she does not know, `"verdict": "drop"` (keep `by` as who decided).
+3. Run `node tools/build-content.ts` and check the strong count. At 8 or more the gate plays phrases.
+
+### Claude's calls
+
+- The strong rule asks for both grids and the decoy, and removes until stable (above). A looser rule would let a grid item be a phrase that is never the wish.
+- A tap on "the" says the word whole; v3 marks it a tricky word (`heart`), and saying it gives nothing away.
+- The gate's word wishes say "Your baby wants to dress up like you!" in their intro and move the word level, as every word read does.
+- Level 3's third thing takes either grid colour at random, so the colour that shows three times never points at the wish.
+- Gold is a deep mustard as a flat tint. It is `ok` by Claude with that note; Emma's check decides.
 
 ## Maths (2.2.0)
 
@@ -159,6 +212,8 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 - The reading level fold lives in `src/game/reading.ts` and is tested in `tests/reading-level.test.ts`, not in `tests/reading.test.ts`.
 
 ## Rough edges
+
+0. 2.3.0: the dev server in a lane worktree cannot serve the Andika font, because `node_modules` is a link to the main tree outside `server.fs.allow` (403). Dev pages then show a fallback font; the build is not affected.
 
 1. `src/assets.ts` reads `location` when it is imported, so node code that imports `wordPic` (the tests, `tools/build-lines.ts`) has to stub `location` first. Computing `V3` on first use would remove that.
 2. `src/audio/index.ts` uses a relative own-pack path (`audio/v4demo/`). A page under `dev/` needs `<base href="../">` (as `dev/content.html` has).
