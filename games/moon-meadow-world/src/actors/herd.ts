@@ -5,7 +5,7 @@ import type { Herd, UnicornLook, Vec2 } from '../contracts';
 import { dist2 } from '../layout';
 import type { PartList } from './parts';
 import { UnicornActor, type HerdCtx } from './unicorn';
-import { createNickers } from './sounds';
+import { createHerdSounds } from './sounds';
 
 /**
  * The unicorns nearest the camera (around Princess Emma, whom it follows) get the full animation and detail (the spec
@@ -63,11 +63,14 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
   let play: { kind: PlayKind; t: number; dur: number; centre: Vec2; who: UnicornActor[] } | null = null;
   let playPause = 0;
 
-  const nickers = createNickers();
+  const sounds = createHerdSounds();
   const ctx: HerdCtx = {
     ...base,
     nicker() {
-      nickers.nicker();
+      sounds.nicker();
+    },
+    smallSplash() {
+      sounds.splash();
     },
     toyTexture(url) {
       let t = textures.get(url);
@@ -243,7 +246,7 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
       for (const u of followers()) u.rideAfterPrincess();
     },
     update(dt, t, camera) {
-      nickers.tick(t);
+      sounds.tick(t);
       updatePlay(dt);
       for (const u of list) u.update(dt, t);
       separate();

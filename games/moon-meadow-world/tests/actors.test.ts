@@ -14,24 +14,30 @@ import {
   FOLLOW_SLOTS, RouteWalker, SlideQueue, exitLanding, followTarget, headingOf, keepInPond, lineWalkable, nearestExit, queueSpot,
   turnTowards, wrap,
 } from '../src/actors/motion';
-import { B, CAPACITY, PartList, Parts, type BatchId } from '../src/actors/parts';
+import { B, CAPACITY, PartList, Parts, Xf, type BatchId } from '../src/actors/parts';
 import { DRESS_ROWS, dressGeometry, type DressShape } from '../src/actors/shapes';
-import { SLEEVE_MIX, mixHex, skirtAt, skirtTable } from '../src/actors/looks3d';
+import { SLEEVE_MIX, accentOf, drawEarring, drawThing, mixHex, shoeExtras, skirtAt, skirtTable } from '../src/actors/looks3d';
 import { UnicornActor } from '../src/actors/unicorn';
 import { createEgg } from '../src/actors/egg';
 import { createHerd } from '../src/actors/herd';
+import { createHerdSounds } from '../src/actors/sounds';
 import { fxStub, makePrincess, scenario, snapParts } from './princess-scenario';
 
 // The actors play their own whoosh, splashes and nickers; the audio module needs a browser. The fake records each
-// effect and says whether a checked moment is open.
-const sound = vi.hoisted(() => ({ fx: [] as { id: string; fallback?: string }[], checked: false }));
+// effect and each synthesised sound, and says whether a checked moment is open and whether anyone speaks.
+const sound = vi.hoisted(() => ({ fx: [] as { id: string; fallback?: string }[], sfx: [] as string[], checked: false, speaking: false }));
 vi.mock('../src/audio', () => ({
   audio: {
-    sfx: async () => {},
+    sfx: async (name: string) => {
+      sound.sfx.push(name);
+    },
     fx: async (id: string, o: { fallback?: string } = {}) => {
       sound.fx.push({ id, fallback: o.fallback });
     },
     soundState: () => ({ ambience: null, checked: sound.checked }),
+    get speaking() {
+      return sound.speaking;
+    },
   },
 }));
 
@@ -265,12 +271,12 @@ function measure(look: PrincessLook, o: { rose?: boolean; portrait?: boolean } =
  * The busiest look by one measure: each field takes the option that adds the most to it on top of the default look
  * (the parts of different fields add up), so the busiest look follows the catalogue as it grows.
  */
-function busiest(by: (m: ReturnType<typeof measure>) => number): PrincessLook {
+function busiest(by: (m: ReturnType<typeof measure>) => number, portrait = false): PrincessLook {
   const look = { ...DEFAULT_LOOK } as Record<LookField, string>;
   for (const f of FIELDS) {
     let best = -1;
     for (const id of OPTIONS[f] as readonly string[]) {
-      const v = by(measure({ ...DEFAULT_LOOK, [f]: id }, { rose: true }));
+      const v = by(measure({ ...DEFAULT_LOOK, [f]: id }, { rose: true, portrait }));
       if (v > best) {
         best = v;
         look[f] = id;
@@ -505,10 +511,11 @@ describe('the crown on her hair', () => {
           expect(row[0], what).toBe(B.Lo);
           expect(close(row.slice(17, 20), outline), what).toBe(true);
         }
-        // The band takes the crown colour's small shade, its rim line the outline.
+        // The band takes the crown colour's small shade (a rainbow: all its bands), its rim line the outline.
         const c = mesh.geometry.getAttribute('color') as THREE.BufferAttribute;
         const colours = new Set(Array.from({ length: c.count }, (_, i) => [c.getX(i), c.getY(i), c.getZ(i)].map((v) => v.toFixed(5)).join()));
-        expect(colours, what).toEqual(new Set([lin(PALETTE[crownColour].small), outline].map((v) => v.map((x) => x.toFixed(5)).join())));
+        const band = PALETTE[crownColour].bands ?? [PALETTE[crownColour].small];
+        expect(colours, what).toEqual(new Set([...band.map(lin), outline].map((v) => v.map((x) => x.toFixed(5)).join())));
       }
     }
   });
@@ -562,6 +569,60 @@ describe('her shoes and jewels', () => {
     }
   });
 
+  it('keeps the toe tips on the ground in the curtsy and the jump, and gives boots their own toe under the ball gowns', () => {
+    const toesOf = (p: P) => inColour(p, PALETTE.green.small).filter((q) => q.id === B.Lo && q.y < 0.15);
+    for (const gown of ['ball', 'gala'] as const) {
+      for (const shoes of OPTIONS.shoes) {
+        for (const kind of ['curtsy', 'jump'] as const) {
+          const p = settle({ gown, shoes, shoeColour: 'green' });
+          void p.emote(kind);
+          let low = Infinity;
+          let high = -Infinity;
+          for (let k = 0; k < 150; k++) {
+            p.update(1 / 60, 0.5 + k / 60);
+            const toes = inColour(p, PALETTE.green.small).filter((q) => q.id === B.Lo);
+            // In the jump's air time the toes go up with her; on the ground they stay at the grass.
+            for (const q of toes) {
+              low = Math.min(low, q.y);
+              if (q.y < 0.15) high = Math.max(high, q.y);
+            }
+          }
+          const what = `${gown} ${shoes} ${kind}`;
+          expect(low, what).toBeGreaterThan(0.015);
+          if (kind === 'curtsy') expect(high, what).toBeLessThan(0.06);
+        }
+      }
+    }
+    // Boots: a bigger, rounder toe with a strap in the cuff colour where it meets the hem.
+    const boots = settle({ gown: 'ball', shoes: 'boots', shoeColour: 'green' });
+    const slippers = settle({ gown: 'ball', shoes: 'slippers', shoeColour: 'green' });
+    expect(toesOf(boots)[0].top).toBeGreaterThan(toesOf(slippers)[0].top + 0.005);
+    const accent = accentOf('green');
+    expect(inColour(boots, accent).filter((q) => q.y < 0.15)).toHaveLength(2);
+    expect(inColour(slippers, accent).filter((q) => q.y < 0.15)).toHaveLength(0);
+  });
+
+  it('draws a rainbow on the small parts in several of its bands, as the swatch shows, never in one pink', () => {
+    const bands = PALETTE.rainbow.bands!;
+    /** The rainbow's bands in a look that the same look in pink does not have. */
+    const extra = (look: Partial<PrincessLook>, field: 'thingColour' | 'shoeColour' | 'jewelColour') => {
+      const shown = (colour: 'rainbow' | 'pink') => {
+        const p = settle({ ...look, [field]: colour });
+        return new Set(bands.filter((h) => inColour(p, h).length > 0));
+      };
+      const pink = shown('pink');
+      return [...shown('rainbow')].filter((h) => !pink.has(h)).length;
+    };
+    // The things of many pieces show at least four bands; boots show four on her two feet (shoe and shaft).
+    const many = new Set<string>(['flowers', 'daisies', 'shells', 'moons', 'butterflies', 'bows', 'unicorn']);
+    for (const thing of OPTIONS.thing) expect(extra({ thing }, 'thingColour'), thing).toBeGreaterThanOrEqual(many.has(thing) ? 4 : 2);
+    for (const gown of ['party', 'ball'] as const) {
+      for (const shoes of OPTIONS.shoes) expect(extra({ gown, shoes }, 'shoeColour'), `${gown} ${shoes}`).toBeGreaterThanOrEqual(gown === 'party' && shoes === 'boots' ? 4 : 2);
+    }
+    for (const earrings of OPTIONS.earrings.filter((e) => e !== 'none')) expect(extra({ earrings }, 'jewelColour'), earrings).toBeGreaterThanOrEqual(2);
+    for (const necklace of OPTIONS.necklace.filter((n) => n !== 'none')) expect(extra({ necklace }, 'jewelColour'), necklace).toBeGreaterThanOrEqual(4);
+  });
+
   it('draws the shoes in their colour on both feet under the party dress and the tutu, with what stands out on them', () => {
     for (const gown of ['party', 'tutu'] as const) {
       for (const shoes of OPTIONS.shoes) {
@@ -592,6 +653,51 @@ describe('her shoes and jewels', () => {
         expect(q.y, necklace).toBeGreaterThan(0.65);
         expect(q.y, necklace).toBeLessThan(0.86);
       }
+    }
+  });
+});
+
+describe('the little stars and hearts', () => {
+  /** The size of each part in a list along its own x, y and z. */
+  const sizes = (L: PartList, id: BatchId) => {
+    const out: number[][] = [];
+    for (let i = 0; i < L.n; i++) {
+      if (L.id[i] !== id) continue;
+      const e = L.mat.subarray(i * 16, i * 16 + 16);
+      out.push([Math.hypot(e[0], e[1], e[2]), Math.hypot(e[4], e[5], e[6]), Math.hypot(e[8], e[9], e[10])]);
+    }
+    return out;
+  };
+  const colours = { ribbon: new THREE.Color('#ff5c9d'), ribbonLight: new THREE.Color('#ffaacc'), bands: null };
+  const paint = { main: new THREE.Color('#ff5c9d'), accent: new THREE.Color('#ffffff'), bands: null };
+
+  it('draws every star with five points of one size: the moon clip, the star earrings and the star shoes', () => {
+    const stars: [string, (L: PartList) => void][] = [
+      ['moons', (L) => drawThing(L, 'moons', new Xf(), 1, 0, 0, colours)],
+      ['moons on her right', (L) => drawThing(L, 'moons', new Xf(), -1, 0, 0, colours)],
+      ['star earrings', (L) => drawEarring(L, 'stars', new Xf(), 1, 0, paint)],
+      ['star shoes', (L) => shoeExtras(L, 'stars', new Xf(), paint, new THREE.Color('#ffc93a'))],
+    ];
+    for (const [what, draw] of stars) {
+      const L = new PartList(64);
+      draw(L);
+      const cones = sizes(L, B.Cone);
+      expect(cones.length, what).toBe(5);
+      for (const c of cones) for (let a = 0; a < 3; a++) expect(c[a], what).toBeCloseTo(cones[0][a], 6);
+      expect(cones[0][1], what).toBeGreaterThan(0.01);
+    }
+  });
+
+  it('draws every heart with two round tops of one size', () => {
+    for (const [what, draw] of [
+      ['hearts', (L: PartList) => drawThing(L, 'hearts', new Xf(), 1, 0, 0, colours)],
+      ['heart earrings', (L: PartList) => drawEarring(L, 'hearts', new Xf(), 1, 0, paint)],
+    ] as const) {
+      const L = new PartList(64);
+      draw(L);
+      const lobes = sizes(L, B.Lo).filter((s) => Math.abs(s[0] - s[1]) < 1e-6);
+      expect(lobes.length, what).toBeGreaterThanOrEqual(2);
+      expect(lobes[0][0], what).toBeCloseTo(lobes[1][0], 6);
     }
   });
 });
@@ -661,8 +767,9 @@ describe('the batches', () => {
       for (const [id, n] of used) unicorns.set(id, Math.max(unicorns.get(id) ?? 0, n));
     }
     for (const id of Object.values(B) as BatchId[]) {
-      const look = busiest((m) => m.batch(id));
       for (const portrait of [false, true]) {
+        // The busiest look is picked for the view it is measured in: the portrait draws Mid as Fine and Lo as Mid.
+        const look = busiest((m) => m.batch(id), portrait);
         const hers = measure(look, { rose: true, portrait }).batch(id);
         // The egg (a list of 16) and the effects' beam glows (at most 8) come on top in the soft and flat batches.
         const room = id === B.Soft ? 24 : id === B.Arc ? 16 : 0;
@@ -925,7 +1032,9 @@ describe("the egg's hearts", () => {
 describe("the actors' sound effects", () => {
   afterEach(() => {
     sound.fx.length = 0;
+    sound.sfx.length = 0;
     sound.checked = false;
+    sound.speaking = false;
   });
 
   it('whooshes at the top of the slide and splashes with the two splash files in turn, with synthesised fallbacks', () => {
@@ -954,24 +1063,81 @@ describe("the actors' sound effects", () => {
     const nickers = () => sound.fx.filter((f) => f.id.startsWith('nicker')).map((f) => f.id);
     let t = 0;
     const at = (s: number) => herd.update(s - t, (t = s), null);
+    /** One herd frame: a nicker asked for plays on the herd's next tick. */
+    const frame = () => at(t + 1 / 60);
     at(10);
     void foal.emote('happy');
+    frame();
     expect(nickers()).toEqual([]);
     void baby.emote('hop');
     void baby.emote('happy');
+    expect(nickers(), 'it waits one herd frame').toEqual([]);
+    frame();
     expect(nickers()).toEqual(['nicker-1']);
     at(15);
     void baby.emote('hop');
+    frame();
     expect(nickers()).toHaveLength(1);
     at(16.5);
     sound.checked = true;
     void baby.emote('happy');
+    frame();
     expect(nickers()).toHaveLength(1);
     sound.checked = false;
     void baby.emote('look');
+    frame();
+    expect(nickers()).toHaveLength(1);
+    // A tap hops her baby and says its name in the same moment: no nicker under the name, and none after it.
+    void baby.emote('hop');
+    sound.speaking = true;
+    frame();
+    sound.speaking = false;
+    frame();
     expect(nickers()).toHaveLength(1);
     void baby.emote('happy');
+    frame();
     expect(nickers()).toEqual(['nicker-1', 'nicker-2']);
     for (const f of sound.fx) expect(f.fallback, 'a nicker has no synthesised stand-in').toBeUndefined();
+  });
+
+  it('plays the small pond splashes synthesised, at most once in 2 s for the herd, never in a checked moment or under speech', () => {
+    const s = createHerdSounds();
+    s.tick(1);
+    s.splash();
+    s.splash();
+    expect(sound.sfx).toEqual(['splash']);
+    s.tick(2.5);
+    s.splash();
+    expect(sound.sfx).toHaveLength(1);
+    s.tick(3.1);
+    sound.checked = true;
+    s.splash();
+    sound.checked = false;
+    sound.speaking = true;
+    s.splash();
+    sound.speaking = false;
+    expect(sound.sfx).toHaveLength(1);
+    s.splash();
+    expect(sound.sfx).toEqual(['splash', 'splash']);
+    expect(sound.fx, 'the splash files are for the slide').toEqual([]);
+  });
+
+  it('gives a hop into the pond and a spray at a friend the small splash, never the slide splash files', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const small = vi.fn();
+    const friend = new THREE.Vector3();
+    let u: UnicornActor | null = null;
+    const ctx = {
+      deps: { route: (_a: unknown, b: { x: number; z: number }) => [b], isWalkable: () => true, nearestWalkable: (q: { x: number; z: number }) => q },
+      fx: { ...fxStub, spray() {} } as unknown as typeof fxStub, queue: new SlideQueue<object>(), leader: makePrincess(), scene: new THREE.Scene(),
+      sounds: () => true, smallSplash: small,
+      swimmers: () => (u ? [{ position: friend.copy(u.position).setX(u.position.x + 1) }] : []), toyTexture: () => new THREE.Texture(),
+    };
+    u = new UnicornActor({ id: 'u', name: 'U', look: { stage: 'baby', breed: 'moon', body: '#fff', mane: '#f9c', mane2: '#fcf' }, at: { x: 10, z: -3 } }, ctx);
+    u.swim();
+    for (let k = 0; k < 60 * 12; k++) u.update(1 / 60, k / 60);
+    // The hop in, then at least one spray.
+    expect(small.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(sound.fx.filter((f) => f.id.startsWith('splash'))).toEqual([]);
   });
 });

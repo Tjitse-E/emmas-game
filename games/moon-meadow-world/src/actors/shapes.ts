@@ -417,8 +417,16 @@ export interface CrownBuild {
 const CROWN_SEG = 40;
 /** The band leans out from radius 1 at its foot to this at its top edge. */
 const CROWN_TOP_R = 1.08;
-/** The rim line round the foot of the band: a strip just outside it, in the outline colour. */
-const RIM = { r0: 1.035, r1: 1.045, y0: -0.01, y1: 0.13 };
+/**
+ * The rim line round the foot of the band: a strip just outside it, in the outline colour. Its top edge stays `out`
+ * outside the band where the band leans out fast (the tiara is only 0.22 high at the back).
+ */
+const RIM = { r0: 1.035, r1: 1.045, y0: -0.01, y1: 0.13, out: 0.012 };
+
+/** The band's radius at height y and angle th (it leans out from 1 at its foot to CROWN_TOP_R at its top edge). */
+function bandR(shape: CrownShapeId, th: number, y: number): number {
+  return 1 + (CROWN_TOP_R - 1) * Math.min(1, y / CROWN_TOP[shape](th));
+}
 
 /** The top edge of each band (height at angle th, 0 at the front, +x at PI / 2). */
 const CROWN_TOP: Record<CrownShapeId, (th: number) => number> = {
@@ -519,7 +527,8 @@ export function crownBuild(shape: CrownShapeId): CrownBuild {
   const rimFrom = pos.length / 3;
   for (let k = 0; k < CROWN_SEG; k++) {
     const th = (k / CROWN_SEG) * Math.PI * 2;
-    pos.push(Math.sin(th) * RIM.r0, RIM.y0, Math.cos(th) * RIM.r0, Math.sin(th) * RIM.r1, RIM.y1, Math.cos(th) * RIM.r1);
+    const r1 = Math.max(RIM.r1, bandR(shape, th, RIM.y1) + RIM.out);
+    pos.push(Math.sin(th) * RIM.r0, RIM.y0, Math.cos(th) * RIM.r0, Math.sin(th) * r1, RIM.y1, Math.cos(th) * r1);
   }
   strip(index, rimFrom, CROWN_SEG);
   const g = new THREE.BufferGeometry();
@@ -539,11 +548,22 @@ function strip(index: number[], from: number, seg: number): void {
   }
 }
 
-/** Paint a crown: the band (and its motif) in `band`, the rim line in `rim`. */
-export function paintCrown(c: CrownBuild, band: THREE.Color, rim: THREE.Color): void {
+/**
+ * Paint a crown: the band (and its motif) in `band`, the rim line in `rim`. A rainbow (several colours) runs round the
+ * band twice by angle, so the front shows all of them, and round the motif's points with its middle in the third.
+ */
+export function paintCrown(c: CrownBuild, band: THREE.Color | readonly THREE.Color[], rim: THREE.Color): void {
   const a = c.geometry.getAttribute('color') as THREE.BufferAttribute;
+  const bands = Array.isArray(band) ? (band as readonly THREE.Color[]) : null;
+  const n = bands?.length ?? 1;
+  const motif = c.rimFrom - CROWN_SEG * 2 - 1;
   for (let i = 0; i < a.count; i++) {
-    const k = i < c.rimFrom ? band : rim;
+    let k: THREE.Color;
+    if (i >= c.rimFrom) k = rim;
+    else if (!bands) k = band as THREE.Color;
+    else if (i < CROWN_SEG * 2) k = bands[Math.floor(((i >> 1) / CROWN_SEG) * n * 2) % n];
+    else if (i === CROWN_SEG * 2) k = bands[2 % n];
+    else k = bands[Math.floor(((i - CROWN_SEG * 2 - 1) / motif) * n) % n];
     a.setXYZ(i, k.r, k.g, k.b);
   }
   a.needsUpdate = true;

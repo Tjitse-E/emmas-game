@@ -11,8 +11,8 @@ import { B, CAPACITY, PartList, Xf, col, rimLambert, shapeTriangles, type BatchI
 import * as S from './shapes';
 import { Hair, crownForward, hairExtra } from './hair';
 import {
-  SIT_SQUASH, THING_SIDE, accentOf, backBow, bootShaft, drawEarring, drawNecklace, drawRose, drawThing, gownOf, gownRowColour, shoeExtras,
-  skirtAt, skirtTable, toeTips, wings, type Gown3D,
+  SIT_SQUASH, THING_SIDE, accentOf, backBow, bootShaft, drawEarring, drawNecklace, drawRose, drawThing, gownOf, gownRowColour, piece, shoeExtras,
+  skirtAt, skirtTable, toeTips, wings, type Gown3D, type SmallColours, type SmallPaint, type ThingColours,
 } from './looks3d';
 import { slideSounds } from './sounds';
 import type { FxImpl } from './fx';
@@ -127,11 +127,13 @@ export class PrincessActor implements Princess {
   private readonly eyesAt = new THREE.Vector3();
   private readonly thingAt = new THREE.Vector3();
   private readonly dressAt = new THREE.Vector3();
-  private readonly colours = { ribbon: this.ribbon, ribbonLight: this.ribbonLight };
+  /** A rainbow's bands (PALETTE.rainbow): on the small parts each piece takes its own band, as the swatch shows. */
+  private readonly rainbow = (PALETTE.rainbow.bands ?? []).map((h) => col(h));
+  private readonly colours: ThingColours = { ribbon: this.ribbon, ribbonLight: this.ribbonLight, bands: null };
   /** The shoes (their small shade and a colour that stands out on them) and the earrings' and necklace's colour. */
-  private readonly shoe = { main: col('#ff5c9d'), accent: col('#ffffff') };
+  private readonly shoe: SmallColours = { main: col('#ff5c9d'), accent: col('#ffffff'), bands: null };
   private readonly shoeStar = col(STAR_GOLD);
-  private readonly jewel = col('#ffb62e');
+  private readonly jewel: SmallPaint = { main: col('#ffb62e'), bands: null };
   /** The crown band (the crown colour's small shade) and its outline (crownOutline: the rim line, gems and tips). */
   private readonly crownBand = col('#ffb62e');
   private readonly crownLine = col('#ffffff');
@@ -373,28 +375,33 @@ export class PrincessActor implements Princess {
     const look = this.worn;
     this.crownNow = this.crownFor(look.crown);
     this.crownMesh.geometry = this.crownNow.geometry;
-    const small = PALETTE[look.crownColour].small;
-    this.crownBand.set(small);
+    const p = PALETTE[look.crownColour];
+    this.crownBand.set(p.small);
     this.crownLine.set(crownOutline(look.hair, look.crownColour));
-    S.paintCrown(this.crownNow, this.crownBand, this.crownLine);
-    // It glows a little in its own colour, as 2.2's gold crown did.
-    (this.crownMesh.material as THREE.MeshLambertMaterial).emissive.set(small).multiplyScalar(0.5);
+    S.paintCrown(this.crownNow, p.bands ? this.rainbow : this.crownBand, this.crownLine);
+    // It glows a little in its own colour, as 2.2's gold crown did; a rainbow glows white, so no band turns pink.
+    const glow = (this.crownMesh.material as THREE.MeshLambertMaterial).emissive;
+    if (p.bands) glow.set('#ffffff').multiplyScalar(0.25);
+    else glow.set(p.small).multiplyScalar(0.5);
   }
 
   /** Her hair things' colour, and a light tint of it for the knots (a highlight that reads as a bow at a glance). */
   private paintThings(): void {
-    const colour = PALETTE[this.worn.thingColour].small;
-    this.ribbon.set(colour);
-    this.ribbonLight.set(colour).lerp(_white, 0.55);
+    const p = PALETTE[this.worn.thingColour];
+    this.ribbon.set(p.small);
+    this.ribbonLight.set(p.small).lerp(_white, 0.55);
+    this.colours.bands = p.bands ? this.rainbow : null;
   }
 
   /** The shoes and the jewels: their small shade, and what stands out on the shoes. */
   private paintSmall(): void {
     const look = this.worn;
     this.shoe.main.set(PALETTE[look.shoeColour].small);
+    this.shoe.bands = PALETTE[look.shoeColour].bands ? this.rainbow : null;
     this.shoe.accent.set(accentOf(look.shoeColour));
     this.shoeStar.set(accentOf(look.shoeColour, STAR_GOLD));
-    this.jewel.set(PALETTE[look.jewelColour].small);
+    this.jewel.main.set(PALETTE[look.jewelColour].small);
+    this.jewel.bands = PALETTE[look.jewelColour].bands ? this.rainbow : null;
   }
 
   // --- for the herd and the harness ------------------------------------------------------------------------------
@@ -841,8 +848,8 @@ export class PrincessActor implements Princess {
         const boots = look.shoes === 'boots';
         const foot = _a.from(legM).at(0, -0.255 + knees, 0.03);
         m.from(foot).size(boots ? 0.056 : 0.052, boots ? 0.048 : 0.042, boots ? 0.088 : 0.082);
-        L.push(B.Lo, m, this.shoe.main, 0.2);
-        if (boots) bootShaft(L, _r.from(legM).at(0, -0.255 + knees, 0), this.shoe);
+        L.push(B.Lo, m, piece(this.shoe, i * 3), 0.2);
+        if (boots) bootShaft(L, _r.from(legM).at(0, -0.255 + knees, 0), this.shoe, i);
         else shoeExtras(L, look.shoes, foot, this.shoe, this.shoeStar);
       }
       // Under a tutu the legs show up to the ruffles: the leotard (the bodice colour) covers the top of them.
@@ -851,7 +858,10 @@ export class PrincessActor implements Princess {
         L.push(B.Lo, m, c.leotard, 0.2);
       }
     } else if (this.sit < 0.05) {
-      toeTips(L, look.shoes, root, S.HEM_FRONT[g.shape] * ds.z, moving ? s * stepAmp : 0, this.shoe, this.shoeStar);
+      // The toes never sink into the ground under her (the curtsy, a jump's crouch, the run's lean, the nest mound);
+      // in the water they swim.
+      const floor = wet || this.depth > 0.05 ? null : p.y;
+      toeTips(L, look.shoes, root, S.HEM_FRONT[g.shape] * ds.z, moving ? s * stepAmp : 0, this.shoe, this.shoeStar, floor);
     }
 
     // Arms with puff sleeves (bigger on a ball gown) and white gloves with the lilac gown.

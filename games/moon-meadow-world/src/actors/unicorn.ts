@@ -22,6 +22,8 @@ export interface HerdCtx {
   sounds(): boolean;
   /** A baby's happy nicker (the herd keeps it rare and out of checked moments). */
   nicker?(): void;
+  /** A small splash: a hop or a drop into the pond, a spray at a friend (the herd keeps it rare and quiet). */
+  smallSplash?(): void;
   /** Everyone in the water, to splash. */
   swimmers(): { position: THREE.Vector3; unicorn?: UnicornActor }[];
   toyTexture(url: string): THREE.Texture;
@@ -669,7 +671,7 @@ export class UnicornActor implements Unicorn {
       this.position.y = THREE.MathUtils.lerp(0, POND.waterY, ease(k)) + Math.sin(Math.PI * k) * 0.35;
       if (k >= 1) {
         this.ctx.fx.splash(this.position);
-        if (this.ctx.sounds()) slideSounds.splash();
+        if (this.ctx.sounds()) this.ctx.smallSplash?.();
         this.startSwim(w.until);
       }
       return;
@@ -707,7 +709,7 @@ export class UnicornActor implements Unicorn {
       if (best) {
         this.desiredYaw = headingOf(best.position.x - this.position.x, best.position.z - this.position.z);
         this.ctx.fx.spray(this.position, best.position);
-        if (this.ctx.sounds()) slideSounds.splash();
+        if (this.ctx.sounds()) this.ctx.smallSplash?.();
         if (best.unicorn) void best.unicorn.emote('shake');
         void this.emote('happy');
       }
@@ -747,7 +749,7 @@ export class UnicornActor implements Unicorn {
       this.desiredYaw = this.yaw = slideDir(SEAT_U + 0.04).heading;
     } else if (land.outcome === 'pond') {
       this.ctx.fx.splash(this.position);
-      if (this.ctx.sounds()) slideSounds.splash();
+      if (this.ctx.sounds()) this.ctx.smallSplash?.();
       this.startSwim(rand(6, 12));
     } else {
       this.ctx.fx.sparkle(this.position.clone().setY(0.2), { count: 8 });

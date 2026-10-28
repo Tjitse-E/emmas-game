@@ -52,7 +52,8 @@ export const STYLES: Record<HairStyle, Style> = {
   side: { chains: 1, links: 8, seg: 0.14, tie: [0.25, -0.02, -0.1], flare: [0.33, -0.1, -0.12], draw: 'tubes', peak: 0.095, tip: 0.03, bulge: 0.13, waves: 5 },
   curly: { chains: 2, links: 7, seg: 0.14, tie: [0.22, 0.13, -0.07], flare: [0.3, 0.05, -0.11], draw: 'tubes', peak: 0.075, tip: 0.035, bulge: 0.34, waves: 9 },
   bunches: { chains: 2, links: 5, seg: 0.125, tie: [0.23, 0.05, -0.06], flare: [0.34, -0.02, -0.07], draw: 'tubes', peak: 0.095, tip: 0.055, bulge: 0.16, waves: 3 },
-  long: { chains: 2, links: 5, seg: 0.12, tie: [0.17, -0.1, -0.16], flare: [0.21, -0.18, -0.19], draw: 'tubes', peak: 0.068, tip: 0.042, bulge: 0, waves: 0 },
+  // Tied low behind the ears, wide apart, and straight: low's wavy pigtails meet at the nape.
+  long: { chains: 2, links: 5, seg: 0.12, tie: [0.21, -0.08, -0.12], flare: [0.28, -0.16, -0.15], draw: 'tubes', peak: 0.068, tip: 0.042, bulge: 0, waves: 0 },
   curls: { chains: 1, links: 9, seg: 0.13, tie: [0, 0.1, -0.26], flare: [0, 0.03, -0.34], draw: 'tubes', peak: 0.09, tip: 0.035, bulge: 0.34, waves: 9, crownForward: HIGH_FORWARD },
   plait: { chains: 1, links: 4, seg: 0.12, tie: [0, -0.05, -0.25], flare: [0, -0.14, -0.29], draw: 'plait', peak: 0.08, tip: 0.05, bulge: 0, waves: 0 },
   lowbun: { chains: 0, links: 0, seg: 0.1, tie: [0, 0, 0], flare: [0, 0, 0], draw: 'none', peak: 0.052, tip: 0, bulge: 0, waves: 0, bun: { at: [0, -0.1, -0.235], r: 0.115, twists: false } },

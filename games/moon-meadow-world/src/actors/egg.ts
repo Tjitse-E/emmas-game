@@ -156,7 +156,7 @@ export interface EggImpl extends Egg3D {
 /**
  * The glow and the idle rock of each number of lit hearts: the warm egg glows a warmer gold, the snow egg a frostier
  * blue (its story is that it is too warm, so a heart makes it more of a snow egg). `glow` is the shell's emissive
- * strength, `edge` how much of the rim takes the glow colour, `rock` the idle rocking in radians.
+ * strength, `edge` how much of the warm egg's rim takes the glow colour, `rock` the idle rocking in radians.
  */
 export const HEART_GLOW = {
   colour: { warm: '#ffb52e', snow: '#9fd6ff' },
@@ -164,9 +164,11 @@ export const HEART_GLOW = {
   edge: [0, 0.25, 0.4, 0.55],
   rock: [0, 0.03, 0.055, 0.085],
 } as const;
-/** The snow egg's own blue rim (deeper, so the pale egg shows on the sand) and its frosty rim with hearts. */
+/**
+ * The snow egg's own blue rim (deeper, so the pale egg shows on the sand). It keeps it with every heart: the frost
+ * shows through the glow only, so the egg never goes pale-rimmed on pale ground.
+ */
 const SNOW_EDGE = '#5d9ee6';
-const FROST_EDGE = '#c9ecff';
 
 export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
   const canvas = document.createElement('canvas');
@@ -191,9 +193,7 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
   };
   mat.customProgramCacheKey = () => 'egg-shell';
   const snowEdge = new THREE.Color(SNOW_EDGE);
-  const frostEdge = new THREE.Color(FROST_EDGE);
   const heartColour = new THREE.Color();
-  const edgeColour = new THREE.Color();
   const bottom = new THREE.Mesh(shellPiece(() => 0, crackS, 12), mat);
   const top = new THREE.Mesh(shellPiece(crackS, () => 1, 6), mat);
   for (const m of [bottom, top]) {
@@ -331,10 +331,8 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
       mat.emissive.copy(heartColour);
       mat.emissiveIntensity = g;
       const e = glowAt(HEART_GLOW.edge, glow);
-      if (kind === 'snow') {
-        edgeColour.copy(snowEdge).lerp(frostEdge, e / HEART_GLOW.edge[3]);
-        edge.value.set(edgeColour.r, edgeColour.g, edgeColour.b, 0.6);
-      } else edge.value.set(heartColour.r, heartColour.g, heartColour.b, e);
+      if (kind === 'snow') edge.value.set(snowEdge.r, snowEdge.g, snowEdge.b, 0.6);
+      else edge.value.set(heartColour.r, heartColour.g, heartColour.b, e);
       const shiver = frostLeft > 0 ? Math.sin(t * 60) * 0.02 * cold : 0;
       const rock = Math.sin(t * wobbleRate) * wobbleAmp + Math.sin(t * 3.4) * glowAt(HEART_GLOW.rock, glow);
       if (popT >= 0) {

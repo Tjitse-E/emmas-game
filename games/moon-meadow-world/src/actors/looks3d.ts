@@ -128,10 +128,31 @@ export function skirtAt(t: Float32Array, y: number): number {
 
 // --- hair things --------------------------------------------------------------------------------------------------
 
-/** The colours a hair thing is drawn with: her hair things' colour and a light tint of it (knots, lower wings). */
+/**
+ * The colours a hair thing is drawn with: her hair things' colour and a light tint of it (knots, lower wings). A
+ * rainbow colour has `bands`: then each piece of a thing (a petal, a loop, a rib, a tail) takes its own band, so it
+ * shows the rainbow the swatch shows, never one pink.
+ */
 export interface ThingColours {
   ribbon: THREE.Color;
   ribbonLight: THREE.Color;
+  bands: readonly THREE.Color[] | null;
+}
+
+/** Piece i of a hair thing: its own band in a rainbow, else the ribbon colour (or its light tint). */
+function rb(c: ThingColours, i: number, light = false): THREE.Color {
+  return c.bands ? c.bands[i % c.bands.length] : light ? c.ribbonLight : c.ribbon;
+}
+
+/** A small part's colour (shoes, jewels): its palette colour, or the rainbow's bands, piece by piece. */
+export interface SmallPaint {
+  main: THREE.Color;
+  bands: readonly THREE.Color[] | null;
+}
+
+/** Piece i of a small part: its own band in a rainbow, else its colour. */
+export function piece(c: SmallPaint, i: number): THREE.Color {
+  return c.bands ? c.bands[i % c.bands.length] : c.main;
 }
 
 const C = {
@@ -163,6 +184,8 @@ export const THING_SIDE: Record<HairThing, 1 | -1> = {
 
 const _m = new Xf();
 const _s = new Xf();
+/** star() and heart() have their own scratch matrix, so `at` may be _m or _s. */
+const _p = new Xf();
 
 /**
  * Two ribbon tails hanging from under a hair thing, swaying a little (today's bow streamers). `at` is the thing's
@@ -172,7 +195,7 @@ function tails(L: PartList, at: Xf, sg: number, t: number, c: ThingColours, drop
   for (const lx of [-1, 1]) {
     const sway = Math.sin(t * 2.6 + lx + sg) * 0.06;
     _m.from(at).at(lx * 0.03, -0.012 - drop, -0.004).roll(lx * 0.32 + sway).at(0, -0.075, 0).size(0.024, 0.078, 0.014);
-    L.push(B.Lo, _m, c.ribbon, 0.35);
+    L.push(B.Lo, _m, rb(c, lx < 0 ? 1 : 4), 0.35);
   }
 }
 
@@ -180,32 +203,32 @@ function tails(L: PartList, at: Xf, sg: number, t: number, c: ThingColours, drop
 export function bow(L: PartList, at: Xf, k: number, c: ThingColours, loops: BatchId = B.Mid): void {
   for (const lx of [-1, 1]) {
     _m.from(at).at(lx * 0.075 * k, 0.018 * k, 0).roll(lx * 0.4).size(0.084 * k, 0.054 * k, 0.036 * k);
-    L.push(loops, _m, c.ribbon, 0.35);
+    L.push(loops, _m, rb(c, lx < 0 ? 0 : 3), 0.35);
   }
   _m.from(at).at(0, 0, 0.016 * k).size(0.038 * k, 0.036 * k, 0.03 * k);
-  L.push(B.Lo, _m, c.ribbonLight, 0.4);
+  L.push(B.Lo, _m, rb(c, 2, true), 0.4);
 }
 
 /**
  * A small five-pointed star of radius `r` facing +z at `at`: five cone points, a little wider than the hair clip's so
  * their bases close the middle without a round part (the earrings, the shoes and the moon clip's star).
  */
-function star(L: PartList, at: Xf, r: number, colour: THREE.Color, sheen = 0.7): void {
+function star(L: PartList, at: Xf, r: number, colour: THREE.Color, sheen = 0.7, bands: readonly THREE.Color[] | null = null): void {
   for (let k = 0; k < 5; k++) {
-    _m.from(at).roll((k / 5) * Math.PI * 2).size(r * 0.42, r, r * 0.24);
-    L.push(B.Cone, _m, colour, sheen);
+    _p.from(at).roll((k / 5) * Math.PI * 2).size(r * 0.42, r, r * 0.24);
+    L.push(B.Cone, _p, bands ? bands[k % bands.length] : colour, sheen);
   }
 }
 
-/** A heart of width `w` facing +z at `at`: two round tops and a cone point. */
-function heart(L: PartList, at: Xf, w: number, colour: THREE.Color, sheen = 0.4): void {
+/** A heart of width `w` facing +z at `at`: two round tops and a cone point (in a rainbow: pink, sky and gold). */
+function heart(L: PartList, at: Xf, w: number, colour: THREE.Color, sheen = 0.4, bands: readonly THREE.Color[] | null = null): void {
   const k = w / 0.15;
   for (const lx of [-1, 1]) {
-    _m.from(at).at(lx * 0.035 * k, 0.018 * k, 0).size(0.04 * k, 0.04 * k, 0.022 * k);
-    L.push(B.Lo, _m, colour, sheen);
+    _p.from(at).at(lx * 0.035 * k, 0.018 * k, 0).size(0.04 * k, 0.04 * k, 0.022 * k);
+    L.push(B.Lo, _p, bands ? bands[lx < 0 ? 0 : 4] : colour, sheen);
   }
-  _m.from(at).at(0, 0.008 * k, 0).roll(Math.PI).size(0.066 * k, 0.075 * k, 0.022 * k);
-  L.push(B.Cone, _m, colour, sheen);
+  _p.from(at).at(0, 0.008 * k, 0).roll(Math.PI).size(0.066 * k, 0.075 * k, 0.022 * k);
+  L.push(B.Cone, _p, bands ? bands[2] : colour, sheen);
 }
 
 /**
@@ -229,7 +252,7 @@ export function drawThing(L: PartList, thing: HairThing, at: Xf, sg: number, t: 
       for (let i = 0; i < 5; i++) {
         const a = (i / 5) * Math.PI * 2 + 0.3;
         _m.from(at).at(Math.cos(a) * 0.042, Math.sin(a) * 0.042, 0.012).roll(a - Math.PI / 2).size(0.034, 0.044, 0.014);
-        L.push(B.Lo, _m, c.ribbon, 0.35);
+        L.push(B.Lo, _m, rb(c, i), 0.35);
       }
       _m.from(at).at(0, 0, 0.024).size(0.026, 0.026, 0.018);
       L.push(B.Lo, _m, C.centre, 0.5);
@@ -262,9 +285,9 @@ export function drawThing(L: PartList, thing: HairThing, at: Xf, sg: number, t: 
       for (const lx of [-1, 1]) {
         const w = _s.from(at).at(0, 0, 0.012).turn(lx * flap * 0.9);
         _m.from(w).at(lx * 0.042, 0.026, 0).roll(lx * 0.5).size(0.05, 0.034, 0.008);
-        L.push(B.Mid, _m, c.ribbon, 0.4);
+        L.push(B.Mid, _m, rb(c, 0), 0.4);
         _m.from(w).at(lx * 0.03, -0.024, 0.001).roll(lx * -0.55).size(0.03, 0.022, 0.008);
-        L.push(B.Lo, _m, c.ribbonLight, 0.4);
+        L.push(B.Lo, _m, rb(c, 3, true), 0.4);
       }
       _m.from(at).at(0, -0.032, 0.016).size(0.007, 0.064, 0.007);
       L.push(B.Limb, _m, C.lash, 0);
@@ -276,7 +299,7 @@ export function drawThing(L: PartList, thing: HairThing, at: Xf, sg: number, t: 
       return;
     }
     case 'hearts':
-      heart(L, _s.from(at).at(0, 0, 0.012), 0.15, c.ribbon);
+      heart(L, _s.from(at).at(0, 0, 0.012), 0.15, c.ribbon, 0.4, c.bands);
       tails(L, at, sg, t, c, 0.06);
       return;
     case 'shells':
@@ -286,10 +309,10 @@ export function drawThing(L: PartList, thing: HairThing, at: Xf, sg: number, t: 
         for (let i = 0; i < 5; i++) {
           const a = ((i - 2) / 2) * 0.95;
           _m.from(sh).roll(a).at(0, 0.03 * k, 0).size(0.016 * k, 0.034 * k, 0.012 * k);
-          L.push(B.Lo, _m, i % 2 ? c.ribbonLight : c.ribbon, 0.45);
+          L.push(B.Lo, _m, rb(c, i, i % 2 === 1), 0.45);
         }
         _m.from(sh).at(0, -0.002, 0.004).size(0.018 * k, 0.012 * k, 0.012 * k);
-        L.push(B.Lo, _m, c.ribbon, 0.45);
+        L.push(B.Lo, _m, rb(c, 5), 0.45);
       }
       tails(L, at, sg, t, c, 0.04);
       return;
@@ -300,9 +323,9 @@ export function drawThing(L: PartList, thing: HairThing, at: Xf, sg: number, t: 
         const a = Math.PI * (0.18 + (i / 6) * 0.64) * -f + (f > 0 ? Math.PI : 0);
         const w = Math.sin(Math.PI * (0.12 + (i / 6) * 0.76));
         _m.from(mo).at(Math.cos(a) * 0.046, Math.sin(a) * 0.046, 0).roll(a).size(0.012 + 0.014 * w, 0.016 + 0.012 * w, 0.012);
-        L.push(B.Lo, _m, c.ribbon, 0.5);
+        L.push(B.Lo, _m, rb(c, i), 0.5);
       }
-      star(L, _m.from(mo).at(0.016 * f, 0.004, 0.004), 0.016, c.ribbonLight, 0.6);
+      star(L, _m.from(mo).at(0.016 * f, 0.004, 0.004), 0.016, rb(c, 2, true), 0.6);
       tails(L, at, sg, t, c, 0.04);
       return;
     }
@@ -311,7 +334,7 @@ export function drawThing(L: PartList, thing: HairThing, at: Xf, sg: number, t: 
       for (let i = 0; i < 10; i++) {
         const a = (i / 10) * Math.PI * 2;
         _m.from(at).at(Math.cos(a) * 0.04, Math.sin(a) * 0.04, 0.01).roll(a - Math.PI / 2).size(0.012, 0.03, 0.01);
-        L.push(B.Lo, _m, c.ribbon, 0.35);
+        L.push(B.Lo, _m, rb(c, i), 0.35);
       }
       _m.from(at).at(0, 0, 0.02).size(0.03, 0.03, 0.02);
       L.push(B.Lo, _m, C.centre, 0.5);
@@ -321,7 +344,7 @@ export function drawThing(L: PartList, thing: HairThing, at: Xf, sg: number, t: 
       // Two cherries on green stalks joined at the top, with a leaf.
       for (const lx of [-1, 1]) {
         _m.from(at).at(lx * 0.026, -0.03, 0.014).size(0.034, 0.032, 0.03);
-        L.push(B.Lo, _m, c.ribbon, 0.6);
+        L.push(B.Lo, _m, rb(c, lx < 0 ? 0 : 4), 0.6);
         _m.from(at).at(lx * 0.024, -0.008, 0.012).roll(lx * -0.5).size(0.004, 0.05, 0.004);
         L.push(B.Limb, _m, C.stalk, 0);
       }
@@ -334,9 +357,11 @@ export function drawThing(L: PartList, thing: HairThing, at: Xf, sg: number, t: 
 
 // --- shoes, earrings and the necklace ---------------------------------------------------------------------------------
 
-/** A small part's colours: its palette colour and a colour that stands out on it (a bow, a star, a boot cuff). */
-export interface SmallColours {
-  main: THREE.Color;
+/**
+ * A shoe's colours: its palette colour (or the rainbow's bands: the left shoe starts at the first band, the right at
+ * the fourth) and a colour that stands out on it (a bow, a star, a boot cuff).
+ */
+export interface SmallColours extends SmallPaint {
   accent: THREE.Color;
 }
 
@@ -364,9 +389,9 @@ export function shoeExtras(L: PartList, shoes: ShoeShape, foot: Xf, c: SmallColo
 }
 
 /** Boots: the shaft (a limb in the shoe colour from the ankle to 0.14 up) and a cuff, in the leg frame at the ankle. */
-export function bootShaft(L: PartList, ankle: Xf, c: SmallColours): void {
+export function bootShaft(L: PartList, ankle: Xf, c: SmallColours, side = 0): void {
   _m.from(ankle).size(0.045, 0.14, 0.045);
-  L.push(B.Limb, _m, c.main, 0.2);
+  L.push(B.Limb, _m, piece(c, side * 3 + 1), 0.2);
   _m.from(ankle).at(0, 0.135, 0).size(0.052, 0.02, 0.052);
   L.push(B.Lo, _m, c.accent, 0.3);
 }
@@ -375,26 +400,28 @@ export function bootShaft(L: PartList, ankle: Xf, c: SmallColours): void {
  * One earring hanging from `at` (onHead(±0.88, -0.2), facing out): a stud, a heart, the star clip's star at 40% or a
  * stud with a drop that swings a little.
  */
-export function drawEarring(L: PartList, kind: Earrings, at: Xf, sg: number, t: number, c: THREE.Color): void {
+export function drawEarring(L: PartList, kind: Earrings, at: Xf, sg: number, t: number, c: SmallPaint): void {
+  // In a rainbow the two ears start at different bands.
+  const o = sg > 0 ? 3 : 0;
   switch (kind) {
     case 'none':
       return;
     case 'studs':
       _m.from(at).at(0, 0, 0.006).size(0.022, 0.022, 0.016);
-      L.push(B.Lo, _m, c, 0.8);
+      L.push(B.Lo, _m, piece(c, o), 0.8);
       return;
     case 'hearts':
-      heart(L, _s.from(at).at(0, -0.012, 0.008), 0.06, c, 0.7);
+      heart(L, _s.from(at).at(0, -0.012, 0.008), 0.06, c.main, 0.7, c.bands);
       return;
     case 'stars':
-      star(L, _s.from(at).at(0, -0.01, 0.008), 0.02, c, 0.8);
+      star(L, _s.from(at).at(0, -0.01, 0.008), 0.02, c.main, 0.8, c.bands);
       return;
     case 'drops': {
       _m.from(at).at(0, 0, 0.006).size(0.016, 0.016, 0.012);
-      L.push(B.Lo, _m, c, 0.8);
+      L.push(B.Lo, _m, piece(c, o), 0.8);
       const swing = Math.sin(t * 2.4 + sg) * 0.18;
       _m.from(at).at(0, -0.006, 0.006).roll(swing).at(0, -0.03, 0).size(0.014, 0.024, 0.012);
-      L.push(B.Lo, _m, c, 0.8);
+      L.push(B.Lo, _m, piece(c, o + 2), 0.8);
       return;
     }
   }
@@ -416,7 +443,7 @@ function bodiceR(y: number): number {
  * `ds` is the dress's scale and lift this frame (x, y, z and w as in princess.ts), so it stays on the bodice when the
  * dress flares or folds up as she sits.
  */
-export function drawNecklace(L: PartList, kind: Necklace, root: Xf, ds: THREE.Vector4, c: THREE.Color): void {
+export function drawNecklace(L: PartList, kind: Necklace, root: Xf, ds: THREE.Vector4, c: SmallPaint): void {
   if (kind === 'none') return;
   const n = kind === 'pearls' ? 9 : 7;
   const span = kind === 'pearls' ? 0.95 : 0.8;
@@ -425,11 +452,11 @@ export function drawNecklace(L: PartList, kind: Necklace, root: Xf, ds: THREE.Ve
     const y = 0.77 + 0.04 * (a / span) ** 2;
     bodicePoint(root, ds, a, y, 0.01);
     _m.size(kind === 'pearls' ? 0.015 : 0.012, kind === 'pearls' ? 0.015 : 0.012, 0.011);
-    L.push(B.Lo, _m, c, 0.8);
+    L.push(B.Lo, _m, piece(c, i), 0.8);
   }
   if (kind === 'heart') {
     bodicePoint(root, ds, 0, 0.738, 0.018);
-    heart(L, _s.from(_m), 0.075, c, 0.8);
+    heart(L, _m, 0.075, c.main, 0.8, c.bands);
   }
 }
 
@@ -441,16 +468,30 @@ function bodicePoint(root: Xf, ds: THREE.Vector4, a: number, y: number, out: num
 
 /**
  * The toe tips under a floor-length gown (2.3 section 15): two shoe toes peek 3 cm out of the hem front, with their
- * bow or star. `hem` is the hem's radius at the front this frame (it flares in a twirl); `step` moves them a little in
- * turn while she glides.
+ * bow or star; boots show a bigger, rounder toe and their cuff colour as a strap where the boot meets the hem. `hem`
+ * is the hem's radius at the front this frame (it flares in a twirl); `step` moves them a little in turn while she
+ * glides. They go with her root, but never below `ground` (world y; null in the water): her root drops in the curtsy,
+ * a jump's crouch and landing, and leans forward as she runs.
  */
-export function toeTips(L: PartList, shoes: ShoeShape, root: Xf, hem: number, step: number, c: SmallColours, star5: THREE.Color): void {
+export function toeTips(
+  L: PartList, shoes: ShoeShape, root: Xf, hem: number, step: number, c: SmallColours, star5: THREE.Color, ground: number | null = null,
+): void {
+  const boots = shoes === 'boots';
+  const y = boots ? 0.034 : 0.026;
   for (let i = 0; i < 2; i++) {
     const x = i ? 0.075 : -0.075;
     const z = hem + 0.03 - 0.06 + (i ? -step : step) * 0.015;
-    const toe = _s.from(root).at(x, 0.026, z).turn(i ? -0.12 : 0.12);
+    const toe = _s.from(root).at(x, y, z).turn(i ? -0.12 : 0.12);
+    if (ground !== null) toe.elements[13] = Math.max(toe.elements[13], ground + y);
+    if (boots) {
+      _m.from(toe).size(0.058, 0.04, 0.064);
+      L.push(B.Lo, _m, piece(c, i * 3), 0.2);
+      _m.from(toe).at(0, 0.03, 0.012).size(0.05, 0.014, 0.014);
+      L.push(B.Lo, _m, c.accent, 0.3);
+      continue;
+    }
     _m.from(toe).size(0.048, 0.03, 0.06);
-    L.push(B.Lo, _m, c.main, 0.2);
+    L.push(B.Lo, _m, piece(c, i * 3), 0.2);
     shoeExtras(L, shoes, _s.at(0, -0.006, 0.004), c, star5);
   }
 }
@@ -464,7 +505,7 @@ function unicornClip(L: PartList, at: Xf, f: number, c: ThingColours): void {
   // Mane puffs behind the head, then the ears, so the head covers their roots.
   for (let i = 0; i < 3; i++) {
     _m.from(h).at(-f * (0.044 + i * 0.004), 0.034 - i * 0.03, -0.004).size(0.026, 0.024, 0.02);
-    L.push(B.Lo, _m, c.ribbon, 0.35);
+    L.push(B.Lo, _m, rb(c, i * 2), 0.35);
   }
   for (const k of [0, 1]) {
     _m.from(h).at(-f * (0.012 + k * 0.022), 0.04, -0.002 - k * 0.004).roll(f * (0.15 + k * 0.3)).size(0.018, 0.042, 0.012);
