@@ -60,6 +60,19 @@ describe('moon cups', () => {
     expect(hintCups('warm', 13, 8)).toEqual([8, 9, 10, 11, 12]);
     expect(hintCups('snow', 9, 13)).toEqual([9, 10, 11, 12]);
   });
+
+  it('shows an easy sum (2.3, within 10) in one nest of ten, the snow egg\'s take-away from 10 in a full one', () => {
+    expect(nestsFor(8, 5)).toEqual([8]);
+    expect(nestsFor(4, 10)).toEqual([10]);
+    expect(cupStates('warm', 8, 5)).toEqual(['warm', 'warm', 'warm', 'warm', 'warm', 'cold', 'cold', 'cold']);
+    expect(cupStates('snow', 6, 10).filter((c) => c === 'extra')).toHaveLength(4);
+    expect(stoneEffect('snow', 6, 10, 4)).toEqual({ cups: [9, 8, 7, 6], over: 0 });
+    expect(stoneEffect('warm', 8, 5, 3)).toEqual({ cups: [5, 6, 7], over: 0 });
+    // A warm stone that is too big sends its spare dots into the empty places after the eighth cup.
+    expect(stoneEffect('warm', 8, 5, 5)).toEqual({ cups: [5, 6, 7], over: 2 });
+    // The blanket hides the cold cups and the empty places of the one nest.
+    expect(blanketPatches(5, 0, 0)).toEqual([{ x: 0, y: CUP_GRID.cupH + CUP_GRID.rowGap, w: 5 * CUP_GRID.cupW + 4 * CUP_GRID.colGap, h: CUP_GRID.cupH }]);
+  });
 });
 
 describe('the blanket', () => {

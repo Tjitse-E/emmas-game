@@ -1,8 +1,12 @@
 // The maths moments (docs/v4/2.2.md section 4): the two eggs and, through rack.ts, the hay rack. All within the v4
-// maths floor (spec 4.4): nothing adds or takes away 1 or 2, no egg needs fewer than 7 cups, no stone shows 1 or 2,
-// and every egg crosses ten (the warm egg makes ten and some more, M21; the snow egg takes away down through ten,
-// M22). Band A shows 4 stones, band B shows 5 and wider sums. The wrong stones are real mistakes (4.1).
-import type { EggSpec, Outcome, StoneDecoy } from '../contracts.ts';
+// maths floor (spec 4.4): nothing adds or takes away 1 or 2, no sum's total is under 7, no stone shows 1 or 2. The
+// wrong stones are real mistakes (4.1).
+//
+// 2.3.0 (docs/v4/2.3.md sections 12 and 19.1): each egg asks three sums (eggSums). An easy one within 10, as at her
+// school; a middle one just past 10; a hard one across ten at her band (A: 4 stones, B: 5 and wider sums). Easy comes
+// first, then middle and hard in either order. Easy and middle always show 4 stones. The hay rack keeps 2.2's one sum
+// (eggSpec, RANGES: need 11 to 15 in both bands).
+import type { EggSpec, Outcome, StoneDecoy, SumGrade } from '../contracts.ts';
 import { type Rand, pick } from './rand.ts';
 
 export type EggKind = EggSpec['kind'];
@@ -36,9 +40,13 @@ export interface EggCombo {
 
 const inSpan = (v: number, [lo, hi]: Span): boolean => v >= lo && v <= hi;
 
-/** Every sum a kind can ask in a band, for picking, preloading, the audio lines and the tests. */
+/** Every 2.2 sum a kind can ask in a band (the hay rack's, warm), for picking, preloading, the lines and the tests. */
 export function eggCombos(kind: EggKind, band: Band = 'a'): EggCombo[] {
-  const r = RANGES[kind][band];
+  return combosIn(kind, RANGES[kind][band]);
+}
+
+/** Every sum inside one kind's ranges. */
+function combosIn(kind: EggKind, r: Ranges): EggCombo[] {
   const out: EggCombo[] = [];
   for (let need = r.need[0]; need <= r.need[1]; need++) {
     for (let have = r.have[0]; have <= r.have[1]; have++) {
@@ -295,6 +303,236 @@ export function pickSum(kind: EggKind, rand: Rand, o: MathsPick = {}): { band: B
   return { band, combo, ...trayFor(kind, combo, TRAY[band], place, rand) };
 }
 
+// ------------------------------------------------------------------------------------------------ three sums per egg
+
+/** One grade's ranges for both kinds; the hard sum has one per band. */
+interface GradeRanges { easy: Ranges; middle: Ranges; hard: Record<Band, Ranges> }
+
+/**
+ * The grade table of 2.3 section 19.1. The total (totalOf) is the bigger number. Easy stays within 10 (warm totals 7
+ * to 9, snow 7 to 10), middle is 11 or 12, hard 13 and more, so they never overlap. Easy and middle never end at a
+ * bond to 10 she already knows (4 + 6, 5 + 5), except the snow egg's easy take-away from 10. Their answers are 3 to 6,
+ * which reach all four places of a tray of 4. The hard sums keep 2.2's answers.
+ */
+export const GRADES: Record<EggKind, GradeRanges> = {
+  warm: {
+    easy: { need: [7, 9], have: [3, 6], answer: [3, 6] },
+    middle: { need: [11, 12], have: [6, 9], answer: [3, 6] },
+    hard: {
+      a: { need: [13, 15], have: [5, 9], answer: [4, 8] },
+      b: { need: [13, 15], have: [3, 9], answer: [4, 9] },
+    },
+  },
+  snow: {
+    easy: { need: [4, 7], have: [7, 10], answer: [3, 6] },
+    middle: { need: [5, 9], have: [11, 12], answer: [3, 6] },
+    hard: {
+      a: { need: [7, 10], have: [13, 15], answer: [3, 6] },
+      b: { need: [7, 10], have: [13, 16], answer: [3, 9] },
+    },
+  },
+};
+
+/** The grades in the order an egg can ask them: easy always first. */
+export const SUM_GRADES: readonly SumGrade[] = ['easy', 'middle', 'hard'];
+
+/** A grade's ranges. Only the hard sum has a band. */
+export function gradeRanges(kind: EggKind, grade: SumGrade, band: Band = 'a'): Ranges {
+  const g = GRADES[kind];
+  return grade === 'hard' ? g.hard[band] : g[grade];
+}
+
+/** Stones in the tray: 4 for every easy and middle sum, 4 or 5 by band for the hard one. */
+export function gradeTray(grade: SumGrade, band: Band = 'a'): 4 | 5 {
+  return grade === 'hard' ? TRAY[band] : 4;
+}
+
+/** Every sum of a grade (in a band, for the hard one). */
+export function gradeCombos(kind: EggKind, grade: SumGrade, band: Band = 'a'): EggCombo[] {
+  return combosIn(kind, gradeRanges(kind, grade, band));
+}
+
+/** The answer's places a grade can show, over all its sums. */
+export function gradeReach(kind: EggKind, grade: SumGrade, band: Band = 'a'): number[] {
+  const n = gradeTray(grade, band);
+  return [...new Set(gradeCombos(kind, grade, band).flatMap((c) => placesFor(kind, c, n)))].sort((a, b) => a - b);
+}
+
+/** One place and answer a graded sum can show: the sums that can show that answer there. */
+interface Cell {
+  place: number;
+  answer: number;
+  combos: EggCombo[];
+  /** How likely each of `combos` is drawn in this cell: a sum where "the stone nearest five" wins is drawn less. */
+  weights: number[];
+  /** How often "the stone nearest five" wins in this cell, over its sums and their trays. */
+  five: number;
+}
+
+/** A grade's cells and how often the plan puts its answer at each place. */
+interface GradeCells {
+  n: number;
+  cells: Cell[];
+  places: number[];
+}
+
+/** Within a cell, a sum and tray where "the stone nearest five" picks the answer is drawn this much less often. */
+const CELL_FIVE_DAMP = 0.5;
+
+/** How often "the stone nearest five" wins over the trays a sum can show with its answer at `place`. */
+function fiveAt(kind: EggKind, c: EggCombo, n: number, place: number): number {
+  const options = trayOptions(kind, c, n)[place] ?? [];
+  const total = options.reduce((t, o) => t + o.weight, 0);
+  return total > 0 ? options.reduce((t, o) => t + o.weight * nearFiveShare(o.stones, c.answer), 0) / total : 0;
+}
+
+/**
+ * How often each place of the answer is planned, per kind and grade (Claude's call): even over the places the grade
+ * can reach, so the biggest, the smallest and the middle stones each win 1 in 4 (1 in 3 where a place cannot be
+ * reached). A place only one sum can reach gets half a share, so that sum is not a quarter of its grade: the warm
+ * egg's easy answer can only be the biggest stone as 9 = 3 + 6 on stones 3, 4, 5, 6.
+ */
+export function gradePlaces(kind: EggKind, grade: SumGrade, band: Band = 'a'): number[] {
+  const n = gradeTray(grade, band);
+  const sums = Array.from({ length: n }, () => 0);
+  for (const c of gradeCombos(kind, grade, band)) for (const p of placesFor(kind, c, n)) sums[p]++;
+  const w = sums.map((k) => Math.min(1, k / 2));
+  const total = w.reduce((t, v) => t + v, 0);
+  return w.map((v) => v / total);
+}
+
+function cellsOf(kind: EggKind, grade: SumGrade, band: Band): GradeCells {
+  const n = gradeTray(grade, band);
+  const byKey = new Map<string, Cell>();
+  for (const c of gradeCombos(kind, grade, band)) {
+    for (const place of placesFor(kind, c, n)) {
+      const key = `${place} ${c.answer}`;
+      let cell = byKey.get(key);
+      if (!cell) byKey.set(key, (cell = { place, answer: c.answer, combos: [], weights: [], five: 0 }));
+      cell.combos.push(c);
+      cell.weights.push(1 - CELL_FIVE_DAMP * fiveAt(kind, c, n, place));
+    }
+  }
+  const cells = [...byKey.values()];
+  for (const cell of cells) {
+    const total = cell.weights.reduce((t, v) => t + v, 0);
+    cell.five = cell.combos.reduce((t, c, i) => t + cell.weights[i] * fiveAt(kind, c, n, cell.place), 0) / total;
+  }
+  return { n, cells, places: gradePlaces(kind, grade, band) };
+}
+
+/**
+ * "The stone nearest five" may win at most this share of a grade's sums: 29% with 4 stones and 24% with 5, under the
+ * bounds of 19.1 (35% and 30%) with room for chance.
+ */
+const PLAN_FIVE_CAP: Record<4 | 5, number> = { 4: 0.29, 5: 0.24 };
+/** No one sum is more than this share of its grade, so the same sum does not come back play after play. */
+const PLAN_SUM_CAP = 0.22;
+
+/** One way an egg's three sums can go: a cell per grade (easy, middle, hard), three different answers. */
+interface EggPlan {
+  cells: [Cell, Cell, Cell];
+  weight: number;
+}
+
+const eggPlanCache = new Map<string, { grades: GradeCells[]; plans: EggPlan[] }>();
+
+/**
+ * Every way an egg of a kind can place its three answers (2.3 section 19.1), and how likely each is. The three sums
+ * of one egg never share an answer, and easy, middle and the hard sum in this band draw from overlapping answers, so
+ * planning each sum on its own would tilt the later ones (an easy 3 leaves the middle sum fewer ways to be the
+ * smallest). So the plan is fitted over whole eggs, by iterative proportional fitting: each grade's places to
+ * gradePlaces, its "nearest five" share under PLAN_FIVE_CAP and each of its sums under PLAN_SUM_CAP. The guess rules
+ * then hold for every grade and every place in the egg, whatever came before.
+ */
+function eggPlans(kind: EggKind, band: Band): { grades: GradeCells[]; plans: EggPlan[] } {
+  const key = `${kind} ${band}`;
+  const cached = eggPlanCache.get(key);
+  if (cached) return cached;
+  const grades = SUM_GRADES.map((grade) => cellsOf(kind, grade, band));
+  const size = (cell: Cell) => cell.weights.reduce((t, v) => t + v, 0);
+  const plans: EggPlan[] = [];
+  for (const e of grades[0].cells) {
+    for (const m of grades[1].cells) {
+      if (m.answer === e.answer) continue;
+      for (const h of grades[2].cells) {
+        if (h.answer === e.answer || h.answer === m.answer) continue;
+        plans.push({ cells: [e, m, h], weight: size(e) * size(m) * size(h) });
+      }
+    }
+  }
+  const normalise = () => {
+    const t = plans.reduce((s, p) => s + p.weight, 0);
+    for (const p of plans) p.weight /= t;
+  };
+  for (let round = 0, off = 1; round < 5000 && off > 1e-6; round++) {
+    off = 0;
+    grades.forEach((g, i) => {
+      normalise();
+      const at = g.places.map(() => 0);
+      for (const p of plans) at[p.cells[i].place] += p.weight;
+      for (const p of plans) p.weight *= g.places[p.cells[i].place] / at[p.cells[i].place];
+      off = Math.max(off, ...at.map((v, place) => Math.abs(v - g.places[place])));
+      normalise();
+      const five = plans.reduce((t, p) => t + p.weight * p.cells[i].five, 0);
+      const cap = PLAN_FIVE_CAP[g.n as 4 | 5];
+      if (five > cap) {
+        for (const p of plans) p.weight *= 1 + p.cells[i].five * (cap / five - 1);
+        off = Math.max(off, five - cap);
+      }
+      normalise();
+      const sums = new Map<EggCombo, number>();
+      for (const p of plans) {
+        const cell = p.cells[i];
+        const t = size(cell);
+        cell.combos.forEach((c, j) => sums.set(c, (sums.get(c) ?? 0) + (p.weight * cell.weights[j]) / t));
+      }
+      for (const [c, share] of sums) {
+        if (share <= PLAN_SUM_CAP) continue;
+        off = Math.max(off, share - PLAN_SUM_CAP);
+        for (const p of plans) {
+          const cell = p.cells[i];
+          const j = cell.combos.indexOf(c);
+          if (j >= 0) p.weight *= 1 + (cell.weights[j] / size(cell)) * (PLAN_SUM_CAP / share - 1);
+        }
+      }
+    });
+  }
+  normalise();
+  const out = { grades, plans };
+  eggPlanCache.set(key, out);
+  return out;
+}
+
+/**
+ * An egg's three sums (2.3 section 19.1), all planned when the egg opens, from the egg's own stream: easy first, then
+ * middle and hard in either order. The answers and their places come from the egg plan (eggPlans); then each sum is
+ * one that shows its answer there, fresh as 2.2's freshCombos says across the play (this play's totals, then the last
+ * play's), and its tray. No total and no answer comes twice in one egg. The hard sum takes the band; easy and middle
+ * have none and show 4 stones. `first` adds the kind's intro (and the warm egg's spoken gesture) to the first sum;
+ * every egg's first sum says "Fill all three hearts, and the egg will hatch."
+ */
+export function eggSums(kind: EggKind, rand: Rand, o: MathsPick & { first?: boolean } = {}): EggSpec[] {
+  const band = o.band ?? 'a';
+  const { grades, plans } = eggPlans(kind, band);
+  const order = rand() < 0.5 ? [0, 1, 2] : [0, 2, 1];
+  const plan = weighted(rand, plans, (p) => p.weight);
+  // Within a cell every sum has the cell's answer, so only the totals can be fresh or not.
+  const totals = [...(o.used?.totals ?? [])];
+  return order.map((g, index): EggSpec => {
+    const grade = SUM_GRADES[g];
+    const cell = plan.cells[g];
+    const fresh = new Set(freshCombos(cell.combos, { used: { totals, answers: [] }, lastTotals: o.lastTotals }));
+    const combo = weighted(rand, cell.combos, (c) => (fresh.has(c) ? cell.weights[cell.combos.indexOf(c)] : 0));
+    totals.push(totalOf(combo));
+    const { stones, decoys } = trayFor(kind, combo, grades[g].n, cell.place, rand);
+    return {
+      kind, ...combo, stones, ...(grade === 'hard' ? { band } : {}), decoys, skin: 'egg', grade,
+      round: { index: index as 0 | 1 | 2, of: 3 }, clips: sumClips(kind, combo, (o.first ?? false) && index === 0, index),
+    };
+  });
+}
+
 // ------------------------------------------------------------------------------------------------ the clips
 
 /**
@@ -380,7 +618,43 @@ export function everySumClipIds(kind: EggKind, clipsFor: (c: EggCombo, first: bo
   return [...out];
 }
 
-/** Every clip any egg can say: the lines, every sum's goal and fact, the counting and every reachable miss line. */
+/** "Fill all three hearts, and the egg will hatch.", before an egg's first sum (CLIPS.hearts). */
+export const HEARTS_CLIP = 'g4-hearts';
+
+/**
+ * The clips of one of an egg's three sums. The first sum adds "Fill all three hearts" after the kind's intro (the first
+ * egg of a kind) and, on the first warm egg, the spoken gesture. The second and third skip the intro: the panel and the
+ * hearts stay on screen, so only the goal is new.
+ */
+function sumClips(kind: EggKind, c: EggCombo, first: boolean, index: number): EggSpec['clips'] {
+  const clips = eggClips(kind, c, first && index === 0);
+  return { ...clips, intro: index === 0 ? [...clips.intro, HEARTS_CLIP] : [] };
+}
+
+/** Every clip of every graded sum, in every band, at every place in an egg, with every wrong stone its tray can show. */
+function everyGradedClipIds(kind: EggKind): string[] {
+  const out = new Set<string>();
+  for (const grade of SUM_GRADES) {
+    for (const band of grade === 'hard' ? (['a', 'b'] as const) : (['a'] as const)) {
+      const n = gradeTray(grade, band);
+      for (const c of gradeCombos(kind, grade, band)) {
+        const stones = [c.answer, ...reachableStones(kind, c, n)].sort((a, b) => a - b);
+        for (const [first, index] of [[true, 0], [false, 0], [false, 1]] as const) {
+          eggClipIds({ kind, ...c, stones, clips: sumClips(kind, c, first, index) }).forEach((id) => out.add(id));
+        }
+      }
+    }
+  }
+  return [...out];
+}
+
+/**
+ * Every clip any egg can say: the lines, every sum's goal and fact, the counting and every reachable miss line, for
+ * the three graded sums of 2.3 and for 2.2's one sum (eggSpec, still the hay rack's and the ui harness's).
+ */
 export function allEggClipIds(): string[] {
-  return [...new Set((['warm', 'snow'] as const).flatMap((kind) => everySumClipIds(kind, (c, first) => eggClips(kind, c, first))))];
+  return [...new Set((['warm', 'snow'] as const).flatMap((kind) => [
+    ...everyGradedClipIds(kind),
+    ...everySumClipIds(kind, (c, first) => eggClips(kind, c, first)),
+  ]))];
 }

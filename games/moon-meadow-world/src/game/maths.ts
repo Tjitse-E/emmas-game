@@ -1,17 +1,17 @@
-// The maths side of the checked moments (moved out of moments.ts in 2.3.0, so the eggs lane owns it): what eggSpec and
-// rackSpec read beyond `first`, planning a sum from its own stream in the current band, and noting a maths result (the
-// results log with the tray, and the band move).
+// The maths side of the checked moments (moved out of moments.ts in 2.3.0, so the eggs lane owns it): what eggSums and
+// rackSpec read beyond `first`, planning an egg's three sums (or the hay rack's one) from its own stream in the
+// current band, and noting a maths result (the results log with the tray, and the band move).
 import type { EggSpec, MomentResult } from '../contracts';
-import { eggSpec } from '../content';
+import { eggSums } from '../content/eggs';
 import type { Game } from './game';
 import type { MomentLog } from './moments';
 import { type Band, noteBand, useSum } from './band';
 
-/** What the maths lane's eggSpec and rackSpec read (docs/v4/2.2.md 4.2), beyond `first`. */
+/** What the maths lane's eggSums and rackSpec read (docs/v4/2.2.md 4.2), beyond `first`. */
 export interface EggAsk {
   /** The first egg of its kind: the intro (and the warm egg's spoken gesture). */
   first?: boolean;
-  /** 4 stones and the narrower ranges (a), or 5 and the wider ones (b). */
+  /** The hard sum's and the hay rack's band: 4 stones and the narrower ranges (a), or 5 and the wider ones (b). */
   band: Band;
   /** Totals and answers asked earlier this play: never again while other sums are left. */
   used: { totals: number[]; answers: number[] };
@@ -24,22 +24,30 @@ export function eggAsk(g: Game, first = false): EggAsk {
   return { first, band: g.maths.band, used, lastTotals: [...g.save.data.last.totals] };
 }
 
-/** An egg from the stream `label` in the current band; its sum is then used for this play. */
-export function planEgg(g: Game, kind: EggSpec['kind'], label: string, first: boolean): EggSpec {
-  const ask: EggAsk = eggAsk(g, first);
-  const spec = eggSpec(kind, g.randFor(label), ask);
-  useSum(g.maths, spec);
-  return spec;
+/**
+ * An egg's three sums from the stream `label` (2.3 section 19.1), all planned when the egg opens: the hard sum takes
+ * the band now, so a band move inside the egg never changes its sums. Each is then used for this play.
+ */
+export function planEggs(g: Game, kind: EggSpec['kind'], label: string, first: boolean): EggSpec[] {
+  const specs = eggSums(kind, g.randFor(label), eggAsk(g, first));
+  for (const spec of specs) useSum(g.maths, spec);
+  return specs;
 }
 
 /**
- * A maths result (an egg sum or the hay rack): the results log with the tray. Only a hard sum and the hay rack move the
- * band (2.3 section 19.1): her easy sum is nearly always a first try and would push every hard sum into band B.
+ * A maths result (an egg sum or the hay rack): the results log with the tray, the grade and the heart. Only a hard
+ * sum and the hay rack move the band (2.3 section 19.1): her easy sum is nearly always a first try and would push
+ * every hard sum into band B.
  */
 export function noteMaths(g: Game, part: string, spec: EggSpec, r: MomentResult, t: MomentLog): void {
   g.results.add(part, 'm', r, {
     kind: spec.kind, grade: spec.grade, round: spec.round?.index, need: spec.need, have: spec.have, answer: spec.answer, band: spec.band ?? g.maths.band,
     stones: spec.stones, place: spec.stones.indexOf(spec.answer), decoys: spec.decoys ?? {}, tried: t.tried, ...t.flags,
   });
-  if (!spec.grade || spec.grade === 'hard') noteBand(g.maths, r.outcome);
+  if (movesBand(spec)) noteBand(g.maths, r.outcome);
+}
+
+/** True for the sums that move the maths band: an egg's hard sum and the hay rack (no grade). */
+export function movesBand(spec: Pick<EggSpec, 'grade'>): boolean {
+  return !spec.grade || spec.grade === 'hard';
 }

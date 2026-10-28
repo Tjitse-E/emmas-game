@@ -48,6 +48,9 @@ function spell(gpcs: string[]): string {
 const SAME_SOUND = [['c', 'k', 'ck'], ['s', 'ss'], ['l', 'll'], ['f', 'ff'], ['z', 'zz']];
 const sameSound = (a: string, b: string): boolean => a === b || SAME_SOUND.some((f) => f.includes(a) && f.includes(b));
 
+// The eggs' three sums (2.3.0); content/index.ts is the integrator's, so they come from eggs.ts itself.
+const { eggSums } = await import('../src/content/eggs.ts');
+
 function eggs(kind: 'warm' | 'snow'): EggSpec[] {
   return seeds.flatMap((s) => {
     const r = C.seeded(s);
@@ -88,6 +91,54 @@ describe('eggs', () => {
       if (!e.clips.intro.length) expect(e.clips.intro).toEqual([]);
     }
     expect(eggs('warm').some((e) => e.clips.intro.length === 0)).toBe(true);
+  });
+
+  // 2.3.0: an egg's three sums (docs/v4/2.3.md section 19.1).
+  it('an egg\'s first sum says the kind\'s intro, then "Fill all three hearts"; its second and third skip the intro', () => {
+    for (const s of seeds.slice(0, 100)) {
+      const [w1, w2, w3] = eggSums('warm', C.seeded(s), { first: true });
+      expect(w1.clips.intro).toEqual(['g-egg', 'g4-hearts']);
+      expect(w1.clips.afterGoal).toEqual(['g-stone']);
+      for (const w of [w2, w3]) {
+        expect(w.clips.intro).toEqual([]);
+        expect(w.clips.afterGoal).toBeUndefined();
+      }
+      const [s1, s2] = eggSums('snow', C.seeded(s), { first: true });
+      expect(s1.clips.intro).toEqual(['g4-snow-egg', 'g4-hearts']);
+      expect(s1.clips.afterGoal).toBeUndefined();
+      expect(s2.clips.intro).toEqual([]);
+      // Not the first egg of its kind: only the hearts line.
+      expect(eggSums('warm', C.seeded(s))[0].clips.intro).toEqual(['g4-hearts']);
+    }
+  });
+
+  it('an egg\'s sums say their own goal and fact, the snow egg\'s easy one within 10 too', () => {
+    for (const s of seeds) {
+      for (const e of eggSums('snow', C.seeded(s))) {
+        expect(e.clips.goal).toEqual([`num-egg-${e.need}`, `num-toowarm-${e.have}`, 'g4-snow']);
+        expect(e.clips.right).toEqual(['fb4-just-right', `num-take-${e.have}-${e.answer}`]);
+        expect(e.clips.count).toEqual(Array.from({ length: e.answer }, (_, i) => `num-${i + 1}`));
+      }
+      for (const e of eggSums('warm', C.seeded(s))) {
+        expect(e.clips.goal).toEqual([`num-egg-${e.need}`, `num-warm-${e.have}`]);
+        expect(e.clips.right).toEqual(['fb-warm', `num-bond-${e.have}-${e.answer}`]);
+      }
+    }
+  });
+
+  it('every clip an egg\'s three sums can say is in allClipIds and exists or has a line', () => {
+    const all = new Set(C.allClipIds());
+    for (const s of seeds) {
+      for (const kind of ['warm', 'snow'] as const) {
+        for (const e of eggSums(kind, C.seeded(s), { first: s % 2 === 0, band: s % 3 === 0 ? 'b' : 'a' })) {
+          for (const id of C.eggClipIds(e)) {
+            expect(all.has(id), id).toBe(true);
+            expect(clipExists(id) || !!lineFor(id), id).toBe(true);
+          }
+        }
+      }
+    }
+    expect(all.has('g4-heart')).toBe(true);
   });
 });
 

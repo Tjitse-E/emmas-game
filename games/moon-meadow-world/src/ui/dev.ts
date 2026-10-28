@@ -172,11 +172,26 @@ const hooks: MomentHooks = { anchor, react, log: (e, d) => log(`${e} ${JSON.stri
 // ---- sample specs on v3 clips (new v4 ids warn as missing, which is fine)
 
 // ==== eggs lane block: the egg and hay rack specs (2.3: three sums per egg) =========================================
-// Real 2.2.0 trays from the content: 4 stones (band A), 5 stones (band B) and the hay rack.
+// Real trays from the content: an egg's three sums on one panel (2.3, the hard one in band A or B), 2.2's one sum
+// with 4 stones (band A) and 5 (band B), and the hay rack.
 const warmEgg: EggSpec = eggSpec('warm', seeded(1), { first: true, band: 'a' });
 const snowEgg: EggSpec = eggSpec('snow', seeded(2), { first: true, band: 'b' });
 const hayRack: EggSpec = rackSpec(seeded(3), { band: 'a' });
+/** An egg's three sums, one after another on the panel that stays, with "A happy heart!" between them. */
+async function threeSums(kind: EggSpec['kind'], band: 'a' | 'b', seed: number) {
+  // Imported here, so the lane's lines stay inside this block.
+  const { eggSums } = await import('../content/eggs');
+  show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 });
+  for (const spec of eggSums(kind, seeded(seed), { first: true, band })) {
+    const r = await layer.egg(spec, hooks);
+    results.push({ egg: kind, grade: spec.grade, round: spec.round?.index, ...r });
+    log(`egg ${kind} ${spec.grade} ${spec.need}/${spec.have} ${JSON.stringify(r)}`);
+    if ((spec.round?.index ?? 2) < 2) await audio.sayAll(['g4-heart']);
+  }
+}
 const eggRuns: Record<string, () => Promise<unknown> | void> = {
+  'egg warm 3': () => threeSums('warm', 'a', 4),
+  'egg snow 3': () => threeSums('snow', 'b', 5),
   'egg warm': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(warmEgg, hooks); results.push({ egg: 'warm', ...r }); log(`egg warm ${JSON.stringify(r)}`); },
   'egg snow': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(snowEgg, hooks); results.push({ egg: 'snow', ...r }); log(`egg snow ${JSON.stringify(r)}`); },
   'hay rack': async () => { show(null); const r = await layer.egg(hayRack, hooks); results.push({ egg: 'hay', ...r }); log(`hay rack ${JSON.stringify(r)}`); },
