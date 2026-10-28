@@ -7,23 +7,26 @@
 #   MMW_SIZES="1080x740" bash .../run.sh                  only these sizes (every flow)
 #   MMW_SKIP_BUILD=1 bash .../run.sh                      reuse dist/
 #   MMW_NO_LEVEL=1, MMW_NO_SMOKE=1, MMW_NO_DRESS=1, MMW_NO_QUEST=1 leave a flow out
+#   MMW_PORT=8791 MMW_SESSION=mmw-eggs bash .../run.sh   another port and playwright-cli session, so runs from two
+#                                                         worktrees at the same time do not share a browser
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(git -C "$HERE" rev-parse --show-toplevel)"
 PORT="${MMW_PORT:-8785}"
 [ "$PORT" != 8765 ] || { echo "Port 8765 is Emma's live server" >&2; exit 1; }
 export MMW_PORT="$PORT"
+SESSION="${MMW_SESSION:-mmw}"
 export MMW_URL="http://127.0.0.1:$PORT/games/moon-meadow-world/dist/index.html"
-export MMW_SHOTS="${MMW_SHOTS:-${TMPDIR:-/tmp}/mmw-shots}"
+export MMW_SHOTS="${MMW_SHOTS:-${TMPDIR:-/tmp}/mmw-shots${MMW_SESSION:+-$MMW_SESSION}}"
 mkdir -p "$MMW_SHOTS"
 
 if [ -z "${MMW_SKIP_BUILD:-}" ]; then (cd "$HERE/.." && npm run build >/dev/null); fi
 
 cd "$REPO"
-PORT="$PORT" HOST=127.0.0.1 MOON_DIST=dist-test-gate node games/moon-meadow-home/server/serve.ts >"${TMPDIR:-/tmp}/mmw-server.log" 2>&1 &
+PORT="$PORT" HOST=127.0.0.1 MOON_DIST=dist-test-gate node games/moon-meadow-home/server/serve.ts >"${TMPDIR:-/tmp}/mmw-server-$PORT.log" 2>&1 &
 SERVER=$!
 disown "$SERVER"
-trap 'kill $SERVER 2>/dev/null || true; playwright-cli -s=mmw close >/dev/null 2>&1 || true' EXIT
+trap 'kill $SERVER 2>/dev/null || true; playwright-cli -s="$SESSION" close >/dev/null 2>&1 || true' EXIT
 for _ in $(seq 1 50); do curl -sf "$MMW_URL" >/dev/null && break; sleep 0.2; done
 
 # 1080 x 810 is Emma's iPad (8th gen) and 1080 x 740 the same in Safari with its bars showing; 1024 x 768 and
@@ -34,8 +37,8 @@ sizes_quest="${MMW_SIZES:-1080x810 1080x740}"
 [ "${MMW_FULL:-}" = all ] && sizes_full="$sizes_all"
 [ "${MMW_NO_LEVEL:-}" = 1 ] && sizes_full=""
 [ "${MMW_NO_QUEST:-}" = 1 ] && sizes_quest=""
-for size in $sizes_full; do W="${size%x*}" H="${size#*x}" S=mmw bash "$HERE/level.flow.sh"; done
-[ "${MMW_NO_DRESS:-}" = 1 ] || for size in $sizes_all; do W="${size%x*}" H="${size#*x}" S=mmw bash "$HERE/dress.flow.sh"; done
-for size in $sizes_quest; do W="${size%x*}" H="${size#*x}" S=mmw bash "$HERE/quest.flow.sh"; done
-[ "${MMW_NO_SMOKE:-}" = 1 ] || for size in $sizes_all; do W="${size%x*}" H="${size#*x}" S=mmw bash "$HERE/smoke.flow.sh"; done
+for size in $sizes_full; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/level.flow.sh"; done
+[ "${MMW_NO_DRESS:-}" = 1 ] || for size in $sizes_all; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/dress.flow.sh"; done
+for size in $sizes_quest; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/quest.flow.sh"; done
+[ "${MMW_NO_SMOKE:-}" = 1 ] || for size in $sizes_all; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/smoke.flow.sh"; done
 echo "all flows passed; screenshots in $MMW_SHOTS"

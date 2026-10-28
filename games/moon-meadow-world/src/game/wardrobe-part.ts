@@ -1,15 +1,15 @@
-// The customiser (docs/v4/2.2.md 2.1 to 2.4): the first part after the sweep, before Lumi's welcome. Princess Emma
-// stands at START without her crown, close up on the left of the screen; the layer's five picture rails are on the
-// right. Nothing is checked or refused. Every pick changes her at once, a released pick plays her reaction and is
-// saved, and the big pink play button (Done) ends the part with a curtsy. Lumi stays hidden, the home button stays.
-import type { LookRow, PrincessEmote, PrincessLook, Vec2 } from '../contracts';
+// The start mirror (docs/v4/2.2.md 2.1 to 2.4, 2.3.md Part 2 section 3): the first part after the sweep, before
+// Lumi's welcome. Princess Emma stands at START, close up on the left of the screen; the layer's tabs and rails are on
+// the right. Nothing is checked or refused. Every pick changes her at once, a released pick plays her reaction and is
+// saved, and the big pink play button (Done) or the end of the music box (45 s) ends the part with a curtsy. Lumi
+// stays hidden, the home button stays. Her crown shows once Lumi has given it (the crown tab too).
+import type { LookField, LookTab, PrincessEmote, PrincessLook, Vec2 } from '../contracts';
 import { GRAZE_HOMES, dist2 } from '../layout';
-import { EYE_HEX, HAIR_HEX, wardrobeClipIds } from '../wardrobe';
+import { EYE_HEX, HAIR_HEX, lookFields, tabOf, wardrobeClipIds } from '../wardrobe';
 import { audio } from '../audio';
 import { CLIPS } from '../content';
 import { type Game, flat } from './game';
 import { ENTER_MS, FACE_RETURN_MS, MOVE_MS, panelLeftOf, portraitFrame, portraitKind } from './portrait';
-import { ownedRibbons } from './save';
 import { diagQuery, sendDiag } from './results';
 
 /**
@@ -21,13 +21,19 @@ const ASIDE: [Vec2, Vec2][] = [
   [{ x: -7, z: 9 }, { x: -4, z: 12 }],
 ];
 
-/** Her reaction when a pick is released, per row (2.4). */
-const REACTION: Record<LookRow, PrincessEmote> = { hair: 'toss', eyes: 'blink', gown: 'twirl', style: 'show', thing: 'tilt' };
+/** The start mirror's music box (2.3 decision 1): 45 s, no challenge. */
+export const MIRROR_MS = 45_000;
+
+/** Her reaction when a pick is released, per field (2.2.md 2.4; 2.3 adds the crown, shoes and jewels). */
+const REACTION: Record<LookField, PrincessEmote> = {
+  hair: 'toss', style: 'show', eyes: 'blink', gown: 'twirl', gownColour: 'twirl', extra: 'twirl', crown: 'tilt', crownColour: 'tilt',
+  shoes: 'jump', shoeColour: 'jump', thing: 'tilt', thingColour: 'tilt', earrings: 'tilt', necklace: 'show', jewelColour: 'tilt',
+};
 /**
  * Where the sparkle of a released pick shows. The toss, twirl and tilt reactions make their own sparkle (in the hair,
- * gown and ribbon colour), so only the rows whose reaction has none get one here.
+ * gown and hair-thing colour), so only the fields whose reaction has none get one here.
  */
-const SPARKLE_AT: Partial<Record<LookRow, 'head' | 'eyes'>> = { eyes: 'eyes', style: 'head' };
+const SPARKLE_AT: Partial<Record<LookField, 'head' | 'eyes'>> = { eyes: 'eyes', style: 'head' };
 /** A released pick is saved this long after the release (a quick second pick saves once). */
 const SAVE_AFTER_MS = 300;
 /** The preview drag: 1 degree per 2 px, at most 170 degrees either way from facing the camera. */
@@ -38,13 +44,13 @@ const TURN_MAX = (170 * Math.PI) / 180;
  * unicorn clip) turns towards the camera.
  */
 const SIDE_TURN = (-25 * Math.PI) / 180;
-const SIDE_ROWS: readonly LookRow[] = ['thing', 'style'];
+const SIDE_TABS: readonly LookTab[] = ['sparkles', 'hair'];
 /** Done: the curtsy, then "Lovely!" (said by the layer) may take this long before the welcome. */
 const LOVELY_MS = 1800;
 
 /** The part's clips: preloaded first at the start, before everything else. */
 export function wardrobePartClipIds(): string[] {
-  return [...CLIPS.ready, ...CLIPS.lookTap, ...CLIPS.readyPlay, ...CLIPS.lovely, ...wardrobeClipIds()];
+  return [...CLIPS.ready, ...CLIPS.lookTap, ...CLIPS.readyPlay, ...CLIPS.nearly, ...CLIPS.lovely, ...wardrobeClipIds()];
 }
 
 /**
@@ -64,8 +70,8 @@ export function herdAside(g: Game, on: boolean, o: { walk?: boolean } = {}): voi
 }
 
 /** The colour of a released pick's sparkle: her new eyes, or her hair for a style. */
-function sparkleColour(look: PrincessLook, row: LookRow): string {
-  if (row === 'eyes') return EYE_HEX[look.eyes];
+function sparkleColour(look: PrincessLook, field: LookField): string {
+  if (field === 'eyes') return EYE_HEX[look.eyes];
   const hair = HAIR_HEX[look.hair];
   return hair.bands?.[0] ?? hair.light;
 }
@@ -76,7 +82,7 @@ export async function wardrobe(g: Game): Promise<void> {
   const at = flat(her.position);
   g.free = false;
   layer.lumi.show(false);
-  her.crown(false);
+  her.crown(g.save.data.seen.crown);
   her.setLook(g.save.data.look);
   her.hold(true);
   if (g.options.portrait) her.portrait(true);
@@ -84,7 +90,7 @@ export async function wardrobe(g: Game): Promise<void> {
 
   // The camera: the body frame; eyes and hair things bring it to her face, and it goes back to the body 2.5 s after
   // the last touch on those rows. A resize or a rotation frames again (frame() measures with the aspect of the moment).
-  let frameRow: LookRow | null = null;
+  let frameRow: LookTab | null = null;
   let camera: Vec2 = { x: at.x, z: at.z + 4 };
   const frameNow = (ms: number): Promise<void> => {
     const w = innerWidth;
@@ -93,7 +99,7 @@ export async function wardrobe(g: Game): Promise<void> {
     camera = { x: f.camera.x, z: f.camera.z };
     return world.frame(f.center, f.width, { pitch: f.pitch, shiftY: 0, ms });
   };
-  const goFrame = (row: LookRow | null) => {
+  const goFrame = (row: LookTab | null) => {
     const moved = portraitKind(row) !== portraitKind(frameRow);
     frameRow = row;
     if (moved) void frameNow(MOVE_MS);
@@ -101,10 +107,10 @@ export async function wardrobe(g: Game): Promise<void> {
 
   // She faces the camera; while the hair things or the styles have her attention she turns 25 degrees so the side
   // shows.
-  let focus: LookRow | null = null;
+  let focus: LookTab | null = null;
   let turned = 0;
   const restFace = () => {
-    const a = focus && SIDE_ROWS.includes(focus) ? SIDE_TURN : 0;
+    const a = focus && SIDE_TABS.includes(focus) ? SIDE_TURN : 0;
     const dx = camera.x - at.x;
     const dz = camera.z - at.z;
     her.face({ x: at.x + dx * Math.cos(a) + dz * Math.sin(a), z: at.z - dx * Math.sin(a) + dz * Math.cos(a) });
@@ -123,8 +129,8 @@ export async function wardrobe(g: Game): Promise<void> {
     goFrame(null);
     restFace();
   };
-  const lingers = (row: LookRow | null): boolean => !!row && (portraitKind(row) === 'face' || SIDE_ROWS.includes(row));
-  const touch = (row: LookRow) => {
+  const lingers = (row: LookTab | null): boolean => !!row && (portraitKind(row) === 'face' || SIDE_TABS.includes(row));
+  const touch = (row: LookTab) => {
     stopBack();
     const turn = focus !== row;
     focus = row;
@@ -161,30 +167,32 @@ export async function wardrobe(g: Game): Promise<void> {
   void her.emote('wave');
 
   const opened = performance.now();
-  const touched = new Set<LookRow>();
-  const look = await g.run.w(
+  const touched = new Set<LookTab>();
+  const { look, end } = await g.run.w(
     layer.wardrobe({
       look: { ...g.save.data.look },
-      ribbons: ownedRibbons(g.save.data),
+      owned: g.save.data.owned,
+      crownTab: g.save.data.seen.crown,
       firstTime: !g.save.data.seen.wardrobe,
-      clips: { ready: CLIPS.ready, firstTime: CLIPS.lookTap, idle: CLIPS.readyPlay, done: CLIPS.lovely },
-      onLook(look, row) {
+      limitMs: g.options.boxMs ?? MIRROR_MS,
+      clips: { ready: CLIPS.ready, firstTime: CLIPS.lookTap, idle: CLIPS.readyPlay, nearly: CLIPS.nearly, done: CLIPS.lovely },
+      onLook(look, field) {
         her.setLook(look);
-        touch(row);
+        touch(tabOf(field));
       },
-      onPicked(look, row) {
+      onPicked(look, field) {
         her.setLook(look);
-        touched.add(row);
-        touch(row);
-        void her.emote(REACTION[row]);
-        const at = SPARKLE_AT[row];
-        if (at) actors.fx.sparkle(her.point(at), { count: 12, colour: sparkleColour(look, row) });
+        touched.add(tabOf(field));
+        touch(tabOf(field));
+        void her.emote(REACTION[field]);
+        const at = SPARKLE_AT[field];
+        if (at) actors.fx.sparkle(her.point(at), { count: 12, colour: sparkleColour(look, field) });
         saveSoon(look);
       },
-      onFocus(row) {
-        if (row) touch(row);
+      onFocus(tab) {
+        if (tab) touch(tab);
         else if (lingers(focus)) {
-          // The finger left the row: the time to go back starts now.
+          // The finger left the tab: the time to go back starts now.
           stopBack();
           back = setTimeout(relax, FACE_RETURN_MS);
         }
@@ -214,8 +222,10 @@ export async function wardrobe(g: Game): Promise<void> {
     s.look = { ...look };
     s.seen.wardrobe = true;
   });
-  sendDiag(diagQuery({ kind: 'look', rows: [...touched].join(','), ms: Math.round(performance.now() - opened), ...look }));
-  console.info('[mmw look]', JSON.stringify({ rows: [...touched], look }));
+  const ms = Math.round(performance.now() - opened);
+  g.clock.dressMs.mirror += ms;
+  sendDiag(diagQuery({ kind: 'look', at: 'mirror', end, tabs: [...touched].join(','), ms, ...lookFields(look) }));
+  console.info('[mmw look]', JSON.stringify({ at: 'mirror', end, tabs: [...touched], ms, look }));
   focus = null;
   stopBack();
   restFace();

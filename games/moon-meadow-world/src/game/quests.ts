@@ -8,14 +8,18 @@
 // her two named babies. The bubbles hide while a quest runs, once it is done, after three minutes and at bedtime.
 import type { EggSpec, MomentHooks, Vec2, WishSpec } from '../contracts';
 import type { UnicornActor } from '../actors';
-import { GRAZE_HOMES, HAY_RACK, PICNIC, PLACES, dist2 } from '../layout';
+import { BEAD_TREE, CORNER, GRAZE_HOMES, HAY_RACK, PICNIC, PLACES, dist2 } from '../layout';
 import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
 import { CLIPS, eggClipIds, foods, rackSpec, wishClipIds } from '../content';
-import { type Game, flat, frameAt, preload, princessAt, say, sayAside, v3, walkTo } from './game';
-import { afterWish, crownKeep, eggAsk, momentLog, noteMaths, parkFollowers, planWish, runWish } from './moments';
+import { type Game, checked, flat, frameAt, preload, princessAt, say, sayAside, v3 } from './game';
+import { afterWish, crownKeep, momentLog, parkFollowers, planWish, runWish } from './moments';
+import { eggAsk, noteMaths } from './maths';
 import { useSum } from './band';
 import { herdAside } from './wardrobe-part';
+import { followAgain, guests, walkThere } from './quest-kit';
+import { beadsQuest } from './beads';
+import { cornerQuest } from './corner';
 import type { QuestId } from './options';
 
 const QUESTS: readonly QuestId[] = ['picnic', 'rack'];
@@ -27,8 +31,6 @@ export const QUEST_CUTOFF_MS = 180_000;
 const FREE_PROMPT_MS = 30_000;
 /** Walking this near a quest's place starts it. */
 const NEAR_M = 2.5;
-/** The longest walk to a quest's spot; after that she is there at once. */
-const WALK_MS = 12_000;
 /** The picnic guests sit down on their cushions after this long at the latest. */
 const SEAT_MS = 4000;
 /** The picnic frame: the rug's centre a little east, 5.5 m across, the babies' head tops at 45%. */
@@ -50,6 +52,17 @@ const MUNCH_MS = 3000;
 const OFFER: Record<QuestId, { pic: () => string; at: { x: number; y: number; z: number } }> = {
   picnic: { pic: () => wordPic('picnic'), at: { x: PICNIC.rug.center.x, y: 1.3, z: PICNIC.rug.center.z } },
   rack: { pic: () => v3Art('items/item-hay-bundle.webp'), at: { x: HAY_RACK.center.x, y: 2.3, z: HAY_RACK.center.z } },
+  // 2.3.0: the quests-world lane sets the bead tree's tinted bead and the trunk's gift picture.
+  beads: { pic: () => wordPic('bead'), at: { x: BEAD_TREE.center.x, y: 2.6, z: BEAD_TREE.center.z } },
+  corner: { pic: () => v3Art('items/place-dressing.webp'), at: { x: CORNER.trunk.x, y: 1.6, z: CORNER.trunk.z } },
+};
+
+/** Each quest's moment. The afternoon runs the one asked; quests-world adds the gifts after it (2.3 Part 2, 4). */
+const RUN: Record<QuestId, (g: Game) => Promise<void>> = {
+  picnic: (g) => picnicQuest(g),
+  rack: (g) => rackQuest(g),
+  beads: (g) => beadsQuest(g),
+  corner: (g) => cornerQuest(g),
 };
 
 const bothNamed = (g: Game): boolean => !!g.babies[0]?.member && !!g.babies[1]?.member;
@@ -185,7 +198,7 @@ export async function afternoon(g: Game): Promise<void> {
     layer.foodBasket({ show: false });
     q.running = id;
     try {
-      await (id === 'picnic' ? picnicQuest(g) : rackQuest(g));
+      await RUN[id](g);
     } finally {
       q.running = null;
     }
@@ -198,24 +211,6 @@ export async function afternoon(g: Game): Promise<void> {
   offClock();
   hideOffers(g);
   layer.foodBasket({ show: false });
-}
-
-/** She walks to a quest's spot; a long way (or a slide still going) ends with her there at once. */
-async function walkThere(g: Game, to: Vec2): Promise<void> {
-  const her = g.actors.princess;
-  await g.run.until(() => ['idle', 'walk', 'run'].includes(her.mode), 15_000);
-  await g.run.w(Promise.race([walkTo(g, to), new Promise((r) => setTimeout(r, WALK_MS))]));
-  if (dist2(princessAt(g), to) > 0.6) g.actors.placePrincess(to, 0);
-}
-
-/** Her babies as quest guests and helpers: they stop following until the quest is over. */
-function guests(g: Game): UnicornActor[] {
-  return g.babies.slice(0, 2).map((b) => b.unicorn);
-}
-
-function followAgain(g: Game, babies: UnicornActor[]): void {
-  for (const p of g.parked.splice(0)) g.followers.add(p);
-  babies.forEach((u, k) => g.followers.add(u, k === 0));
 }
 
 // ---- the royal picnic (reading) -------------------------------------------------------------------------------------
@@ -357,7 +352,7 @@ async function rackQuest(g: Game): Promise<void> {
     log: t.log,
   };
   g.openSpec = spec;
-  const r = await g.run.w(layer.egg(spec, hooks));
+  const r = await checked(g, layer.egg(spec, hooks));
   g.openSpec = null;
   noteMaths(g, 'rack', spec, r, t);
   fill();

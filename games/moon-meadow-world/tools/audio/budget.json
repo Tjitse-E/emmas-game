@@ -1,5 +1,5 @@
 {
- "cap": 4000,
+ "cap": 7277,
  "floor": 10000,
  "sttPerCheck": 0.34,
  "startCredits": 31035,
@@ -13,5 +13,7 @@
   "v2.2.0": "13 new clips for 2.2.0 (the customiser lines, the dress-up wish, word-heart, the two picnic lines for Lumi and six take-away facts for band B), 411 characters and 13 speech-to-text checks: 415.42 credits booked on 2026-10-28. All 13 passed speech-to-text on the first take. word-heart passes as 'Heart.' or 'Hart.'; Tjitse listens to it.",
   "counterAfter2.2.0": "30,230 before the run (the account counter lags a few minutes)."
  },
- "note": "Audio budget for the v4 playable demo and its 2.x versions (docs/v4/demo.md section 5): at most 4,000 credits, never fewer than 10,000 credits left on the account. Tjitse's cap for v4 itself is still open (spec 7.1 and 10). It covers the demo's own lines (public/audio/v4demo/) and the menu line menu-moon-meadow-world. Every run goes through tools/audio/gen.sh, which passes the floor, the cap, the ledger and the speech-to-text cost per check (v3's measured 0.34 credits, games/moon-meadow-home/tools/audio/budget.json)."
+ "note": "Audio budget for the v4 playable demo and its 2.x versions (docs/v4/demo.md section 5): at most 4,000 credits, never fewer than 10,000 credits left on the account. Tjitse's cap for v4 itself is still open (spec 7.1 and 10). It covers the demo's own lines (public/audio/v4demo/) and the menu line menu-moon-meadow-world. Every run goes through tools/audio/gen.sh, which passes the floor, the cap, the ledger and the speech-to-text cost per check (v3's measured 0.34 credits, games/moon-meadow-home/tools/audio/budget.json).",
+ "capNote": "Raised from 4,000 to 7,277 on 2026-10-28: Tjitse gave 5,000 credits for 2.3.0 (speech and ElevenLabs sound effects) on top of the 2,276.9 booked before it.",
+ "sfxNote": "Sound effects are booked at sfxPerSecond credits per second of duration_seconds (ElevenLabs: 40 credits per second when the duration is set). tools/audio/gen-sfx.py --probe makes the 2 s probe, reads the account counter before and after, and writes what it really took here as sfxProbe (docs/v4/2.3.md Part 2, section 7)."
 }

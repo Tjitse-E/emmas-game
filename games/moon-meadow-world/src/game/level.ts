@@ -6,38 +6,26 @@ import * as THREE from 'three';
 import type { EndMember, NameChoice, Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { GRAZE_HOMES, NEST, SLIDE, STABLE, START, WILD_EGG, dist2, doorFront, doorIsUpper } from '../layout';
-import { RIBBON_HEX, nextRibbon } from '../wardrobe';
+import { PALETTE, RIBBON_COLOUR, nextRibbon } from '../wardrobe';
 import { audio } from '../audio';
 import {
-  CLIPS, allGraphemes, babyLook, doorClipIds, doorVisit, eggClipIds, moveIn, namingClipIds, namingSpec, newborn,
-  rollCall, wishClipIds,
+  CLIPS, allGraphemes, babyLook, doorClipIds, doorVisit, moveIn, namingClipIds, namingSpec, newborn, rollCall,
+  wishClipIds,
 } from '../content';
 import {
-  type Baby, type Game, type Goal, type Part, GOALS, PARTS, doorPoint, flat, frameAt, lumiSay, memberOfDoor, preload,
-  princessAt, reached, say, sayWay, setGoal, setTime, startQuests, v3, walkTo,
+  type Baby, type Game, type Part, GOALS, PARTS, checked, doorPoint, faceBeside, flat, frameAt, lumiSay, memberOfDoor,
+  preload, princessAt, say, sayWay, setGoal, setTime, startClock, startQuests, v3, waitToReach, walkTo,
 } from './game';
 import { Run, Cancelled } from './run';
 import { doorMoment, heartsBetween } from './doors';
 import { startMaths } from './band';
 import { ownedRibbons } from './save';
-import {
-  afterWish, babyReact, crownKeep, dropToyAfter, momentLog, noteMaths, parkFollowers, planEgg, planWish, runWish,
-  settleBy,
-} from './moments';
+import { afterWish, babyReact, crownKeep, dropToyAfter, momentLog, parkFollowers, planWish, runWish, settleBy } from './moments';
+import { HATCH_SPOT, NEST_EGG, SIDE, WILD_EGG_AT, egg } from './eggs-part';
 import { herdAside, wardrobe, wardrobePartClipIds } from './wardrobe-part';
 import { afternoon, hideOffers } from './quests';
 
-const NEST_EGG = new THREE.Vector3(NEST.center.x, NEST.eggY, NEST.center.z);
-const WILD_EGG_AT = new THREE.Vector3(WILD_EGG.at.x, 0, WILD_EGG.at.z);
-/** Where each newborn sits when it hatches: in the nest, and on the grass where the wild egg lay. */
-const HATCH_SPOT: Record<13 | 14, Vec2> = { 13: { x: NEST.center.x, z: NEST.center.z + 0.25 }, 14: WILD_EGG.at };
-/**
- * Where she stands for an egg and its baby: beside it at its depth (a little behind), so she turns a three-quarter
- * face to the camera instead of her back.
- */
-const SIDE: Record<0 | 1, Vec2> = { 0: { x: NEST.center.x - 1.55, z: NEST.center.z - 0.15 }, 1: { x: WILD_EGG.at.x - 1.5, z: WILD_EGG.at.z - 0.15 } };
 /** Width of ground across the screen for each framing. */
-const EGG_WIDTH = 6;
 const BABY_WIDTH = 5.5;
 const CROWN_WIDTH = 6;
 const WILD_EGG_WIDTH = 9;
@@ -107,6 +95,8 @@ async function welcome(g: Game): Promise<void> {
   });
   await lumiSay(g, CLIPS.crown);
   await g.run.w(crown);
+  // From now on the wardrobe has its crown tab (2.3 Part 2, section 3).
+  g.save.write((s) => void (s.seen.crown = true));
   await g.run.w(actors.princess.emote('clap'));
   world.releaseFrame();
   actors.egg.place(NEST_EGG, 'warm');
@@ -141,66 +131,6 @@ async function welcomeBack(g: Game): Promise<void> {
   await say(g, CLIPS.eggWaiting);
 }
 
-/** She turns a three-quarter face to the camera: towards a point between the egg (or baby) and the camera. */
-function faceBeside(g: Game, at: Vec2): void {
-  g.actors.princess.face({ x: at.x, z: at.z + 2 });
-}
-
-/** The egg moment and the hatch, for the nest egg (index 0) and the wild egg (index 1). */
-async function egg(g: Game, i: 0 | 1): Promise<void> {
-  const { actors, layer, world } = g;
-  const goal = i === 0 ? GOALS.nest : GOALS.wildEgg;
-  const eggAt = i === 0 ? NEST_EGG : WILD_EGG_AT;
-  if (!actors.egg.visible) actors.egg.place(eggAt, i === 0 ? 'warm' : 'snow');
-  if (!g.goal) setGoal(g, goal);
-  g.free = true;
-  await waitToReach(g, goal);
-  setGoal(g, null);
-  // The glow's job (find the nest) is done: it would only bleach the egg moment.
-  world.nestGlow(false);
-  g.free = false;
-  parkFollowers(g, SIDE[i]);
-  const eggFlat = flat(actors.egg.position);
-  void walkTo(g, SIDE[i]).then(() => faceBeside(g, eggFlat));
-  const part = i === 0 ? 'egg1' : 'egg2';
-  const spec = planEgg(g, i === 0 ? 'warm' : 'snow', part, true);
-  await preload(g, eggClipIds(spec));
-  const eggPoint = actors.egg.position.clone();
-  await frameAt(g, flat(eggPoint), EGG_WIDTH, eggPoint, 0.4);
-  const t = momentLog();
-  g.openSpec = spec;
-  const r = await g.run.w(
-    layer.egg(spec, {
-      anchor: () => world.toScreen(actors.egg.position),
-      react: (k) => {
-        if (k === 'hot') void actors.egg.steam();
-        else if (k === 'cold') void actors.egg.frost();
-        else void actors.egg.wobble();
-      },
-      log: t.log,
-    }),
-  );
-  g.openSpec = null;
-  noteMaths(g, part, spec, r, t);
-  await hatch(g, i);
-}
-
-async function hatch(g: Game, i: 0 | 1): Promise<void> {
-  const { actors } = g;
-  const door = i === 0 ? 13 : 14;
-  const talk = g.layer.lumi.speak(CLIPS.hatching);
-  await g.run.w(actors.egg.hatch());
-  const rand = g.randFor(i === 0 ? 'hatch1' : 'hatch2');
-  const look = i === 0 ? babyLook('warm', rand) : babyLook('snow', rand, g.babies[0] ? [g.babies[0].look] : []);
-  const u = actors.herd.add({ id: `baby-${door}`, name: '', look, at: HATCH_SPOT[door], mode: 'hatching' });
-  g.babies[i] = { door, look, unicorn: u, member: null };
-  actors.fx.sparkle(u.headTop().setY(0.8), { count: 24, colour: '#ffe27a' });
-  faceBeside(g, HATCH_SPOT[door]);
-  await g.run.w(talk);
-  await lumiSay(g, CLIPS.baby);
-  await say(g, CLIPS.foalHello);
-}
-
 async function naming(g: Game, i: 0 | 1): Promise<void> {
   const { layer, world } = g;
   const baby = g.babies[i];
@@ -214,7 +144,8 @@ async function naming(g: Game, i: 0 | 1): Promise<void> {
   await frameAt(g, { x: u.position.x - 0.5, z: u.position.z }, BABY_WIDTH, u.headTop(), 0.27, 900, undefined, crownKeep(g));
   const t = momentLog();
   g.openSpec = { bells: spec.bells, chosen: null as NameChoice | null };
-  const r = await g.run.w(
+  const r = await checked(
+    g,
     layer.naming(spec, {
       anchor: () => world.toScreen(u.headTop()),
       react: babyReact(g, u),
@@ -356,6 +287,7 @@ async function bedtime(g: Game): Promise<void> {
   layer.foodBasket({ show: false });
   hideOffers(g);
   stable.lanterns(true);
+  audio.ambience('night');
   await g.run.w(setTime(g, 0.5, 3000));
   await say(g, CLIPS.dusk);
   // The herd walks to the yard; her two babies come with her.
@@ -482,13 +414,14 @@ async function goodnight(g: Game): Promise<void> {
   // The stars land just in front of her head, so they do not hide the new ribbons. The gift is the next colour of
   // her collection, on whatever hair thing she wears; it is saved at once (the end reloads the page).
   await g.run.w(actors.fx.starfall(head.clone().setZ(head.z + 0.35)));
-  const gift = nextRibbon(actors.princess.look, ownedRibbons(g.save.data));
-  actors.princess.setLook({ ribbon: gift });
+  const gift = nextRibbon(ownedRibbons(g.save.data), actors.princess.look.thingColour);
+  const colour = RIBBON_COLOUR[gift];
+  actors.princess.setLook({ thingColour: colour });
   g.save.write((s) => {
     if (gift !== 'pink' && !s.ribbons.includes(gift)) s.ribbons.push(gift);
-    s.look.ribbon = gift;
+    s.look.thingColour = colour;
   });
-  actors.fx.sparkle(head, { count: 20, colour: RIBBON_HEX[gift] });
+  actors.fx.sparkle(head, { count: 20, colour: PALETTE[colour].small });
   await g.run.w(actors.princess.emote('twirl'));
   actors.princess.face({ x: p.x, z: p.z + 6 });
   actors.fx.hearts(head.clone().setY(1.9));
@@ -518,11 +451,6 @@ function sparkleRing(g: Game, at: Vec2): void {
     const a = (k / n) * Math.PI * 2;
     g.actors.fx.sparkle(new THREE.Vector3(at.x + Math.cos(a) * 0.9, 0.5, at.z + Math.sin(a) * 0.9), { count: 5, colour: k % 2 ? '#d9c2ff' : '#fff1b8' });
   }
-}
-
-/** Wait until she has reached the goal (the "this way" helper below keeps her on track). */
-async function waitToReach(g: Game, goal: Goal): Promise<void> {
-  await g.run.until(() => reached(g, goal));
 }
 
 /** Notice the first slide by anyone: a unicorn that goes from the slide into the water, or Princess Emma sliding. */
@@ -634,7 +562,8 @@ export function snapTo(g: Game, part: Part): void {
   g.streams.reset();
   g.maths = startMaths(g.options.band);
   g.today = { wishes: 0, words: [] };
-  g.quests = startQuests();
+  g.clock = startClock();
+  g.quests = startQuests(g.quests.maths);
   g.openSpec = null;
   g.door = null;
   g.free = false;
@@ -654,6 +583,7 @@ export function snapTo(g: Game, part: Part): void {
   void setTime(g, part === 'goodnight' ? 0.5 : 0, 0);
   world.stable.lanterns(part === 'goodnight');
   world.stable.hay(0, 0);
+  audio.ambience(part === 'bedtime' || part === 'goodnight' ? 'night' : 'day');
   hideOffers(g);
   layer.lumi.show(part !== 'welcome' && part !== 'wardrobe');
   // Her saved look (the customiser starts from it too); the picnic rose is for one day only.
@@ -743,8 +673,12 @@ export function jump(g: Game, part: Part): void {
  */
 export async function begin(g: Game, at: Part | null): Promise<void> {
   g.save.write((s) => void (s.plays += 1));
+  g.clock = startClock();
   const dressing = audio.preload(wardrobePartClipIds());
   const loading = Promise.all([dressing, audio.preload(startClipIds(g)), audio.preloadSounds(allGraphemes())]);
+  // The effects and the day loop load after the speech, so they never hold up a line.
+  void loading.then(() => audio.preloadFx());
+  audio.ambience('day');
   if (at) {
     await Promise.race([loading, new Promise((r) => setTimeout(r, 4000))]);
     jump(g, at);

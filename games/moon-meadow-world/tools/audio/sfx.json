@@ -1,0 +1,28 @@
+{
+  "note": "Moon Meadow World's ElevenLabs sound effects and background loops (docs/v4/2.3.md Part 2, sections 7 and 8). tools/audio/gen-sfx.py makes the ones without a file in public/audio/sfx/, calling POST /v1/sound-generation with duration_seconds always set, and books seconds x sfxPerSecond into tools/audio/ledger.jsonl. The API has no seed: a made file is kept and only --retake makes it again. Tjitse listens to every file and sets approved. core marks the eight that stay if the probe costs more than planned.",
+  "model": "eleven_text_to_sound_v2",
+  "promptInfluence": 0.5,
+  "probe": "bedtime-bell",
+  "effects": [
+    { "id": "egg-crack", "seconds": 1.5, "core": true, "text": "A small magical egg cracking open: three gentle shell cracks, then a soft sparkly chime. Cartoon, for a children's game. No voice, no music." },
+    { "id": "nicker-1", "seconds": 1.2, "text": "A tiny baby pony giving a short, happy, gentle nicker. Cute and soft, close up. No music." },
+    { "id": "nicker-2", "seconds": 1.0, "text": "A baby horse's soft, happy little whinny, very short and high. Cute, close up. No music." },
+    { "id": "stable-door", "seconds": 1.2, "core": true, "text": "A small wooden stable half door swinging open with a soft creak and a gentle wooden knock. No voice." },
+    { "id": "trunk-lid", "seconds": 1.5, "core": true, "text": "An old wooden toy chest lid creaking open, then a short magical sparkle shimmer. Warm and gentle. No voice." },
+    { "id": "gift-paper", "seconds": 1.2, "core": true, "text": "Soft crinkle of tissue paper as a small present is unwrapped. Gentle, close up. No voice." },
+    { "id": "dress-swish", "seconds": 0.8, "text": "A soft swish of a silky princess dress as it twirls. Gentle fabric whoosh, close up." },
+    { "id": "bead-clink", "seconds": 0.6, "core": true, "text": "A single small glass bead clicking onto a string: one tiny bright clink." },
+    { "id": "crown-twinkle", "seconds": 1.2, "core": true, "text": "A magical twinkle of tiny bells and a soft shimmer, like a crown sparkling. Gentle, for a children's game." },
+    { "id": "hay-rustle", "seconds": 1.2, "text": "Dry hay bundles dropped into a wooden rack: a soft rustle, close up. No animals." },
+    { "id": "splash-1", "seconds": 1.5, "core": true, "text": "A cheerful big splash as a child slides into a pond: water spray and a few droplets. No voice, no screaming." },
+    { "id": "splash-2", "seconds": 1.5, "text": "A playful splash into a garden pond: a bright water splash with bubbly droplets. No voice." },
+    { "id": "slide-whoosh", "seconds": 1.2, "text": "A smooth playful whoosh of sliding down a plastic slide, quick and bright. No voice." },
+    { "id": "bedtime-bell", "seconds": 2.0, "core": true, "text": "A soft evening bell ringing twice in the distance. Warm and calm, bedtime." },
+    { "id": "owl", "seconds": 1.5, "text": "A soft friendly owl hooting twice at night, gentle and far away. Calm." },
+    { "id": "heart-glow", "seconds": 1.0, "text": "A warm gentle magical shimmer rising up, like a heart starting to glow. Soft and sweet, for a children's game." }
+  ],
+  "loops": [
+    { "id": "amb-day", "seconds": 15, "text": "A calm sunny meadow: soft birdsong far away and a light breeze in the grass. Peaceful. No voices, no music, no sudden sounds." },
+    { "id": "amb-night", "seconds": 15, "text": "A calm summer night in a meadow: soft crickets and a light breeze. Peaceful. No owls, no voices, no music, no sudden sounds." }
+  ]
+}

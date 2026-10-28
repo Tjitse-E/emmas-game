@@ -242,6 +242,14 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
       wobbleRate = 10;
       await wait(800);
     },
+    // Step 0 of 2.3.0: the hearts' warmth is the actors lane's (docs/v4/2.3.md Part 2, section 6). Until then it
+    // only wobbles.
+    warmth(hearts) {
+      if (hearts > 0) {
+        wobbleAmp = 0.12;
+        wobbleRate = 10;
+      }
+    },
     async steam() {
       heat = 1;
       wobbleAmp = 0.1;

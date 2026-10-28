@@ -10,7 +10,9 @@ export { babyLook } from './looks.ts';
 export { eggSpec, eggClipIds, eggCombos, nextBand, totalOf, type Band, type MathsUsed, type MathsPick } from './eggs.ts';
 export { rackSpec, allRackClipIds } from './rack.ts';
 export { namingSpec } from './naming.ts';
-export { wishSpec, foods, wishTargets, planBasket, reactOf, BASKET_SIZE, type WishOpts } from './wishes.ts';
+export { wishSpec, foods, wishTargets, planBasket, reactOf, BASKET_SIZE, type WishOpts, type WordKind } from './wishes.ts';
+export { phraseSpec, allPhraseClipIds } from './phrases.ts';
+export { patternSpec, allPatternClipIds, type PatternLevel } from './patterns.ts';
 export { moveIn, doorVisit, rollCall, newborn, NEWBORN_DOORS, type DoorAsk } from './doors.ts';
 export { CLIPS, wayTo, allClipIds, allGraphemes, namingClipIds, wishClipIds, doorClipIds } from './clips.ts';
 

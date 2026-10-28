@@ -1,7 +1,11 @@
-// The one audio entry point: shared/audio.js (window.EmmaAudio) with v3's clip packs and the demo's own pack.
+// The one audio entry point: shared/audio.js (window.EmmaAudio) with v3's clip packs and the demo's own pack, and
+// (2.3.0) the game's own channel for sound effect files, the background loop and the music box (sound.ts).
 // Every clip is pre-generated ElevenLabs audio. Nothing here ever uses browser speech.
 import '@emma/audio-player';
 import { V3 } from '../assets';
+import { type Ambience, type FxOpts, type MusicBox, type SfxFile, createSound } from './sound';
+
+export type { Ambience, FxOpts, MusicBox, SfxFile };
 
 export type Sfx = 'pop' | 'chime' | 'sparkle' | 'whoosh' | 'soft-no' | 'fanfare' | 'splash' | 'munch' | 'tick' | 'magic' | 'hatch';
 
@@ -25,6 +29,7 @@ interface EmmaAudioApi {
 }
 
 const A = (window as unknown as { EmmaAudio: EmmaAudioApi }).EmmaAudio;
+const sound = createSound({ speaking: () => A.speaking, sfx: (name) => A.sfx(name) });
 
 /** v3 packs the demo speaks from, searched after the demo's own pack. */
 export const V3_PACKS = ['core', 'numbers', 'names-t1', 'words-phase2', 'words-phase3-4', 'words-year1', 'places'] as const;
@@ -99,6 +104,33 @@ export const audio = {
     setup();
     return A.sfx(name);
   },
+  /** An ElevenLabs effect on the game's own channel (sound.ts): skipped while speech plays unless `duck`. */
+  fx(id: SfxFile, o?: FxOpts): void {
+    setup();
+    sound.fx(id, o);
+  },
+  /** The background loop (day, night or none). It keeps playing through stop() and is silent in checked moments. */
+  ambience(kind: Ambience | null): void {
+    sound.ambience(kind);
+  },
+  /** A checked moment opens or ends (game.ts checked()). */
+  checked(on: boolean): void {
+    sound.checked(on);
+  },
+  /** Load the effect files and the day loop, after the speech. */
+  preloadFx(): Promise<void> {
+    return sound.preloadFx();
+  },
+  /** The wardrobe's music box tune for `ms`. */
+  musicBox(ms: number): MusicBox {
+    setup();
+    return sound.musicBox(ms);
+  },
+  /** The channel's state, for the test hook. */
+  soundState() {
+    return sound.state();
+  },
+  /** Stop speech, letter sounds and effects. The background loop plays on. */
   stop(): void {
     cuts++;
     A.stop();

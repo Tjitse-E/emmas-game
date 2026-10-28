@@ -1,15 +1,14 @@
 // What the level and the side quests share around a checked moment (moved out of level.ts in 2.2.0): planning a wish
-// with the reading level, an egg with the maths band and this play's sums, each from its own random stream; running
-// a wish beside a baby; how a baby shows the reactions; and noting every result (the results log, the reading level,
-// the maths band and the save).
+// with the reading level from its own random stream; running a wish beside a baby; how a baby shows the reactions;
+// and noting a reading result (the results log, the reading level and the save). The maths side (planning an egg
+// sum, noting a maths result) is in maths.ts since 2.3.0.
 import * as THREE from 'three';
-import type { EggSpec, MomentHooks, MomentResult, Vec2, WishItem, WishSpec } from '../contracts';
+import type { MomentHooks, MomentResult, Vec2, WishItem, WishSpec } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { dist2 } from '../layout';
-import { CLIPS, eggSpec, wishSpec } from '../content';
-import { type Game, flat, frameAt, princessAt, say } from './game';
+import { CLIPS, phraseSpec, wishSpec } from '../content';
+import { type Game, checked, flat, frameAt, princessAt, say } from './game';
 import { foldReading, readingLevelFor } from './reading';
-import { type Band, noteBand, useSum } from './band';
 
 const BABY_WIDTH = 5.5;
 /** A worn picture stays on the baby's head this long. */
@@ -160,7 +159,8 @@ export function reactOf(item: WishItem, kind: WishSpec['kind']): 'munch' | 'play
 
 /**
  * A wish of `kind` from the stream `label`. The three wishes count for the warm-up (the play's first one is a level
- * lower); the picnic guests do not. Targets leave out the last play's and the ones asked earlier today.
+ * lower); the picnic guests and the Corner's phrase reads do not. Targets leave out the last play's and the ones asked
+ * earlier today.
  * `?contrast=0` drops the miss contrast (a spec without clips.again keeps v3's miss rule).
  */
 export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wish: boolean }): WishSpec {
@@ -168,7 +168,8 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   if (o.wish) g.today.wishes++;
   const exclude = [...new Set([...g.save.data.last.words, ...g.today.words])];
   const rand = g.randFor(label);
-  const spec = wishSpec(kind, rand, exclude, { level, contrast: g.options.contrast });
+  const opts = { level, contrast: g.options.contrast };
+  const spec = kind === 'phrase' ? phraseSpec(rand, { ...opts, exclude }) : wishSpec(kind, rand, exclude, opts);
   g.today.words.push(spec.target.word);
   return spec;
 }
@@ -200,7 +201,8 @@ export async function runWish(g: Game, u: UnicornActor, spec: WishSpec, part: st
   if (framed) await frameWish(g, u);
   const t = momentLog();
   g.openSpec = spec;
-  const r: MomentResult = await g.run.w(
+  const r: MomentResult = await checked(
+    g,
     layer.wish(spec, {
       anchor: () => world.toScreen(u.headTop()),
       react: babyReact(g, u, spec.target, spec.kind === 'bath' ? undefined : PLAY_MS),
@@ -216,40 +218,4 @@ export async function runWish(g: Game, u: UnicornActor, spec: WishSpec, part: st
   await say(g, afterWish(spec));
   if (framed) world.releaseFrame();
   return r;
-}
-
-// ---- maths ---------------------------------------------------------------------------------------------------------
-
-/** What the maths lane's eggSpec and rackSpec read (docs/v4/2.2.md 4.2), beyond `first`. */
-export interface EggAsk {
-  /** The first egg of its kind: the intro (and the warm egg's spoken gesture). */
-  first?: boolean;
-  /** 4 stones and the narrower ranges (a), or 5 and the wider ones (b). */
-  band: Band;
-  /** Totals and answers asked earlier this play: never again while other sums are left. */
-  used: { totals: number[]; answers: number[] };
-  /** The last play's totals, left out while other sums are left. */
-  lastTotals: number[];
-}
-
-export function eggAsk(g: Game, first = false): EggAsk {
-  const used = { totals: [...g.maths.used.totals], answers: [...g.maths.used.answers] };
-  return { first, band: g.maths.band, used, lastTotals: [...g.save.data.last.totals] };
-}
-
-/** An egg from the stream `label` in the current band; its sum is then used for this play. */
-export function planEgg(g: Game, kind: EggSpec['kind'], label: string, first: boolean): EggSpec {
-  const ask: EggAsk = eggAsk(g, first);
-  const spec = eggSpec(kind, g.randFor(label), ask);
-  useSum(g.maths, spec);
-  return spec;
-}
-
-/** A maths result (an egg or the hay rack): the results log with the tray, and the band moves. */
-export function noteMaths(g: Game, part: string, spec: EggSpec, r: MomentResult, t: MomentLog): void {
-  g.results.add(part, 'm', r, {
-    kind: spec.kind, need: spec.need, have: spec.have, answer: spec.answer, band: spec.band ?? g.maths.band,
-    stones: spec.stones, place: spec.stones.indexOf(spec.answer), decoys: spec.decoys ?? {}, tried: t.tried, ...t.flags,
-  });
-  noteBand(g.maths, r.outcome);
 }

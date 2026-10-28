@@ -3,8 +3,7 @@
 // (one HairTubes for two tails, built once), the plait lobes and the bun. A colour change repaints, a style change
 // builds new chains. No style puts anything above head-space y 0.18 inside the crown ring.
 import * as THREE from 'three';
-import type { HairColour, HairStyle } from '../contracts';
-import { HAIR_HEX } from '../wardrobe';
+import { HAIR_HEX, type LegacyHairColour as HairColour, type LegacyStyle as HairStyle } from '../wardrobe-legacy';
 import { B, type PartList, Xf, col } from './parts';
 import { HairTubes, Ponytail, chainPoint } from './ponytail';
 import { bow, type ThingColours } from './looks3d';

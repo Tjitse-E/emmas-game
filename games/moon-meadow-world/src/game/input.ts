@@ -10,12 +10,16 @@
 import * as THREE from 'three';
 import type { Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
-import { HAY_RACK, NEST, PICNIC, SLIDE, STABLE, WILD_EGG, dist2 } from '../layout';
+import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, SLIDE, STABLE, WILD_EGG, dist2 } from '../layout';
 import { audio } from '../audio';
 import { press as pressable, type PressEnd } from '../ui/press';
 import { type Game, GOALS, doorPoint, flat, memberOf, princessAt, sayAside, walkTo } from './game';
 import { peekDoor } from './doors';
 import { askQuest } from './quests';
+import type { QuestId } from './options';
+
+/** Where a tap on a quest's place walks her when the quest cannot start now. */
+const QUEST_STAND: Record<QuestId, Vec2> = { rack: HAY_RACK.stand, picnic: PICNIC.stand, beads: BEAD_TREE.stand, corner: CORNER.stand };
 
 const TAP_PX = 12;
 const TAP_MS = 600;
@@ -158,8 +162,14 @@ export function installInput(g: Game): void {
       // A side quest's place: the quest starts when it is offered; otherwise she walks to its spot.
       case 'rack':
       case 'picnic':
+      case 'beads':
+      case 'corner':
         if (askQuest(g, p.kind)) return;
-        void walkTo(g, p.kind === 'rack' ? HAY_RACK.stand : PICNIC.stand);
+        void walkTo(g, QUEST_STAND[p.kind]);
+        return;
+      // The saddle sign at the moon mist (2.3.0): the quests-world lane gives it Lumi's line and a shimmer.
+      case 'sign':
+        void walkTo(g, world.nearestWalkable(MIST.sign));
         return;
       case 'gazebo':
       case 'ground': {

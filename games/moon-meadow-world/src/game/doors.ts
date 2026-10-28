@@ -9,7 +9,7 @@ import { CLIPS } from '../content';
 import { audio } from '../audio';
 import { HintRunner } from '../ui/ladder';
 import { doorFront, doorRow } from '../layout';
-import { type Game, doorPoint, flat, memberOf, memberOfDoor, sayAside } from './game';
+import { type Game, checked, doorPoint, flat, memberOf, memberOfDoor, sayAside } from './game';
 
 /** How long a waiting unicorn may trot towards its door before it shakes its head anyway. */
 const TROT_MS = 2500;
@@ -79,7 +79,8 @@ export function doorMoment(
   const { world, layer } = g;
   const target = doorPoint(spec.door);
   const tried: string[] = [];
-  return g.run.w(
+  return checked(
+    g,
     new Promise<MomentResult & { tried: string[] }>((resolve) => {
       let busy = true;
       let done = false;

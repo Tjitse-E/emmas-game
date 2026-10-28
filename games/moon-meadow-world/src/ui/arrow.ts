@@ -68,6 +68,11 @@ function placePicture(place: Place): string {
       return `<img src="${v3Art('items/station-hay-rack.webp')}" alt="" draggable="false" style="width:100%">`;
     case 'picnic':
       return `<img src="${v3Art('words/picnic.webp')}" alt="" draggable="false" style="width:100%">`;
+    // 2.3.0: the Dressing Corner and the bead tree (the quests-world lane may draw its own).
+    case 'corner':
+      return `<img src="${v3Art('items/place-dressing.webp')}" alt="" draggable="false" style="width:100%">`;
+    case 'beads':
+      return `<img src="${v3Art('words/bead.webp')}" alt="" draggable="false" style="width:100%">`;
   }
 }
 

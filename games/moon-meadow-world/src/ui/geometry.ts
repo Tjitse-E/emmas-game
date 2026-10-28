@@ -1,6 +1,5 @@
 // Pure layout and rule helpers for the 2D layer. No DOM here, so tests/ui.test.ts can check them in node.
-import type { LookRow } from '../contracts';
-import { LOOK_ROWS } from '../wardrobe';
+import { LEGACY_ROWS as LOOK_ROWS, type LegacyRow as LookRow } from '../wardrobe-legacy';
 
 export type Point = { x: number; y: number };
 export type Box = { x: number; y: number; w: number; h: number };

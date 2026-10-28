@@ -2,12 +2,12 @@
 // follow camera, a close-up camera and the wardrobe's body and face frames, a straight-line stub for routes, buttons for
 // everything the actors do, and a look panel with every wardrobe option.
 import * as THREE from 'three';
-import type { ActorDeps, LookRow, PrincessEmote, PrincessLook, Ribbon, UnicornEmote, UnicornLook, Vec2 } from '../contracts';
+import type { ActorDeps, LookField, PrincessEmote, PrincessLook, UnicornEmote, UnicornLook, Vec2 } from '../contracts';
 import {
   BOUNDS, GAZEBO, GRAZE_HOMES, NEST, OBSTACLES, POND, SLIDE, SLIDE_CURVE, STABLE, TREES, WILD_EGG, doorCenter, doorFront, doorIsUpper, inPond,
   inStableBuilding, v2,
 } from '../layout';
-import { DEFAULT_LOOK, GIFT_ORDER, LOOK_ROWS } from '../wardrobe';
+import { COLOURS, DEFAULT_LOOK, OPTIONS } from '../wardrobe';
 import { audio } from '../audio';
 import { v3Art } from '../assets';
 import { DATA } from '../content/data';
@@ -341,7 +341,6 @@ let door = 13;
 let ribbon = 0;
 let crowned = false;
 let detail: 0 | 1 | 2 = 0;
-const RIBBONS: Ribbon[] = ['pink', ...GIFT_ORDER];
 section('Princess Emma', [
   ['wave', () => void princess.emote('wave')],
   ['clap', () => void princess.emote('clap')],
@@ -349,7 +348,7 @@ section('Princess Emma', [
   ['twirl', () => void princess.emote('twirl')],
   ['slide', () => void princess.rideSlide()],
   ['crown', () => princess.crown((crowned = !crowned))],
-  ['ribbons', () => princess.setLook({ ribbon: RIBBONS[++ribbon % RIBBONS.length] })],
+  ['ribbons', () => princess.setLook({ thingColour: COLOURS[++ribbon % COLOURS.length] })],
   ['to pond', () => void princess.walkTo(deps.route(princess.position, v2(1, 3)))],
   ['to stable', () => void princess.walkTo(deps.route(princess.position, STABLE.emmaStand))],
 ]);
@@ -374,25 +373,25 @@ section('Selected unicorn', [
   ['no toy', () => selected.showToy(null)],
   ['look at Emma', () => selected.lookAt(princess.position)],
 ]);
-// The wardrobe: every option of every row, the ribbon colours, the reactions and the portrait.
-const REACTION: Record<LookRow, PrincessEmote> = { hair: 'toss', eyes: 'blink', gown: 'twirl', style: 'show', thing: 'tilt' };
+// The wardrobe: every option of every field, the reactions and the portrait.
+const REACTION: Partial<Record<LookField, PrincessEmote>> = { hair: 'toss', eyes: 'blink', gown: 'twirl', style: 'show', thing: 'tilt' };
 let held = false;
 let portraitOn = false;
 let rose = false;
 let react = true;
-function pick(row: LookRow, id: string): void {
-  princess.setLook({ [row]: id } as Partial<PrincessLook>);
-  if (react) void princess.emote(REACTION[row]);
+function pick(field: LookField, id: string): void {
+  princess.setLook({ [field]: id } as Partial<PrincessLook>);
+  if (react) void princess.emote(REACTION[field] ?? 'twirl');
 }
-for (const r of LOOK_ROWS) {
-  section('Look: ' + r.row, r.options.map((o) => [o.id, () => pick(r.row, o.id)] as [string, () => void]));
+const FIELDS = Object.keys(OPTIONS) as LookField[];
+for (const f of FIELDS) {
+  section('Look: ' + f, (OPTIONS[f] as readonly string[]).map((id) => [id, () => pick(f, id)] as [string, () => void]));
 }
-section('Look: ribbon and more', [
-  ...RIBBONS.map((r) => [r, () => princess.setLook({ ribbon: r })] as [string, () => void]),
+section('Look: more', [
   ['default', () => princess.setLook({ ...DEFAULT_LOOK })],
   ['random', () => {
-    const ids = LOOK_ROWS.map((r): [LookRow, string[]] => [r.row, r.options.map((o) => o.id)]);
-    princess.setLook(Object.fromEntries(ids.map(([row, a]) => [row, a[Math.floor(Math.random() * a.length)]])) as Partial<PrincessLook>);
+    const any = (f: LookField) => (OPTIONS[f] as readonly string[])[Math.floor(Math.random() * OPTIONS[f].length)];
+    princess.setLook(Object.fromEntries(FIELDS.map((f) => [f, any(f)])) as Partial<PrincessLook>);
   }],
   ['react on/off', () => (react = !react)],
   ...(['toss', 'blink', 'show', 'tilt', 'curtsy'] as PrincessEmote[]).map((k) => [k, () => void princess.emote(k)] as [string, () => void]),

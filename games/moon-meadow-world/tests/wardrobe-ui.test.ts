@@ -2,8 +2,11 @@
 // rules (select on down and on move, onLook timing, one end per gesture on every end path, the ribbon tap, the
 // focus), the words on release, the swatch pictures, and onPress on press() (the play-again moon, Lumi, the arrow).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LookRow, PrincessLook, Ribbon } from '../src/contracts';
-import { DEFAULT_LOOK, LOOK_ROWS, type LookWord } from '../src/wardrobe';
+import type { Ribbon } from '../src/contracts';
+// Step 0 of 2.3.0: these test 2.2's panel on the legacy catalogue; the wardrobe-ui lane moves them to the tabs.
+import {
+  LEGACY_DEFAULT as DEFAULT_LOOK, LEGACY_ROWS as LOOK_ROWS, type LegacyLook as PrincessLook, type LegacyRow as LookRow, type LookWord,
+} from '../src/wardrobe-legacy';
 import { cellAt, overlaps, unitFor, wardrobeLayout, type Box } from '../src/ui/geometry';
 import { PILL_MS, Rails, SETTLE_MS, UNFOCUS_MS, WORD_GAP_MS, WordVoice, nextOwnedRibbon, ownedRibbons, printable, railPress } from '../src/ui/wardrobe-ctl';
 import { rowIconSvg, swatchSvg } from '../src/ui/swatches';

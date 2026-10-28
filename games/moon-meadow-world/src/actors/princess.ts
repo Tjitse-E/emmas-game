@@ -3,9 +3,12 @@
 // the wardrobe (docs/v4/2.2.md 2.5 and 2.6): hair colour and style, eyes, gown and hair things, all from the shared
 // shapes, so a new look costs no draw call, no material and no shader program.
 import * as THREE from 'three';
-import type { HairThing, Princess, PrincessEmote, PrincessLook, PrincessMode, Ribbon, Vec2 } from '../contracts';
+import type { Princess, PrincessEmote, PrincessLook, PrincessMode, Ribbon, Vec2 } from '../contracts';
 import { POND, SLIDE } from '../layout';
-import { DEFAULT_LOOK, EYE_HEX, HAIR_HEX, RIBBON_HEX, normaliseLook } from '../wardrobe';
+import { DEFAULT_LOOK, normaliseLook } from '../wardrobe';
+// 2.2's parts draw her until the actors lane builds 2.3's (docs/v4/2.3.md Part 2, section 9): legacyOf() shows the 2.3
+// look in 2.2's terms.
+import { EYE_HEX, HAIR_HEX, LEGACY_DEFAULT, RIBBON_HEX, legacyOf, type LegacyLook, type LegacyThing as HairThing } from '../wardrobe-legacy';
 import { audio } from '../audio';
 import { B, CAPACITY, PartList, Xf, col, rimLambert, shapeTriangles, type BatchId } from './parts';
 import * as S from './shapes';
@@ -94,7 +97,9 @@ export class PrincessActor implements Princess {
   private crownScale = 0;
   private readonly ribbon = col('#ff5c9d');
   private readonly ribbonLight = col('#ff8fbd');
-  private current: PrincessLook = { ...DEFAULT_LOOK };
+  /** What she wears, as 2.3 ids, and as the 2.2 parts that draw it. */
+  private worn: PrincessLook = { ...DEFAULT_LOOK };
+  private current: LegacyLook = { ...LEGACY_DEFAULT };
   private gown: Gown3D = GOWN_3D.rose;
   /** Each dress shape's geometry, built the first time a gown needs it, and its radius table for the hair. */
   private readonly dresses = new Map<S.DressShape, { g: THREE.BufferGeometry; skirt: Float32Array }>();
@@ -254,7 +259,7 @@ export class PrincessActor implements Princess {
   }
 
   get look(): PrincessLook {
-    return this.current;
+    return this.worn;
   }
 
   /**
@@ -262,8 +267,9 @@ export class PrincessActor implements Princess {
    * repaints it, a style builds new chains (with a sparkle over the pop). Nothing compiles a program.
    */
   setLook(look: Partial<PrincessLook>): void {
+    this.worn = normaliseLook({ ...this.worn, ...look }, this.worn);
     const was = this.current;
-    const next = normaliseLook({ ...was, ...look }, was);
+    const next = legacyOf(this.worn);
     this.current = next;
     if (next.ribbon !== was.ribbon) this.paintRibbons(next.ribbon);
     if (next.eyes !== was.eyes) this.c.iris.set(EYE_HEX[next.eyes]);

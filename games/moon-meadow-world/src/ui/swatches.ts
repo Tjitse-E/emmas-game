@@ -2,8 +2,13 @@
 // shows what the 3D look will be. No text anywhere. The style swatches are drawn in her hair colour and the hair
 // things in her ribbon colour, so the wardrobe draws them again when those change. Every picture uses a 100 x 100
 // view box; ids inside are unique per call, because SVG ids are global in the page.
-import type { EyeColour, Gown, HairColour, HairStyle, HairThing, LookRow, PrincessLook, Ribbon } from '../contracts';
-import { EYE_HEX, GOWN_SHAPE, HAIR_HEX, LOOK_ROWS, RIBBON_HEX, type HairHex } from '../wardrobe';
+// 2.2.0's swatches on the legacy catalogue until the wardrobe-ui lane moves to src/wardrobe.ts (docs/v4/2.3.md Part 2, 9).
+import type { EyeColour, Ribbon } from '../contracts';
+import {
+  EYE_HEX, GOWN_SHAPE, HAIR_HEX, LEGACY_ROWS as LOOK_ROWS, RIBBON_HEX, type HairHex, type LegacyGown as Gown,
+  type LegacyHairColour as HairColour, type LegacyLook as PrincessLook, type LegacyRow as LookRow, type LegacyStyle as HairStyle,
+  type LegacyThing as HairThing,
+} from '../wardrobe-legacy';
 
 const INK = '#4a2a35';
 const SKIN = '#ffe2d0';

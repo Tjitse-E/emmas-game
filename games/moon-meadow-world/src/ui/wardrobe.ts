@@ -4,9 +4,9 @@
 // clientX against the rail's own box, and press() ends every gesture, also when the iPad loses the release. The rules
 // themselves (selection, onLook timing, the ribbon tap, focus, words) are in wardrobe-ctl.ts.
 import './wardrobe.css';
-import type { Layer, LookRow, PrincessLook } from '../contracts';
+import type { Ribbon } from '../contracts';
 import { audio } from '../audio';
-import { LOOK_ROWS } from '../wardrobe';
+import { LEGACY_ROWS as LOOK_ROWS, type LegacyLook as PrincessLook, type LegacyRow as LookRow } from '../wardrobe-legacy';
 import type { Ghost } from './ghost';
 import { cellAt, clamp, wardrobeLayout, type Box, type Point, type WardrobeLayout } from './geometry';
 import { centreOf, el, html, img, play, sleep } from './dom';
@@ -16,7 +16,21 @@ import { target, type UiTarget } from './moment';
 import { Rails, WordVoice, indexIn, optionsOf, railPress } from './wardrobe-ctl';
 import { PLAY_SVG, rowIconSvg, swatchSvg } from './swatches';
 
-export type WardrobeOpts = Parameters<Layer['wardrobe']>[0];
+/**
+ * 2.2.0's customiser options. Step 0 of 2.3.0 keeps this panel on the legacy catalogue; ui/index.ts turns the 2.3
+ * contract into it until the wardrobe-ui lane builds the tabs (docs/v4/2.3.md Part 2, section 3).
+ */
+export interface WardrobeOpts {
+  look: PrincessLook;
+  ribbons: Ribbon[];
+  firstTime: boolean;
+  clips: { ready: string[]; firstTime: string[]; idle: string[]; done: string[] };
+  onLook(look: PrincessLook, row: LookRow): void;
+  onPicked(look: PrincessLook, row: LookRow): void;
+  onFocus(row: LookRow | null): void;
+  onTurn(dxPx: number, ended: boolean): void;
+  onPreviewTap(): void;
+}
 
 /** The test hook's view of the customiser (2.8): open while it takes touches, and the framed row. */
 export interface WardrobeSnapshot {

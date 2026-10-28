@@ -3,8 +3,7 @@
 // The ids and the swatch colours live in src/wardrobe.ts; this file only draws. Everything is drawn from the shared
 // instanced shapes, so a look costs no draw call and no new material.
 import * as THREE from 'three';
-import type { Gown, HairThing } from '../contracts';
-import { GOWN_SHAPE } from '../wardrobe';
+import { GOWN_SHAPE, type LegacyGown as Gown, type LegacyThing as HairThing } from '../wardrobe-legacy';
 import { B, type BatchId, type PartList, Xf, col } from './parts';
 import type { DressRole, DressShape } from './shapes';
 

@@ -1,10 +1,11 @@
 // window.__game: the test hook for the flows and for Tjitse in the console. State, every touchable thing on screen
 // (ui targets and 3D targets), the answer of the open moment, jumps between parts, and the save.
 import * as THREE from 'three';
-import type { PrincessLook, Ribbon } from './contracts';
+import type { Owned, PrincessLook, Ribbon } from './contracts';
 import type { UiTarget } from './ui';
 import { HAY_RACK, NEST, PICNIC, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
 import { audio } from './audio';
+import { parseOwned } from './wardrobe';
 import { nameGems } from './ui/geometry';
 import { type Game, type Part, doorPoint, flat, isPart } from './game/game';
 import { jump } from './game/level';
@@ -98,7 +99,13 @@ export function installHook(g: Game): void {
           rose: q.rose,
           hay: q.hay,
           freeMs: Math.round(q.freeMs),
+          maths: q.maths,
+          dressing: q.dressing,
+          gifts: q.gifts.map((i) => `${i.field}:${i.id}`),
         },
+        owned: g.save.data.owned,
+        clock: { checkedMs: Math.round(g.clock.checkedMs), dressMs: { ...g.clock.dressMs } },
+        sound: audio.soundState(),
         princess: { x: +p.position.x.toFixed(2), z: +p.position.z.toFixed(2), mode: p.mode },
         herd: actors.herd.all().map((u) => {
           const door = g.herd.find((h) => h.id === u.id)?.door ?? g.babies.find((b) => b.unicorn === u)?.door ?? null;
@@ -124,7 +131,8 @@ export function installHook(g: Game): void {
     spec(): unknown {
       const s = g.openSpec as Record<string, unknown> | null;
       if (!s) return null;
-      if ('stones' in s) {
+      // An egg sum (with its grade and heart) and a bead tree string: everything but the clips.
+      if ('stones' in s || 'tray' in s) {
         const { clips: _clips, ...rest } = s;
         return rest;
       }
@@ -175,6 +183,11 @@ export function installHook(g: Game): void {
     setRibbons(ribbons: Ribbon[]): Ribbon[] {
       g.save.write((s) => void (s.ribbons = ribbons.slice()));
       return g.save.data.ribbons.slice();
+    },
+    /** The earned items she owns (2.3.0), as a quest's gift would add them. The wardrobe reads them when it opens. */
+    setOwned(owned: Partial<Owned>): Owned {
+      g.save.write((s) => void (s.owned = parseOwned({ ...s.owned, ...owned })));
+      return g.save.data.owned;
     },
     /** What the save holds now (read from the store again; from memory with ?fresh=1). */
     save() {

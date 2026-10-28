@@ -41,6 +41,9 @@ export type WorldPick =
   | { kind: 'gazebo' }
   | { kind: 'rack' } // the hay rack (2.2.0 side quest)
   | { kind: 'picnic' } // the picnic rug and hamper (2.2.0 side quest)
+  | { kind: 'corner' } // the trunk and the mirror at the gazebo step (2.3.0 Dressing Corner)
+  | { kind: 'beads' } // the bead tree (2.3.0 side quest)
+  | { kind: 'sign' } // the saddle sign at the moon mist (2.3.0)
   | { kind: 'ground'; at: Vec2 };
 
 export interface StableApi {
@@ -209,26 +212,62 @@ export interface Herd {
 
 export type PrincessMode = 'idle' | 'walk' | 'run' | 'climb' | 'slide' | 'swim';
 
-// Princess Emma's look (docs/v4/2.2.md 2.5 and 2.6). The ids, swatch colours and words are in src/wardrobe.ts.
-export type HairColour = 'sunny' | 'strawberry' | 'chestnut' | 'midnight' | 'candy' | 'rainbow';
+// Princess Emma's look (docs/v4/2.3.md Part 2, section 2). Colour and shape are split: every coloured part takes one
+// of the twelve palette colours, the hair also one of six natural shades. The ids, hex values, words and gift sets are
+// in src/wardrobe.ts.
+/** The shared palette: eleven colours and rainbow, two rails of six. */
+export type Colour =
+  | 'pink' | 'red' | 'orange' | 'gold' | 'green' | 'blue' | 'lilac' | 'purple' | 'white' | 'silver' | 'brown' | 'rainbow';
+/** The six natural hair shades, then the palette: three rails of six. */
+export type HairColour = 'sunny' | 'honey' | 'strawberry' | 'auburn' | 'chestnut' | 'midnight' | Colour;
 export type EyeColour = 'blue' | 'green' | 'brown' | 'hazel' | 'grey' | 'violet';
-export type Gown = 'rose' | 'rainbow' | 'lilac' | 'moon' | 'fairy' | 'tutu';
-export type HairStyle = 'ponytails' | 'high' | 'plaits' | 'bun';
-export type HairThing = 'bows' | 'unicorn' | 'flowers' | 'stars' | 'butterflies' | 'hearts';
+/** The dress shapes: party, ball gown, ball gown with gloves (2.2's lilac gown), tutu. */
+export type GownShape = 'party' | 'ball' | 'gala' | 'tutu';
+/** Worn with any gown: 2.2's fairy wings and the ball gowns' back bow. */
+export type GownExtra = 'none' | 'wings' | 'bow';
+export type HairStyle =
+  | 'ponytails' | 'high' | 'plaits' | 'bun' | 'low' | 'side' | 'curly' | 'bunches' | 'long' | 'curls' | 'plait' | 'lowbun';
+export type CrownShape = 'lumi' | 'tiara' | 'star' | 'heart' | 'flower';
+export type ShoeShape = 'slippers' | 'bows' | 'boots' | 'stars';
+export type HairThing =
+  | 'bows' | 'unicorn' | 'flowers' | 'stars' | 'butterflies' | 'hearts' | 'shells' | 'moons' | 'daisies' | 'cherries';
+export type Earrings = 'none' | 'studs' | 'hearts' | 'stars' | 'drops';
+export type Necklace = 'none' | 'pearls' | 'heart';
+/** Lumi's goodnight ribbons (2.2.0): a set on the treasure board; each one is a palette colour for her hair things. */
 export type Ribbon = 'pink' | 'lilac' | 'sky' | 'mint' | 'gold' | 'coral';
 /** Ids only, never colours, so palettes can be tuned without breaking a save. */
 export interface PrincessLook {
   hair: HairColour;
-  eyes: EyeColour;
-  gown: Gown;
   style: HairStyle;
+  eyes: EyeColour;
+  gown: GownShape;
+  gownColour: Colour;
+  extra: GownExtra;
+  crown: CrownShape;
+  crownColour: Colour;
+  shoes: ShoeShape;
+  shoeColour: Colour;
   thing: HairThing;
-  /** The colour of her hair thing's ribbons. Not a row: a tap on the hair thing she wears changes it. */
-  ribbon: Ribbon;
+  /** Her hair things' colour (2.2's ribbon colour). */
+  thingColour: Colour;
+  earrings: Earrings;
+  necklace: Necklace;
+  /** The earrings' and the necklace's colour. */
+  jewelColour: Colour;
 }
-/** The wardrobe's five rows, in Emma's order. */
-export type LookRow = 'hair' | 'eyes' | 'gown' | 'style' | 'thing';
-/** toss, blink, show, tilt and curtsy are the wardrobe's reactions (2.4). */
+/** One field of the look: what one rail (or a run of colour rails) sets. */
+export type LookField = keyof PrincessLook;
+/** The wardrobe's six fixed tabs, in the icon column. */
+export type LookTab = 'hair' | 'eyes' | 'gown' | 'crown' | 'shoes' | 'sparkles';
+/** The look fields that are earned (2.3 section 5). Colours, eyes, gown shapes and extras are always all hers. */
+export type OwnedField = 'crown' | 'shoes' | 'earrings' | 'necklace' | 'style' | 'thing';
+/** The items she owns per earned field, in the order she got them. */
+export type Owned = { [F in OwnedField]: PrincessLook[F][] };
+/** One item of a gift set. */
+export type GiftItem = { [F in OwnedField]: { field: F; id: PrincessLook[F] } }[OwnedField];
+/** The four gift sets, each paid by one quest (2.3 section 5). */
+export type GiftSet = 'crowns' | 'shoes' | 'jewels' | 'hair';
+/** toss, blink, show, tilt and curtsy are the wardrobe's reactions (2.2.md 2.4). */
 export type PrincessEmote = 'wave' | 'clap' | 'jump' | 'twirl' | 'toss' | 'blink' | 'show' | 'tilt' | 'curtsy';
 
 export interface Princess {
@@ -246,9 +285,9 @@ export interface Princess {
   crown(on: boolean): void;
   readonly look: PrincessLook;
   /**
-   * Change her look; missing fields keep what she wears. Cheap on every slider step: colours at once, cached dress
-   * geometry, new chains only on a style change. No new materials, programs or per-frame allocations. Goodnight
-   * gives a new ribbon colour with setLook({ ribbon }).
+   * Change her look; missing fields keep what she wears. Cheap on every slider step: colours at once, cached dress,
+   * crown and shoe geometry, new chains only on a style change. No new materials, programs, draw calls or per-frame
+   * allocations. Goodnight gives a new hair-thing colour with setLook({ thingColour }).
    */
   setLook(look: Partial<PrincessLook>): void;
   /** Stand still for the portrait: no random look-around. */
@@ -277,6 +316,11 @@ export interface Egg3D {
   frost(): Promise<void>;
   /** Cracks, a big wobble and a burst of sparkles. Resolves at the burst, when the baby should appear. */
   hatch(): Promise<void>;
+  /**
+   * How many of its three hearts are lit (2.3 section 12): the egg glows warmer and its idle wobble grows with each.
+   * 0 is today's egg. place() and hide() set it back to 0.
+   */
+  warmth(hearts: 0 | 1 | 2 | 3): void;
 }
 
 export interface Fx {
@@ -322,6 +366,8 @@ export interface HerdMember {
 
 /** Why a wrong stone is in the tray (2.2.0 section 4.1). */
 export type StoneDecoy = 'slip' | 'heard' | 'first-nest' | 'second-nest' | 'near';
+/** An egg's three sums (2.3 section 12): within 10, ending at or just past 10, across ten at her band. */
+export type SumGrade = 'easy' | 'middle' | 'hard';
 
 /** An egg, or the hay rack: a 'warm' spec (adding across ten) with skin 'hay'. */
 export interface EggSpec {
@@ -340,6 +386,10 @@ export interface EggSpec {
   decoys?: Record<number, StoneDecoy>;
   /** The panel's look: the egg and its cups (the default), or the hay rack's bundles and piles. */
   skin?: 'egg' | 'hay';
+  /** Which of the egg's three sums this is (2.3 section 12). Absent for the hay rack. */
+  grade?: SumGrade;
+  /** The egg's hearts: `index` are lit when the panel opens, the next one lights after the right stone. */
+  round?: { index: 0 | 1 | 2; of: 3 };
   clips: {
     /** The first time this kind of egg is seen: how the egg works ("Make every cup warm, and the egg will hatch."). */
     intro: string[];
@@ -397,13 +447,21 @@ export interface WishItem {
   tier: 1 | 2 | 3;
   /** How the baby takes it: munch (food), play (a toy, a dish, a mug), wear (on its head). Without it, by the kind. */
   react?: 'munch' | 'play' | 'wear';
+  /**
+   * A phrase wish's printed words in order ("the", the colour, the thing), each with its graphemes. `word` is then
+   * the colour and the thing ("green sock", the log key), `gpcs` all graphemes of both, and `clip` the phrase's clip
+   * ("The green sock."). "the" is printed but never sounded out and never decides an answer. `sounds` are the
+   * letter sounds the hint plays when they differ from the written graphemes (the o of gold says oa, bow's ow says oa).
+   */
+  parts?: { word: string; gpcs: string[]; sounds?: string[] }[];
 }
 
 /** Why a wrong item is in the basket (3.1). */
 export type WishDecoy = 'twin' | 'frame' | 'onset' | 'rhyme' | 'ending' | 'length' | 'other';
 
 export interface WishSpec {
-  kind: 'food' | 'bath' | 'picnic' | 'dress';
+  /** 'phrase' (2.3): "the" + a colour + a thing, at the Dressing Corner gate. */
+  kind: 'food' | 'bath' | 'picnic' | 'dress' | 'phrase';
   target: WishItem;
   /** The items in basket order (4 at reading level 1, 5 at 2 and 3), the target among them, no look-alikes. */
   basket: WishItem[];
@@ -421,6 +479,43 @@ export interface WishSpec {
      * hint at once), which is how ?contrast=0 reaches the ui.
      */
     again?: string[];
+  };
+}
+
+/** A bead on a pattern string (2.3 section 6): a shape in a colour. */
+export type BeadShape = 'heart' | 'star' | 'moon' | 'round';
+export interface Bead {
+  shape: BeadShape;
+  colour: Colour;
+}
+export type PatternKind = 'AAB' | 'ABB' | 'ABC' | 'AABB';
+/** Why a wrong tray bead is wrong for a gap: the bead left of the gap, the other unit, its colour or its shape only. */
+export type PatternDecoy = 'copy' | 'unit' | 'colour' | 'shape';
+
+/** The bead tree's necklace: a string of 9 beads with 3 gaps, filled left to right, and one tray for every gap. */
+export interface PatternSpec {
+  kind: PatternKind;
+  /** The pattern level (its own small level, 1 to 3) the string was planned at. */
+  level: 1 | 2 | 3;
+  /** The whole string, left to right, gaps included. */
+  string: Bead[];
+  /** The 3 gap places (indexes into `string`), ascending: the order she fills them in. */
+  gaps: number[];
+  /** The tray: 3 beads at level 1, 4 at levels 2 and 3. A tray bead never runs out. */
+  tray: Bead[];
+  /** Per gap (same order as `gaps`): why each wrong tray bead is wrong, by tray index. */
+  decoys: Record<number, PatternDecoy>[];
+  clips: {
+    /** Once per play, before the first goal ("A necklace for your baby! Finish the pattern."). */
+    intro: string[];
+    /** The goal, said at the start, on idle and on a replay tap ("Finish the pattern."). */
+    goal: string[];
+    /** After a miss, with the light contrast ("Look at the pattern again."). */
+    again: string[];
+    /** The focused hint before the repeat lights up ("Let's look at the pattern."). */
+    hint: string[];
+    /** After the third gap ("What a pretty necklace!"). */
+    done: string[];
   };
 }
 
@@ -491,25 +586,47 @@ export interface Layer {
   /** A name tag over a unicorn for a moment (the printed name). */
   tag(name: string, at: () => ScreenPoint, ms?: number): void;
   /**
-   * The customiser (2.1 to 2.3): five picture rails on the right, Princess Emma in 3D on the left. `ribbons` are the
-   * colours she owns; a tap on the hair thing she wears goes to the next one. `clips.ready` plays on every open,
-   * `clips.firstTime` after it on the first visit, `clips.idle` once after 25 s without a touch, `clips.done` on Done.
-   * Resolves with her look on Done's pointerdown; the panel then slides out by itself.
+   * The wardrobe (2.3 Part 2, section 3): six fixed tabs in the icon column, at most five rails of six per tab,
+   * Princess Emma in 3D on the left and a music box under her. Rails show only what she owns. Picking a palette
+   * colour says its name. `clips.ready` plays on every open, `clips.firstTime` after it on the first visit,
+   * `clips.idle` once after 25 s without a touch, `clips.nearly` 15 s before the end, `clips.done` at the end.
+   * The music box plays for `limitMs` while six moon beads fade; then the panel waits until no finger is down (read
+   * from window, at most 2 s) and ends kindly. Done (pointerdown) ends it sooner. Resolves with her look and how it
+   * ended; the panel then slides out by itself. With `board` the trunk lid's treasure board shows first.
    */
   wardrobe(o: {
-    look: PrincessLook; ribbons: Ribbon[]; firstTime: boolean;
-    clips: { ready: string[]; firstTime: string[]; idle: string[]; done: string[] };
-    onLook(look: PrincessLook, row: LookRow): void;    // apply to 3D (gown and style 150 ms after settle)
-    onPicked(look: PrincessLook, row: LookRow): void;  // gesture ended or row tile tapped (also with no change): react, save
-    onFocus(row: LookRow | null): void;                 // face or body frame
-    onTurn(dxPx: number, ended: boolean): void;         // preview drag
+    look: PrincessLook;
+    owned: Owned;
+    /** The crown tab shows only once Lumi has given the crown; until then its place stays empty. */
+    crownTab: boolean;
+    firstTime: boolean;
+    limitMs: number;
+    board?: BoardSpec;
+    clips: { ready: string[]; firstTime: string[]; idle: string[]; nearly: string[]; done: string[] };
+    onLook(look: PrincessLook, field: LookField): void;    // apply to 3D (gown, crown, shoes and style 150 ms after settle)
+    onPicked(look: PrincessLook, field: LookField): void;  // gesture ended or tab tapped (also with no change): react, save
+    onFocus(tab: LookTab | null): void;                     // face or body frame
+    onTurn(dxPx: number, ended: boolean): void;             // preview drag
     onPreviewTap(): void;
-  }): Promise<PrincessLook>;
+  }): Promise<{ look: PrincessLook; end: 'done' | 'time' }>;
   /**
-   * A side quest's offer bubble (section 5): a picture in a bubble that follows `at` every frame and acts on
-   * pointerdown. One per id; null takes it away.
+   * The gift picker (2.3 section 5): one or two big cards with a gift each, after a quest. A card acts on
+   * pointerdown; the other card fades, the chosen one pops open and its sparkles fly to `to` (Princess Emma on
+   * screen, who then wears it for one twirl). `clips` play first ("Pick one present!"). Resolves with the chosen item
+   * once the sparkles have landed.
    */
-  offer(id: string, o: { pic: string; at: () => ScreenPoint; onTap(): void } | null): void;
+  gift(o: { items: GiftItem[]; look: PrincessLook; clips: string[]; to: () => ScreenPoint }): Promise<GiftItem>;
+  /**
+   * The bead tree's pattern moment (2.3 section 6): the string over the baby, the tray below. Each gap is its own
+   * checked choice with its own hint ladder; `gap` is called when a gap is filled. Resolves with the three results
+   * in gap order, after `clips.done`.
+   */
+  beads(spec: PatternSpec, hooks: MomentHooks & { gap(i: number, r: MomentResult): void }): Promise<MomentResult[]>;
+  /**
+   * A side quest's offer bubble (2.2 section 5): a picture in a bubble that follows `at` every frame and acts on
+   * pointerdown. `tint` colours a greyscale picture (the bead tree's bead). One per id; null takes it away.
+   */
+  offer(id: string, o: { pic: string; tint?: string; at: () => ScreenPoint; onTap(): void } | null): void;
   /** Free play: the food basket button (bottom right). A dragged food dropped on screen calls drop(word, x, y). */
   foodBasket(o: { show: boolean; foods?: WishItem[]; drop?(item: WishItem, x: number, y: number): boolean }): void;
   /**
@@ -527,6 +644,16 @@ export interface Layer {
   perf(text: string): void;
   /** Close everything that is open (for jump()). */
   reset(): void;
+}
+
+/** The trunk lid's treasure board (2.3 section 3): every gift set, what she owns, what is new today. */
+export interface BoardSpec {
+  owned: Owned;
+  /** Gifts she got today: they sparkle on the board and pop out of the trunk first. */
+  fresh: GiftItem[];
+  ribbons: Ribbon[];
+  /** The picture of the quest that fills each set, shown in its empty places. */
+  pics: Record<GiftSet, string>;
 }
 
 /** One unicorn of the herd on the end screen. Colours are CSS hex strings. */

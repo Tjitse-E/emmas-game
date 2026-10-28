@@ -45,7 +45,7 @@ describe('portraitFrame', () => {
   it('stands her in the middle of the preview, left of the panel', () => {
     for (const [w, h] of SIZES) {
       const panelLeft = panelLeftOf(w, h);
-      for (const row of ['hair', 'eyes', 'gown', 'style', 'thing'] as const) {
+      for (const row of ['hair', 'eyes', 'gown', 'crown', 'shoes', 'sparkles'] as const) {
         const f = portraitFrame(START, row, { w, h, panelLeft });
         const her = onScreen(rigCamera(f, w, h), START.x, PORTRAIT[f.kind].lookY, START.z, w, h);
         expect(Math.abs(her.x - panelLeft / 2)).toBeLessThan(0.5);
@@ -64,7 +64,7 @@ describe('portraitFrame', () => {
     const metre = onScreen(cam, START.x, 1, START.z, w, h);
     expect(feet.y - metre.y).toBeGreaterThan(345);
     expect(feet.y - metre.y).toBeLessThan(366);
-    const face = portraitFrame(START, 'thing', { w, h, panelLeft: panelLeftOf(w, h) });
+    const face = portraitFrame(START, 'sparkles', { w, h, panelLeft: panelLeftOf(w, h) });
     const fc = rigCamera(face, w, h);
     const head = onScreen(fc, START.x, 1.08, START.z, w, h);
     expect(head.y).toBeCloseTo(h / 2, 1);
@@ -72,9 +72,10 @@ describe('portraitFrame', () => {
     expect(Math.hypot(face.camera.x - face.look.x, face.camera.y - face.look.y, face.camera.z - face.look.z)).toBeGreaterThan(1.2);
   });
 
-  it('picks the face frame for eyes and hair things only', () => {
+  it('picks the face frame for the eyes and sparkles tabs only', () => {
     expect(portraitKind(null)).toBe('body');
-    expect(['hair', 'eyes', 'gown', 'style', 'thing'].map((r) => portraitKind(r as never))).toEqual(['body', 'face', 'body', 'body', 'face']);
+    const tabs = ['hair', 'eyes', 'gown', 'crown', 'shoes', 'sparkles'] as const;
+    expect(tabs.map((t) => portraitKind(t))).toEqual(['body', 'face', 'body', 'body', 'body', 'face']);
   });
 
   it('places the panel where the ui lane draws it', () => {

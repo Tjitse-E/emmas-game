@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PrincessLook, UnicornLook } from '../src/contracts';
 import { POND, SLIDE, dist2, inPond } from '../src/layout';
-import { DEFAULT_LOOK, LOOK_ROWS } from '../src/wardrobe';
+import { DEFAULT_LOOK, fromLegacy } from '../src/wardrobe';
+import { LEGACY_DEFAULT, LEGACY_ROWS } from '../src/wardrobe-legacy';
 import { seeded } from '../src/content/rand';
 import {
   FOLLOW_SLOTS, RouteWalker, SlideQueue, exitLanding, followTarget, headingOf, keepInPond, lineWalkable, nearestExit, queueSpot,
@@ -196,24 +197,27 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** Every option of every row on top of the default look, then 20 seeded random looks. */
+/**
+ * Every option of every 2.2 row on top of the default look, then 20 seeded random looks, in 2.3's terms (step 0 of
+ * 2.3.0; the actors lane widens this to every 2.3 option, docs/v4/2.3.md Part 2, section 9).
+ */
 function looksToTry(): PrincessLook[] {
   const out: PrincessLook[] = [];
-  for (const r of LOOK_ROWS) for (const o of r.options) out.push({ ...DEFAULT_LOOK, [r.row]: o.id });
+  for (const r of LEGACY_ROWS) for (const o of r.options) out.push(fromLegacy({ ...LEGACY_DEFAULT, [r.row]: o.id }));
   const rand = seeded(2026);
   const pick = <T,>(a: readonly T[]): T => a[Math.floor(rand() * a.length)];
-  const ids = Object.fromEntries(LOOK_ROWS.map((r) => [r.row, r.options.map((o) => o.id)])) as Record<string, string[]>;
+  const ids = Object.fromEntries(LEGACY_ROWS.map((r) => [r.row, r.options.map((o) => o.id)])) as Record<string, string[]>;
   for (let i = 0; i < 20; i++) {
-    out.push({
+    out.push(fromLegacy({
       hair: pick(ids.hair), eyes: pick(ids.eyes), gown: pick(ids.gown), style: pick(ids.style), thing: pick(ids.thing),
       ribbon: pick(['pink', 'lilac', 'sky', 'mint', 'gold', 'coral'] as const),
-    } as PrincessLook);
+    }));
   }
   return out;
 }
 
-/** The busiest look (2.6): plaits, fairy wings, star clips, and the rose on top. */
-const BUSIEST: PrincessLook = { hair: 'rainbow', eyes: 'violet', gown: 'fairy', style: 'plaits', thing: 'stars', ribbon: 'gold' };
+/** The busiest look (2.2.md 2.6): plaits, fairy wings, star clips, and the rose on top. */
+const BUSIEST: PrincessLook = fromLegacy({ hair: 'rainbow', eyes: 'violet', gown: 'fairy', style: 'plaits', thing: 'stars', ribbon: 'gold' });
 
 function finite(p: ReturnType<typeof makePrincess>): boolean {
   const L = p.parts;
@@ -315,9 +319,9 @@ describe('Princess Emma in every look', () => {
     const tubes = p.hair.tubes.mesh.geometry;
     const geos = new Set<THREE.BufferGeometry>();
     for (let round = 0; round < 2; round++) {
-      for (const r of LOOK_ROWS) {
+      for (const r of LEGACY_ROWS) {
         for (const o of r.options) {
-          p.setLook({ [r.row]: o.id });
+          p.setLook(fromLegacy({ ...LEGACY_DEFAULT, [r.row]: o.id }));
           p.update(1 / 60, 0);
           geos.add(dress.geometry);
         }

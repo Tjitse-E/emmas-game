@@ -35,6 +35,33 @@ export const SENTENCES: Line[] = [
   // Speech-to-text may only hear "Hart", so Tjitse listens to it once.
   { id: 'word-heart', speaker: 'narrator', text: 'Heart.', expect: ['Hart.'], note: 'Customiser: the hearts hair thing.' },
   { id: 'lumi4-picnic-done', speaker: 'queen', text: 'What a lovely picnic! A rose for your hair.', note: 'Picnic side quest reward.' },
+  // 2.3.0 (docs/v4/2.3.md Part 2, section 8). The phrases come from the phrase pattern and the new egg sums from the
+  // number patterns below.
+  { id: 'g4-nearly', speaker: 'narrator', text: 'Nearly ready!', note: 'Wardrobe, 15 s before the music box ends.' },
+  { id: 'g4-hearts', speaker: 'narrator', text: 'Fill all three hearts, and the egg will hatch.', note: "Before an egg's first sum." },
+  { id: 'g4-heart', speaker: 'narrator', text: 'A happy heart!', note: "After an egg's first and second sum." },
+  { id: 'g4-gift', speaker: 'narrator', text: 'Pick one present!', note: 'The gift picker after a quest.' },
+  { id: 'lumi4-corner', speaker: 'queen', text: 'Your babies want to dress up first!', note: 'Dressing Corner, before the two phrase reads.' },
+  { id: 'lumi4-sticker', speaker: 'queen', text: 'You found them all! A sticker for your trunk.', note: 'A gift set is full.' },
+  { id: 'lumi4-soon', speaker: 'queen', text: 'Soon you can ride here!', note: 'A tap on the saddle sign at the moon mist.' },
+  { id: 'g4-beads', speaker: 'narrator', text: 'A necklace for your baby! Finish the pattern.', note: 'Bead tree, once a play.' },
+  { id: 'g4-pattern', speaker: 'narrator', text: 'Finish the pattern.', note: 'Bead tree goal, on idle and replay.' },
+  { id: 'fb4-pattern', speaker: 'narrator', text: 'Look at the pattern again.', note: 'Bead tree, after a wrong bead.' },
+  { id: 'h4-pattern', speaker: 'narrator', text: "Let's look at the pattern.", note: 'Bead tree hint, then the repeat lights up.' },
+  { id: 'fb4-necklace', speaker: 'narrator', text: 'What a pretty necklace!', note: 'Bead tree, after the third bead.' },
+  // The colour words: the wardrobe says them when a colour is picked, and the phrase wish prints six of them. Rainbow
+  // is v3's word-rainbow.
+  { id: 'word-pink', speaker: 'narrator', text: 'Pink.', note: 'Colour word.' },
+  { id: 'word-red', speaker: 'narrator', text: 'Red.', note: 'Colour word.' },
+  { id: 'word-orange', speaker: 'narrator', text: 'Orange.', note: 'Colour word.' },
+  { id: 'word-gold', speaker: 'narrator', text: 'Gold.', note: 'Colour word.' },
+  { id: 'word-green', speaker: 'narrator', text: 'Green.', note: 'Colour word.' },
+  { id: 'word-blue', speaker: 'narrator', text: 'Blue.', note: 'Colour word.' },
+  { id: 'word-lilac', speaker: 'narrator', text: 'Lilac.', note: 'Colour word.' },
+  { id: 'word-purple', speaker: 'narrator', text: 'Purple.', note: 'Colour word.' },
+  { id: 'word-white', speaker: 'narrator', text: 'White.', note: 'Colour word.' },
+  { id: 'word-silver', speaker: 'narrator', text: 'Silver.', note: 'Colour word.' },
+  { id: 'word-brown', speaker: 'narrator', text: 'Brown.', note: 'Colour word.' },
 ];
 
 const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
@@ -58,6 +85,9 @@ export function numberLine(id: string): Line | null {
     const [a, b] = [Number(m[1]), Number(m[2])];
     return { id, speaker: 'narrator', text: `${cap(word(a))} take away ${word(b)} is ${word(a - b)}!`, note: 'Snow egg solved.' };
   }
+  // v3's "This egg needs seven warm cups." for the smaller snow eggs of 2.3.0 (num-egg-4 and num-egg-5).
+  m = /^num-egg-(\d+)$/.exec(id);
+  if (m) return { id, speaker: 'narrator', text: `This egg needs ${word(Number(m[1]))} warm cups.`, note: 'Egg goal.' };
   m = /^num-toowarm-(\d+)$/.exec(id);
   if (m) return { id, speaker: 'narrator', text: `But ${word(Number(m[1]))} cups are warm!`, note: 'Snow egg goal.' };
   m = /^num-still-warm-(\d+)$/.exec(id);
@@ -74,9 +104,16 @@ export function numberLine(id: string): Line | null {
   return null;
 }
 
+/** The phrase wish's lines (2.3.0): "The green sock." for phrase-green-sock. */
+export function phraseLine(id: string): Line | null {
+  const m = /^phrase-([a-z]+)-([a-z]+)$/.exec(id);
+  if (!m) return null;
+  return { id, speaker: 'narrator', text: `The ${m[1]} ${m[2]}.`, note: 'Phrase wish, read back after she acts.' };
+}
+
 const byId = new Map(SENTENCES.map((l) => [l.id, l]));
 
-/** The line for a clip id: one of the sentences, or a number pattern. Null when the demo has no line for it. */
+/** The line for a clip id: one of the sentences, a number pattern or a phrase. Null when the demo has no line for it. */
 export function lineFor(id: string): Line | null {
-  return byId.get(id) ?? numberLine(id);
+  return byId.get(id) ?? numberLine(id) ?? phraseLine(id);
 }

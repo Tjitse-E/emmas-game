@@ -1,8 +1,11 @@
 // The customiser's rules without the DOM (docs/v4/2.2.md 2.3), so tests/wardrobe-ui.test.ts can drive them: which
 // option a rail gesture selects, when the 3D look hears of it (onLook), what the end of a gesture does (onPicked, the
 // ribbon tap, the word), the focus that frames her face, and the words she hears and sees on release.
-import type { LookRow, PrincessLook, Ribbon } from '../contracts';
-import { LOOK_ROWS, normaliseLook, type LookOption, type LookWord } from '../wardrobe';
+import type { Ribbon } from '../contracts';
+import {
+  LEGACY_ROWS as LOOK_ROWS, normaliseLegacy as normaliseLook, type LegacyLook as PrincessLook, type LegacyRow as LookRow, type LookOption,
+  type LookWord,
+} from '../wardrobe-legacy';
 import { cellAt } from './geometry';
 import { press } from './press';
 

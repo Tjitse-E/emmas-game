@@ -1,7 +1,7 @@
-// The save (src/game/save.ts) and the address options (src/game/options.ts).
+// The save (src/game/save.ts, 2.3.0: mmw.save2 next to 2.2's mmw.save) and the address options (src/game/options.ts).
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_LOOK } from '../src/wardrobe';
-import { type KeyStore, SAVE_KEY, createSave, defaultSave, memoryStore, ownedRibbons, parseSave } from '../src/game/save';
+import { DEFAULT_LOOK, START_OWNED, fromLegacy } from '../src/wardrobe';
+import { type KeyStore, SAVE_KEY, SAVE_KEY_V1, createSave, defaultSave, memoryStore, ownedRibbons, parseSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
 
 describe('parseSave', () => {
@@ -17,6 +17,22 @@ describe('parseSave', () => {
 
   it('reads a whole save back', () => {
     const save = {
+      v: 2,
+      look: { ...DEFAULT_LOOK, hair: 'green', gownColour: 'green', crown: 'star', earrings: 'drops' },
+      owned: { ...START_OWNED, crown: ['lumi', 'star'], earrings: ['drops'] },
+      ribbons: ['lilac', 'sky'],
+      plays: 4,
+      seen: { wardrobe: true, crown: true },
+      reading: { level: 3, recent: ['first', 'miss'] },
+      patterns: { level: 2, recent: ['first'] },
+      last: { words: ['crown', 'seal', 'plum'], totals: [13, 14] },
+      afternoon: { maths: 'beads', done: ['picnic', 'beads', 'corner'] },
+    };
+    expect(parseSave(JSON.stringify(save))).toEqual(save);
+  });
+
+  it('starts from a 2.2 save: the look in 2.3 terms, the crown given, the start items owned', () => {
+    const old = {
       v: 1,
       look: { hair: 'candy', eyes: 'violet', gown: 'fairy', style: 'plaits', thing: 'stars', ribbon: 'lilac' },
       ribbons: ['lilac', 'sky'],
@@ -25,20 +41,29 @@ describe('parseSave', () => {
       reading: { level: 3, recent: ['first', 'miss'] },
       last: { words: ['crown', 'seal', 'plum'], totals: [13, 14] },
     };
-    expect(parseSave(JSON.stringify(save))).toEqual(save);
+    const s = parseSave(JSON.stringify(old));
+    expect(s.v).toBe(2);
+    expect(s.look).toEqual(fromLegacy(old.look));
+    expect(s.look).toMatchObject({ hair: 'pink', gown: 'party', extra: 'wings', thingColour: 'lilac' });
+    expect(s.owned).toEqual(START_OWNED);
+    expect(s.seen).toEqual({ wardrobe: true, crown: true });
+    expect(s.ribbons).toEqual(['lilac', 'sky']);
+    expect(s.reading).toEqual(old.reading);
+    expect(s.last).toEqual(old.last);
   });
 
   it('keeps every field it understands from a newer shape', () => {
     const s = parseSave(JSON.stringify({ v: 3, look: { hair: 'midnight', cape: 'red' }, plays: 2, pets: ['cat'], seen: { wardrobe: true, trunk: true } }));
-    expect(s.v).toBe(1);
+    expect(s.v).toBe(2);
     expect(s.look).toEqual({ ...DEFAULT_LOOK, hair: 'midnight' });
     expect(s.plays).toBe(2);
-    expect(s.seen).toEqual({ wardrobe: true });
+    expect(s.seen).toEqual({ wardrobe: true, crown: false });
   });
 
   it('drops unknown ids and broken fields one by one', () => {
     const s = parseSave({
-      look: { hair: 'gold', eyes: 'green', gown: 7, style: null, thing: 'crown', ribbon: 'black' },
+      v: 2,
+      look: { hair: 'black', eyes: 'green', gown: 7, style: null, thing: 'crown', crown: 'star', thingColour: 'black' },
       ribbons: ['pink', 'lilac', 'lilac', 'black', 3, 'coral'],
       plays: -3,
       seen: 'yes',
@@ -74,8 +99,23 @@ describe('createSave', () => {
     expect(b.data.plays).toBe(1);
     expect(b.load().look.gown).toBe('tutu');
     b.clear();
-    expect(mem.getItem(SAVE_KEY)).toBeNull();
+    expect(JSON.parse(mem.getItem(SAVE_KEY)!)).toEqual(defaultSave());
     expect(b.data).toEqual(defaultSave());
+  });
+
+  it("reads 2.2's save once and never writes it", () => {
+    const mem = memoryStore();
+    const old = JSON.stringify({ v: 1, look: { gown: 'tutu' }, plays: 3, seen: { wardrobe: true } });
+    mem.setItem(SAVE_KEY_V1, old);
+    const s = createSave(() => mem);
+    expect(s.data.plays).toBe(3);
+    expect(s.data.look.gown).toBe('tutu');
+    s.write((x) => void (x.plays += 1));
+    expect(mem.getItem(SAVE_KEY_V1)).toBe(old);
+    expect(JSON.parse(mem.getItem(SAVE_KEY)!).plays).toBe(4);
+    s.clear();
+    expect(createSave(() => mem).data.plays).toBe(0);
+    expect(mem.getItem(SAVE_KEY_V1)).toBe(old);
   });
 
   it('plays on with the defaults when the storage throws', () => {
@@ -114,22 +154,31 @@ describe('createSave', () => {
   it('normalises what the game writes', () => {
     const s = createSave(() => memoryStore());
     s.write((x) => {
-      (x.look as unknown as Record<string, string>).hair = 'gold';
+      (x.look as unknown as Record<string, string>).hair = 'black';
+      x.look.crown = 'star';
       x.ribbons.push('lilac', 'lilac');
     });
     expect(s.data.look.hair).toBe('sunny');
+    // Not owned: back to Lumi's crown.
+    expect(s.data.look.crown).toBe('lumi');
     expect(s.data.ribbons).toEqual(['lilac']);
   });
 });
 
 describe('parseOptions', () => {
   it('reads every option', () => {
-    const o = parseOptions('?seed=5&at=wardrobe&fresh=1&rl=3&maths=b&contrast=0&quest=rack&portrait=0&perf=1', 1);
-    expect(o).toEqual({ seed: 5, at: 'wardrobe', fresh: true, readingLevel: 3, band: 'b', contrast: false, quest: 'rack', portrait: false, perf: true });
+    const o = parseOptions('?seed=5&at=wardrobe&fresh=1&rl=3&maths=b&contrast=0&quest=beads&pl=2&box=5&portrait=0&perf=1', 1);
+    expect(o).toEqual({
+      seed: 5, at: 'wardrobe', fresh: true, readingLevel: 3, band: 'b', contrast: false, quest: 'beads', patternLevel: 2, boxMs: 5000,
+      portrait: false, perf: true,
+    });
   });
 
   it('falls back for missing and unknown values', () => {
-    const o = parseOptions('?rl=7&maths=c&quest=hunt&seed=x', 42);
-    expect(o).toEqual({ seed: 42, at: null, fresh: false, readingLevel: null, band: null, contrast: true, quest: null, portrait: true, perf: false });
+    const o = parseOptions('?rl=7&maths=c&quest=hunt&pl=0&seed=x', 42);
+    expect(o).toEqual({
+      seed: 42, at: null, fresh: false, readingLevel: null, band: null, contrast: true, quest: null, patternLevel: null, boxMs: null,
+      portrait: true, perf: false,
+    });
   });
 });

@@ -6,13 +6,15 @@ import './wardrobe.css';
 import type { ScreenPoint } from '../contracts';
 import { audio } from '../audio';
 import { bubbleBox, edgeArrow } from './geometry';
-import { el, img, onTick, play, u } from './dom';
+import { el, img, onTick, play, u, wordPicEl } from './dom';
 import { press } from './press';
 import { PIC } from './parts';
 import { target, type UiTarget } from './moment';
 
 export interface OfferOpts {
   pic: string;
+  /** A greyscale picture's colour (2.3: the bead tree's bead). */
+  tint?: string;
   at: () => ScreenPoint;
   onTap(): void;
 }
@@ -31,7 +33,7 @@ export function createOffers(parent: HTMLElement, screen: () => { w: number; h: 
     const bob = el('div', 'offer-bob', box);
     const ball = el('div', 'offer-ball touch', bob);
     ball.setAttribute('aria-label', `offer ${id}`);
-    img(o.pic, 'offer-pic', ball);
+    wordPicEl({ pic: o.pic, tint: o.tint }, 'offer-pic', ball);
     img(PIC.sparkle, 'offer-spark', ball);
     el('span', 'offer-tail', bob);
     // Each bubble bobs on its own beat.

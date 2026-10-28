@@ -2,7 +2,8 @@
 // flows through the test hook. Each line also goes to the server log as a request to diag.txt (that file does not
 // exist; Emma's home server logs every request), so a play on her iPad leaves its results on the Mac: for wishes the
 // level, basket size, word, what she tried and why it was in the basket, a print touch and a quick pick; for maths the
-// band, the stones, the answer's place, the decoys and a quick pick (docs/v4/2.2.md 7.2).
+// band, the stones, the answer's place, the decoys and a quick pick (docs/v4/2.2.md 7.2); 2.3.0 adds an egg sum's
+// grade and heart, a pattern gap's line, and one kind=play line per play (docs/v4/2.3.md Part 2, section 4).
 import type { MomentResult } from '../contracts';
 
 export type Strand = 'm' | 's' | 'r';
@@ -66,9 +67,16 @@ export function resultFields(line: ResultLine): Record<string, Field> {
   if (line.strand === 'm' && Array.isArray(d.stones)) {
     const decoys = (d.decoys ?? {}) as Record<string, string>;
     return {
-      ...base, band: d.band as Field, k: d.kind as Field, need: d.need as Field, have: d.have as Field, a: d.answer as Field,
-      st: list(d.stones), pl: d.place as Field, q: d.quick as Field, tried: triedWith(d.tried, decoys),
-      dc: Object.entries(decoys).map(([s, why]) => `${s}:${why}`).join(','),
+      ...base, band: d.band as Field, k: d.kind as Field, gr: d.grade as Field, rd: d.round as Field, need: d.need as Field,
+      have: d.have as Field, a: d.answer as Field, st: list(d.stones), pl: d.place as Field, q: d.quick as Field,
+      tried: triedWith(d.tried, decoys), dc: Object.entries(decoys).map(([s, why]) => `${s}:${why}`).join(','),
+    };
+  }
+  // A bead tree gap (patterns lane): the pattern kind and level, which gap, the tray, what she tried and why.
+  if (line.strand === 'm' && d.kind === 'pattern') {
+    return {
+      ...base, k: 'pattern', pk: d.pattern as Field, lv: d.level as Field, gap: d.gap as Field, tray: list(d.tray), q: d.quick as Field,
+      tried: triedWith(d.tried, d.decoys),
     };
   }
   return { ...base, door: d.door as Field, name: d.name as Field, tried: list(d.tried) };

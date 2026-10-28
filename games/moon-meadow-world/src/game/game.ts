@@ -1,7 +1,7 @@
 // The game's shared state and the small helpers every part of the level uses: goals with their beacon and edge
 // arrow, speech, camera framing by screen fraction, and screen points of world things.
 import * as THREE from 'three';
-import type { HerdMember, Layer, Place, ScreenPoint, UnicornLook, Vec2 } from '../contracts';
+import type { GiftItem, HerdMember, Layer, Place, ScreenPoint, UnicornLook, Vec2 } from '../contracts';
 import type { ActorsImpl, UnicornActor } from '../actors';
 import type { WorldWithExtras } from '../world';
 import type { LayerExtras } from '../ui';
@@ -59,7 +59,7 @@ export interface DoorMoment {
   idleNow(): void;
 }
 
-/** The afternoon's side quests (docs/v4/2.2.md section 5), for this play. */
+/** The afternoon's side quests (docs/v4/2.2.md section 5, 2.3.md Part 2 section 4), for this play. */
 export interface QuestState {
   /** The quests whose offer bubble shows now. */
   readonly offered: Set<QuestId>;
@@ -77,10 +77,29 @@ export interface QuestState {
   /** The picnic rose in her hair, and the hay in the rack (0 to 1), for the test hook. */
   rose: boolean;
   hay: number;
+  /** This play's maths quest: the hay rack or the bead tree, in turn (the one she missed last play comes again). */
+  maths: 'rack' | 'beads';
+  /** The Dressing Corner's wardrobe is open: free play cannot end and bedtime cannot start. */
+  dressing: boolean;
+  /** The gifts she got today, in order. */
+  gifts: GiftItem[];
 }
 
-export function startQuests(): QuestState {
-  return { offered: new Set(), done: new Set(), running: null, asked: null, wallMs: 0, freeMs: 0, explained: false, helpers: [], rose: false, hay: 0 };
+export function startQuests(maths: QuestState['maths'] = 'beads'): QuestState {
+  return {
+    offered: new Set(), done: new Set(), running: null, asked: null, wallMs: 0, freeMs: 0, explained: false, helpers: [], rose: false, hay: 0,
+    maths, dressing: false, gifts: [],
+  };
+}
+
+/** This play's time, for the kind=play line at goodnight (2.3 Part 2, section 4). */
+export interface PlayClock {
+  /** performance.now() of the Play tap. */
+  startedAt: number;
+  /** Time inside checked moments (checked()). */
+  checkedMs: number;
+  /** Time in the wardrobe: the start mirror and the Dressing Corner. */
+  dressMs: { mirror: number; corner: number };
 }
 
 export interface Game {
@@ -97,6 +116,8 @@ export interface Game {
   maths: MathsState;
   /** This play's reading: how many wishes ran (the first is the warm-up) and every wish and picnic target. */
   today: { wishes: number; words: string[] };
+  /** This play's checked and dressing time. */
+  clock: PlayClock;
   quests: QuestState;
   /** The spec of the open checked moment as the game planned it (the test hook's spec()). */
   openSpec: unknown;
@@ -141,6 +162,7 @@ export function createGame(o: {
     randFor: (label) => streams.for(label),
     maths: startMaths(o.options.band),
     today: { wishes: 0, words: [] },
+    clock: startClock(),
     quests: startQuests(),
     openSpec: null,
     babies: [],
@@ -160,7 +182,26 @@ export function createGame(o: {
   };
 }
 
+export function startClock(): PlayClock {
+  return { startedAt: performance.now(), checkedMs: 0, dressMs: { mirror: 0, corner: 0 } };
+}
+
 // ---- small helpers ---------------------------------------------------------------------------------------------
+
+/**
+ * Await a checked moment (an egg sum, a naming, a wish, a door, a pattern) on the run: its time counts as checked
+ * time, and the background sound is silent while it is open, so it never covers letter sounds or her thinking time.
+ */
+export async function checked<T>(g: Game, p: Promise<T>): Promise<T> {
+  const t0 = performance.now();
+  audio.checked(true);
+  try {
+    return await g.run.w(p);
+  } finally {
+    audio.checked(false);
+    g.clock.checkedMs += performance.now() - t0;
+  }
+}
 
 export const v3 = (p: Vec2, y = 0): THREE.Vector3 => new THREE.Vector3(p.x, y, p.z);
 export const flat = (p: THREE.Vector3): Vec2 => ({ x: p.x, z: p.z });
@@ -209,6 +250,16 @@ export function headScreen(g: Game, u: UnicornActor): ScreenPoint {
 export function doorPoint(n: number): THREE.Vector3 {
   const c = doorCenter(n);
   return new THREE.Vector3(c.x, (doorIsUpper(n) ? STABLE.upperFloorY : 0) + STABLE.upperFloorY / 2, c.z);
+}
+
+/** She turns a three-quarter face to the camera: towards a point between the egg (or baby) and the camera. */
+export function faceBeside(g: Game, at: Vec2): void {
+  g.actors.princess.face({ x: at.x, z: at.z + 2 });
+}
+
+/** Wait until she has reached the goal (the "this way" helper in level.ts keeps her on track). */
+export async function waitToReach(g: Game, goal: Goal): Promise<void> {
+  await g.run.until(() => reached(g, goal));
 }
 
 /** Princess Emma walks to a point along a route. */

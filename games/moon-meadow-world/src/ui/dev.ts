@@ -1,10 +1,11 @@
 // The ui lane's harness (dev/ui.html): a pastel stand-in for the 3D world with a drifting fake baby and egg as
 // anchors, and dev buttons that run every part of the layer with real specs on v3 clip ids. Dev only; the
 // buttons carry text because Tjitse and the flows use them, never Emma.
-import type { EggSpec, EndMember, LookRow, MomentHooks, NameChoice, NamingSpec, Place, PrincessLook, Ribbon, ScreenPoint, WishItem, WishSpec } from '../contracts';
+import type { EggSpec, EndMember, LookTab, MomentHooks, NameChoice, NamingSpec, Place, PrincessLook, Ribbon, ScreenPoint, WishItem, WishSpec } from '../contracts';
+import { legacyOf } from '../wardrobe-legacy';
 import { audio } from '../audio';
 import { v3Art, wordPic } from '../assets';
-import { DEFAULT_LOOK } from '../wardrobe';
+import { DEFAULT_LOOK, START_OWNED, tabOf } from '../wardrobe';
 import { eggSpec, rackSpec, seeded } from '../content';
 import { DATA } from '../content/data';
 import { createLayer } from './index';
@@ -119,9 +120,11 @@ const herTurn = her.querySelector('.her-turn') as HTMLElement;
 const herPose = her.querySelector('.pose') as HTMLElement;
 let herLook: PrincessLook = { ...DEFAULT_LOOK };
 let herHeading = 0;
-let herFocus: LookRow | null = null;
-function drawHer(look: PrincessLook) {
-  herLook = look;
+let herFocus: LookTab | null = null;
+function drawHer(next: PrincessLook) {
+  herLook = next;
+  // 2.2's pictures until the wardrobe-ui lane draws 2.3's (wardrobe-legacy.ts).
+  const look = legacyOf(next);
   const legs = look.gown === 'lilac' || look.gown === 'moon' ? '' : '<path d="M45 150 L45 178 M55 150 L55 178" stroke="#ffe2d0" stroke-width="7" stroke-linecap="round"/><ellipse cx="44" cy="182" rx="7" ry="4.5" fill="#ff6fa8"/><ellipse cx="56" cy="182" rx="7" ry="4.5" fill="#ff6fa8"/>';
   herPose.innerHTML =
     '<svg viewBox="0 0 100 200" aria-hidden="true">' + legs +
@@ -138,7 +141,7 @@ function frameHer() {
   const h = innerHeight * 0.66;
   her.style.width = `${h / 2}px`;
   her.style.height = `${h}px`;
-  const face = herFocus === 'eyes' || herFocus === 'thing';
+  const face = herFocus === 'eyes' || herFocus === 'sparkles';
   const k = face ? 2.6 : 1;
   const x = L.panel.x / 2 - (h / 2) / 2;
   const y = face ? innerHeight * 0.2 - h * 0.14 * k : innerHeight * 0.11;
@@ -149,7 +152,7 @@ function poseHer(kind: string) {
   void herPose.offsetWidth;
   herPose.classList.add(kind);
 }
-const REACT: Record<LookRow, string> = { hair: 'toss', eyes: 'blink', gown: 'twirl', style: 'show', thing: 'tilt' };
+const REACT: Record<LookTab, string> = { hair: 'toss', eyes: 'blink', gown: 'twirl', crown: 'tilt', shoes: 'show', sparkles: 'tilt' };
 addEventListener('resize', () => { if (!her.classList.contains('hidden')) frameHer(); });
 
 // ---- the layer
@@ -211,7 +214,7 @@ const members: EndMember[] = [
   { name: 'Nell', body: '#ffffff', mane: '#4fc3ff', isNew: true },
 ];
 
-async function dress(firstTime: boolean, ribbons: Ribbon[]) {
+async function dress(firstTime: boolean, _ribbons: Ribbon[]) {
   // As in the game: no Lumi and no crown until the welcome.
   show(null);
   layer.lumi.show(false);
@@ -219,11 +222,11 @@ async function dress(firstTime: boolean, ribbons: Ribbon[]) {
   herFocus = null;
   frameHer();
   her.classList.remove('hidden');
-  const look = await layer.wardrobe({
-    look: herLook, ribbons, firstTime,
-    clips: { ready: ['g4-ready'], firstTime: ['g4-look-tap'], idle: ['g4-ready-play'], done: ['fb-lovely'] },
-    onLook: (l, row) => { drawHer(l); log(`look ${row} ${l[row]} ${l.ribbon}`); },
-    onPicked: (l, row) => { poseHer(REACT[row]); log(`picked ${row} ${JSON.stringify(l)}`); },
+  const { look } = await layer.wardrobe({
+    look: herLook, owned: START_OWNED, crownTab: true, firstTime, limitMs: 45_000,
+    clips: { ready: ['g4-ready'], firstTime: ['g4-look-tap'], idle: ['g4-ready-play'], nearly: ['g4-nearly'], done: ['fb-lovely'] },
+    onLook: (l, field) => { drawHer(l); log(`look ${field} ${l[field]}`); },
+    onPicked: (l, field) => { poseHer(REACT[tabOf(field)]); log(`picked ${field} ${JSON.stringify(l)}`); },
     onFocus: (row) => { herFocus = row; frameHer(); log(`focus ${row}`); },
     onTurn: (dx, ended) => {
       herHeading = ended ? 0 : herHeading + dx / 2;

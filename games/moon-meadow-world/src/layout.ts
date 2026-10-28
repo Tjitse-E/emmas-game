@@ -151,6 +151,48 @@ export const PICNIC = {
   aside: [v2(-17, 4.0), v2(-17.3, 5.1), v2(-16.8, 2.9)] as Vec2[],
 } as const;
 
+/**
+ * The Dressing Corner at the south step of Lumi's gazebo (docs/v4/2.3.md Part 2, section 4). The lilac trunk moves out
+ * of the gazebo to the step's west side and a standing mirror stands on its east side, where the two flower pots were
+ * (they move round to 0.2 and 0.8 pi). She dresses at `stand`, 1.9 s from START; the babies stand at `babies` for the
+ * gate's two phrase reads, in front of the trunk and the mirror; her other followers wait at `aside` (the picnic's
+ * spots, west of the rug). The trunk and the mirror are small obstacles (`radius`).
+ */
+export const CORNER = {
+  stand: v2(-14, 2.7),
+  trunk: v2(-15.5, 2.0),
+  mirror: v2(-12.5, 2.0),
+  radius: 0.45,
+  babies: [v2(-15.2, 3.4), v2(-12.8, 3.4)] as Vec2[],
+  aside: [v2(-17, 4.0), v2(-17.3, 5.1), v2(-16.8, 2.9)] as Vec2[],
+} as const;
+
+/**
+ * The bead tree in the east yard (side quest, section 4): a small tree with bead strings in its branches, the mirror
+ * of the hay rack, outside the 19 m door framing and 7.5 s from the wild egg. Its trunk is an obstacle. She stands at
+ * `stand` (west of it, so the tree stays on the left of the screen); the baby whose necklace it is stands at `baby`;
+ * her other followers wait at `aside`, west in the yard.
+ */
+export const BEAD_TREE = {
+  center: v2(12.6, -9.6),
+  radius: 0.8,
+  stand: v2(10.2, -9.0),
+  baby: v2(11.1, -8.1),
+  aside: [v2(8.6, -10.4), v2(8.2, -8.8), v2(9.0, -7.4)] as Vec2[],
+} as const;
+
+/**
+ * The moon mist in the north-east corner, with a saddle sign in front of it: what opens in 2.4 (section 4). The mist
+ * bank lies behind the stables' back line (z below -16.7), where nobody walks, so it needs no obstacle and the routes
+ * do not change; the sign stands on the grass in front of it.
+ */
+export const MIST = {
+  center: v2(21.5, -19.8),
+  rx: 4.5,
+  rz: 2.8,
+  sign: v2(19.4, -15.6),
+} as const;
+
 /** The big trees inside the fence (the world draws one on each). Obstacles. */
 export const TREES: { center: Vec2; radius: number }[] = [
   { center: v2(-20, -9), radius: 1.6 },
@@ -161,12 +203,18 @@ export const TREES: { center: Vec2; radius: number }[] = [
   { center: v2(14, -17), radius: 1.4 },
 ];
 
-/** Round obstacles for walking (the gazebo, the nest, the trees, the hay rack). The pond is handled by inPond. */
+/**
+ * Round obstacles for walking (the gazebo, the nest, the trees, the hay rack, the Corner's trunk and mirror, the bead
+ * tree). The pond is handled by inPond.
+ */
 export const OBSTACLES: { center: Vec2; radius: number }[] = [
   { center: GAZEBO.center, radius: GAZEBO.radius },
   { center: NEST.center, radius: NEST.radius },
   ...TREES,
   { center: HAY_RACK.center, radius: HAY_RACK.radius },
+  { center: CORNER.trunk, radius: CORNER.radius },
+  { center: CORNER.mirror, radius: CORNER.radius },
+  { center: BEAD_TREE.center, radius: BEAD_TREE.radius },
 ];
 
 /** Stable buildings as rectangles (obstacles): x from centerX - 3.9 to + 3.9, z from frontZ - depth to frontZ. */
@@ -182,7 +230,7 @@ export const GRAZE_HOMES: Vec2[] = [
 ];
 
 /** Places the level points at (goal beacons, edge arrows and "this way" lines). */
-export type Place = 'nest' | 'pond' | 'slide' | 'wildEgg' | 'stable' | 'gazebo' | 'rack' | 'picnic';
+export type Place = 'nest' | 'pond' | 'slide' | 'wildEgg' | 'stable' | 'gazebo' | 'rack' | 'picnic' | 'corner' | 'beads';
 export const PLACES: Record<Place, Vec2> = {
   nest: NEST.center,
   pond: POND.center,
@@ -192,4 +240,6 @@ export const PLACES: Record<Place, Vec2> = {
   gazebo: GAZEBO.center,
   rack: HAY_RACK.center,
   picnic: PICNIC.rug.center,
+  corner: CORNER.stand,
+  beads: BEAD_TREE.center,
 };

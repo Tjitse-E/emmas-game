@@ -3,7 +3,8 @@
 // sight through a point `lookY` above her, behind her, and moves it east so she stands in the middle of the space left
 // of the panel. world.frame(center, width, { pitch, shiftY: 0 }) then puts the camera at L + d (0, sin p, cos p),
 // looking at L = (her.x + ox, lookY, her.z). shiftY 0 keeps frame() from making a low pitch into a sky shot.
-import type { LookRow, Vec2 } from '../contracts';
+import type { LookTab, Vec2 } from '../contracts';
+import { TABS } from '../wardrobe';
 import { FOV } from '../world/camera';
 import { wardrobeLayout } from '../ui/geometry';
 
@@ -11,21 +12,21 @@ export type PortraitKind = 'body' | 'face';
 
 /** hvis: metres seen top to bottom at her; lookY: the height at the middle of the screen; pitch in degrees. */
 export const PORTRAIT: Record<PortraitKind, { hvis: number; lookY: number; pitch: number }> = {
-  /** Hair colour, gown, style and the default: all of her, feet at about 77%. */
+  /** The hair, gown, crown and shoes tabs and the default: all of her, feet at about 77%. */
   body: { hvis: 2.08, lookY: 0.58, pitch: 8 },
-  /** Eyes and hair things: her head about 390 px high. */
+  /** The eyes tab (eyes, earrings, necklace) and the sparkles tab: her head about 390 px high. */
   face: { hvis: 1.05, lookY: 1.08, pitch: 6 },
 };
 
-/** The rows that bring the camera to her face. */
-export const FACE_ROWS: readonly LookRow[] = ['eyes', 'thing'];
-/** A face frame goes back to the body frame this long after the last touch on a face row. */
+/** The tabs that bring the camera to her face (wardrobe.ts TABS). */
+export const FACE_TABS: readonly LookTab[] = TABS.filter((t) => t.frame === 'face').map((t) => t.tab);
+/** A face frame goes back to the body frame this long after the last touch on a face tab. */
 export const FACE_RETURN_MS = 2500;
 /** The first move into the portrait, and every move between the frames. */
 export const ENTER_MS = 900;
 export const MOVE_MS = 500;
 
-export const portraitKind = (row: LookRow | null): PortraitKind => (row && FACE_ROWS.includes(row) ? 'face' : 'body');
+export const portraitKind = (tab: LookTab | null): PortraitKind => (tab && FACE_TABS.includes(tab) ? 'face' : 'body');
 
 /** The panel's left edge in CSS px, as the layer draws it (2.2): she stands at half of it. */
 export function panelLeftOf(w: number, h: number): number {
@@ -44,10 +45,10 @@ export interface PortraitFrame {
 }
 
 /**
- * The frame for a row (null: the body frame). `screen.panelLeft` is the panel's left edge: she stands at half of it,
+ * The frame for a tab (null: the body frame). `screen.panelLeft` is the panel's left edge: she stands at half of it,
  * the middle of the preview. `halfFov` is half the camera's vertical field of view in degrees.
  */
-export function portraitFrame(her: Vec2, row: LookRow | null, screen: { w: number; h: number; panelLeft: number }, halfFov = FOV / 2): PortraitFrame {
+export function portraitFrame(her: Vec2, row: LookTab | null, screen: { w: number; h: number; panelLeft: number }, halfFov = FOV / 2): PortraitFrame {
   const kind = portraitKind(row);
   const { hvis, lookY, pitch } = PORTRAIT[kind];
   const t = Math.tan((halfFov * Math.PI) / 180);

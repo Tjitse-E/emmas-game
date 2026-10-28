@@ -3,14 +3,16 @@
 // lines (lumi-*); a baby unicorn's voice for foal-*. Ids with g4-, h4-, fb4-, lumi4- and the demo's num- ids are
 // the demo's own pack (public/audio/v4demo/); the rest are v3's.
 //
-// The full lists are composed from one helper per file (wishes.ts, eggs.ts, rack.ts, src/wardrobe.ts), so a lane
-// that adds clips changes its own file and never this one.
+// The full lists are composed from one helper per file (wishes.ts, phrases.ts, eggs.ts, rack.ts, patterns.ts,
+// src/wardrobe.ts), so a lane that adds clips changes its own file and never this one.
 import type { DoorSpec, NamingSpec, Place, WishSpec } from '../contracts.ts';
 import { wardrobeClipIds } from '../wardrobe.ts';
 import { DATA } from './data.ts';
 import { DOOR_COUNT, NEWBORN_DOORS, ROLL_CALL_DOORS, VISIT_DOORS } from './doors.ts';
 import { allEggClipIds } from './eggs.ts';
 import { GEM_SOUNDS, NAMING_CLIPS } from './naming.ts';
+import { allPatternClipIds } from './patterns.ts';
+import { allPhraseClipIds } from './phrases.ts';
 import { allRackClipIds } from './rack.ts';
 import { allWishClipIds, allWishGraphemes } from './wishes.ts';
 
@@ -19,6 +21,8 @@ export const CLIPS = {
   ready: ['g4-ready'],
   lookTap: ['g4-look-tap'],
   readyPlay: ['g4-ready-play'],
+  /** 15 s before the music box ends (2.3.0). */
+  nearly: ['g4-nearly'],
   // 1 Welcome
   welcome: ['lumi-hello', 'lumi-meadow-yours'],
   /** The shorter welcome from the second play on. */
@@ -49,6 +53,21 @@ export const CLIPS = {
   bubbles: ['mw-bubbles-explain'],
   // The royal picnic (side quest). No line before the first guest: "Who is hungry?" would point at the foods.
   picnicDone: ['lumi4-picnic-done'],
+  // 2.3.0: the eggs' three hearts, the gifts, the Dressing Corner and the moon mist (docs/v4/2.3.md Part 2)
+  /** Before an egg's first sum. */
+  hearts: ['g4-hearts'],
+  /** After an egg's first and second sum, while a heart lights. */
+  heart: ['g4-heart'],
+  /** The gift picker, after a quest. */
+  gift: ['g4-gift'],
+  /** Lumi, when a gift set is full. */
+  sticker: ['lumi4-sticker'],
+  /** Lumi, once a play, when the trunk bubble first shows: "Come and try my Dressing Corner!" (v3 places). */
+  cornerOpen: ['lumi-dressing-open'],
+  /** Lumi, at the Corner before the gate. */
+  corner: ['lumi4-corner'],
+  /** Lumi, at the saddle sign. */
+  soon: ['lumi4-soon'],
   /** When the basket opens: "Tap a food to hear its name. Then give it to a baby." */
   tray: ['g-tray'],
   // Walking help after 20 s without progress (section 3)
@@ -125,8 +144,10 @@ export function allClipIds(): string[] {
     ...DATA.bells.map((b) => b.clip),
     ...Object.values(NAMING_CLIPS).flat(),
     ...allWishClipIds(),
+    ...allPhraseClipIds(),
     ...allEggClipIds(),
     ...allRackClipIds(),
+    ...allPatternClipIds(),
     ...wardrobeClipIds(),
     ...doorIds(),
   ];

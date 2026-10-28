@@ -18,7 +18,10 @@ import { runEgg } from './egg';
 import { runNaming } from './naming';
 import { runWish } from './wish';
 import { runWardrobe, type WardrobeHandle, type WardrobeSnapshot } from './wardrobe';
+import { runGift } from './gift';
+import { runBeads } from './beads';
 import { createOffers } from './offer';
+import { LEGACY_FIELD, LEGACY_TAB, applyLegacy, applyLegacyAll, legacyOf } from '../wardrobe-legacy';
 import type { LayerCtx, MomentSnapshot, OpenMoment, UiTarget } from './moment';
 import { target } from './moment';
 
@@ -154,9 +157,30 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
     tag: (name, at, ms) => tags.show(name, at, ms),
     wardrobe: (o) => {
       wardrobe?.close();
-      return runWardrobe({ parent: moments, ghost, screen }, o, (h) => {
-        wardrobe = h;
-      });
+      // Step 0 of 2.3.0: the 2.2 panel on the legacy catalogue, its picks laid over the 2.3 look. The music box, the
+      // tabs and the board come with the wardrobe-ui lane (docs/v4/2.3.md Part 2, section 3).
+      let look = o.look;
+      const picked = runWardrobe(
+        { parent: moments, ghost, screen },
+        {
+          look: legacyOf(o.look), ribbons: ['pink', 'lilac', 'sky', 'mint', 'gold', 'coral'], firstTime: o.firstTime,
+          clips: { ready: o.clips.ready, firstTime: o.clips.firstTime, idle: o.clips.idle, done: o.clips.done },
+          onLook: (l, row) => o.onLook((look = applyLegacy(look, l, row)), LEGACY_FIELD[row]),
+          onPicked: (l, row) => o.onPicked((look = applyLegacy(look, l, row)), LEGACY_FIELD[row]),
+          onFocus: (row) => o.onFocus(row ? LEGACY_TAB[row] : null),
+          onTurn: (dx, ended) => o.onTurn(dx, ended),
+          onPreviewTap: () => o.onPreviewTap(),
+        },
+        (h) => {
+          wardrobe = h;
+        },
+      );
+      return picked.then((l) => ({ look: applyLegacyAll(look, l), end: 'done' as const }));
+    },
+    gift: (o) => runGift(moments, o),
+    beads: (spec, hooks) => {
+      open?.close();
+      return runBeads(ctx, spec, hooks, setOpen);
     },
     offer: (id, o) => offers.set(id, o),
     foodBasket: (o) => food.set(o),

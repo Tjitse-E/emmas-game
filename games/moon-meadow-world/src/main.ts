@@ -85,6 +85,14 @@ function boot(): void {
   herd.forEach((h, i) => actors.herd.add({ id: h.id, name: h.name, look: h.look, at: GRAZE_HOMES[i] }).graze(GRAZE_HOMES[i]));
   // Her saved look from the first frame (the save is read once here; ?fresh=1 keeps it in memory only).
   const save = createSave(() => window.localStorage, options.fresh);
+  // Ask the browser to keep her collection (2.3 decision 4). Safari may say no; that is fine.
+  if (!options.fresh) {
+    try {
+      void navigator.storage?.persist?.().catch(() => false);
+    } catch {
+      /* not there */
+    }
+  }
   actors.princess.setLook(save.data.look);
   // Every shader program now, behind the start screen: three.js would otherwise compile each one the first time it
   // draws it (the crown, the egg, the glows, the night), a stall on the Air 2 just as the moment starts. A herd

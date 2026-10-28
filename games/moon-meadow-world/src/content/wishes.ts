@@ -7,8 +7,13 @@ import { wordPic } from '../assets.ts';
 import { DATA, type KindData, type WordData } from './data.ts';
 import { type Rand, pick, shuffle } from './rand.ts';
 
-/** dress (wish 1 at the nest), bath (the pond wish), picnic (wish 2 and the royal picnic), food (picnic foods only). */
+/**
+ * dress (wish 1 at the nest), bath (the pond wish), picnic (wish 2 and the royal picnic), food (picnic foods only),
+ * phrase (2.3: the Dressing Corner gate, planned in phrases.ts).
+ */
 export type WishKind = WishSpec['kind'];
+/** The kinds whose wish is one word from a pool (all but the phrase). */
+export type WordKind = Exclude<WishKind, 'phrase'>;
 export type ReadingLevel = WishSpec['level'];
 
 export interface WishOpts {
@@ -30,6 +35,7 @@ export const WISH_CLIPS: Record<WishKind, WishSpec['clips']> = {
   bath: GIVE,
   picnic: GIVE,
   dress: GIVE,
+  phrase: GIVE,
 };
 
 /** Basket sizes by reading level (3.1). */
@@ -49,26 +55,26 @@ const FOODS = new Set(DATA.foods);
 const isFood = (w: string): boolean => FOODS.has(w);
 
 /** A kind's lists. 'food' is the picnic pool with only foods as targets (the hungry wish and the free-play basket). */
-function kindData(kind: WishKind): KindData {
+function kindData(kind: WordKind): KindData {
   if (kind !== 'food') return DATA.kinds[kind];
   const p = DATA.kinds.picnic;
   return { pool: p.pool, targets: p.targets.filter(isFood), level1: p.level1.filter(isFood), level3: p.level3.filter(isFood) };
 }
 
 /** Every word a wish of this kind can show. */
-export function wishWords(kind: WishKind): WordData[] {
+export function wishWords(kind: WordKind): WordData[] {
   return kindData(kind).pool.map(wordData);
 }
 
 /** The words a wish of this kind can ask for at a reading level. */
-export function wishTargets(kind: WishKind, level: ReadingLevel): WordData[] {
+export function wishTargets(kind: WordKind, level: ReadingLevel): WordData[] {
   const k = kindData(kind);
   return (level === 1 ? k.level1 : level === 3 ? k.level3 : k.targets).map(wordData);
 }
 
 /** How the baby takes it: dress-up things go on its head, foods are munched, everything else is played with. */
 export function reactOf(kind: WishKind, word: string): NonNullable<WishItem['react']> {
-  if (kind === 'dress') return 'wear';
+  if (kind === 'dress' || kind === 'phrase') return 'wear';
   if (kind === 'bath') return 'play';
   return isFood(word) ? 'munch' : 'play';
 }
@@ -172,7 +178,7 @@ export function planBasket(target: WordData, pool: readonly WordData[], level: R
   return { words, decoys };
 }
 
-function item(kind: WishKind, w: WordData): WishItem {
+function item(kind: WordKind, w: WordData): WishItem {
   return {
     word: w.word, gpcs: w.gpcs, pic: wordPic(w.pic), ...(w.tint ? { tint: w.tint } : {}), clip: w.clip, tier: w.tier as WishItem['tier'],
     react: reactOf(kind, w.word),
@@ -186,7 +192,7 @@ const isList = (x: readonly string[] | WishOpts): x is readonly string[] => Arra
  * left); level 3 asks only targets with a twin or a frame word, and with none left it plays and logs as level 2.
  * `exclude` can be passed as the third argument (a list of words, as the demo did) or inside the options.
  */
-export function wishSpec(kind: WishKind, rand: Rand, exclude: readonly string[] | WishOpts = [], opts: WishOpts = {}): WishSpec {
+export function wishSpec(kind: WordKind, rand: Rand, exclude: readonly string[] | WishOpts = [], opts: WishOpts = {}): WishSpec {
   const o: WishOpts = isList(exclude) ? { ...opts, exclude: [...exclude, ...(opts.exclude ?? [])] } : { ...exclude, ...opts };
   const out = new Set(o.exclude ?? []);
   const fresh = (ws: WordData[]) => ws.filter((w) => !out.has(w.word));
@@ -206,9 +212,9 @@ export function wishSpec(kind: WishKind, rand: Rand, exclude: readonly string[] 
   };
 }
 
-const KINDS = Object.keys(WISH_CLIPS) as WishKind[];
+const KINDS: readonly WordKind[] = ['food', 'bath', 'picnic', 'dress'];
 
-/** Every clip a wish can say: each kind's lines and every word of its pool. */
+/** Every clip a word wish can say: each kind's lines and every word of its pool (phrases.ts has the phrase's). */
 export function allWishClipIds(): string[] {
   return [...new Set(KINDS.flatMap((k) => [...wishWords(k).map((w) => w.clip), ...Object.values(WISH_CLIPS[k]).flat()]))];
 }
