@@ -35,6 +35,28 @@ export interface KindData {
   level3: string[];
 }
 
+/**
+ * A printed word of the phrase wish (2.3 section 18): its written graphemes, its grapheme tier, and, when they differ
+ * from the graphemes, the letter sounds the hint plays (the o of gold and the ow of bow say oa).
+ */
+export interface PhraseWordData {
+  word: string;
+  gpcs: string[];
+  sounds?: string[];
+  tier: number;
+}
+export interface PhraseColourData extends PhraseWordData {
+  /** Green, gold, blue and brown can be the wish; red and pink are only wrong pictures. */
+  target: boolean;
+}
+export interface PhraseThingData extends PhraseWordData {
+  /** Picture name in v3's art/words/ (a greyscale picture, tinted in the phrase's colour). */
+  pic: string;
+  clip: string;
+  /** Things whose pictures look like this one: they never share a basket. */
+  alike?: string[];
+}
+
 export interface ContentData {
   herd: NameData[];
   bells: BellData[];
@@ -44,6 +66,12 @@ export interface ContentData {
   /** The picnic words a baby munches; the other picnic words are dishes and things it plays with. */
   foods: string[];
   freeFoods: string[];
+  /** "the": printed in every phrase, never sounded out, never deciding an answer. */
+  phraseThe: { word: string; gpcs: string[]; clip: string };
+  phraseColours: PhraseColourData[];
+  phraseThings: PhraseThingData[];
+  /** Every pair ("green sock") that passed the tinted picture check, and who checked it: 'claude' or 'emma'. */
+  phrasePairs: Record<string, string>;
 }
 
 export const DATA: ContentData = raw;

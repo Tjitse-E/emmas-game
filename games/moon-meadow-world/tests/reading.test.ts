@@ -1,14 +1,20 @@
 // The reading lane (docs/v4/2.2.md 3.1 to 3.3 and 8.1): the wish pools and the picture check, strong targets, the
 // basket planner per kind and reading level, the guessers it must beat, the 11 bad words, the ladder's contrast
-// step, the printUnits diff of the contrast and the naming gems. The reading level fold itself is the game lane's
-// (src/game/reading.ts and its tests).
+// step, the printUnits diff of the contrast and the naming gems. The reading level fold itself is in
+// src/game/reading.ts and tests/reading-level.test.ts.
+//
+// 2.3.0 (docs/v4/2.3.md sections 18 and 22.4): the phrase wish. Its tinted picture check and clip lines, the strong
+// rule, the planner per level and the guessers it must beat, Emma's checks and the word-wish fallback, the two-word
+// contrast and the hint's letter sounds.
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import type { WishSpec } from '../src/contracts.ts';
 import { HintRunner, idleDelay, onIdle, onMiss, openLadder, outcomeOf } from '../src/ui/ladder.ts';
-import { printUnits } from '../src/ui/geometry.ts';
-import { diffUnits } from '../src/ui/contrast.ts';
+import { phraseUnits, printUnits } from '../src/ui/geometry.ts';
+import { diffPhrase, diffUnits } from '../src/ui/contrast.ts';
+import { PALETTE } from '../src/wardrobe.ts';
+import { lineFor } from '../tools/lines.ts';
 
 // src/assets.ts reads the page location when it loads.
 vi.stubGlobal('location', { pathname: '/' });
@@ -16,6 +22,7 @@ const W = await import('../src/content/wishes.ts');
 const N = await import('../src/content/naming.ts');
 const { DATA } = await import('../src/content/data.ts');
 const { seeded } = await import('../src/content/rand.ts');
+const P = await import('../src/content/phrases.ts');
 type WordData = (typeof DATA.words)[number];
 
 const here = resolve(import.meta.dirname, '..');
@@ -334,6 +341,24 @@ describe('the printUnits diff of the contrast', () => {
     // A different first unit lights the whole of both words.
     expect(diffUnits(units('toast', ['t', 'oa', 's', 't']), units('mug', ['m', 'u', 'g']))).toEqual({ a: [0, 1, 2, 3], b: [0, 1, 2] });
   });
+
+  // The two-word contrast (2.3 section 18): per word, by position; a word that is the same and "the" never light.
+  const words = (c: string, t: string) => phraseUnits(P.phraseItem(c, t).parts!);
+  it('lights the colour against the colour and the thing against the thing', () => {
+    // gold sock for green sock: r ee n against o l d; the sock is the same.
+    expect(diffPhrase(words('green', 'sock'), words('gold', 'sock'))).toEqual({ a: [[], [1, 2, 3], []], b: [[], [1, 2, 3], []] });
+    // green shirt for green sock: the colour is the same; s o ck against sh ir t (sh is one sound, not s).
+    expect(diffPhrase(words('green', 'sock'), words('green', 'shirt'))).toEqual({ a: [[], [], [0, 1, 2]], b: [[], [], [0, 1, 2]] });
+    // brown bead for blue bow: l ue against r ow n, and ow against ea d.
+    expect(diffPhrase(words('blue', 'bow'), words('brown', 'bead'))).toEqual({ a: [[], [1, 2], [1]], b: [[], [1, 2, 3], [1, 2]] });
+  });
+
+  it('never lights "the", and the same phrase lights nothing', () => {
+    expect(diffPhrase(words('blue', 'bag'), words('blue', 'bag'))).toEqual({ a: [[], [], []], b: [[], [], []] });
+    for (const [c, t] of P.phraseCombos()) {
+      for (const [c2, t2] of P.phraseCombos()) expect(diffPhrase(words(c, t), words(c2, t2)).a[0]).toEqual([]);
+    }
+  });
 });
 
 describe('the naming gems', () => {
@@ -384,5 +409,382 @@ describe('the naming gems', () => {
     for (let s = 1; s <= 300; s++) {
       for (const b of N.namingSpec(seeded(s), [], 4).bells) for (const g of b.distractors) expect(sounds.has(g.toLowerCase()), g).toBe(true);
     }
+  });
+});
+
+// ---- the phrase wish (2.3.0, docs/v4/2.3.md section 18) ------------------------------------------------------------
+
+describe('the phrase wish', () => {
+  const phraseChecks = JSON.parse(readFileSync(join(here, 'tools/phrase-check.json'), 'utf8')) as Record<string, { verdict: string; by: string; why: string }>;
+  const TARGET_COLOURS = ['green', 'gold', 'blue', 'brown'];
+  const DECOY_COLOURS = ['red', 'pink'];
+  const THINGS = ['bag', 'bead', 'bow', 'sock', 'shirt'];
+  const split = (k: string) => k.split(' ') as [string, string];
+  const thingsAlike = (a: string, b: string) => a === b || !!DATA.phraseThings.find((t) => t.word === a)?.alike?.includes(b);
+  /** Every pair as Claude checked it, as ?phrases=all sees it. */
+  const ALL = { all: true } as const;
+
+  /** SEEDS baskets of a level (as ?phrases=all), with the target's colour and thing. */
+  function phraseBaskets(level: 1 | 2 | 3, scope: Parameters<typeof P.phraseSpec>[1] = ALL) {
+    return Array.from({ length: SEEDS }, (_, s) => {
+      const spec = P.phraseSpec(seeded(s + 1), { ...scope, level });
+      return { spec, target: split(spec.target.word), items: spec.basket.map((b) => split(b.word)) };
+    });
+  }
+  const pcache = new Map<number, ReturnType<typeof phraseBaskets>>();
+  const pbaskets = (level: 1 | 2 | 3) => {
+    if (!pcache.has(level)) pcache.set(level, phraseBaskets(level));
+    return pcache.get(level)!;
+  };
+
+  it('every colour on every thing has a picture check entry and a clip line', () => {
+    const combos = P.phraseCombos().map(([c, t]) => `${c} ${t}`);
+    expect(combos).toHaveLength(30);
+    expect(Object.keys(phraseChecks).sort()).toEqual([...combos].sort());
+    for (const [c, t] of P.phraseCombos()) {
+      const e = phraseChecks[`${c} ${t}`];
+      expect(['ok', 'drop'], `${c} ${t}`).toContain(e.verdict);
+      expect(['claude', 'emma'], `${c} ${t}`).toContain(e.by);
+      expect(e.why.length, `${c} ${t}`).toBeGreaterThan(5);
+      const clip = P.phraseClip(c, t);
+      expect(lineFor(clip)?.text, clip).toBe(`The ${c} ${t}.`);
+    }
+    // data.json keeps every ok pair and who checked it, and nothing else.
+    const ok = Object.entries(phraseChecks).filter(([, e]) => e.verdict === 'ok').map(([k, e]) => [k, e.by]);
+    expect(Object.entries(DATA.phrasePairs).sort()).toEqual(ok.sort());
+  });
+
+  it('phrase words are one syllable of at most five letters with their letter sounds; things are tinted v3 pictures with an ok clip', () => {
+    for (const w of [...DATA.phraseColours, ...DATA.phraseThings]) {
+      expect(w.word.length, w.word).toBeLessThanOrEqual(5);
+      expect(w.gpcs.join(''), w.word).toBe(w.word);
+      expect(w.gpcs.filter(isVowel), w.word).toHaveLength(1);
+      for (const g of w.sounds ?? w.gpcs) expect(phonics.has(g), `${w.word} ${g}`).toBe(true);
+    }
+    for (const t of DATA.phraseThings) {
+      expect(existsSync(join(v3, 'public/art/words', `${t.pic}.webp`)), t.word).toBe(true);
+      expect(wordClips.has(t.clip), t.clip).toBe(true);
+    }
+    expect(wordClips.has(DATA.phraseThe.clip)).toBe(true);
+    // The o of gold and the ow of bow say oa.
+    expect(DATA.phraseColours.find((c) => c.word === 'gold')?.sounds).toEqual(['g', 'oa', 'l', 'd']);
+    expect(DATA.phraseThings.find((t) => t.word === 'bow')?.sounds).toEqual(['b', 'oa']);
+    expect(DATA.phraseColours.map((c) => c.word).sort()).toEqual([...TARGET_COLOURS, ...DECOY_COLOURS].sort());
+    expect(DATA.phraseColours.filter((c) => c.target).map((c) => c.word).sort()).toEqual([...TARGET_COLOURS].sort());
+    expect(DATA.phraseThings.map((t) => t.word).sort()).toEqual([...THINGS].sort());
+  });
+
+  it('every phrase colour has a picture tint a multiply can show; white, grey and black never appear', () => {
+    for (const c of DATA.phraseColours) expect((PALETTE as Record<string, { pic?: string }>)[c.word].pic, c.word).toMatch(/^#[0-9a-f]{6}$/);
+    for (const level of LEVELS) {
+      for (const { spec } of pbaskets(level).slice(0, 2000)) {
+        for (const b of spec.basket) {
+          expect(b.word, b.word).not.toMatch(/white|grey|black/);
+          expect(b.tint).toBe((PALETTE as Record<string, { pic?: string }>)[split(b.word)[0]].pic);
+        }
+      }
+    }
+  });
+
+  it('strong phrases: every target colour on every thing with Claude\'s checks; each keeps a level 1 and level 2 grid of strong phrases', () => {
+    const strong = P.phraseTargets(ALL);
+    expect(strong.sort()).toEqual(TARGET_COLOURS.flatMap((c) => THINGS.map((t) => `${c} ${t}`)).sort());
+    // On random sets of checked pairs, every strong phrase keeps both its baskets and its decoy (the rule of 18).
+    const allPairs = P.phraseCombos().map(([c, t]) => `${c} ${t}`);
+    const r = seeded(77);
+    for (let n = 0; n < 400; n++) {
+      const allowed = new Set(allPairs.filter(() => r() < 0.85));
+      const s = new Set(P.strongPhrases({ colours: DATA.phraseColours, things: DATA.phraseThings }, allowed));
+      for (const k of s) {
+        const [c, t] = split(k);
+        expect(allowed.has(k)).toBe(true);
+        expect(TARGET_COLOURS).toContain(c);
+        const partners = THINGS.filter((x) => x !== t && x[0] === t[0] && !thingsAlike(x, t));
+        const decoyOn = (x: string) => DECOY_COLOURS.some((d) => allowed.has(`${d} ${x}`));
+        const grid = (colours: string[], decoys: boolean) => colours.some((c2) => partners.some((t2) =>
+          s.has(`${c2} ${t}`) && s.has(`${c} ${t2}`) && s.has(`${c2} ${t2}`) && (!decoys || (decoyOn(t) && decoyOn(t2)))));
+        // Level 2 needs red or pink on both grid things: the decoy goes on either at random.
+        expect(grid(TARGET_COLOURS.filter((c2) => c2 !== c && c2[0] === c[0]), true), `${k} level 2 with decoys`).toBe(true);
+        expect(grid(TARGET_COLOURS.filter((c2) => c2[0] !== c[0]), false), `${k} level 1`).toBe(true);
+      }
+    }
+  });
+
+  it('baskets per level: 4 items of two colours with other first letters at level 1, the grid plus a decoy at 2, the grid plus a third thing at 3', () => {
+    for (const level of LEVELS) {
+      const bad: string[] = [];
+      for (const { spec, target: [c, t], items } of pbaskets(level)) {
+        const fail = (why: string) => bad.length < 20 && bad.push(`${level} ${spec.target.word} [${items.map((i) => i.join(' ')).join(', ')}]: ${why}`);
+        const keys = items.map((i) => i.join(' '));
+        if (spec.kind !== 'phrase') fail('kind');
+        if (!keys.includes(`${c} ${t}`)) fail('no target');
+        if (new Set(keys).size !== keys.length) fail('an item twice');
+        if (Object.keys(spec.decoys).sort().join() !== keys.filter((k) => k !== spec.target.word).sort().join()) fail('decoy kinds');
+        const colours = new Set(items.map((i) => i[0]));
+        const things = new Set(items.map((i) => i[1]));
+        // Never a basket of one thing (only the colour to read) or of one colour.
+        if (things.size < 2 || colours.size < 2) fail('one thing or one colour');
+        for (const a of things) for (const b of things) if (a !== b && thingsAlike(a, b)) fail(`${a} and ${b} look alike`);
+        for (const x of things) if (x[0] !== t[0]) fail(`${x} has another first letter`);
+        if (spec.level === 1) {
+          if (items.length !== 4 || colours.size !== 2 || things.size !== 2) fail('not a 2 x 2 grid');
+          if ([...colours].some((x) => !TARGET_COLOURS.includes(x))) fail('a decoy colour at level 1');
+          if ([...colours].filter((x) => x[0] === c[0]).length !== 1) fail('the colours share a first letter');
+        } else {
+          if (items.length !== 5) fail('size');
+          // Level 2: the grid is the four items in target colours. Level 3: the fifth is the thing shown once.
+          const grid = spec.level === 2
+            ? items.filter(([x]) => TARGET_COLOURS.includes(x))
+            : items.filter(([, y]) => y === t || items.filter((i) => i[1] === y).length === 2);
+          const gridThings = [...new Set(grid.map((i) => i[1]))];
+          if (grid.length !== 4 || new Set(grid.map((i) => i[0])).size !== 2 || [...new Set(grid.map((i) => i[0]))].some((x) => x[0] !== c[0])) fail('no grid of siblings');
+          if (gridThings.length !== 2 || !gridThings.includes(t)) fail('no grid of two things');
+          const fifth = items.find((i) => !grid.includes(i))!;
+          if (spec.level === 2 && !(DECOY_COLOURS.includes(fifth[0]) && gridThings.includes(fifth[1]))) fail('level 2 without red or pink on a grid thing');
+          if (spec.level === 3 && !(TARGET_COLOURS.includes(fifth[0]) && fifth[1] !== t && fifth[0][0] === c[0] && fifth[1][0] === t[0])) fail('level 3 without a third thing');
+        }
+        // Sock and shirt have no third thing: they play and log as level 2.
+        if (level === 3 && (t === 'sock' || t === 'shirt') && spec.level !== 2) fail('sock or shirt at level 3');
+        if (level === 3 && t[0] === 'b' && spec.level !== 3) fail('a b-thing not at level 3');
+        if (level !== 3 && spec.level !== level) fail('level');
+      }
+      expect(bad).toEqual([]);
+    }
+  });
+
+  it('every grid item is a possible target at its level; every strong phrase comes up; only the fifth item is never the wish', () => {
+    const strong = new Set(P.phraseTargets(ALL));
+    for (const level of LEVELS) {
+      const all = pbaskets(level);
+      const seen = new Set(all.map((b) => b.spec.target.word));
+      expect([...seen].sort(), `level ${level}`).toEqual([...strong].sort());
+      for (const { spec, items } of all) {
+        const counts = (y: string) => items.filter((i) => i[1] === y).length;
+        for (const [x, y] of items) {
+          const fifth = spec.level === 2 ? DECOY_COLOURS.includes(x) : spec.level === 3 && counts(y) === 1;
+          if (!fifth) expect(strong.has(`${x} ${y}`), `${spec.level} ${x} ${y}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('a guesser of both first letters is right at most 55% at level 1 and 40% at levels 2 and 3; of one word only, at most 55%', () => {
+    for (const level of LEVELS) {
+      let both = 0;
+      let colourOnly = 0;
+      let thingOnly = 0;
+      const all = pbaskets(level);
+      for (const { target: [c, t], items } of all) {
+        // A guesser picks at random among the pictures that fit what it reads.
+        both += 1 / items.filter(([x, y]) => x[0] === c[0] && y[0] === t[0]).length;
+        colourOnly += 1 / items.filter(([x]) => x === c).length;
+        thingOnly += 1 / items.filter(([, y]) => y === t).length;
+      }
+      expect(both / all.length, `level ${level} first letters`).toBeLessThanOrEqual(level === 1 ? 0.55 : 0.4);
+      expect(colourOnly / all.length, `level ${level} colour only`).toBeLessThanOrEqual(0.55);
+      expect(thingOnly / all.length, `level ${level} thing only`).toBeLessThanOrEqual(0.55);
+    }
+  });
+
+  it('the thing shown most often gives nothing away: guessers that count the things stay within the same bounds', () => {
+    for (const level of LEVELS) {
+      let colourCount = 0;
+      let lettersCount = 0;
+      let countOnly = 0;
+      let decoyOnTarget = 0;
+      let withDecoy = 0;
+      const all = pbaskets(level);
+      for (const { spec, target: [c, t], items } of all) {
+        const count = (y: string) => items.filter((i) => i[1] === y).length;
+        const most = Math.max(...items.map(([, y]) => count(y)));
+        /** Among the pictures that fit what it reads, the guesser takes the thing shown most often, at random. */
+        const guess = (fits: (i: [string, string]) => boolean) => {
+          const fit = items.filter(fits);
+          const top = Math.max(...fit.map(([, y]) => count(y)));
+          const picks = fit.filter(([, y]) => count(y) === top);
+          return picks.some(([x, y]) => x === c && y === t) ? 1 / picks.length : 0;
+        };
+        colourCount += guess(([x]) => x === c);
+        lettersCount += guess(([x, y]) => x[0] === c[0] && y[0] === t[0]);
+        // Reads nothing: leaves out red and pink, then takes the thing shown most often.
+        countOnly += guess(([x, y]) => !DECOY_COLOURS.includes(x) && count(y) === most);
+        if (spec.level === 2) {
+          withDecoy++;
+          if (items.some(([x, y]) => DECOY_COLOURS.includes(x) && y === t)) decoyOnTarget++;
+        }
+      }
+      expect(colourCount / all.length, `level ${level} colour and count`).toBeLessThanOrEqual(0.55);
+      expect(lettersCount / all.length, `level ${level} first letters and count`).toBeLessThanOrEqual(level === 1 ? 0.55 : 0.4);
+      expect(countOnly / all.length, `level ${level} count only`).toBeLessThanOrEqual(0.3);
+      // Red or pink goes on the wish's thing about half the time.
+      if (withDecoy) expect(Math.abs(decoyOnTarget / withDecoy - 0.5), `level ${level} decoy on the target's thing`).toBeLessThan(0.05);
+    }
+  });
+
+  it('things that look alike never share a basket (cape and coat, with cup as their partner)', () => {
+    const c = (word: string, gpcs: string[]) => ({ word, gpcs, tier: 1, pic: word, clip: `word-${word}` });
+    const tables = {
+      colours: DATA.phraseColours,
+      things: [
+        ...DATA.phraseThings,
+        { ...c('cape', ['c', 'a', 'p', 'e']), alike: ['coat'] },
+        { ...c('coat', ['c', 'oa', 't']), alike: ['cape'] },
+        c('cup', ['c', 'u', 'p']),
+      ],
+    };
+    const pairs = Object.fromEntries(tables.colours.flatMap((x) => tables.things.map((y) => [`${x.word} ${y.word}`, 'emma'])));
+    const strong = P.phraseTargets({ tables, pairs });
+    for (const w of ['cape', 'coat', 'cup']) expect(strong.some((k) => k.endsWith(` ${w}`)), w).toBe(true);
+    let cups = 0;
+    for (const level of LEVELS) {
+      for (let s = 1; s <= 3000; s++) {
+        const spec = P.phraseSpec(seeded(s), { tables, pairs, level });
+        const things = new Set(spec.basket.map((b) => split(b.word)[1]));
+        expect(things.has('cape') && things.has('coat'), spec.basket.map((b) => b.word).join(', ')).toBe(false);
+        if (things.has('cup')) cups++;
+      }
+    }
+    // The c-things did play.
+    expect(cups).toBeGreaterThan(1000);
+  });
+
+  it('leaves out excluded targets while others are left; the default level is 2', () => {
+    const strong = P.phraseTargets(ALL);
+    const out = strong.filter((k) => k.startsWith('green') || k.endsWith('bag'));
+    for (let s = 1; s <= 300; s++) expect(out).not.toContain(P.phraseSpec(seeded(s), { ...ALL, exclude: out }).target.word);
+    expect(strong).toContain(P.phraseSpec(seeded(1), { ...ALL, exclude: strong }).target.word);
+    expect(P.phraseSpec(seeded(1), ALL).level).toBe(2);
+    // ?contrast=0 keeps v3's miss rule.
+    expect(P.phraseSpec(seeded(1), { ...ALL, contrast: false }).clips.again).toBeUndefined();
+    expect(P.phraseSpec(seeded(1), ALL).clips.again).toEqual(['fb-letters']);
+  });
+
+  it('without ?phrases=all only the pairs Emma checked play, and with fewer than 6 strong the gate plays word wishes', () => {
+    // The live data: no pair checked by Emma yet, so the gate plays the dress-up word wishes.
+    const emma = Object.entries(DATA.phrasePairs).filter(([, by]) => by === 'emma').map(([k]) => k);
+    expect(P.gateKind({}), 'live data').toBe(P.phraseTargets({}).length >= 6 ? 'phrase' : 'word');
+    if (!emma.length) {
+      expect(P.gateKind({})).toBe('word');
+      expect(() => P.phraseSpec(seeded(1), {})).toThrow();
+    }
+    expect(P.gateKind(ALL)).toBe('phrase');
+    // Emma checked every colour on bag, bead and bow, Claude the rest: only her pairs are ever shown.
+    const pairs = Object.fromEntries(P.phraseCombos().map(([c, t]) => [`${c} ${t}`, ['bag', 'bead', 'bow'].includes(t) ? 'emma' : 'claude']));
+    expect(P.gateKind({ pairs })).toBe('phrase');
+    for (const level of LEVELS) {
+      for (let s = 1; s <= 1000; s++) {
+        const spec = P.phraseSpec(seeded(s), { pairs, level });
+        for (const b of spec.basket) expect(pairs[b.word], b.word).toBe('emma');
+      }
+    }
+    const wider = new Set(Array.from({ length: 300 }, (_, s) => P.phraseSpec(seeded(s + 1), { pairs, all: true }).target.word));
+    expect([...wider].some((k) => k.endsWith('sock') || k.endsWith('shirt'))).toBe(true);
+    // A pair whose basket cannot be shown is no target, and takes its grid with it: without red or pink on the bead,
+    // nothing on the bead or the bag is strong (the bag's grids need beads), so the gate plays word wishes.
+    const beads = Object.fromEntries(['green', 'gold', 'blue', 'brown'].flatMap((c) => ['bag', 'bead'].map((t) => [`${c} ${t}`, 'emma'])).concat([['red bag', 'emma']]));
+    expect(P.phraseTargets({ pairs: beads })).toEqual([]);
+    expect(P.gateKind({ pairs: beads })).toBe('word');
+    // The gate's choice follows the count on any set of Emma's checks.
+    const r = seeded(5);
+    for (let n = 0; n < 200; n++) {
+      const some = Object.fromEntries(P.phraseCombos().map(([c, t]) => [`${c} ${t}`, r() < 0.6 ? 'emma' : 'claude']));
+      const strong = P.phraseTargets({ pairs: some });
+      for (const k of strong) expect(some[k]).toBe('emma');
+      expect(P.gateKind({ pairs: some })).toBe(strong.length >= 6 ? 'phrase' : 'word');
+    }
+  });
+
+  it('each item prints "the", its colour and its thing, says its phrase, and is worn', () => {
+    for (const [c, t] of P.phraseCombos()) {
+      const it = P.phraseItem(c, t);
+      expect(it.word).toBe(`${c} ${t}`);
+      expect(it.parts!.map((p) => p.word)).toEqual(['the', c, t]);
+      expect(it.clip).toBe(`phrase-${c}-${t}`);
+      expect(it.react).toBe('wear');
+      // The log key fits the save's list of last words.
+      expect(it.word.length).toBeLessThanOrEqual(12);
+      const tiers = [DATA.phraseColours.find((x) => x.word === c)!.tier, DATA.phraseThings.find((x) => x.word === t)!.tier];
+      expect(it.tier).toBe(Math.max(...tiers));
+    }
+  });
+
+  it('the hint\'s letter sounds exist and are preloaded; "the" is never sounded', () => {
+    const preloaded = new Set(W.allWishGraphemes());
+    for (const [c, t] of P.phraseCombos()) {
+      const units = phraseUnits(P.phraseItem(c, t).parts!);
+      expect(units[0].map((u) => u.text).join('')).toBe('the');
+      for (const u of units.slice(1).flat()) {
+        expect(phonics.has(u.g), `${c} ${t} ${u.g}`).toBe(true);
+        expect(preloaded.has(u.g), `${c} ${t} ${u.g}`).toBe(true);
+      }
+    }
+    expect(phraseUnits(P.phraseItem('gold', 'bow').parts!).map((w) => w.map((u) => u.g))).toEqual([['th', 'e'], ['g', 'oa', 'l', 'd'], ['b', 'oa']]);
+    expect(new Set(P.allPhraseGraphemes())).toEqual(new Set([...DATA.phraseColours, ...DATA.phraseThings].flatMap((w) => w.sounds ?? w.gpcs)));
+  });
+});
+
+// ---- the phrase print on the page (src/ui/parts.ts phrasePrintEl) ---------------------------------------------------
+
+// The audio entry point reads the page's window when it loads; the print only plays sounds through it.
+vi.mock('../src/audio', () => ({ audio: { say: async () => {}, sound: async () => {}, stop() {} } }));
+
+/** Just enough of a page for a print in node: elements with classes, a style that records writes, and children. */
+class Node {
+  className = '';
+  textContent = '';
+  dataset: Record<string, string> = {};
+  readonly children: Node[] = [];
+  readonly styled: string[] = [];
+  readonly style = new Proxy({} as Record<string, unknown>, {
+    set: (o, k, v) => { this.styled.push(String(k)); o[k as string] = v; return true; },
+    get: (o, k) => (k === 'setProperty' ? (name: string) => this.styled.push(name) : o[k as string]),
+  });
+  readonly classList = {
+    add: (c: string) => { if (!this.has(c)) this.className = `${this.className} ${c}`.trim(); },
+    remove: (c: string) => { this.className = this.className.split(' ').filter((x) => x && x !== c).join(' '); },
+    toggle: (c: string, on?: boolean) => {
+      const want = on ?? !this.has(c);
+      if (want) this.classList.add(c);
+      else this.classList.remove(c);
+      return want;
+    },
+    contains: (c: string) => this.has(c),
+  };
+  offsetWidth = 0;
+  has(c: string): boolean { return this.className.split(' ').includes(c); }
+  appendChild(n: Node): Node { this.children.push(n); return n; }
+  setAttribute(): void {}
+  addEventListener(): void {}
+  removeEventListener(): void {}
+  querySelector(sel: string): Node | null { return this.all().find((n) => n.has(sel.slice(1))) ?? null; }
+  all(): Node[] { return [this, ...this.children.flatMap((n) => n.all())]; }
+}
+
+describe('the phrase print on the page', () => {
+  it('sets no colour of its own on any word: no inline style, and no class that names a colour', async () => {
+    vi.stubGlobal('document', { createElement: () => new Node() });
+    vi.stubGlobal('window', { addEventListener() {}, removeEventListener() {} });
+    const { phrasePrintEl } = await import('../src/ui/parts.ts');
+    const colourWords = /green|gold|blue|brown|red|pink|white|grey|black|yellow|#/;
+    for (const [c, t] of P.phraseCombos()) {
+      const print = phrasePrintEl(P.phraseItem(c, t).parts!);
+      const nodes = () => (print.el as unknown as Node).all();
+      const check = (when: string) => {
+        for (const n of nodes()) {
+          expect(n.styled, `${c} ${t} ${when}: ${n.className}`).toEqual([]);
+          expect(n.className, `${c} ${t} ${when}`).not.toMatch(colourWords);
+        }
+      };
+      check('printed');
+      // The marks of a miss, a sound and the ?contrast=0 glow are classes only, the same for every word.
+      print.glowUnits(print.units.map((_, i) => i));
+      print.units.forEach((_, i) => print.pulse(i));
+      print.glow(true);
+      check('lit');
+      expect(nodes().filter((n) => n.has('diff')).length, `${c} ${t}`).toBe(print.units.length - print.whole.length);
+      print.destroy();
+    }
+    vi.unstubAllGlobals();
+    vi.stubGlobal('location', { pathname: '/' });
   });
 });

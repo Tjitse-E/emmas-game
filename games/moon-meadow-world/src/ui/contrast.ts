@@ -18,3 +18,17 @@ export function diffUnits(a: readonly PrintUnit[], b: readonly PrintUnit[]): { a
   const tail = (n: number) => Array.from({ length: Math.max(0, n - from) }, (_, i) => from + i);
   return { a: tail(a.length), b: tail(b.length) };
 }
+
+/**
+ * The two-word contrast of a phrase (docs/v4/2.3.md section 18): word by word, by position, the units that differ
+ * (the colour against the wish's colour, the thing against its thing), as indexes into each word's units. A word
+ * that is the same lights nothing, and "the" never lights.
+ */
+export function diffPhrase(a: readonly (readonly PrintUnit[])[], b: readonly (readonly PrintUnit[])[]): { a: number[][]; b: number[][] } {
+  const words = a.map((w, i) => {
+    const o = b[i] ?? [];
+    if (w.map((u) => u.text).join('').toLowerCase() === 'the') return { a: [], b: [] };
+    return diffUnits(w, o);
+  });
+  return { a: words.map((w) => w.a), b: words.map((w) => w.b) };
+}

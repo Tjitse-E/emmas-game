@@ -436,6 +436,25 @@ html.mmw-guarded body {
 .print .unit.diff .txt { border-radius: calc(14 * var(--u)); }
 @keyframes mmw-diff-glow { 50% { transform: scale(1.12); box-shadow: 0 0 calc(18 * var(--u)) calc(4 * var(--u)) rgba(255, 210, 94, 0.95); } }
 
+/* The phrase wish (2.3.md section 18): "the green sock" on one line at the word print size, the bubble growing to
+   fit, with a word gap. Every word is in the print ink, never in its own colour. "the" has no dots: it is read whole.
+   The miss tag has two lines, the colour over the thing (Andika 30, no "the"), so the picture moves up further. */
+.print.phrase { white-space: nowrap; }
+.print.phrase .pword { display: flex; align-items: flex-end; }
+.print.phrase .pword + .pword { margin-left: calc(30 * var(--u)); }
+.print.phrase .pword.whole .dot { visibility: hidden; }
+.contrast-tag.two { flex-direction: column; align-items: center; font-size: calc(30 * var(--u)); line-height: 1; padding: calc(2 * var(--u)) calc(10 * var(--u)) calc(3 * var(--u)); bottom: calc(4 * var(--u)); }
+.contrast-tag .tag-line { display: flex; align-items: baseline; }
+.item.tagged.two .item-pic { transform: translateY(-29%) scale(0.5); }
+/* A phrase's differing letters keep the print ink and glow lilac (the print's own mark colour, as the digraph bar),
+   never amber or gold: a gold glow on "green" could point her at the gold picture. The same in the bubble and the
+   tag, and for the whole-word glow of ?contrast=0. */
+.contrast-tag.two .tag-unit.diff, .print.phrase .unit.diff .txt { color: var(--ink); background: rgba(201, 180, 245, 0.6); box-shadow: 0 0 calc(10 * var(--u)) rgba(150, 110, 230, 0.7); }
+.contrast-tag.two.shine .tag-unit.diff, .print.phrase .unit.diff .txt { animation: mmw-phrase-diff-glow 1.1s ease-in-out 3; }
+@keyframes mmw-phrase-diff-glow { 50% { transform: scale(1.12); box-shadow: 0 0 calc(18 * var(--u)) calc(4 * var(--u)) rgba(150, 110, 230, 0.85); } }
+.print.phrase.glow .txt { animation: mmw-phrase-word-glow 1.1s ease-in-out 3; }
+@keyframes mmw-phrase-word-glow { 50% { text-shadow: 0 0 calc(12 * var(--u)) #e3d4ff, 0 0 calc(24 * var(--u)) #c9b4f5; } }
+
 /* The royal picnic's hamper: the basket in red and white gingham with a wicker rim. */
 .wish-moment.kind-picnic .basket {
   background:

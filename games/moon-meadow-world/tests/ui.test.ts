@@ -139,6 +139,49 @@ describe('print', () => {
     expect(u.map((x) => x.tail)).toEqual([false, false, false, true]);
     expect(u[1].g).toBe('a-e');
   });
+
+  // 2.3.0: the phrase wish (docs/v4/2.3.md section 18).
+  it('splits a phrase into its words, each unit printing its letters and saying its letter sound', async () => {
+    const { phraseUnits } = await import('../src/ui/geometry');
+    const w = phraseUnits([
+      { word: 'the', gpcs: ['th', 'e'] },
+      { word: 'gold', gpcs: ['g', 'o', 'l', 'd'], sounds: ['g', 'oa', 'l', 'd'] },
+      { word: 'bow', gpcs: ['b', 'ow'], sounds: ['b', 'oa'] },
+    ]);
+    expect(w.map((x) => x.map((u) => u.text))).toEqual([['th', 'e'], ['g', 'o', 'l', 'd'], ['b', 'ow']]);
+    expect(w.map((x) => x.map((u) => u.g))).toEqual([['th', 'e'], ['g', 'oa', 'l', 'd'], ['b', 'oa']]);
+    // The print decides the digraph bar: ow is two letters for one sound, the o of gold one letter.
+    expect(w[2][1].digraph).toBe(true);
+    expect(w[1][1].digraph).toBe(false);
+  });
+
+  it('prints a phrase in the normal ink: the bubble and the miss tag have no colour of their own for any word', async () => {
+    const { readFileSync } = await import('node:fs');
+    const css = readFileSync(new URL('../src/ui/ui.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, sel, body]) => ({ sel: sel.trim(), body }));
+    const printRules = rules.filter((r) => /\.print|\.contrast-tag|\.wish-bubble|\.tag-unit|\.tag-line|\.pword/.test(r.sel));
+    const inks = printRules.flatMap((r) => [...r.body.matchAll(/(?:^|[;\s])color:\s*([^;]+)/g)].map((m) => m[1].trim()));
+    // The ink, and the marks every word gets alike: a silent e, a sound playing or read back, the letters that differ.
+    expect(new Set(inks)).toEqual(new Set(['var(--ink)', '#8f80a8', '#8a3fc0', '#b25a00']));
+    // No rule singles out a colour word, so "green" never prints green.
+    for (const r of printRules) expect(r.sel, r.sel).not.toMatch(/green|gold|blue|brown|red|pink|colour/);
+    // A phrase's differing letters keep the ink and glow lilac, in the bubble and the tag: the word print's amber and
+    // gold could point her at the gold or brown picture.
+    const gold = /#b25a00|#ffd25e|#ffe08a|rgba\(255,\s*2\d\d,/;
+    const phraseDiff = rules.filter((r) => /\.print\.phrase[^,]*\.diff|\.contrast-tag\.two[^,]*\.diff|\.print\.phrase\.glow/.test(r.sel));
+    expect(phraseDiff.length).toBeGreaterThanOrEqual(3);
+    for (const r of phraseDiff) {
+      expect(r.body, r.sel).not.toMatch(gold);
+      for (const m of r.body.matchAll(/(?:^|[;\s])color:\s*([^;]+)/g)) expect(m[1].trim(), r.sel).toBe('var(--ink)');
+    }
+    const frames = [...css.matchAll(/@keyframes (mmw-phrase-[\w-]+)\s*\{([\s\S]*?\})\s*\}/g)];
+    expect(frames.map((f) => f[1]).sort()).toEqual(['mmw-phrase-diff-glow', 'mmw-phrase-word-glow']);
+    for (const [, name, body] of frames) {
+      expect(body, name).not.toMatch(gold);
+      expect(body, name).not.toMatch(/(?:^|[{;\s])color:/);
+    }
+    for (const r of phraseDiff.filter((x) => /animation:/.test(x.body))) expect(r.body, r.sel).toMatch(/mmw-phrase-/);
+  });
 });
 
 describe('placement', () => {

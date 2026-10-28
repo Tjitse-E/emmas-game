@@ -7,16 +7,25 @@
 // entry is left out. The script stops with a list of every problem, so a broken choice never reaches the game, and
 // it stops when a wish kind has fewer than 6 strong targets (docs/v4/2.2.md 3.1). A picture that v3 draws greyscale
 // and colours at runtime carries v3's default tint (its art manifest's tint.default), so the game colours it too.
+//
+// 2.3.0 adds the phrase wish (docs/v4/2.3.md section 18): "the", a colour and a thing. Its colours, things and "the"
+// are checked here like the words, and every colour on every thing needs an entry in tools/phrase-check.json, keyed
+// "colour thing": 'ok' or 'drop', with `by` (claude, or emma once she has seen the tinted picture) and `why`. A pair
+// without an entry is left out. data.json keeps each ok pair's `by`; the game plays only Emma's pairs unless
+// ?phrases=all. Fewer than 6 strong phrases is a warning, not a stop: the Corner's gate then plays word wishes.
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { LOOK_ALIKE, UNICORN_FOODS } from '../../moon-meadow-home/src/core/heartbeat/feed.ts';
 import { HERD_LOOKS } from '../src/content/looks.ts';
+import { PALETTE } from '../src/wardrobe.ts';
+import { lineFor } from './lines.ts';
 
 const here = resolve(import.meta.dirname, '..');
 const v3 = resolve(here, '../moon-meadow-home');
 const repo = resolve(here, '../..');
 const OUT = join(here, 'src/content/data.json');
 const CHECK = join(here, 'tools/picture-check.json');
+const PHRASE_CHECK = join(here, 'tools/phrase-check.json');
 
 /** Bell names (docs/v4/demo.md part 4): short, decodable, mostly names a girl would give a baby unicorn. */
 const BELL_NAMES = [
@@ -247,6 +256,117 @@ for (const w of FREE_FOODS) {
 }
 if (FREE_FOODS.some((a) => FREE_FOODS.some((b) => a !== b && clash(a, b)))) problems.push('free food: two foods look alike');
 
+// Phrases (docs/v4/2.3.md sections 6 and 18) --------------------------------------------------------------------
+
+/**
+ * The phrase colours: the six whose picture tint a greyscale picture can show (`PALETTE[].pic`). Green, gold, blue
+ * and brown are targets, each with a sibling of the same first letter; red and pink are decoys only. Gold and brown
+ * are not in v3's word packs, so their graphemes and tier are written here in v3's notation (`o.oa`: written o,
+ * said oa; ow is phase 3). The others come from v3 and must match it.
+ */
+const PHRASE_COLOURS: Record<string, { target: boolean; gpcs?: string[]; tier?: 1 | 2 | 3 }> = {
+  green: { target: true },
+  gold: { target: true, gpcs: ['g', 'o.oa', 'l', 'd'], tier: 3 },
+  blue: { target: true },
+  brown: { target: true, gpcs: ['b', 'r', 'ow', 'n'], tier: 2 },
+  red: { target: false },
+  pink: { target: false },
+};
+/**
+ * The phrase things: v3's greyscale word pictures a baby can wear on its head, one syllable, each with a partner of
+ * its first letter from another look-alike group. Cape and coat look alike, cup and mug are not worn, hat, dress and
+ * kite have no partner, ball, balloon, jeans, scarf and skirt have no usable clip, ribbon has two syllables.
+ */
+const PHRASE_THINGS = 'bag bead bow sock shirt';
+/** Multiply cannot show these (geometry.ts safeTint), so no phrase ever names them. */
+const UNTINTABLE = ['white', 'grey', 'black'];
+/** The checkers a phrase pair can have: Claude, or Emma once she has seen the tinted picture with Tjitse. */
+const CHECKERS = ['claude', 'emma'];
+
+/** v3 writes a grapheme said another way as written.said ('ow.oa' in bow): the print and the letter sound. */
+const written = (g: string): string => g.split('.')[0];
+const sounded = (g: string): string => g.split('.').at(-1)!;
+function phraseWord(word: string, gpcs: string[], tier: number) {
+  const print = gpcs.map(written);
+  const sounds = gpcs.map(sounded);
+  const differs = sounds.some((s, i) => s !== print[i]);
+  if (print.join('') !== word) problems.push(`phrase: ${word} is not spelled by ${print.join(' ')}`);
+  if (!oneSyllable(print)) problems.push(`phrase: ${word} is not one syllable`);
+  if (word.length > MAX_LETTERS) problems.push(`phrase: ${word} has more than ${MAX_LETTERS} letters`);
+  if (missingSounds(sounds).length) problems.push(`phrase: ${word} has graphemes without a letter sound: ${missingSounds(sounds).join(' ')}`);
+  return { word, gpcs: print, ...(differs ? { sounds } : {}), tier };
+}
+
+const phraseColours = Object.entries(PHRASE_COLOURS).map(([word, c]) => {
+  const found = bank.get(word);
+  if (UNTINTABLE.includes(word)) problems.push(`phrase: ${word} cannot be shown by a tint`);
+  const pic = (PALETTE as Record<string, { pic?: string }>)[word]?.pic;
+  if (!pic || !/^#[0-9a-f]{6}$/i.test(pic)) problems.push(`phrase: ${word} has no picture tint (PALETTE.${word}.pic)`);
+  if (found && c.gpcs && found.entry.gpcs.join(' ') !== c.gpcs.join(' ')) problems.push(`phrase: ${word} differs from v3's ${found.entry.gpcs.join(' ')}`);
+  const gpcs = c.gpcs ?? found?.entry.gpcs;
+  const tier = c.tier ?? (found ? TIER[found.pack] : undefined);
+  if (!gpcs || !tier) {
+    problems.push(`phrase: ${word} is not in v3's packs and has no graphemes and tier here`);
+    return null;
+  }
+  return { ...phraseWord(word, gpcs, tier), target: c.target };
+}).filter((c) => c !== null);
+
+const phraseThings = words2(PHRASE_THINGS).map((word) => {
+  const found = bank.get(word);
+  if (!found) {
+    problems.push(`phrase: ${word} is not in v3's word packs`);
+    return null;
+  }
+  const { entry, pack } = found;
+  const pic = entry.pic ?? word;
+  const clip = `word-${word}`;
+  if (!pictures.has(pic)) problems.push(`phrase: ${word} has no picture art/words/${pic}.webp`);
+  // The phrase recolours the picture, so it must be one v3 draws greyscale and tints.
+  if (!tints.has(pic)) problems.push(`phrase: ${word}'s picture is not a greyscale picture with a tint`);
+  if (!usableClip(`words-${pack}`, wordManifests.get(pack)!, clip)) problems.push(`phrase: ${word} has no usable clip ${clip}`);
+  const alike = words2(PHRASE_THINGS).filter((o) => o !== word && clash(o, word));
+  return { ...phraseWord(word, entry.gpcs, TIER[pack]), pic, clip, ...(alike.length ? { alike } : {}) };
+}).filter((t) => t !== null);
+
+for (const c of phraseColours) {
+  if (c.target && !phraseColours.some((o) => o.target && o.word !== c.word && first(o.word) === first(c.word))) problems.push(`phrase: target colour ${c.word} has no sibling`);
+  if (!c.target && phraseColours.some((o) => o.target && first(o.word) === first(c.word))) problems.push(`phrase: decoy colour ${c.word} shares a first letter with a target colour`);
+}
+for (const t of phraseThings) {
+  if (!phraseThings.some((o) => o.word !== t.word && first(o.word) === first(t.word) && !clash(o.word, t.word))) problems.push(`phrase: ${t.word} has no partner`);
+}
+
+const theEntry = bank.get('the');
+const phraseThe = theEntry && usableClip(`words-${theEntry.pack}`, wordManifests.get(theEntry.pack)!, 'word-the')
+  ? { word: 'the', gpcs: theEntry.entry.gpcs, clip: 'word-the' }
+  : null;
+if (!phraseThe) problems.push('phrase: "the" is not in v3\'s packs with a usable clip word-the');
+
+/** The phrase's clip ("The green sock."): an ok clip, or a line in tools/lines.ts that waits for gen.sh. */
+const phraseClip = (c: string, t: string): string => `phrase-${c}-${t}`;
+const phraseChecks = existsSync(PHRASE_CHECK) ? readJson<Record<string, Check>>(PHRASE_CHECK) : {};
+const pairs: Record<string, string> = {};
+for (const [key, c] of Object.entries(phraseChecks)) {
+  const [cw, tw, extra] = key.split(' ');
+  if (extra !== undefined || !phraseColours.some((x) => x.word === cw) || !phraseThings.some((x) => x.word === tw)) {
+    problems.push(`phrase check: '${key}' is not "colour thing" of the phrase colours and things`);
+    continue;
+  }
+  if (!['ok', 'drop'].includes(c.verdict)) problems.push(`phrase check: ${key} has verdict '${c.verdict}', not ok or drop`);
+  if (!CHECKERS.includes(c.by)) problems.push(`phrase check: ${key} has by '${c.by}', not ${CHECKERS.join(' or ')}`);
+  if (!c.why) problems.push(`phrase check: ${key} needs "why"`);
+  if (c.verdict === 'ok') pairs[key] = c.by;
+  else notes.push(`phrase ${key}: dropped by the picture check (${c.by})`);
+}
+for (const c of phraseColours) {
+  for (const t of phraseThings) {
+    const key = `${c.word} ${t.word}`;
+    if (!phraseChecks[key]) notes.push(`phrase ${key}: no picture check entry, left out`);
+    if (!lineFor(phraseClip(c.word, t.word))) problems.push(`phrase ${key}: no line for ${phraseClip(c.word, t.word)} in tools/lines.ts`);
+  }
+}
+
 if (problems.length) {
   console.error(`build-content: ${problems.length} problem(s), data.json not written:\n  ` + problems.join('\n  '));
   process.exit(1);
@@ -264,13 +384,18 @@ const words = used.map((w) => {
 });
 
 const data = {
-  note: 'Made by tools/build-content.ts from v3 content, clips and pictures and tools/picture-check.json. Do not edit by hand.',
+  note: 'Made by tools/build-content.ts from v3 content, clips and pictures, tools/picture-check.json and tools/phrase-check.json. Do not edit by hand.',
   herd,
   bells,
   words,
   kinds,
   foods,
   freeFoods: FREE_FOODS,
+  phraseThe,
+  phraseColours,
+  phraseThings,
+  /** Every ok pair ("colour thing") and who checked its tinted picture. */
+  phrasePairs: pairs,
 };
 // One entry per line, so a change to a name or word is a one-line diff.
 const body = Object.entries(data).map(([key, value]) => {
@@ -284,3 +409,18 @@ writeFileSync(OUT, `{\n${body.join(',\n')}\n}\n`);
 for (const n of notes) console.log(`  note: ${n}`);
 console.log(`build-content: wrote ${OUT.slice(here.length + 1)}: ${herd.length} herd names, ${bells.length} bell names, ${words.length} wish words; `
   + Object.entries(kinds).map(([k, v]) => `${k} ${v.pool.length} words, ${v.targets.length} targets (level 1: ${v.level1.length}, level 3: ${v.level3.length})`).join('; '));
+
+// The strong phrases, by the game's own rule (src/content/phrases.ts). It imports src/assets.ts, which reads the
+// page location when it loads, so it gets a stand-in first. The rule takes the tables as arguments, so the data.json
+// it loads with it does not matter.
+(globalThis as { location?: unknown }).location ??= { pathname: '/' };
+// Fewer strong phrases than the game's MIN_PHRASES is a warning, not a stop: the gate then plays word wishes.
+const { MIN_PHRASES, strongPhrases } = await import('../src/content/phrases.ts');
+const tables = { colours: phraseColours, things: phraseThings };
+const byEmma = strongPhrases(tables, new Set(Object.keys(pairs).filter((k) => pairs[k] === 'emma')));
+const byAll = strongPhrases(tables, new Set(Object.keys(pairs)));
+console.log(`build-content: phrases: ${Object.keys(pairs).length} ok pairs, ${Object.values(pairs).filter((b) => b === 'emma').length} checked by Emma; `
+  + `strong ${byEmma.length} (Emma's), ${byAll.length} (?phrases=all)`);
+for (const [who, list] of [['Emma\'s pairs', byEmma], ['all pairs (?phrases=all)', byAll]] as const) {
+  if (list.length < MIN_PHRASES) console.warn(`  warning: ${list.length} strong phrases with ${who}, fewer than ${MIN_PHRASES}: the Dressing Corner's gate plays two dress-up word wishes`);
+}

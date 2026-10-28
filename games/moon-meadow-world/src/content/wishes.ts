@@ -219,9 +219,13 @@ export function allWishClipIds(): string[] {
   return [...new Set(KINDS.flatMap((k) => [...wishWords(k).map((w) => w.clip), ...Object.values(WISH_CLIPS[k]).flat()]))];
 }
 
-/** Every letter sound a wish word can play. */
+/**
+ * Every letter sound a wish word can play, and the phrase wish's (the colours' and things' sounds, phrases.ts; read
+ * from the data here, so this file never imports phrases.ts, which imports it). "the" is never sounded.
+ */
 export function allWishGraphemes(): string[] {
-  return [...new Set(KINDS.flatMap((k) => wishWords(k).flatMap((w) => w.gpcs)))];
+  const phrase = [...(DATA.phraseColours ?? []), ...(DATA.phraseThings ?? [])].flatMap((w) => w.sounds ?? w.gpcs);
+  return [...new Set([...KINDS.flatMap((k) => wishWords(k).flatMap((w) => w.gpcs)), ...phrase])];
 }
 
 /** The four foods of the free-play basket. Tapping one says its clip; dropping it on a unicorn feeds it. */

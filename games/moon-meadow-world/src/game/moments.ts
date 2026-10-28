@@ -1,14 +1,17 @@
 // What the level and the side quests share around a checked moment (moved out of level.ts in 2.2.0): planning a wish
 // with the reading level from its own random stream; running a wish beside a baby; how a baby shows the reactions;
 // and noting a reading result (the results log, the reading level and the save). The maths side (planning an egg
-// sum, noting a maths result) is in maths.ts since 2.3.0.
+// sum, noting a maths result) is in maths.ts since 2.3.0. 2.3.0 adds the phrase wish of the Dressing Corner's gate
+// (docs/v4/2.3.md section 18): planned at its own phrase level, and two dress-up word wishes before Emma's picture
+// check.
 import * as THREE from 'three';
 import type { MomentHooks, MomentResult, Vec2, WishItem, WishSpec } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { dist2 } from '../layout';
 import { CLIPS, phraseSpec, wishSpec } from '../content';
-import { type Game, checked, flat, frameAt, princessAt, say } from './game';
-import { foldReading, readingLevelFor } from './reading';
+import { gateKind as phraseGateKind, theClip } from '../content/phrases';
+import { type Game, checked, flat, frameAt, preload, princessAt, say } from './game';
+import { foldReadingFor, readingLevelFor } from './reading';
 
 const BABY_WIDTH = 5.5;
 /** A worn picture stays on the baby's head this long. */
@@ -158,18 +161,39 @@ export function reactOf(item: WishItem, kind: WishSpec['kind']): 'munch' | 'play
 }
 
 /**
+ * What the Dressing Corner's gate plays this load (the `gk` of the kind=play line): phrase wishes once at least 6
+ * phrases are strong among the pairs Emma has checked (all pairs with ?phrases=all), or else word wishes.
+ */
+export function gateKind(g: Game): 'phrase' | 'word' {
+  return phraseGateKind({ all: g.options.phrasesAll });
+}
+
+/**
  * A wish of `kind` from the stream `label`. The three wishes count for the warm-up (the play's first one is a level
  * lower); the picnic guests and the Corner's phrase reads do not. Targets leave out the last play's and the ones asked
  * earlier today.
  * `?contrast=0` drops the miss contrast (a spec without clips.again keeps v3's miss rule).
+ *
+ * 'phrase' (the Corner's gate, 2.3 section 18) plans at the phrase level (`save.phrases`; `?rl=` forces it too).
+ * While gateKind() is 'word' it plans a 2.2 dress-up word wish at the word level instead. Its intro starts with "Your
+ * baby wants to dress up like you!" (what level.ts says before the nest's dress-up wish), then the usual "Your baby
+ * has a wish!" and its goal. The caller runs either the same way and says nothing of its own before it.
  */
 export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wish: boolean }): WishSpec {
-  const level = readingLevelFor(g.save.data.reading, { warmUp: o.wish && g.today.wishes === 0, forced: g.options.readingLevel });
+  const gateWords = kind === 'phrase' && gateKind(g) === 'word';
+  const own = kind === 'phrase' && !gateWords ? g.save.data.phrases : g.save.data.reading;
+  const level = readingLevelFor(own, { warmUp: o.wish && g.today.wishes === 0, forced: g.options.readingLevel });
   if (o.wish) g.today.wishes++;
   const exclude = [...new Set([...g.save.data.last.words, ...g.today.words])];
   const rand = g.randFor(label);
   const opts = { level, contrast: g.options.contrast };
-  const spec = kind === 'phrase' ? phraseSpec(rand, { ...opts, exclude }) : wishSpec(kind, rand, exclude, opts);
+  let spec: WishSpec;
+  if (gateWords) {
+    spec = wishSpec('dress', rand, exclude, opts);
+    spec.clips = { ...spec.clips, intro: [...CLIPS.dressUp, ...spec.clips.intro] };
+  } else {
+    spec = kind === 'phrase' ? phraseSpec(rand, { ...opts, exclude, all: g.options.phrasesAll }) : wishSpec(kind, rand, exclude, opts);
+  }
   g.today.words.push(spec.target.word);
   return spec;
 }
@@ -180,14 +204,21 @@ export function afterWish(spec: WishSpec): string[] {
   return r === 'wear' ? CLIPS.pretty : r === 'munch' ? CLIPS.yum : CLIPS.yay;
 }
 
-/** Every clip a wish needs besides wishClipIds(spec): the baby's line after it. */
-export const wishExtraClipIds = (spec: WishSpec): string[] => afterWish(spec);
+/** Every clip a wish needs besides wishClipIds(spec): the baby's line after it, and "the" of a phrase (on a tap). */
+export const wishExtraClipIds = (spec: WishSpec): string[] => [...afterWish(spec), ...phraseExtra(spec)];
+/** A tap on the printed "the" of a phrase says the word (v3 word-the): a tricky word is read whole. */
+const phraseExtra = (spec: WishSpec): string[] => (spec.kind === 'phrase' ? [theClip()] : []);
 
-/** A reading result moves the hidden level (unless ?rl= forces one) and goes into the save. */
-export function noteReading(g: Game, outcome: MomentResult['outcome']): void {
+/**
+ * A reading result moves the hidden level of its kind (unless ?rl= forces one) and goes into the save: a phrase read
+ * the phrase level, every word read the word level (reading.ts foldReadingFor).
+ */
+export function noteReading(g: Game, outcome: MomentResult['outcome'], kind: WishSpec['kind']): void {
   if (g.options.readingLevel) return;
   g.save.write((s) => {
-    s.reading = foldReading(s.reading, outcome);
+    const next = foldReadingFor(s, kind, outcome);
+    s.reading = next.reading;
+    s.phrases = next.phrases;
   });
 }
 
@@ -198,7 +229,8 @@ export function noteReading(g: Game, outcome: MomentResult['outcome']): void {
 export async function runWish(g: Game, u: UnicornActor, spec: WishSpec, part: string, o: { frame?: boolean } = {}): Promise<MomentResult> {
   const { layer, world } = g;
   const framed = o.frame !== false;
-  if (framed) await frameWish(g, u);
+  // "the" of a phrase loads while the camera frames (a cache hit when the caller preloaded wishExtraClipIds).
+  await Promise.all([framed ? frameWish(g, u) : undefined, spec.kind === 'phrase' ? preload(g, phraseExtra(spec)) : undefined]);
   const t = momentLog();
   g.openSpec = spec;
   const r: MomentResult = await checked(
@@ -213,7 +245,7 @@ export async function runWish(g: Game, u: UnicornActor, spec: WishSpec, part: st
   g.results.add(part, 'r', r, {
     kind: spec.kind, word: spec.target.word, level: spec.level, size: spec.basket.length, tried: t.tried, decoys: spec.decoys, ...t.flags,
   });
-  noteReading(g, r.outcome);
+  noteReading(g, r.outcome, spec.kind);
   u.lookAt(null);
   await say(g, afterWish(spec));
   if (framed) world.releaseFrame();

@@ -1,5 +1,5 @@
 {
-  "note": "Made by tools/build-content.ts from v3 content, clips and pictures and tools/picture-check.json. Do not edit by hand.",
+  "note": "Made by tools/build-content.ts from v3 content, clips and pictures, tools/picture-check.json and tools/phrase-check.json. Do not edit by hand.",
   "herd": [
     {"name":"Luna","clip":"name-luna"},
     {"name":"Rosie","clip":"name-rosie"},
@@ -127,5 +127,57 @@
     "picnic": {"pool":["plum","corn","cake","peach","pie","toast","leek","treat","milk","mint","tart","cream","lime","mug","plate","mat","pan","pot","bun","grape","bean","jam","loaf","nut","cup","jug","dish","spoon","fork","flask","rug","tray"],"targets":["plum","corn","cake","peach","pie","toast","leek","milk","mint","tart","lime","mug","plate","mat","pan"],"level1":["plum","corn","toast","leek","milk","mint","tart","mug","mat","pan"],"level3":["pie","toast","mint","tart","plate","mat"]}
   },
   "foods": ["plum","corn","cake","peach","pie","toast","leek","treat","milk","mint","tart","cream","lime","bun","grape","bean","jam","loaf","nut"],
-  "freeFoods": ["plum","corn","cake","peach"]
+  "freeFoods": ["plum","corn","cake","peach"],
+  "phraseThe": {
+    "word": "the",
+    "gpcs": ["th","e"],
+    "clip": "word-the"
+  },
+  "phraseColours": [
+    {"word":"green","gpcs":["g","r","ee","n"],"tier":2,"target":true},
+    {"word":"gold","gpcs":["g","o","l","d"],"sounds":["g","oa","l","d"],"tier":3,"target":true},
+    {"word":"blue","gpcs":["b","l","ue"],"tier":3,"target":true},
+    {"word":"brown","gpcs":["b","r","ow","n"],"tier":2,"target":true},
+    {"word":"red","gpcs":["r","e","d"],"tier":1,"target":false},
+    {"word":"pink","gpcs":["p","i","nk"],"tier":1,"target":false}
+  ],
+  "phraseThings": [
+    {"word":"bag","gpcs":["b","a","g"],"tier":1,"pic":"bag","clip":"word-bag"},
+    {"word":"bead","gpcs":["b","ea","d"],"tier":3,"pic":"bead","clip":"word-bead"},
+    {"word":"bow","gpcs":["b","ow"],"sounds":["b","oa"],"tier":3,"pic":"bow","clip":"word-bow"},
+    {"word":"sock","gpcs":["s","o","ck"],"tier":1,"pic":"sock","clip":"word-sock"},
+    {"word":"shirt","gpcs":["sh","ir","t"],"tier":3,"pic":"shirt","clip":"word-shirt"}
+  ],
+  "phrasePairs": {
+    "green bag": "claude",
+    "green bead": "claude",
+    "green bow": "claude",
+    "green sock": "claude",
+    "green shirt": "claude",
+    "gold bag": "claude",
+    "gold bead": "claude",
+    "gold bow": "claude",
+    "gold sock": "claude",
+    "gold shirt": "claude",
+    "blue bag": "claude",
+    "blue bead": "claude",
+    "blue bow": "claude",
+    "blue sock": "claude",
+    "blue shirt": "claude",
+    "brown bag": "claude",
+    "brown bead": "claude",
+    "brown bow": "claude",
+    "brown sock": "claude",
+    "brown shirt": "claude",
+    "red bag": "claude",
+    "red bead": "claude",
+    "red bow": "claude",
+    "red sock": "claude",
+    "red shirt": "claude",
+    "pink bag": "claude",
+    "pink bead": "claude",
+    "pink bow": "claude",
+    "pink sock": "claude",
+    "pink shirt": "claude"
+  }
 }
