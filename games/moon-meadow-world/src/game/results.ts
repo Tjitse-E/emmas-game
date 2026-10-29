@@ -96,7 +96,7 @@ export interface PlayLine {
   cornerMs: number;
   /** Free play's free time (the Corner's music box included). */
   freeMs: number;
-  /** The Corner's gate: phrase reads, or word reads before Emma's picture check, and how many were first tries. */
+  /** The Corner's gate: phrase reads, or word reads with fewer than 6 strong phrases, and how many were first tries. */
   gate: { kind: 'phrase' | 'word'; first: number } | null;
   quests: readonly string[];
   gifts: readonly { field: string; id: string }[];

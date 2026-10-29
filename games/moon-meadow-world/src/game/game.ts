@@ -93,7 +93,7 @@ export interface QuestState {
   over: boolean;
   /** Past the quest cutoff: the picnic and maths bubbles have gone. */
   cut: boolean;
-  /** The Corner's gate: a phrase or (before Emma's picture check) a word wish, and how many reads were first tries. */
+  /** The Corner's gate: a phrase or (with fewer than 6 strong phrases) a word wish, and how many reads were first tries. */
   gate: { kind: 'phrase' | 'word'; first: number } | null;
   /** Lumi has said "Come and try my Dressing Corner!" this play, and "Soon you can ride here!" at the sign. */
   cornerSaid: boolean;

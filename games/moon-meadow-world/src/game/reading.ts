@@ -1,7 +1,7 @@
 // The reading level (docs/v4/2.2.md 3.1): a pure fold over her reading results, kept in the save. Nothing on screen
 // shows it. It decides the wish basket: level 1 has 4 items of the easier graphemes, levels 2 and 3 have 5, and level 3
 // prefers targets with a twin or a frame word. Every checked word read feeds it: the three wishes and the two picnic
-// guests (and the gate's two dress-up wishes before Emma's picture check).
+// guests (and the gate's two dress-up wishes when fewer than 6 phrases are strong).
 //
 // 2.3.0: the phrase wish at the Dressing Corner has its own level, `save.phrases`, the same fold over the gate's
 // phrase reads (docs/v4/2.3.md section 18). A phrase read never moves the word level, and a word read never moves the

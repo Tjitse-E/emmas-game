@@ -218,7 +218,7 @@ export function wishSpec(kind: WordKind, rand: Rand, exclude: readonly string[] 
 // ---- the gate's word wish -------------------------------------------------------------------------------------------
 
 /**
- * The Dressing Corner's gate before Emma's picture check (docs/v4/2.3.md sections 17.4 and 18): two dress-up word
+ * The Dressing Corner's gate with fewer than 6 strong phrases (docs/v4/2.3.md sections 17.4 and 18): two dress-up word
  * wishes after the nest's dress-up wish, so up to three dress-up reads a play. The dress-up set alone is too small for
  * that: its 24 pictures cannot fill three baskets without repeats, and only 5 of its targets have a twin or a frame
  * word for level 3. So the gate's targets are the dress-up targets, and its baskets take the pond and picnic pictures

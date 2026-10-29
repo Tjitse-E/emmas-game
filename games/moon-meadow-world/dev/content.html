@@ -257,7 +257,7 @@
       $('wishes').append(playable(el('div', 'card basket', `<b>${kind}</b> level ${w.level} wants <span class="tag">${w.target.word}</span><br>${items}`), [...w.clips.intro, w.target.clip]));
     }
   }
-  // The gate's word wishes before Emma's picture check: after the nest's dress-up wish, none of its words come back,
+  // The gate's word wishes (fewer than 6 strong phrases): after the nest's dress-up wish, none of its words come back,
   // and the basket borrows pond and picnic pictures where the dress-up set runs short (marked "borrowed").
   for (const level of [1, 2, 3]) {
     const r = C.seeded(level * 41);
