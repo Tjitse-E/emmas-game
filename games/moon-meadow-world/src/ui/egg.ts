@@ -305,7 +305,8 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         const revealing = skin.revealAfterHintLine ? null : skin.reveal();
         // The blanket's whoosh plays out before her line (at most 1 s), or the line cuts it to a click.
         if (revealing) await Promise.race([revealing, sleep(FX_WAIT_MS)]);
-        if (!life.alive) return;
+        // A touch during that wait ends the hint: her line must not start after it.
+        if (!life.alive || !still()) return;
         await audio.sayAll(spec.clips.hint);
         if (!life.alive) return;
         await (revealing ?? skin.reveal());
