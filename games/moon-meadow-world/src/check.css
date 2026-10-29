@@ -1,0 +1,50 @@
+/* The picture check page (check.html). Safari 15: no newer CSS. */
+:root {
+  --ink: #3b2a4a;
+  --soft: #7a6a8a;
+  --line: #eadcf2;
+  --yes: #2f9a52;
+  --yes-bg: #dcf5e3;
+  --no: #c23b4a;
+  --no-bg: #ffe1e4;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; min-height: 100%; background: linear-gradient(#eaf6ff, #fdf2fa) fixed; color: var(--ink);
+  font: 16px/1.35 'Andika', system-ui, sans-serif; -webkit-tap-highlight-color: transparent;
+}
+main { max-width: 1120px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 16px 40px; }
+h1 { font-size: 24px; margin: 0 0 4px; }
+.note { font-size: 14px; color: var(--soft); margin: 0 0 10px; max-width: 760px; }
+.status { font-size: 15px; background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 8px 12px; margin: 0 0 14px; }
+.status.warn { background: #fff4d6; border-color: #f2d58a; }
+
+.grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+
+.card { background: #fff; border: 3px solid var(--line); border-radius: 22px; padding: 10px 10px 12px; text-align: center; }
+.card.tick { border-color: var(--yes); background: var(--yes-bg); }
+.card.cross { border-color: var(--no); background: var(--no-bg); }
+/* The picture in the game's basket cell (ui.css .item and .item-pic): cream with a sand border, the picture at 82%. */
+.cell { width: 100%; max-width: 156px; height: 150px; margin: 0 auto; background: #fffaf0; border: 5px solid #f0c995; border-radius: 34px;
+  display: flex; align-items: center; justify-content: center; }
+.cell .pic { width: 82%; height: 82%; }
+.words { font-size: 13px; color: var(--soft); margin: 6px 0 8px; min-height: 18px; }
+.words .file { display: inline-block; font-size: 11px; background: #ffe0f0; color: #a0306a; border-radius: 6px; padding: 0 5px; margin-left: 4px; }
+.buttons { display: flex; gap: 10px; justify-content: center; }
+.buttons button {
+  flex: 1 1 0; max-width: 84px; height: 72px; border-radius: 18px; border: 3px solid var(--line); background: #fff;
+  display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; touch-action: manipulation;
+}
+.buttons button svg { width: 40px; height: 40px; }
+.buttons .yes svg path { stroke: var(--yes); }
+.buttons .no svg path { stroke: var(--no); }
+.buttons .yes.on { background: var(--yes); border-color: var(--yes); }
+.buttons .no.on { background: var(--no); border-color: var(--no); }
+.buttons button.on svg path { stroke: #fff; }
+
+.foot { margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--soft); }
+.foot button, .foot a { font: inherit; font-size: 14px; color: var(--ink); background: #fff; border: 2px solid var(--line); border-radius: 12px;
+  padding: 8px 14px; text-decoration: none; touch-action: manipulation; }
+.foot .list { flex-basis: 100%; font-size: 13px; word-break: break-word; }

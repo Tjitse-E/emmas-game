@@ -3,7 +3,8 @@ import { defineConfig, type Plugin } from 'vite';
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { join, normalize, resolve } from 'node:path';
 
-const repo = resolve(import.meta.dirname, '../..');
+const here = import.meta.dirname;
+const repo = resolve(here, '../..');
 const v3Public = join(repo, 'games/moon-meadow-home/public');
 const phonics = join(repo, 'shared/audio/phonics');
 
@@ -47,7 +48,11 @@ export default defineConfig({
   // Parallel lanes each run their own dev server; MMW_VITE_CACHE keeps their dependency caches apart.
   cacheDir: process.env.MMW_VITE_CACHE ?? 'node_modules/.vite',
   plugins: [v3Assets()],
-  build: { target: 'safari15', outDir: 'dist', assetsInlineLimit: 0 },
+  // Two pages: the game, and Emma's picture check of the phrase pictures (check.html, docs/v4/2.3.md section 18).
+  build: {
+    target: 'safari15', outDir: 'dist', assetsInlineLimit: 0,
+    rolldownOptions: { input: { index: join(here, 'index.html'), check: join(here, 'check.html') } },
+  },
   server: { fs: { allow: [repo] } },
   test: { include: ['tests/**/*.test.ts'], environment: 'node' },
 });

@@ -161,6 +161,31 @@ describe('the gate wish and the two levels in the save', () => {
     expect(g.today.wishes).toBe(0);
   });
 
+  it('before Emma\'s check no gate read repeats a word of the play\'s dress-up wish or of the first gate read', () => {
+    DATA.phrasePairs = claudeOnly();
+    for (const level of [1, 2, 3] as const) {
+      for (let s = 0; s < 200; s++) {
+        const { g } = fakeGame({ reading: level });
+        (g as { randFor: (l: string) => () => number }).randFor = (l: string) => seeded(s * 7 + l.length);
+        const seen = new Set<string>();
+        const wish1 = planWish(g, 'dress', 'wish1', { wish: true });
+        for (const b of wish1.basket) seen.add(b.word);
+        for (const part of ['gate1', 'gate2']) {
+          const spec = planWish(g, 'phrase', part, { wish: false });
+          expect(spec.kind).toBe('dress');
+          for (const b of spec.basket) expect(seen.has(b.word), `${part} ${b.word}`).toBe(false);
+          for (const b of spec.basket) seen.add(b.word);
+        }
+      }
+    }
+    // A new play (level.ts gives it a new g.today) starts with nothing to avoid.
+    const { g } = fakeGame({ reading: 2 });
+    const a = planWish(g, 'phrase', 'gate1', { wish: false });
+    g.today = { wishes: 0, words: [] };
+    const b = planWish(g, 'phrase', 'gate1', { wish: false });
+    expect(b.basket.map((x) => x.word)).toEqual(a.basket.map((x) => x.word));
+  });
+
   it('with ?phrases=all, or once Emma has checked enough, it plans a phrase wish at the phrase level', () => {
     DATA.phrasePairs = claudeOnly();
     for (const [all, pairsNow] of [[true, claudeOnly()], [false, emmaAll()]] as const) {

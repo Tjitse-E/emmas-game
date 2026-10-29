@@ -104,9 +104,11 @@ export interface BasketPlan {
  * letter (or else one with the same last letter), one any. Levels 2 and 3 (5 items), in this order: the twin, a frame
  * word (same first and last letter), the same first letter until 3 share it, a rhyme with another first letter, the
  * same last letter while fewer than 2 share it, the same letter count while fewer than 2 match, then any word. Never
- * two look-alikes or two of one picture, only words of `pool`, never one of the 11 bad words.
+ * two look-alikes or two of one picture, only words of `pool`, never one of the 11 bad words. With `prefer` each step
+ * takes a preferred word whenever one fits (the gate's dress-up words over the words it borrows), and another word
+ * only where none does.
  */
-export function planBasket(target: WordData, pool: readonly WordData[], level: ReadingLevel, rand: Rand): BasketPlan {
+export function planBasket(target: WordData, pool: readonly WordData[], level: ReadingLevel, rand: Rand, prefer?: (w: WordData) => boolean): BasketPlan {
   const n = BASKET_SIZE[level];
   const words: WordData[] = [target];
   const decoys: Record<string, WishDecoy> = {};
@@ -153,7 +155,8 @@ export function planBasket(target: WordData, pool: readonly WordData[], level: R
   const fits = (w: WordData) => words.length < n && !words.some((c) => alike(c, w));
   /** Add one word of `cands` that fits, picked at random, preferring one that keeps the later steps possible. */
   const add = (cands: readonly WordData[], why: WishDecoy): boolean => {
-    const open = shuffle(rand, cands).filter(fits);
+    let open = shuffle(rand, cands).filter(fits);
+    if (prefer) open = [...open.filter(prefer), ...open.filter((x) => !prefer(x))];
     const w = open.find(keeps) ?? open[0];
     if (!w) return false;
     words.push(w);
@@ -206,6 +209,80 @@ export function wishSpec(kind: WordKind, rand: Rand, exclude: readonly string[] 
     kind,
     target: item(kind, target),
     basket: shuffle(rand, plan.words).map((w) => item(kind, w)),
+    level,
+    decoys: plan.decoys,
+    clips: o.contrast === false ? v3Rule : { ...v3Rule, again },
+  };
+}
+
+// ---- the gate's word wish -------------------------------------------------------------------------------------------
+
+/**
+ * The Dressing Corner's gate before Emma's picture check (docs/v4/2.3.md sections 17.4 and 18): two dress-up word
+ * wishes after the nest's dress-up wish, so up to three dress-up reads a play. The dress-up set alone is too small for
+ * that: its 24 pictures cannot fill three baskets without repeats, and only 5 of its targets have a twin or a frame
+ * word for level 3. So the gate's targets are the dress-up targets, and its baskets take the pond and picnic pictures
+ * she also reads (every one with its ok clip and picture check) where no dress-up word fits a step. Its level 3 asks
+ * the dress-up targets with a twin or a frame word among all of them.
+ */
+const GATE_BORROWS: readonly ('bath' | 'picnic')[] = ['bath', 'picnic'];
+
+/** Is this a dress-up word (a picture of the dress-up set)? */
+export function isDressWord(w: Pick<WordData, 'word'>): boolean {
+  return DATA.kinds.dress.pool.includes(w.word);
+}
+
+/** The gate's pictures: the dress-up set first, then the pond and picnic pictures it may borrow. */
+export function gateWords(): WordData[] {
+  const words = [...DATA.kinds.dress.pool, ...GATE_BORROWS.flatMap((k) => DATA.kinds[k].pool)];
+  return [...new Set(words)].map(wordData);
+}
+
+/** A twin, or a frame word (the same first and last letter), that can share the target's basket. */
+function hasNear(t: WordData, pool: readonly WordData[]): boolean {
+  return pool.some((w) => !alike(w, t) && (!!t.twins?.includes(w.word) || (firstLetter(w) === firstLetter(t) && lastLetter(w) === lastLetter(t))));
+}
+
+/**
+ * The words a gate word wish can ask for at a reading level: dress-up targets only, at level 3 those with a twin or
+ * a frame word in `pool` (the gate's pictures, or what is left of them).
+ */
+export function gateTargets(level: ReadingLevel, pool: readonly WordData[] = gateWords()): WordData[] {
+  const d = DATA.kinds.dress;
+  if (level === 1) return d.level1.map(wordData);
+  const targets = d.targets.map(wordData);
+  return level === 2 ? targets : targets.filter((t) => hasNear(t, pool));
+}
+
+export interface GateWordOpts extends WishOpts {
+  /** The words of this play's earlier dress-up reads (targets and baskets): never in this one. */
+  avoid?: readonly string[];
+}
+
+/**
+ * A gate word wish: kind 'dress' (worn, logged as dress), with a dress-up target that is not in `exclude` and not in
+ * `avoid` while one is left, and a basket without any `avoid` word, dress-up pictures first. Level 3 without a fresh
+ * target plays and logs as level 2, and so does level 1 when every level 1 target is in `avoid` (both baskets before
+ * it held only level 1 targets: about 1 read in 6,000), so no word of this play comes back.
+ */
+export function gateWordSpec(rand: Rand, o: GateWordOpts = {}): WishSpec {
+  const avoid = new Set(o.avoid ?? []);
+  const out = new Set([...(o.exclude ?? []), ...avoid]);
+  const fresh = (ws: WordData[]) => ws.filter((w) => !out.has(w.word));
+  const unseen = (ws: WordData[]) => ws.filter((w) => !avoid.has(w.word));
+  const pool = gateWords().filter((w) => !avoid.has(w.word));
+  let level: ReadingLevel = o.level ?? 2;
+  if (level === 3 && !fresh(gateTargets(3, pool)).length) level = 2;
+  if (level === 1 && !unseen(gateTargets(1)).length) level = 2;
+  const targets = gateTargets(level, pool);
+  // A target asked in the last play comes back before a word she has seen in this play's baskets.
+  const target = pick(rand, fresh(targets).length ? fresh(targets) : unseen(targets).length ? unseen(targets) : targets);
+  const plan = planBasket(target, pool, level, rand, isDressWord);
+  const { again, ...v3Rule } = WISH_CLIPS.dress;
+  return {
+    kind: 'dress',
+    target: item('dress', target),
+    basket: shuffle(rand, plan.words).map((w) => item('dress', w)),
     level,
     decoys: plan.decoys,
     clips: o.contrast === false ? v3Rule : { ...v3Rule, again },

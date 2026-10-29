@@ -10,6 +10,7 @@ import type { UnicornActor } from '../actors';
 import { dist2 } from '../layout';
 import { CLIPS, phraseSpec, wishSpec } from '../content';
 import { gateKind as phraseGateKind, theClip } from '../content/phrases';
+import { gateWordSpec } from '../content/wishes';
 import { type Game, checked, flat, frameAt, preload, princessAt, say } from './game';
 import { foldReadingFor, readingLevelFor } from './reading';
 
@@ -169,15 +170,28 @@ export function gateKind(g: Game): 'phrase' | 'word' {
 }
 
 /**
+ * The words of this play's dress-up reads so far (targets and baskets: the nest's wish and the gate's word wishes),
+ * per play: level.ts gives every play a new `g.today`.
+ */
+const dressWords = new WeakMap<Game['today'], Set<string>>();
+function dressWordsOf(g: Game): Set<string> {
+  let s = dressWords.get(g.today);
+  if (!s) dressWords.set(g.today, (s = new Set()));
+  return s;
+}
+
+/**
  * A wish of `kind` from the stream `label`. The three wishes count for the warm-up (the play's first one is a level
  * lower); the picnic guests and the Corner's phrase reads do not. Targets leave out the last play's and the ones asked
  * earlier today.
  * `?contrast=0` drops the miss contrast (a spec without clips.again keeps v3's miss rule).
  *
  * 'phrase' (the Corner's gate, 2.3 section 18) plans at the phrase level (`save.phrases`; `?rl=` forces it too).
- * While gateKind() is 'word' it plans a 2.2 dress-up word wish at the word level instead. Its intro starts with "Your
- * baby wants to dress up like you!" (what level.ts says before the nest's dress-up wish), then the usual "Your baby
- * has a wish!" and its goal. The caller runs either the same way and says nothing of its own before it.
+ * While gateKind() is 'word' it plans a dress-up word wish at the word level instead (wishes.ts gateWordSpec): no
+ * word of the play's earlier dress-up reads (the nest's wish, the first gate read) comes back in it, and its basket
+ * borrows pond and picnic pictures where the dress-up set runs short. Its intro starts with "Your baby wants to dress
+ * up like you!" (what level.ts says before the nest's dress-up wish), then the usual "Your baby has a wish!" and its
+ * goal. The caller runs either the same way and says nothing of its own before it.
  */
 export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wish: boolean }): WishSpec {
   const gateWords = kind === 'phrase' && gateKind(g) === 'word';
@@ -189,11 +203,12 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   const opts = { level, contrast: g.options.contrast };
   let spec: WishSpec;
   if (gateWords) {
-    spec = wishSpec('dress', rand, exclude, opts);
+    spec = gateWordSpec(rand, { ...opts, exclude, avoid: [...dressWordsOf(g)] });
     spec.clips = { ...spec.clips, intro: [...CLIPS.dressUp, ...spec.clips.intro] };
   } else {
     spec = kind === 'phrase' ? phraseSpec(rand, { ...opts, exclude, all: g.options.phrasesAll }) : wishSpec(kind, rand, exclude, opts);
   }
+  if (spec.kind === 'dress') for (const w of [spec.target, ...spec.basket]) dressWordsOf(g).add(w.word);
   g.today.words.push(spec.target.word);
   return spec;
 }
