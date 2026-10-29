@@ -3,10 +3,11 @@
 // against shirt, bow against bead. "the" is printed in every phrase and never decides an answer.
 //
 // The colours, the things and "the" come from data.json, checked against v3 by tools/build-content.ts. A pair plays
-// only when its tinted picture passed the picture check (tools/phrase-check.json): in the live game only the pairs
-// Emma has checked ("by": "emma" in the file, or a tick from check.html on her iPad, where a cross turns a pair off:
-// phrase-device.ts), with ?phrases=all every ok pair of the file. With fewer than 6 strong phrases the gate plays two
-// dress-up word wishes instead (gateKind, and planWish in game/moments.ts).
+// only when its tinted picture passed the picture check (tools/phrase-check.json): in the live game every ok pair of
+// the file, Claude's checks too, minus each pair crossed on check.html on her iPad (phrase-device.ts). ?phrases=emma
+// keeps the 2.3.0 rule (only the pairs Emma has checked), ?phrases=all every ok pair whatever the iPad holds. With
+// fewer than 6 strong phrases the gate plays two dress-up word wishes instead (gateKind, and planWish in
+// game/moments.ts).
 //
 // The basket is a two by two grid plus one:
 //   level 1 (4 items): {colour, a target colour of another first letter} x {thing, its partner}. The colours differ
@@ -21,7 +22,7 @@ import type { Colour, WishDecoy, WishItem, WishSpec } from '../contracts.ts';
 import { wordPic } from '../assets.ts';
 import { PALETTE } from '../wardrobe.ts';
 import { DATA, type PhraseColourData, type PhraseThingData, type PhraseWordData } from './data.ts';
-import { type DeviceChecks, checkedPairs, readDeviceChecks } from './phrase-device.ts';
+import { type DeviceChecks, type PhraseRule, checkedPairs, readDeviceChecks } from './phrase-device.ts';
 import { WISH_CLIPS, type WishOpts } from './wishes.ts';
 import { type Rand, pick, shuffle } from './rand.ts';
 
@@ -111,22 +112,26 @@ export function strongPhrases(t: PhraseTables, allowed: ReadonlySet<string>): st
 
 /**
  * Which pairs a play may use: who checked each ok pair (data.json, or a test's own), Emma's verdicts on this device,
- * and whether ?phrases=all.
+ * and the rule of ?phrases= (phrase-device.ts).
  */
 export interface PhraseScope {
-  /** ?phrases=all: every ok pair, Claude's checks too (the flows and dev); the device's verdicts do not count. */
-  all?: boolean;
+  /**
+   * 'default' (the live game): every ok pair minus this device's crosses. 'emma' (?phrases=emma): only Emma's checks.
+   * 'all' (?phrases=all, the flows and dev): every ok pair; the device's verdicts do not count.
+   */
+  rule?: PhraseRule;
   /** The ok pairs and who checked them; data.json's by default. */
   pairs?: Readonly<Record<string, string>>;
   /** The colours and things; data.json's by default. */
   tables?: PhraseTables;
-  /** Emma's verdicts from check.html: a tick checks a pair, a cross turns it off. This device's by default. */
+  /** Emma's verdicts from check.html: a cross turns a pair off, a tick checks it for 'emma'. This device's by default. */
   device?: DeviceChecks;
 }
 
-/** The pairs (keys) the scope allows: Emma's (the file's and this device's), or every ok pair with ?phrases=all. */
+/** The pairs (keys) the scope allows, by its rule over the file's ok pairs and this device's verdicts. */
 export function allowedPairs(o: PhraseScope = {}): Set<string> {
-  return checkedPairs(o.pairs ?? DATA.phrasePairs ?? {}, o.all ? {} : (o.device ?? readDeviceChecks()), !!o.all);
+  const rule = o.rule ?? 'default';
+  return checkedPairs(o.pairs ?? DATA.phrasePairs ?? {}, rule === 'all' ? {} : (o.device ?? readDeviceChecks()), rule);
 }
 
 const strongCache = new Map<string, string[]>();

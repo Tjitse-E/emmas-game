@@ -1,6 +1,7 @@
 // The address options of the game (README "Address options"). The world reads its own (?pr=, ?aa=) at createWorld.
 import { type Band, parseBand } from './band';
 import { type ReadingLevel, parseLevel } from './reading';
+import { type PhraseRule, parsePhraseRule } from '../content/phrase-device';
 
 /** The afternoon's quests (2.3 section 17): the picnic, the two maths quests in turn, the Dressing Corner. */
 export type QuestId = 'picnic' | 'rack' | 'beads' | 'corner';
@@ -27,10 +28,12 @@ export interface GameOptions {
   /** ?pl=1|2|3: every pattern at this level, and the pattern level is not stored. */
   patternLevel: ReadingLevel | null;
   /**
-   * ?phrases=all: the phrase wish also uses the tinted pictures only Claude has checked (the flows and dev). Without
-   * it only pairs Emma has checked play, and with fewer than 6 strong ones the gate plays two dress-up word wishes.
+   * ?phrases=emma|all: which tinted pictures the phrase wish uses. Without it every ok pair of the picture check plays,
+   * Claude's too, minus the ones crossed on check.html on this device. emma: only the pairs Emma has checked (2.3.0's
+   * rule). all: every ok pair whatever the device holds (the flows and dev). With fewer than 6 strong ones the gate
+   * plays two dress-up word wishes.
    */
-  phrasesAll: boolean;
+  phraseRule: PhraseRule;
   /** ?box=<seconds>: the music box plays this long at the start mirror and the Corner (the flows use 5). */
   boxMs: number | null;
   /** ?portrait=0: the customiser keeps her normal detail (to compare the frame rate on the iPad). */
@@ -51,7 +54,7 @@ export function parseOptions(search: string, now = Date.now()): GameOptions {
     contrast: p.get('contrast') !== '0',
     quest: (QUEST_IDS as readonly string[]).includes(quest ?? '') ? (quest as QuestId) : null,
     patternLevel: parseLevel(p.get('pl')),
-    phrasesAll: p.get('phrases') === 'all',
+    phraseRule: parsePhraseRule(p.get('phrases')),
     boxMs: Number(p.get('box')) > 0 ? Math.round(Number(p.get('box')) * 1000) : null,
     portrait: p.get('portrait') !== '0',
     perf: p.get('perf') === '1',

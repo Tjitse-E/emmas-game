@@ -11,10 +11,10 @@
 // 2.3.0 adds the phrase wish (docs/v4/2.3.md section 18): "the", a colour and a thing. Its colours, things and "the"
 // are checked here like the words, and every colour on every thing needs an entry in tools/phrase-check.json, keyed
 // "colour thing": 'ok' or 'drop', with `by` (claude, or emma once she has seen the tinted picture) and `why`. A pair
-// without an entry is left out. data.json keeps each ok pair's `by`; the game plays only Emma's pairs unless
-// ?phrases=all. Emma's pairs are the ones with "by": "emma" here and the ones ticked on her iPad's picture check
-// (check.html, src/content/phrase-device.ts), which needs no rebuild. Fewer than 6 strong phrases is a warning, not a
-// stop: the Corner's gate then plays word wishes.
+// without an entry is left out. data.json keeps each ok pair's `by`. The game plays every ok pair, Claude's checks too,
+// minus the ones crossed on her iPad's picture check (check.html, src/content/phrase-device.ts), which needs no
+// rebuild. ?phrases=emma plays only Emma's pairs: "by": "emma" here and the ones ticked on her iPad. Fewer than 6
+// strong phrases is a warning, not a stop: the Corner's gate then plays word wishes.
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { LOOK_ALIKE, UNICORN_FOODS } from '../../moon-meadow-home/src/core/heartbeat/feed.ts';
@@ -416,14 +416,14 @@ console.log(`build-content: wrote ${OUT.slice(here.length + 1)}: ${herd.length} 
 // page location when it loads, so it gets a stand-in first. The rule takes the tables as arguments, so the data.json
 // it loads with it does not matter.
 (globalThis as { location?: unknown }).location ??= { pathname: '/' };
-// Fewer strong phrases than the game's MIN_PHRASES is a warning, not a stop: the gate then plays word wishes.
+// Fewer strong phrases than the game's MIN_PHRASES is a warning, not a stop: the gate then plays word wishes. The game
+// plays every ok pair on a device without crosses (as ?phrases=all), so that count is the one that warns; Emma's own
+// count is what ?phrases=emma plays.
 const { MIN_PHRASES, strongPhrases } = await import('../src/content/phrases.ts');
 const tables = { colours: phraseColours, things: phraseThings };
 const byEmma = strongPhrases(tables, new Set(Object.keys(pairs).filter((k) => pairs[k] === 'emma')));
 const byAll = strongPhrases(tables, new Set(Object.keys(pairs)));
 console.log(`build-content: phrases: ${Object.keys(pairs).length} ok pairs, ${Object.values(pairs).filter((b) => b === 'emma').length} checked by Emma; `
-  + `strong ${byEmma.length} (Emma's), ${byAll.length} (?phrases=all)`);
-for (const [who, list] of [['Emma\'s pairs', byEmma], ['all pairs (?phrases=all)', byAll]] as const) {
-  if (list.length < MIN_PHRASES) console.warn(`  warning: ${list.length} strong phrases with ${who}, fewer than ${MIN_PHRASES}: the Dressing Corner's gate plays two dress-up word wishes`
-    + (who === 'Emma\'s pairs' ? ' (unless her iPad\'s picture check, check.html, ticks enough)' : ''));
-}
+  + `strong ${byAll.length} (the game, before any cross on check.html), ${byEmma.length} (Emma's only, ?phrases=emma)`);
+if (byAll.length < MIN_PHRASES) console.warn(`  warning: ${byAll.length} strong phrases, fewer than ${MIN_PHRASES}: the Dressing Corner's gate plays two dress-up word wishes`);
+else if (byEmma.length < MIN_PHRASES) console.log(`  note: with ?phrases=emma the gate plays two dress-up word wishes until Emma's checks make ${MIN_PHRASES} strong phrases`);

@@ -239,13 +239,14 @@
       if (on) { card.dataset.why = card.title; card.title = ''; } else card.title = card.dataset.why ?? '';
     }
   });
-  const strongEmma = P.phraseTargets({ all: false });
-  const strongAll = P.phraseTargets({ all: true });
-  $('phrase-status').innerHTML = `Strong phrases: <b>${strongEmma.length}</b> with Emma's checks (the file's and this browser's check.html ticks), <b>${strongAll.length}</b> with Claude's too (<code>?phrases=all</code>). `
-    + `The live gate plays <b>${P.gateKind({ all: false }) === 'phrase' ? 'phrase wishes' : 'two dress-up word wishes'}</b>.`;
+  const strongOn = P.phraseTargets({});
+  const strongEmma = P.phraseTargets({ rule: 'emma' });
+  const strongAll = P.phraseTargets({ rule: 'all' });
+  $('phrase-status').innerHTML = `Strong phrases: <b>${strongOn.length}</b> on in the game (every ok pair, minus this browser's check.html crosses), <b>${strongEmma.length}</b> with Emma's checks only (<code>?phrases=emma</code>), <b>${strongAll.length}</b> with every ok pair (<code>?phrases=all</code>). `
+    + `The live gate plays <b>${P.gateKind({}) === 'phrase' ? 'phrase wishes' : 'two dress-up word wishes'}</b>.`;
 
   for (const level of [1, 2, 3]) {
-    const w = P.phraseSpec(C.seeded(level * 13), { level, all: true });
+    const w = P.phraseSpec(C.seeded(level * 13), { level, rule: 'all' });
     const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}">${picHtml(i.pic, i.tint)}<b>${i.word}</b><small>${w.decoys[i.word] ?? 'wish'}</small></span>`).join('');
     $('wishes').append(playable(el('div', 'card basket', `<b>phrase</b> level ${w.level} wants <span class="tag">the ${w.target.word}</span><br>${items}`), [...w.clips.intro, w.target.clip]));
   }

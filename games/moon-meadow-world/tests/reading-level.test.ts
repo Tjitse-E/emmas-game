@@ -5,6 +5,7 @@ import type { MomentResult, Outcome, WishSpec } from '../src/contracts';
 import type { Game } from '../src/game/game';
 import type { UnicornActor } from '../src/actors';
 import { type ReadingState, foldReading, foldReadingFor, levelOf, parseLevel, readingLevelFor, startReading } from '../src/game/reading';
+import type { PhraseRule } from '../src/content/phrase-device';
 
 // src/assets.ts reads the page location when it loads, and the audio entry point the page's window; the game side
 // here needs only the audio calls.
@@ -120,7 +121,8 @@ describe('the gate wish and the two levels in the save', () => {
   /** Emma has checked every pair. */
   const emmaAll = () => Object.fromEntries(Object.keys(pairs).map((k) => [k, 'emma']));
 
-  function fakeGame(o: { reading?: 1 | 2 | 3; phrases?: 1 | 2 | 3; all?: boolean; forced?: 1 | 2 | 3; outcome?: Outcome } = {}) {
+  /** `rule` is ?phrases= (the default rule without it). */
+  function fakeGame(o: { reading?: 1 | 2 | 3; phrases?: 1 | 2 | 3; rule?: PhraseRule; forced?: 1 | 2 | 3; outcome?: Outcome } = {}) {
     const data = {
       reading: { level: o.reading ?? 2, recent: [] as Outcome[] },
       phrases: { level: o.phrases ?? 2, recent: [] as Outcome[] },
@@ -130,7 +132,7 @@ describe('the gate wish and the two levels in the save', () => {
     const result: MomentResult = { outcome: o.outcome ?? 'first' } as MomentResult;
     const g = {
       save: { data, write: (fn: (s: typeof data) => void) => fn(data) },
-      options: { readingLevel: o.forced ?? null, contrast: true, phrasesAll: !!o.all },
+      options: { readingLevel: o.forced ?? null, contrast: true, phraseRule: o.rule ?? 'default' },
       today: { wishes: 0, words: [] as string[] },
       randFor: () => seeded(3),
       run: { w: <T>(p: Promise<T>) => p },
@@ -145,9 +147,18 @@ describe('the gate wish and the two levels in the save', () => {
   }
   const baby = { headTop: () => ({ x: 0, y: 1, z: 0 }), lookAt() {} } as unknown as UnicornActor;
 
-  it('before Emma\'s check the gate plans a 2.2 dress-up word wish at the word level, with the dress-up line first', () => {
+  it('on a fresh device the gate plans a phrase wish from the live data, Claude\'s checks too', () => {
+    const { g } = fakeGame({ reading: 3, phrases: 1 });
+    expect(gateKind(g)).toBe('phrase');
+    const spec = planWish(g, 'phrase', 'gate1', { wish: false });
+    expect(spec.kind).toBe('phrase');
+    expect(spec.level).toBe(1);
+    expect(DATA.phrasePairs[spec.target.word]).toBeDefined();
+  });
+
+  it('with ?phrases=emma before Emma\'s check the gate plans a 2.2 dress-up word wish at the word level, with the dress-up line first', () => {
     DATA.phrasePairs = claudeOnly();
-    const { g } = fakeGame({ reading: 1, phrases: 3 });
+    const { g } = fakeGame({ reading: 1, phrases: 3, rule: 'emma' });
     expect(gateKind(g)).toBe('word');
     const spec = planWish(g, 'phrase', 'gate1', { wish: false });
     expect(spec.kind).toBe('dress');
@@ -161,11 +172,11 @@ describe('the gate wish and the two levels in the save', () => {
     expect(g.today.wishes).toBe(0);
   });
 
-  it('before Emma\'s check no gate read repeats a word of the play\'s dress-up wish or of the first gate read', () => {
+  it('with ?phrases=emma before Emma\'s check no gate read repeats a word of the play\'s dress-up wish or of the first gate read', () => {
     DATA.phrasePairs = claudeOnly();
     for (const level of [1, 2, 3] as const) {
       for (let s = 0; s < 200; s++) {
-        const { g } = fakeGame({ reading: level });
+        const { g } = fakeGame({ reading: level, rule: 'emma' });
         (g as { randFor: (l: string) => () => number }).randFor = (l: string) => seeded(s * 7 + l.length);
         const seen = new Set<string>();
         const wish1 = planWish(g, 'dress', 'wish1', { wish: true });
@@ -179,18 +190,17 @@ describe('the gate wish and the two levels in the save', () => {
       }
     }
     // A new play (level.ts gives it a new g.today) starts with nothing to avoid.
-    const { g } = fakeGame({ reading: 2 });
+    const { g } = fakeGame({ reading: 2, rule: 'emma' });
     const a = planWish(g, 'phrase', 'gate1', { wish: false });
     g.today = { wishes: 0, words: [] };
     const b = planWish(g, 'phrase', 'gate1', { wish: false });
     expect(b.basket.map((x) => x.word)).toEqual(a.basket.map((x) => x.word));
   });
 
-  it('with ?phrases=all, or once Emma has checked enough, it plans a phrase wish at the phrase level', () => {
-    DATA.phrasePairs = claudeOnly();
-    for (const [all, pairsNow] of [[true, claudeOnly()], [false, emmaAll()]] as const) {
+  it('by default, with ?phrases=all, or with ?phrases=emma once Emma has checked enough, it plans a phrase wish at the phrase level', () => {
+    for (const [rule, pairsNow] of [['default', claudeOnly()], ['all', claudeOnly()], ['emma', emmaAll()]] as const) {
       DATA.phrasePairs = pairsNow;
-      const { g } = fakeGame({ reading: 3, phrases: 1, all });
+      const { g } = fakeGame({ reading: 3, phrases: 1, rule });
       expect(gateKind(g)).toBe('phrase');
       const spec = planWish(g, 'phrase', 'gate1', { wish: false });
       expect(spec.kind).toBe('phrase');
@@ -201,7 +211,7 @@ describe('the gate wish and the two levels in the save', () => {
       expect(g.today.words).toEqual([spec.target.word]);
     }
     // ?rl= forces the phrase level as it does the word level.
-    const { g } = fakeGame({ phrases: 1, all: true, forced: 2 });
+    const { g } = fakeGame({ phrases: 1, rule: 'all', forced: 2 });
     expect(planWish(g, 'phrase', 'gate1', { wish: false }).level).toBe(2);
   });
 
@@ -222,7 +232,7 @@ describe('the gate wish and the two levels in the save', () => {
 
   it('runWish moves the phrase level on a phrase read and the word level on the fallback word read', async () => {
     DATA.phrasePairs = claudeOnly();
-    const phrase = fakeGame({ all: true, outcome: 'miss' });
+    const phrase = fakeGame({ rule: 'all', outcome: 'miss' });
     for (const label of ['gate1', 'gate2']) await runWish(phrase.g, baby, planWish(phrase.g, 'phrase', label, { wish: false }), label, { frame: false });
     expect(phrase.data.phrases.level).toBe(1);
     expect(phrase.data.reading).toEqual({ level: 2, recent: [] });
@@ -230,7 +240,7 @@ describe('the gate wish and the two levels in the save', () => {
     // "the" was loaded for the phrase reads.
     expect(said.preloaded.flat()).toContain(P.theClip());
 
-    const words = fakeGame({ outcome: 'miss' });
+    const words = fakeGame({ rule: 'emma', outcome: 'miss' });
     for (const label of ['gate1', 'gate2']) await runWish(words.g, baby, planWish(words.g, 'phrase', label, { wish: false }), label, { frame: false });
     expect(words.data.reading.level).toBe(1);
     expect(words.data.phrases).toEqual({ level: 2, recent: [] });

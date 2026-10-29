@@ -240,13 +240,13 @@ const dressWish: WishSpec = {
   clips: { intro: ['g-wish', 'g4-dress-up'], goal: ['g4-dress-up'], right: ['fb-yes'], hint: ['h-sounds'], again: ['fb-letters'] },
 };
 /**
- * The phrase wish (2.3) at a level, from the real planner with Claude's picture checks (as ?phrases=all). Loaded on
+ * The phrase wish (2.3) at a level, from the real planner with every ok pair (as ?phrases=all). Loaded on
  * the tap, so this block needs no import of its own.
  */
 const phraseRun = (level: 1 | 2 | 3) => async () => {
   const { phraseSpec } = await import('../content/phrases');
   show('baby', { x: 0.5, y: 0.42 });
-  const spec = phraseSpec(seeded(40 + level + results.length), { level, all: true });
+  const spec = phraseSpec(seeded(40 + level + results.length), { level, rule: 'all' });
   log(`phrase ${spec.target.word} level ${spec.level}: ${spec.basket.map((b) => b.word).join(', ')}`);
   const r = await layer.wish(spec, hooks);
   results.push({ wish: 'phrase', word: spec.target.word, level: spec.level, ...r });

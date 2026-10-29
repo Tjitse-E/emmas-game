@@ -2,8 +2,8 @@
 // own iPad, without a rebuild. Each picture is drawn as the game's basket draws it (phraseItem's picture and tint,
 // wordPicEl, the basket cell), with its two words printed small for Tjitse and a tick and a cross that he taps after
 // Emma names it. The verdicts stay on this device (phrase-device.ts, never the game's save), and the game's phrase
-// rule reads them: a tick checks a pair, a cross turns it off. The page has no sound: hearing the phrase would tell her
-// the answer.
+// rule reads them at once: every ok picture plays until it has a cross (a tick counts only with ?phrases=emma). The
+// page has no sound: hearing the phrase would tell her the answer.
 import '@fontsource/andika/400.css';
 import '@fontsource/andika/700.css';
 import './check.css';
@@ -26,7 +26,7 @@ let saved = true;
 el('h1', '', root).textContent = 'Picture check';
 el('p', 'note', root).textContent = 'Ask Emma what each picture is: its colour and its thing. Tap the tick when she names both right, '
   + 'the cross when she does not. Tap a lit button again to clear it. The verdicts stay on this iPad and the game uses them '
-  + 'at once: a tick lets that picture into the Dressing Corner\'s phrase wish, a cross keeps it out.';
+  + 'at once: every picture plays in the Dressing Corner\'s phrase wish until it has a cross, and a cross keeps it out.';
 const status = el('p', 'status', root);
 const grid = el('div', 'grid', root);
 
@@ -81,15 +81,15 @@ function render(): void {
   }
   const ticks = cards.filter((x) => verdicts[x.key] === 'tick').length;
   const crosses = cards.filter((x) => verdicts[x.key] === 'cross').length;
-  // The game's own rule over the file's checks and this device's verdicts.
+  // The game's own default rule over the file's checks and this device's verdicts: every ok pair minus the crosses.
   const strong = phraseTargets({ device: verdicts }).length;
   // Green and gold are each other's partner colour, and blue and brown are shown next to one of them at level 1, so
-  // without both nothing is ready.
-  const known = (c: string) => cards.filter((x) => x.key.startsWith(`${c} `)).some((x) => verdicts[x.key] === 'tick' || (pairs[x.key] === 'emma' && verdicts[x.key] !== 'cross'));
+  // with every green or every gold picture crossed no phrase is on.
+  const left = (c: string) => cards.some((x) => x.key.startsWith(`${c} `) && verdicts[x.key] !== 'cross');
   const gate = strong >= MIN_PHRASES
-    ? `The Dressing Corner plays phrase wishes with ${strong} phrases.`
-    : `${strong} phrases are ready; the Dressing Corner plays phrase wishes from ${MIN_PHRASES}. Until then it plays word wishes.`
-      + (known('green') && known('gold') ? '' : ' Green and gold are needed most: without both, no phrase is ready.');
+    ? `${strong} phrases are on now: the Dressing Corner plays phrase wishes.`
+    : `${strong} phrases are on now; the Dressing Corner plays phrase wishes from ${MIN_PHRASES}, so it plays word wishes.`
+      + (left('green') && left('gold') ? '' : ' Green and gold are needed most: with every green or every gold picture crossed, no phrase is on.');
   status.textContent = `${ticks} right, ${crosses} not right, ${cards.length - ticks - crosses} to go. ${gate}`
     + (saved ? '' : ' This browser cannot save the verdicts (a private tab?), so the game will not see them.');
   status.classList.toggle('warn', !saved);
@@ -97,4 +97,4 @@ function render(): void {
   list.textContent = right.length ? `Right on this iPad: ${right.join(', ')}.` : '';
 }
 render();
-(window as unknown as { __check?: unknown }).__check = { pairs: cards.length, verdicts: () => ({ ...verdicts }) };
+(window as unknown as { __check?: unknown }).__check = { pairs: cards.length, verdicts: () => ({ ...verdicts }), on: () => phraseTargets({ device: verdicts }).length };

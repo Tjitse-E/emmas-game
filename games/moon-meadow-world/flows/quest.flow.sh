@@ -6,7 +6,10 @@
 #   ?quest=corner&box=20&phrases=all: two gate reads with one wrong (a two-word tag), the hair gift saved and worn,
 #     the trunk lid and its board, skip() never ends the wardrobe, the budget in the Corner wardrobe at 1080 x 810,
 #     1080 x 740 and 1024 x 690 before the 20 s music box ends it, a trunk tap after the visit.
-#   ?quest=corner without phrases=all: the gate plays two dress-up word wishes while no phrase has Emma's check.
+#   ?quest=corner without ?phrases= on a fresh device: every ok pair plays, Claude's checks too, so the gate plays two
+#     phrase wishes.
+#   ?quest=corner&phrases=emma: only Emma's checks, so the gate plays two dress-up word wishes while no phrase has
+#     her check.
 #   ?quest=beads: the ghost fills gap 1, two gaps with one wrong, results beads1 to beads3, the jewel gift.
 #   ?quest=picnic and ?quest=rack: as 2.2, with their gifts (a crown, shoes) saved and worn.
 #   The rotation over two loads, on a real save: the bead tree comes again until she finishes it, then the hay rack.
@@ -160,24 +163,44 @@ shot quest-corner-trunk-tap
 expect_eq "$(val "() => window.__game.state().quests.running")" null 'a trunk tap never starts the Corner again'
 no_missing_clips
 
-# ---- Without phrases=all: before Emma's picture check the gate plays two dress-up word wishes.
+# ---- Without ?phrases= on a fresh device: every ok pair plays, Claude's checks too, so the gate plays two phrase
+# wishes. This device's picture check verdicts (check.html) are cleared first, so no cross from an earlier check counts.
+goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=5"
+val "() => { localStorage.removeItem('mmw.phrasecheck1'); return true; }" >/dev/null
 goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=5"
 press_play
 wait_moment wish 60
 wait_open 30
+expect_eq "$(val "() => window.__game.spec().kind")" phrase 'the gate on a fresh device without ?phrases='
+answer_wish gate1
+wait_for "() => { const m = window.__game.state().moment; return m && m.kind === 'wish' && m.misses === 0 && m.phase === 'open'; }" 60
+expect_eq "$(val "() => window.__game.spec().kind")" phrase 'the second gate read on a fresh device'
+answer_wish gate2
+wait_for "() => window.__game.state().quests.gate !== null" 10
+expect_eq "$(val "() => window.__game.state().quests.gate.kind")" phrase 'the gate kind on a fresh device'
+say "gate $(val "() => JSON.stringify(window.__game.state().quests.gate)")"
+no_missing_clips
+
+# ---- ?phrases=emma: only the pairs Emma has checked, so before her picture check the gate plays two dress-up word
+# wishes.
+goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=5&phrases=emma"
+press_play
+wait_moment wish 60
+wait_open 30
 kind="$(val "() => window.__game.spec().kind")"
-emma="$(node -e 'try { const c = require(process.argv[1]); process.stdout.write(String(Object.values(c).filter((e) => e && e.ok !== false && e.by === "emma").length)); } catch { process.stdout.write("none"); }' "$REPO/games/moon-meadow-world/tools/phrase-check.json")"
+emma="$(node -e 'try { const c = require(process.argv[1]); process.stdout.write(String(Object.values(c).filter((e) => e && e.verdict === "ok" && e.by === "emma").length)); } catch { process.stdout.write("none"); }' "$REPO/games/moon-meadow-world/tools/phrase-check.json")"
 if [ "$emma" = none ]; then
-  say "no tools/phrase-check.json in this build (the reading lane adds it): the gate is $kind"
+  fail "no tools/phrase-check.json in this build"
 elif [ "$emma" -lt 6 ]; then
-  expect_eq "$kind" dress "the gate before Emma's picture check ($emma pairs)"
+  expect_eq "$kind" dress "the gate with ?phrases=emma before Emma's picture check ($emma pairs)"
 else
-  expect_eq "$kind" phrase "the gate with $emma pairs Emma checked"
+  say "the gate with ?phrases=emma and $emma pairs Emma checked is $kind"
 fi
 answer_wish gate1
 wait_for "() => { const m = window.__game.state().moment; return m && m.kind === 'wish' && m.misses === 0 && m.phase === 'open'; }" 60
 answer_wish gate2
 wait_for "() => window.__game.state().quests.gate !== null" 10
+[ "$emma" -ge 6 ] || expect_eq "$(val "() => window.__game.state().quests.gate.kind")" word 'the gate kind with ?phrases=emma'
 say "gate $(val "() => JSON.stringify(window.__game.state().quests.gate)")"
 no_missing_clips
 

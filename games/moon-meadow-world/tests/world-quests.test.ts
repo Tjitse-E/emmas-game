@@ -1,15 +1,15 @@
 // The afternoon's rules (docs/v4/2.3.md section 17): the free-play clocks of 17.3, the maths quest's rotation, which
 // quest may start, gifts that are saved at the pick and kept on, a full set that keeps paying, every quest resolving
-// framed with the gift picker before its release, the Dressing Corner's visit (its gate before Emma's picture check
-// too), and the trunk tap after it. A small fake game stands in for the world, the actors and the layer; the game code
+// framed with the gift picker before its release, the Dressing Corner's visit (its gate with phrase wishes on a fresh
+// device and word wishes with too few strong phrases), the trunk tap after it, and the start mirror's music box. A small fake game stands in for the world, the actors and the layer; the game code
 // under test is the real one.
 import * as THREE from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GiftItem, Owned, PrincessLook } from '../src/contracts';
 
 /**
- * What the narrator said (audio.sayAll), and how the phrases answer the gate: 'real', 'word' (as before Emma's
- * picture check: gateKind says 'word' and the reading lane's planner gives a dress-up word wish), or 'throw' (no pair).
+ * What the narrator said (audio.sayAll), and how the phrases answer the gate: 'real', 'word' (as with fewer than 6
+ * strong phrases: gateKind says 'word' and the reading lane's planner gives a dress-up word wish), or 'throw' (no pair).
  */
 const t = vi.hoisted(() => ({ said: [] as string[][], phrases: 'real' as 'real' | 'throw' | 'word' }));
 vi.mock('../src/audio', () => ({
@@ -18,7 +18,7 @@ vi.mock('../src/audio', () => ({
     preload: async () => [], fx: async () => {}, checked: () => {}, stop: () => {}, speaking: false,
   },
 }));
-// Before Emma's picture check the reading lane's planner gives the dress-up word wish itself (gateKind 'word'). A
+// With fewer than 6 strong phrases the reading lane's planner gives the dress-up word wish itself (gateKind 'word'). A
 // planner that finds no pair to pick from throws; the gate still opens.
 vi.mock('../src/content/phrases', async (importOriginal) => {
   const m = await importOriginal<typeof import('../src/content/phrases')>();
@@ -46,7 +46,8 @@ import {
 import { type Game, startClock, startQuests } from '../src/game/game';
 import { askQuest, badgeOf, canQuest, placeAt, runQuest } from '../src/game/quests';
 import { cornerQuest, trunkTap } from '../src/game/corner';
-import { dressClips } from '../src/game/wardrobe-part';
+import { MIRROR_MS, dressClips, wardrobe } from '../src/game/wardrobe-part';
+import { gateKind as phraseGateKind } from '../src/content/phrases';
 import { createSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
 import { createStreams } from '../src/game/streams';
@@ -552,7 +553,29 @@ describe('the Corner visit', () => {
     expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', 'baby-14']);
   });
 
-  // Before Emma's picture check (2.3 section 18): the gate plays two 2.2 dress-up word wishes and the Corner still opens.
+  // On a fresh device without ?phrases= every ok pair plays, Claude's checks too (2.3 section 18).
+  it('gates with two phrase reads on a fresh device without ?phrases=', async () => {
+    const { g } = fakeGame({ search: '?seed=3' });
+    g.quests.done.add('picnic');
+    await cornerQuest(g);
+    expect(g.results.lines.map((r) => `${r.part}:${String(r.detail.kind)}`)).toEqual(['gate1:phrase', 'gate2:phrase']);
+    expect(g.quests.gate).toEqual({ kind: 'phrase', first: 2 });
+    expect(t.said.flat()).not.toContain('g4-dress-up');
+  });
+
+  it('with ?phrases=emma, gates with two dress-up word wishes until Emma has checked enough', async () => {
+    const { g } = fakeGame({ search: '?seed=3&phrases=emma' });
+    g.quests.done.add('picnic');
+    await cornerQuest(g);
+    // The live data has no pair checked by Emma yet, so this is 'word' until her checks reach the file.
+    const kind = phraseGateKind({ rule: 'emma' });
+    const read = kind === 'word' ? 'dress' : 'phrase';
+    expect(g.results.lines.map((r) => `${r.part}:${String(r.detail.kind)}`)).toEqual([`gate1:${read}`, `gate2:${read}`]);
+    expect(g.quests.gate).toEqual({ kind, first: 2 });
+  });
+
+  // With fewer than 6 strong phrases (2.3 section 18): the gate plays two 2.2 dress-up word wishes and the Corner
+  // still opens.
   for (const how of ['word', 'throw'] as const) {
     it(`gates with two dress-up word wishes when there is no phrase (${how === 'throw' ? 'no pair to pick' : 'the planner gives a dress-up wish'})`, async () => {
       t.phrases = how;
@@ -600,6 +623,20 @@ describe('the Corner visit', () => {
     const { g, calls } = fakeGame({ search: '?seed=4&box=5&phrases=all' });
     await cornerQuest(g);
     expect(calls.wardrobe!.limitMs).toBe(5000);
+  });
+});
+
+describe('the start mirror', () => {
+  it('plays its music box for 45 s, as decision 1 says, with no board; ?box= shortens it', async () => {
+    expect(MIRROR_MS).toBe(45_000);
+    const { g, calls } = fakeGame();
+    await wardrobe(g);
+    expect(calls.wardrobe!.limitMs).toBe(45_000);
+    expect(calls.wardrobe!.board).toBeUndefined();
+    expect(calls.wardrobe!.clips.idle).toEqual(['g4-ready-play']);
+    const box = fakeGame({ search: '?seed=3&box=5' });
+    await wardrobe(box.g);
+    expect(box.calls.wardrobe!.limitMs).toBe(5000);
   });
 });
 

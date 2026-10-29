@@ -19,7 +19,7 @@
 | `public/audio/v4demo/` | The demo's own clips, `manifest.json`, `overrides.json`. |
 | `src/ui/contrast.ts` | `diffUnits()`: which printed units of two words differ (the miss contrast). Pure. |
 | `dev/content.html` | A check page: the herd, newborns, eggs, name bells with their wrong gems, the picture-check contact sheets (every wish word with its picture, verdict and reason, tap to hear), the phrase contact sheet (30 tinted pictures with a yellow row to compare gold with, and a button that hides the words for Emma), sample baskets per kind and reading level (phrases too), doors, and a check of every clip, letter sound and picture through the real audio packs. |
-| `tests/reading.test.ts` | Pools, the picture check, strong targets, the planner per kind and level, the guessers, the ladder's contrast step, the units diff and the naming gems; for the phrase wish its check entries and clip lines, the strong rule, the baskets per level, the guessers, Emma's checks and the fallback, the two-word diff and the hint's sounds. |
+| `tests/reading.test.ts` | Pools, the picture check, strong targets, the planner per kind and level, the guessers, the ladder's contrast step, the units diff and the naming gems; for the phrase wish its check entries and clip lines, the strong rule, the baskets per level, the guessers, the `?phrases=` rules over the file and the iPad's verdicts and the fallback, the two-word diff and the hint's sounds. |
 | `tests/reading-level.test.ts` | The reading level fold and the phrase level beside it. |
 
 ## Wiring
@@ -98,7 +98,7 @@ What the build gives (all strong, all `ok`):
 ### Content
 
 - `build-content.ts` checks the six colours (green, gold, blue, brown as targets; red, pink as decoys only), the five things (bag, bead, bow, sock, shirt) and "the" against v3: one syllable, at most five letters, letter sounds, an ok clip for the things and `word-the`, a greyscale picture with a tint for the things, a picture tint in `PALETTE` for the colours, and a line in `tools/lines.ts` for all 30 phrase clips. Gold and brown are not in v3's packs; their graphemes are in the script (`o.oa`: the o of gold says oa). Bow is v3's `ow.oa`. data.json gets `phraseThe`, `phraseColours`, `phraseThings` (with `sounds` where the sound differs from the print) and `phrasePairs` (every ok pair and who checked it).
-- The build prints the strong count for Emma's pairs and for all pairs, and warns below 6. Now: 30 ok pairs, all by Claude; 0 strong for Emma, 20 with `?phrases=all`.
+- The build prints the strong count for every ok pair (what the game plays on a device without crosses) and for Emma's pairs only (`?phrases=emma`), and warns when the first is below 6. Now: 30 ok pairs, all by Claude; 20 strong in the game, 0 with `?phrases=emma`.
 - Picture tints come from `PALETTE[colour].pic` at runtime, so the integrator's shade tuning reaches the pictures. If a `pic` value changes, Emma's check of that colour should be done again.
 
 ### The strong rule (`strongPhrases`)
@@ -117,7 +117,7 @@ Measured over 10,000 baskets per level with `?phrases=all`; the tests hold them 
 
 ### The game (`game/moments.ts`, `game/reading.ts`)
 
-- `planWish(g, 'phrase', label, { wish: false })` plans at the phrase level (`save.phrases`; `?rl=` forces it), with `?phrases=all` from the options. While `gateKind(g)` is `'word'` it plans a 2.2 dress-up word wish at the word level instead. Its intro is "Your baby wants to dress up like you!" (what the level says before the nest's dress-up wish), then the usual "Your baby has a wish!" and the goal. The caller runs either one the same way, so the Corner says nothing of its own before it. `tests/reading-level.test.ts` checks both cases and the levels they move on a fake game.
+- `planWish(g, 'phrase', label, { wish: false })` plans at the phrase level (`save.phrases`; `?rl=` forces it), with the rule of `?phrases=` from the options (`phraseRule`). While `gateKind(g)` is `'word'` it plans a 2.2 dress-up word wish at the word level instead. Its intro is "Your baby wants to dress up like you!" (what the level says before the nest's dress-up wish), then the usual "Your baby has a wish!" and the goal. The caller runs either one the same way, so the Corner says nothing of its own before it. `tests/reading-level.test.ts` checks both cases and the levels they move on a fake game.
 - `noteReading(g, outcome, kind)` (the kind has no default) folds a phrase result into `save.phrases` and every word result into `save.reading` (`foldReadingFor`). The gate's word wishes move the word level.
 - `wishExtraClipIds(spec)` adds `theClip()` (`word-the`, from data.json) for a phrase; `runWish` preloads it while the camera frames, a cache hit when the caller preloaded it. `ui/wish.ts` keeps its own `THE_CLIP`, because the 2D layer reads no content; a test holds the two equal. `build-content.ts` warns by `MIN_PHRASES` from phrases.ts.
 
@@ -128,13 +128,23 @@ Measured over 10,000 baskets per level with `?phrases=all`; the tests hold them 
 - `geometry.ts` `phraseUnits(parts)`: the printed units per word, each saying its sound. Checked by `tests/ui.test.ts`, which also checks that ui.css gives the print and the tag no colour of their own and the phrase glow no amber or gold. `tests/reading.test.ts` renders every phrase print on a small fake page and checks that no element gets an inline style or a class that names a colour.
 - `dev/ui.html` has `wish phrase 1`, `2` and `3`.
 
+### Which pairs play (`?phrases=`, `checkedPairs` in `phrase-device.ts`)
+
+| Rule | Pairs | Fresh device |
+|---|---|---|
+| default (no `?phrases=`) | every ok pair of `tools/phrase-check.json`, Claude's checks too, minus each pair crossed on `check.html` on this device | 20 strong: phrase wishes |
+| `?phrases=emma` | 2.3.0's rule: pairs with `"by": "emma"` or a tick on this device, minus the crosses | 0 strong: word wishes |
+| `?phrases=all` | every ok pair; the device's verdicts do not count (flows, dev) | 20 strong |
+
+So the Corner reads phrases from her first play, behind two phrase reads (decision 1). A cross turns a pair off at once, with no rebuild. With fewer than 6 strong phrases the gate plays two dress-up word wishes.
+
 ### Emma's picture check
 
-On her iPad: open `check.html` next to the game (`dist/check.html` on Emma's server), ask her what each picture is, and tap the tick or the cross. A tick counts at once on that iPad and address (`mmw.phrasecheck1`), with no rebuild; a cross turns the pair off. The page shows the strong count. To keep a verdict in the code as well, use the file:
+On her iPad: open `check.html` next to the game (`dist/check.html` on Emma's server), ask her what each picture is, and tap the tick or the cross. A cross turns the pair off at once on that iPad and address (`mmw.phrasecheck1`), with no rebuild; a tick records her check (it counts for `?phrases=emma`). The page says how many phrases are on now. To keep a verdict in the code as well, use the file:
 
 1. Open `dev/content.html` and scroll to "Phrase pictures". "Hide the words" hides every word (cards, badges, rows, column heads and tooltips) and makes taps silent, so she names each picture without reading or hearing it. Ask what each one is and what colour it is; gold against yellow above all (the dashed yellow row is only there to compare).
 2. For each pair she names right, set `"by": "emma"` in `tools/phrase-check.json`; for one she does not know, `"verdict": "drop"` (keep `by` as who decided).
-3. Run `node tools/build-content.ts` and check the strong count. At 6 or more (`MIN_PHRASES`) the gate plays phrases.
+3. Run `node tools/build-content.ts` and check the strong counts. At 6 or more (`MIN_PHRASES`) the gate plays phrases; for `?phrases=emma` that needs her pairs.
 
 ### Claude's calls
 
@@ -143,7 +153,7 @@ On her iPad: open `check.html` next to the game (`dist/check.html` on Emma's ser
 - The gate's word wishes say "Your baby wants to dress up like you!" first in their intro and move the word level, as every word read does.
 - Level 2's red or pink goes on either grid thing at random, and a phrase is strong only when both things have it. On the wish's thing every time, the thing shown three times was always the wish's thing.
 - Level 3's third thing takes either grid colour at random, so the colour that shows three times never points at the wish.
-- Gold is a deep mustard as a flat tint. It is `ok` by Claude with that note; Emma's check decides.
+- Gold is a deep mustard as a flat tint. It is `ok` by Claude with that note, and it plays from her first play; a cross on her check turns it off.
 
 ## Maths (2.2.0)
 
