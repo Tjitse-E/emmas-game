@@ -12,7 +12,9 @@
 // are checked here like the words, and every colour on every thing needs an entry in tools/phrase-check.json, keyed
 // "colour thing": 'ok' or 'drop', with `by` (claude, or emma once she has seen the tinted picture) and `why`. A pair
 // without an entry is left out. data.json keeps each ok pair's `by`; the game plays only Emma's pairs unless
-// ?phrases=all. Fewer than 6 strong phrases is a warning, not a stop: the Corner's gate then plays word wishes.
+// ?phrases=all. Emma's pairs are the ones with "by": "emma" here and the ones ticked on her iPad's picture check
+// (check.html, src/content/phrase-device.ts), which needs no rebuild. Fewer than 6 strong phrases is a warning, not a
+// stop: the Corner's gate then plays word wishes.
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { LOOK_ALIKE, UNICORN_FOODS } from '../../moon-meadow-home/src/core/heartbeat/feed.ts';
@@ -422,5 +424,6 @@ const byAll = strongPhrases(tables, new Set(Object.keys(pairs)));
 console.log(`build-content: phrases: ${Object.keys(pairs).length} ok pairs, ${Object.values(pairs).filter((b) => b === 'emma').length} checked by Emma; `
   + `strong ${byEmma.length} (Emma's), ${byAll.length} (?phrases=all)`);
 for (const [who, list] of [['Emma\'s pairs', byEmma], ['all pairs (?phrases=all)', byAll]] as const) {
-  if (list.length < MIN_PHRASES) console.warn(`  warning: ${list.length} strong phrases with ${who}, fewer than ${MIN_PHRASES}: the Dressing Corner's gate plays two dress-up word wishes`);
+  if (list.length < MIN_PHRASES) console.warn(`  warning: ${list.length} strong phrases with ${who}, fewer than ${MIN_PHRASES}: the Dressing Corner's gate plays two dress-up word wishes`
+    + (who === 'Emma\'s pairs' ? ' (unless her iPad\'s picture check, check.html, ticks enough)' : ''));
 }

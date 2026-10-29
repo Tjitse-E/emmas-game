@@ -4,7 +4,8 @@
 //
 // The colours, the things and "the" come from data.json, checked against v3 by tools/build-content.ts. A pair plays
 // only when its tinted picture passed the picture check (tools/phrase-check.json): in the live game only the pairs
-// Emma has checked ("by": "emma"), with ?phrases=all Claude's too. With fewer than 6 strong phrases the gate plays two
+// Emma has checked ("by": "emma" in the file, or a tick from check.html on her iPad, where a cross turns a pair off:
+// phrase-device.ts), with ?phrases=all every ok pair of the file. With fewer than 6 strong phrases the gate plays two
 // dress-up word wishes instead (gateKind, and planWish in game/moments.ts).
 //
 // The basket is a two by two grid plus one:
@@ -20,6 +21,7 @@ import type { Colour, WishDecoy, WishItem, WishSpec } from '../contracts.ts';
 import { wordPic } from '../assets.ts';
 import { PALETTE } from '../wardrobe.ts';
 import { DATA, type PhraseColourData, type PhraseThingData, type PhraseWordData } from './data.ts';
+import { type DeviceChecks, checkedPairs, readDeviceChecks } from './phrase-device.ts';
 import { WISH_CLIPS, type WishOpts } from './wishes.ts';
 import { type Rand, pick, shuffle } from './rand.ts';
 
@@ -107,20 +109,24 @@ export function strongPhrases(t: PhraseTables, allowed: ReadonlySet<string>): st
   }
 }
 
-/** Which pairs a play may use: who checked each ok pair (data.json, or a test's own), and whether ?phrases=all. */
+/**
+ * Which pairs a play may use: who checked each ok pair (data.json, or a test's own), Emma's verdicts on this device,
+ * and whether ?phrases=all.
+ */
 export interface PhraseScope {
-  /** ?phrases=all: Claude's checks count too (the flows and dev). Without it only Emma's. */
+  /** ?phrases=all: every ok pair, Claude's checks too (the flows and dev); the device's verdicts do not count. */
   all?: boolean;
   /** The ok pairs and who checked them; data.json's by default. */
   pairs?: Readonly<Record<string, string>>;
   /** The colours and things; data.json's by default. */
   tables?: PhraseTables;
+  /** Emma's verdicts from check.html: a tick checks a pair, a cross turns it off. This device's by default. */
+  device?: DeviceChecks;
 }
 
-/** The pairs (keys) the scope allows: Emma's, or every ok pair with ?phrases=all. */
+/** The pairs (keys) the scope allows: Emma's (the file's and this device's), or every ok pair with ?phrases=all. */
 export function allowedPairs(o: PhraseScope = {}): Set<string> {
-  const pairs = o.pairs ?? DATA.phrasePairs ?? {};
-  return new Set(Object.keys(pairs).filter((k) => o.all || pairs[k] === 'emma'));
+  return checkedPairs(o.pairs ?? DATA.phrasePairs ?? {}, o.all ? {} : (o.device ?? readDeviceChecks()), !!o.all);
 }
 
 const strongCache = new Map<string, string[]>();

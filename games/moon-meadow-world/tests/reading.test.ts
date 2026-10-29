@@ -4,8 +4,9 @@
 // src/game/reading.ts and tests/reading-level.test.ts.
 //
 // 2.3.0 (docs/v4/2.3.md sections 18 and 22.4): the phrase wish. Its tinted picture check and clip lines, the strong
-// rule, the planner per level and the guessers it must beat, Emma's checks and the word-wish fallback, the two-word
-// contrast and the hint's letter sounds.
+// rule, the planner per level and the guessers it must beat, Emma's checks (the file's and her iPad's, check.html) and
+// the word-wish fallback with its own planner (no word of the play's earlier dress-up reads, borrowed pictures), the
+// two-word contrast and the hint's letter sounds.
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
@@ -23,6 +24,7 @@ const N = await import('../src/content/naming.ts');
 const { DATA } = await import('../src/content/data.ts');
 const { seeded } = await import('../src/content/rand.ts');
 const P = await import('../src/content/phrases.ts');
+const D = await import('../src/content/phrase-device.ts');
 type WordData = (typeof DATA.words)[number];
 
 const here = resolve(import.meta.dirname, '..');
@@ -256,6 +258,140 @@ describe('wishSpec', () => {
       }
     }
     expect(ids.has('fb-letters')).toBe(true);
+  });
+});
+
+describe('the gate\'s word wishes before Emma\'s picture check (2.3 sections 17.4 and 18)', () => {
+  const dress = DATA.kinds.dress;
+  const clipIds = new Set(W.allWishClipIds());
+  const near = (t: WordData, pool: readonly WordData[]) =>
+    pool.some((w) => !W.alike(w, t) && (!!t.twins?.includes(w.word) || (first(w.word) === first(t.word) && last(w.word) === last(t.word))));
+
+  it('asks only dress-up targets, with level 3 wide enough for three dress-up reads a play, and borrows only pond and picnic pictures', () => {
+    expect(W.gateTargets(1).map((w) => w.word)).toEqual(dress.level1);
+    expect(W.gateTargets(2).map((w) => w.word)).toEqual(dress.targets);
+    const l3 = W.gateTargets(3).map((w) => w.word);
+    for (const w of dress.level3) expect(l3).toContain(w);
+    // Three dress-up reads a play, none of the last play's three: at least 6.
+    expect(l3.length).toBeGreaterThanOrEqual(6);
+    const pool = W.gateWords();
+    for (const t of W.gateTargets(3)) expect(near(t, pool), t.word).toBe(true);
+    const kinds = new Set([...dress.pool, ...DATA.kinds.bath.pool, ...DATA.kinds.picnic.pool]);
+    for (const w of pool) {
+      expect(kinds.has(w.word), w.word).toBe(true);
+      expect(clipIds.has(w.clip), w.clip).toBe(true);
+      expect(['ok', 'decoy']).toContain(checks[w.word]?.verdict);
+    }
+    expect(new Set(pool.map((w) => w.word)).size).toBe(pool.length);
+  });
+
+  /**
+   * Plays in a row as the game plans them: the nest's dress-up wish (a level lower, the warm-up), the pond and picnic
+   * wishes, then the two gate reads with this play's dress-up words to avoid. The last of three plays is measured,
+   * with the play before it as `last`.
+   */
+  const playCache = new Map<number, ReturnType<typeof planPlays>>();
+  const plays = (level: 1 | 2 | 3) => {
+    if (!playCache.has(level)) playCache.set(level, planPlays(level, 2000));
+    return playCache.get(level)!;
+  };
+  function planPlays(level: 1 | 2 | 3, n: number) {
+    const out: { wish1: WishSpec; gates: WishSpec[]; last: string[] }[] = [];
+    for (let s = 0; s < n; s++) {
+      const r = seeded(s * 31 + level);
+      let last: string[] = [];
+      for (let play = 0; play < 3; play++) {
+        const today: string[] = [];
+        const seen = new Set<string>();
+        const exclude = () => [...new Set([...last, ...today])];
+        const wish1 = W.wishSpec('dress', r, exclude(), { level: Math.max(1, level - 1) as 1 | 2 | 3 });
+        today.push(wish1.target.word);
+        for (const b of wish1.basket) seen.add(b.word);
+        for (const kind of ['bath', 'picnic'] as const) today.push(W.wishSpec(kind, r, exclude(), { level }).target.word);
+        const gates = [0, 1].map(() => {
+          const g = W.gateWordSpec(r, { level, exclude: exclude(), avoid: [...seen] });
+          today.push(g.target.word);
+          for (const b of g.basket) seen.add(b.word);
+          return g;
+        });
+        if (play === 2) out.push({ wish1, gates, last });
+        last = today;
+      }
+    }
+    return out;
+  }
+
+  it('never repeats a word of the play\'s earlier dress-up reads, and the last play\'s targets only now and then', () => {
+    for (const level of LEVELS) {
+      let fromLast = 0;
+      const bad: string[] = [];
+      const all = plays(level);
+      for (const { wish1, gates, last } of all) {
+        const before = new Set(wish1.basket.map((b) => b.word));
+        for (const g of gates) {
+          const words = g.basket.map((b) => b.word);
+          if (words.some((w) => before.has(w))) bad.push(`${level} ${words.join(' ')} after ${[...before].join(' ')}`);
+          for (const w of words) before.add(w);
+          if (last.includes(g.target.word)) fromLast++;
+          expect(g.kind).toBe('dress');
+          expect(dress.targets).toContain(g.target.word);
+        }
+      }
+      expect(bad.slice(0, 5)).toEqual([]);
+      // Level 1 has 8 targets for three reads after the last play's three: a repeat now and then (about 2%); at levels
+      // 2 and 3 about 1 read in 4,000, when this play's baskets and the last play's targets hold every target.
+      expect(fromLast / (2 * all.length), `level ${level} from the last play`).toBeLessThanOrEqual(level === 1 ? 0.03 : 0.002);
+    }
+  });
+
+  it('plans baskets that meet 3.1 and keep the guessers within bounds, also the one who picks only things to wear', () => {
+    for (const level of LEVELS) {
+      let pFirst = 0;
+      let pLast = 0;
+      let pWear = 0;
+      let reads = 0;
+      let fell = 0;
+      const bad: string[] = [];
+      for (const { gates } of plays(level)) {
+        for (const g of gates) {
+          reads++;
+          const t = g.target.word;
+          const words = g.basket.map((b) => b.word);
+          const fail = (why: string) => bad.length < 10 && bad.push(`${level} ${t} [${words.join(' ')}]: ${why}`);
+          if (g.level !== level) fell++;
+          if (words.length !== (g.level === 1 ? 4 : 5)) fail('size');
+          for (let i = 0; i < words.length; i++) for (let j = i + 1; j < words.length; j++) if (clash(words[i], words[j])) fail(`${words[i]} and ${words[j]} look alike`);
+          for (const b of g.basket) {
+            expect(clipIds.has(b.clip), b.clip).toBe(true);
+            expect(b.react).toBe('wear');
+          }
+          const sameFirst = words.filter((w) => first(w) === first(t)).length;
+          const sameLast = words.filter((w) => last(w) === last(t)).length;
+          if (g.level === 1 ? sameFirst < 2 : sameFirst < 3 || sameLast < 2) fail('the letters');
+          if (g.level === 3 && !Object.values(g.decoys).some((k) => k === 'twin' || k === 'frame')) fail('level 3 without a twin or frame');
+          const wear = words.filter((w) => W.isDressWord({ word: w })).length;
+          if (wear < 2) fail('fewer than 2 things to wear');
+          pFirst += 1 / sameFirst;
+          pLast += 1 / sameLast;
+          pWear += 1 / wear;
+        }
+      }
+      expect(bad).toEqual([]);
+      if (level > 1) {
+        expect(pFirst / reads, `level ${level} first letter`).toBeLessThanOrEqual(0.4);
+        expect(pLast / reads, `level ${level} last letter`).toBeLessThanOrEqual(0.55);
+      }
+      // A child who only picks a thing a baby can wear (the dress-up pictures among the borrowed ones).
+      expect(pWear / reads, `level ${level} things to wear`).toBeLessThanOrEqual(0.3);
+      expect(fell / reads, `level ${level} played as level 2`).toBeLessThanOrEqual(level === 2 ? 0 : 0.05);
+    }
+  });
+
+  it('plays level 1 as level 2 rather than repeat a word, when every level 1 target was in this play\'s baskets', () => {
+    const spec = W.gateWordSpec(seeded(1), { level: 1, avoid: dress.level1 });
+    expect(spec.level).toBe(2);
+    expect(dress.level1).not.toContain(spec.target.word);
+    for (const b of spec.basket) expect(dress.level1).not.toContain(b.word);
   });
 });
 
@@ -692,6 +828,71 @@ describe('the phrase wish', () => {
       for (const k of strong) expect(some[k]).toBe('emma');
       expect(P.gateKind({ pairs: some })).toBe(strong.length >= 6 ? 'phrase' : 'word');
     }
+  });
+
+  it('takes a pair as Emma\'s when the file says emma or her iPad holds a tick; a cross on the iPad turns it off', () => {
+    const file = { 'green sock': 'emma', 'gold sock': 'emma', 'blue sock': 'claude', 'brown sock': 'claude' };
+    const device = { 'gold sock': 'cross', 'blue sock': 'tick', 'red bag': 'tick' } as const;
+    // green by the file, blue by the tick; gold crossed on the iPad although the file has it; brown by Claude only;
+    // red bag ticked but not an ok pair of the file, so it changes nothing.
+    expect([...D.checkedPairs(file, device)].sort()).toEqual(['blue sock', 'green sock']);
+    expect([...D.checkedPairs(file, {})].sort()).toEqual(['gold sock', 'green sock']);
+    // ?phrases=all: every ok pair of the file, whatever the iPad holds.
+    expect([...D.checkedPairs(file, device, true)].sort()).toEqual(Object.keys(file).sort());
+    expect([...P.allowedPairs({ pairs: file, device })].sort()).toEqual(['blue sock', 'green sock']);
+    expect([...P.allowedPairs({ pairs: file, device, all: true })].sort()).toEqual(Object.keys(file).sort());
+    // Every pair ticked on the iPad plays as if the file said emma; crossing one gives the same as leaving it Claude's.
+    const claude = Object.fromEntries(P.phraseCombos().map(([c, t]) => [`${c} ${t}`, 'claude']));
+    const emma = Object.fromEntries(Object.keys(claude).map((k) => [k, 'emma']));
+    const ticks = Object.fromEntries(Object.keys(claude).map((k) => [k, 'tick' as const]));
+    expect(P.phraseTargets({ pairs: claude, device: ticks })).toEqual(P.phraseTargets({ pairs: emma, device: {} }));
+    expect(P.gateKind({ pairs: claude, device: ticks })).toBe('phrase');
+    expect(P.gateKind({ pairs: claude, device: {} })).toBe('word');
+    const noGold = { ...ticks, 'gold bag': 'cross' as const };
+    const fileNoGold = { ...emma, 'gold bag': 'claude' };
+    expect(P.phraseTargets({ pairs: claude, device: noGold })).toEqual(P.phraseTargets({ pairs: fileNoGold, device: {} }));
+    expect(P.phraseTargets({ pairs: emma, device: noGold })).toEqual(P.phraseTargets({ pairs: fileNoGold, device: {} }));
+    for (let s = 1; s <= 300; s++) {
+      for (const b of P.phraseSpec(seeded(s), { pairs: claude, device: noGold, level: LEVELS[s % 3] }).basket) expect(b.word).not.toBe('gold bag');
+    }
+  });
+
+  it('keeps the iPad verdicts under their own key, never the game\'s save, and reads a bad or missing store as none', () => {
+    const store = new Map<string, string>();
+    const fake = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) };
+    expect(D.readDeviceChecks(fake)).toEqual({});
+    expect(D.writeDeviceChecks({ 'gold bag': 'tick', 'red sock': 'cross' }, fake)).toBe(true);
+    expect([...store.keys()]).toEqual([D.DEVICE_CHECK_KEY]);
+    expect(D.DEVICE_CHECK_KEY).not.toBe('mmw.save2');
+    expect(D.readDeviceChecks(fake)).toEqual({ 'gold bag': 'tick', 'red sock': 'cross' });
+    // Anything else in the stored value is left out.
+    store.set(D.DEVICE_CHECK_KEY, JSON.stringify({ v: 1, pairs: { 'gold bag': 'tick', 'green sock': 'yes', '<b>': 'tick', 'blue bow': 'cross' } }));
+    expect(D.readDeviceChecks(fake)).toEqual({ 'gold bag': 'tick', 'blue bow': 'cross' });
+    store.set(D.DEVICE_CHECK_KEY, '{not json');
+    expect(D.readDeviceChecks(fake)).toEqual({});
+    // Storage that throws (a private tab, blocked site data) or is missing (node): no verdicts, and a write says so.
+    const broken = { getItem: () => { throw new Error('denied'); }, setItem: () => { throw new Error('denied'); } };
+    expect(D.readDeviceChecks(broken)).toEqual({});
+    expect(D.writeDeviceChecks({ 'gold bag': 'tick' }, broken)).toBe(false);
+    expect(D.readDeviceChecks(null)).toEqual({});
+    expect(D.writeDeviceChecks({}, null)).toBe(false);
+    expect(D.readDeviceChecks()).toEqual({});
+  });
+
+  it('the check page shows every pair once, gold first, never two side by side with a colour or a thing in common', () => {
+    const colours = ['gold', ...DATA.phraseColours.map((c) => c.word).filter((c) => c !== 'gold')];
+    const order = D.checkOrder(colours, THINGS);
+    expect(order).toHaveLength(30);
+    expect(new Set(order.map(([c, t]) => `${c} ${t}`)).size).toBe(30);
+    expect(order[0][0]).toBe('gold');
+    for (let i = 1; i < order.length; i++) {
+      expect(order[i][0]).not.toBe(order[i - 1][0]);
+      expect(order[i][1]).not.toBe(order[i - 1][1]);
+    }
+    // A tap sets a verdict, a second tap on it clears it, the other button swaps it.
+    expect(D.toggled({}, 'gold bag', 'tick')).toEqual({ 'gold bag': 'tick' });
+    expect(D.toggled({ 'gold bag': 'tick' }, 'gold bag', 'tick')).toEqual({});
+    expect(D.toggled({ 'gold bag': 'tick', 'red bow': 'cross' }, 'gold bag', 'cross')).toEqual({ 'gold bag': 'cross', 'red bow': 'cross' });
   });
 
   it('each item prints "the", its colour and its thing, says its phrase, and is worn', () => {

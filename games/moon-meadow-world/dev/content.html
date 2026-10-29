@@ -81,7 +81,7 @@
 <p class="note">Every word a wish can show, with Claude's verdict from <code>tools/picture-check.json</code>: <b>ok</b> (it can be the wish), <b>decoy</b> (only a wrong picture), <b>drop</b> (never used). A purple <b>wish</b> badge marks the words a wish of that kind asks for, with the reading levels (L1 to L3) that use it. Tap a card to hear Elizabeth. Change an entry where Emma does not know the picture, then run <code>node tools/build-content.ts</code>.</p>
 <div id="sheets"></div>
 <h2>Phrase pictures: the tinted picture check (2.3)</h2>
-<p class="note">The Dressing Corner's phrase wish ("the green sock") shows these 30 pictures: every phrase colour on every phrase thing, in the colour's picture tint. Show them to Emma and ask what each one is ("What colour is it? What is it?"). <b>Gold against yellow above all</b>: the dashed yellow row is not in the game; it is there so she can say whether gold looks different from yellow. Each pair she names right becomes <code>"by": "emma"</code> in <code>tools/phrase-check.json</code> (or <code>"verdict": "drop"</code> when she does not know it); then run <code>node tools/build-content.ts</code>. Until at least 6 phrases are strong among Emma's pairs, the gate plays two dress-up word wishes. Tap a picture to hear its phrase (its word until the phrase clip is made). With the words hidden for Emma, taps are silent.</p>
+<p class="note">The Dressing Corner's phrase wish ("the green sock") shows these 30 pictures: every phrase colour on every phrase thing, in the colour's picture tint. Show them to Emma and ask what each one is ("What colour is it? What is it?"). <b>Gold against yellow above all</b>: the dashed yellow row is not in the game; it is there so she can say whether gold looks different from yellow. On her own iPad the check needs no rebuild: open <a href="check.html"><code>check.html</code></a> next to the game and tap a tick or a cross for each picture; a tick counts as Emma's check at once, a cross keeps the pair out. To keep a verdict in the code, a pair she names right becomes <code>"by": "emma"</code> in <code>tools/phrase-check.json</code> (or <code>"verdict": "drop"</code> when she does not know it); then run <code>node tools/build-content.ts</code>. Until at least 6 phrases are strong among Emma's pairs, the gate plays two dress-up word wishes. Tap a picture to hear its phrase (its word until the phrase clip is made). With the words hidden for Emma, taps are silent.</p>
 <div id="phrase-status" class="note"></div>
 <button id="phrase-toggle" type="button">Hide the words (for Emma)</button>
 <div id="phrases" class="phrase-sheet"></div>
@@ -97,6 +97,7 @@
   import checks from '/tools/picture-check.json';
   import phraseChecks from '/tools/phrase-check.json';
   import * as P from '/src/content/phrases.ts';
+  import * as W from '/src/content/wishes.ts';
   import { tintedPicStyle } from '/src/ui/geometry.ts';
 
   const $ = (id) => document.getElementById(id);
@@ -240,7 +241,7 @@
   });
   const strongEmma = P.phraseTargets({ all: false });
   const strongAll = P.phraseTargets({ all: true });
-  $('phrase-status').innerHTML = `Strong phrases: <b>${strongEmma.length}</b> with Emma's checks, <b>${strongAll.length}</b> with Claude's too (<code>?phrases=all</code>). `
+  $('phrase-status').innerHTML = `Strong phrases: <b>${strongEmma.length}</b> with Emma's checks (the file's and this browser's check.html ticks), <b>${strongAll.length}</b> with Claude's too (<code>?phrases=all</code>). `
     + `The live gate plays <b>${P.gateKind({ all: false }) === 'phrase' ? 'phrase wishes' : 'two dress-up word wishes'}</b>.`;
 
   for (const level of [1, 2, 3]) {
@@ -254,6 +255,15 @@
       const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}">${picHtml(i.pic, i.tint)}<b>${i.word}</b><small>${w.decoys[i.word] ?? i.react}</small></span>`).join('');
       $('wishes').append(playable(el('div', 'card basket', `<b>${kind}</b> level ${w.level} wants <span class="tag">${w.target.word}</span><br>${items}`), [...w.clips.intro, w.target.clip]));
     }
+  }
+  // The gate's word wishes before Emma's picture check: after the nest's dress-up wish, none of its words come back,
+  // and the basket borrows pond and picnic pictures where the dress-up set runs short (marked "borrowed").
+  for (const level of [1, 2, 3]) {
+    const r = C.seeded(level * 41);
+    const wish1 = C.wishSpec('dress', r, [], { level });
+    const w = W.gateWordSpec(r, { level, exclude: [wish1.target.word], avoid: wish1.basket.map((b) => b.word) });
+    const items = w.basket.map((i) => `<span class="item ${i.word === w.target.word ? 'target' : ''}">${picHtml(i.pic, i.tint)}<b>${i.word}</b><small>${w.decoys[i.word] ?? 'wish'}${W.isDressWord(i) ? '' : ' · borrowed'}</small></span>`).join('');
+    $('wishes').append(playable(el('div', 'card basket', `<b>gate words</b> level ${w.level} wants <span class="tag">${w.target.word}</span> (after ${wish1.basket.map((b) => b.word).join(', ')})<br>${items}`), [...w.clips.intro, w.target.clip]));
   }
   const foods = C.foods().map((i) => `<span class="item">${picHtml(i.pic, i.tint)}<b>${i.word}</b></span>`).join('');
   $('wishes').append(playable(el('div', 'card basket', `<b>free play</b><br>${foods}`), ['g4-basket', ...C.foods().map((f) => f.clip)]));

@@ -39,6 +39,7 @@ Listen to the 16 effects, the day loop and the music box on `dev/sound.html` (vi
 - `?pl=1`, `?pl=2` or `?pl=3` plays every bead tree pattern at that level and does not store it (2.3.0).
 - `?box=<seconds>` makes the wardrobe's music box this long at the start mirror and the Dressing Corner (the flows use 5) (2.3.0).
 - `?phrases=all` lets the Dressing Corner's phrase wish use tinted pictures only Claude has checked. Without it only the pictures Emma has checked play, and with too few the gate plays two dress-up word wishes (2.3.0).
+- `check.html` (next to `index.html`, also in `dist/`) is Emma's picture check of the 30 phrase pictures on her own iPad: Tjitse taps a tick or a cross after she names each one. A tick counts as her check at once, without a rebuild; a cross keeps the pair out. The verdicts stay on that iPad (2.3.0).
 - `?portrait=0` keeps her normal detail in the customiser's close-up (compare the frame rate with `?perf=1`).
 
 Without `?pr=`, a slow iPad lowers the quality by itself: first the pixel ratio, then the herd's detail. The console says `[mmw] quality lowered`.
