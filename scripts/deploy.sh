@@ -22,7 +22,8 @@ world="$repo/games/moon-meadow-world/dist"
 [[ -f "$world/index.html" ]] || { echo "No Moon Meadow World build in $world. Run npm run build in games/moon-meadow-world first." >&2; exit 1; }
 
 # Every deploy is a new version: the newest entry in CHANGELOG.md, tagged v<version> after the upload.
-version="$(sed -nE 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/p' "$repo/CHANGELOG.md" | head -1)"
+# A pre-release (2.3.0-pre.1) counts as a version of its own.
+version="$(sed -nE 's/^## \[([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?)\].*/\1/p' "$repo/CHANGELOG.md" | head -1)"
 [[ -n "$version" ]] || { echo "No version in CHANGELOG.md." >&2; exit 1; }
 if git -C "$repo" rev-parse -q --verify "refs/tags/v$version" >/dev/null || git -C "$repo" ls-remote --exit-code --tags origin "v$version" >/dev/null 2>&1; then
   echo "v$version was deployed before. Add a new version at the top of CHANGELOG.md." >&2; exit 1

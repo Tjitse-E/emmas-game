@@ -469,7 +469,7 @@ addEventListener('pageshow', e => {
 
 /* the release version, from the newest entry in CHANGELOG.md */
 fetch('CHANGELOG.md',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(t=>{
-  const m=/^## \[(\d+\.\d+\.\d+)\]/m.exec(t);
+  const m=/^## \[(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)\]/m.exec(t);
   if(m) document.getElementById('version').textContent='v'+m[1];
 }).catch(()=>{});
 </script>
