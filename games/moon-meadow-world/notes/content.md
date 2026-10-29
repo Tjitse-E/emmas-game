@@ -236,5 +236,5 @@ Within 10 every kind and band reaches every place. The test checks evenness over
 
 - `fb-letters` and every pool word's clip are ok v3 clips. The 13 new lines of 2.2.0 are generated and 12 are used; the demo's pack has 79 clips, and `dev/content.html` reports none missing.
 - The clips of sail, pail, reed, pie, leek and mat passed speech-to-text only as homophones (Sale, Pale, Read, Pi, Leak, Matt). Tjitse listens to them once.
-- 2.3.0 added 72 lines (docs/v4/2.3.md section 21), all passing speech-to-text after two retakes. The sums within 10 added four more (section 19.1), so the pack has 155 clips; num-take-9-6 waits until Tjitse has listened to its take.
+- 2.3.0 added 72 lines (docs/v4/2.3.md section 21), all passing speech-to-text after two retakes. The sums within 10 added four more (section 19.1), and 2.3.1 added num-take-9-6 after Tjitse accepted its take, so the pack has 156 clips. num-take-9-6 came from the raw cache without a speech-to-text check.
 - Booked so far: 5,272.1 credits in `tools/audio/ledger.jsonl` (speech and sound effects) against the cap of 7,277.

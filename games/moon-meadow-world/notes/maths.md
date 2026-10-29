@@ -23,12 +23,13 @@ The eggs and the hay rack. 2.3.0 gives each egg three sums (docs/v4/2.3.md secti
 | warm | middle | 9 | 9 | 3 to 6 | 3 to 6 | 4 | 4 |
 | warm | hard | 10 | 10 | 3 to 7 | 3 to 7 | A 4, B 5 | 5 |
 | snow | easy | 7 or 8 | 3 to 5 | 7 or 8 | 3 to 5 | 4 | 5 |
-| snow | middle | 9 | 4 to 6 | 9 | 3 to 5 | 4 | 3 |
+| snow | middle | 9 | 3 to 6 | 9 | 3 to 6 | 4 | 4 |
 | snow | hard | 10 | 3 to 7 | 10 | 3 to 7 | A 4, B 5 | 5 |
 | hay rack | one sum | A 7 to 9, B 8 to 10 | as total | A 3 to 6, B 3 to 7 | A 3 to 6, B 3 to 7 | A 4, B 5 | 9 or 12 |
 
-- The hard sum is the bond to 10. The snow middle sum leaves out 9 - 6 until `num-take-9-6` passes speech-to-text (docs/v4/2.3.md section 19.1).
+- The hard sum is the bond to 10. The snow middle sum asks 9 - 6 again since 2.3.1: Tjitse accepted the take of `num-take-9-6` that speech-to-text heard as "takeaway" (docs/v4/2.3.md section 19.1).
 - Stones are 2 to 9; the answer is 3 or more. A 2 is only a wrong stone (the slip of a 3, or a near guess). Without it an answer of 3 is always the smallest stone and the easy sums never reach the biggest place.
+- In the easy sums, leaving out the 2 and taking the smallest stone wins about half the time. Tjitse accepts this for now and watches her first tries: the egg result lines' `gr` and `o` (section 19.1).
 
 - Easy comes first; middle and hard follow in an order drawn from the egg's stream (`round.index` 0, 1, 2).
 - The hard sum takes the band at the egg's start, so all three are planned when the egg opens. Easy and middle have no `band`.
@@ -56,7 +57,7 @@ Measured over 10,000 plays per band, one after another (`tests/maths.test.ts` ch
 
 - The first sum's intro is the kind's intro on the first egg of a kind, then `g4-hearts` "Fill all three hearts, and the egg will hatch.". Sums 2 and 3 have no intro; "Drag one stone to the nest." comes only on the first warm egg's first sum.
 - After the first and the second sum: the heart lights, `heart-glow` plays (awaited, at most 1 s), and the game says `g4-heart` "A happy heart!".
-- Every clip of every reachable sum is v3's or the demo's. The sums within 10 added `num-egg-3`, `num-take-7-4`, `num-take-8-5` and `num-take-10-7` (29 October 2026). The snow egg's goals and facts past ten stay in lines.json as a reserve (`PAST_TEN` in tools/build-lines.ts).
+- Every clip of every reachable sum is v3's or the demo's. The sums within 10 added `num-egg-3`, `num-take-7-4`, `num-take-8-5` and `num-take-10-7` (29 October 2026), and 2.3.1 added `num-take-9-6`. The snow egg's goals and facts past ten stay in lines.json as a reserve (`PAST_TEN` in tools/build-lines.ts).
 
 ## Sounds
 
