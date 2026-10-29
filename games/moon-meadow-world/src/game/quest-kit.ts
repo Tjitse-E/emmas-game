@@ -34,14 +34,16 @@ export function followAgain(g: Game, babies: UnicornActor[]): void {
 
 /**
  * The herd grazing at a quest's place steps aside (on) or goes home again (off). `pairs` are [grazing home, aside
- * spot] (CORNER.herd, BEAD_TREE.herd). They walk there, or with `place` are put there at once when far. Followers and
- * unicorns in a stall stay where they are. Frozen for the lanes (docs/v4/2.3.md section 22.1).
+ * spot] (CORNER.herd, BEAD_TREE.herd). They walk there, or with `place` are put there at once when far. Followers,
+ * unicorns in a stall and the hay rack's helpers stay where they are. Frozen for the lanes (docs/v4/2.3.md section 22.1).
  */
 export function herdAsideAt(g: Game, pairs: readonly (readonly [Vec2, Vec2])[], on: boolean, o: { place?: boolean } = {}): void {
   g.herd.forEach((h, i) => {
     const pair = pairs.find(([home]) => dist2(home, GRAZE_HOMES[i]) < 0.01);
     const u = g.actors.herd.get(h.id);
-    if (!pair || !u || u.mode === 'stall' || u.followSlot !== null) return;
+    // A hay rack helper waits at the rack for its quest (quests.ts hungryHerd): sent aside and home again, it would
+    // graze too far from the rack to eat there.
+    if (!pair || !u || u.mode === 'stall' || u.followSlot !== null || g.quests.helpers.includes(h.id)) return;
     if (on) {
       if (o.place && dist2(flat(u.position), pair[1]) > 3) u.place(pair[1]);
       u.graze(pair[1]);
@@ -51,29 +53,43 @@ export function herdAsideAt(g: Game, pairs: readonly (readonly [Vec2, Vec2])[], 
 
 // ---- the free-play clocks (docs/v4/2.3.md section 17.3) ------------------------------------------------------------
 
-/** Free play's own time: it ends once this much has passed, no quest runs and the wardrobe is closed. */
+/**
+ * Free play's own time: it ends once this much has passed, no quest runs, the wardrobe is closed and no picnic or
+ * maths bubble is still offered (or the quest cutoff has passed).
+ */
 export const FREE_PLAY_MS = 120_000;
 /** No picnic or maths quest starts after this much free time, not counting the Corner's dressing. */
 export const QUEST_CUTOFF_MS = 90_000;
 /** The Corner's music box gets the free time that is left, at least and at most this long. */
 export const CORNER_MIN_MS = 30_000;
 export const CORNER_MAX_MS = 60_000;
+/**
+ * Free time stands still while Lumi or Elizabeth speaks (the bubbles line, the basket line, a prompt), up to this
+ * much in a play, so a voice that never ends cannot keep free play open.
+ */
+export const TALK_MAX_MS = 45_000;
 
 /** What the clocks read and write: the afternoon's state and the play clock's dressing time. */
 export interface FreeClocks {
-  quests: Pick<QuestState, 'freeMs' | 'wallMs' | 'running' | 'dressing'>;
+  quests: Pick<QuestState, 'freeMs' | 'wallMs' | 'talkMs' | 'running' | 'dressing' | 'offered' | 'maths'>;
   clock: { dressMs: { corner: number } };
 }
 
 /**
- * One frame of the afternoon: wall time always (for the log), free time while no quest runs and while the Corner's
- * music box plays, and that same music box time as the Corner's dressing time.
+ * One frame of the afternoon: wall time always (for the log), free time while no quest runs and nobody speaks, and
+ * while the Corner's music box plays, and that same music box time as the Corner's dressing time. The music box
+ * counts while a colour word plays: its limit is wall time.
  */
-export function tickFree(c: FreeClocks, ms: number): void {
+export function tickFree(c: FreeClocks, ms: number, speaking = false): void {
   const q = c.quests;
   q.wallMs += ms;
-  if (!q.running || q.dressing) q.freeMs += ms;
-  if (q.dressing) c.clock.dressMs.corner += ms;
+  if (q.dressing) {
+    q.freeMs += ms;
+    c.clock.dressMs.corner += ms;
+  } else if (!q.running) {
+    if (speaking && q.talkMs < TALK_MAX_MS) q.talkMs += ms;
+    else q.freeMs += ms;
+  }
 }
 
 /** Free time without the Corner's dressing: what the quest cutoff counts. */
@@ -82,8 +98,16 @@ export const freeWithoutDressing = (c: FreeClocks): number => c.quests.freeMs - 
 /** Past the cutoff: no new picnic or maths quest. The Corner may still start while free play is on. */
 export const pastCutoff = (c: FreeClocks): boolean => freeWithoutDressing(c) >= QUEST_CUTOFF_MS;
 
-/** Free play is over: its time is up, no quest runs (the Corner runs until its wardrobe closes) and nobody dresses. */
-export const freePlayOver = (c: FreeClocks): boolean => c.quests.freeMs >= FREE_PLAY_MS && !c.quests.running && !c.quests.dressing;
+/** A learning quest's bubble still shows: the picnic's or this play's maths quest's. */
+export const learningOffered = (c: FreeClocks): boolean => c.quests.offered.has('picnic') || c.quests.offered.has(c.quests.maths);
+
+/**
+ * Free play is over: its time is up, no quest runs (the Corner runs until its wardrobe closes), nobody dresses, and
+ * no learning bubble still waits (or the cutoff has passed). So a learning quest, then a 60 s Corner, still leaves the
+ * time to the cutoff for the other learning quest, and free time stays at most 150 s (section 17.3).
+ */
+export const freePlayOver = (c: FreeClocks): boolean =>
+  c.quests.freeMs >= FREE_PLAY_MS && !c.quests.running && !c.quests.dressing && (pastCutoff(c) || !learningOffered(c));
 
 /** The Corner's music box when it starts: the free time that is left, at least 30 s and at most 60 s. */
 export function cornerLimitMs(freeMs: number): number {

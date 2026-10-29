@@ -4,7 +4,7 @@
 // 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own.
 import { describe, expect, it, vi } from 'vitest';
 import {
-  CUP_GRID, blanketPatches, bubbleBox, capitalOf, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
+  CUP_GRID, apart, blanketPatches, bubbleBox, capitalOf, clearOf, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
   menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, tintedPicStyle,
   unitFor,
 } from '../src/ui/geometry';
@@ -209,6 +209,34 @@ describe('placement', () => {
     const edge = bubbleBox({ x: 1170, y: 400 }, 300, 160, screen, o);
     expect(edge.x).toBe(1180 - 12 - 300);
     expect(edge.tailX).toBeLessThanOrEqual(300 * 0.82);
+  });
+
+  it('puts a bubble that would cover her above her head, its tail still towards its own point', () => {
+    const head = { x: 330, y: 360 };
+    const b = bubbleBox(head, 620, 150, screen, o);
+    const her = { x: 500, y: 230, w: 90, h: 200 };
+    const c = clearOf(b, head, 620, 150, her, screen, o);
+    expect(c.y + 150).toBeLessThanOrEqual(her.y - o.gap + 0.001);
+    expect(c.tailX).toBeCloseTo(Math.min(Math.max(head.x - c.x, 620 * 0.18), 620 * 0.82));
+    // Not in the way: it stays.
+    expect(clearOf(b, head, 620, 150, { x: 900, y: 600, w: 60, h: 120 }, screen, o)).toEqual(b);
+    expect(clearOf(b, head, 620, 150, null, screen, o)).toEqual(b);
+  });
+
+  it('moves a bubble off the bubbles placed before it: along a side edge, or up when on screen', () => {
+    const first = { x: 12, y: 300, w: 120, h: 150 };
+    const side = apart({ ...first, y: 340 }, [first], screen, { gap: 10, margin: 12, along: 'y' });
+    expect(side.x).toBe(12);
+    expect(side.y).toBe(300 + 150 + 10);
+    const up = apart({ x: 500, y: 420, w: 120, h: 150 }, [{ x: 470, y: 400, w: 120, h: 150 }], screen, { gap: 10, margin: 12, along: 'up' });
+    expect(up.y + up.h).toBeLessThanOrEqual(400 - 10);
+    // No room above: it goes sideways.
+    const top = apart({ x: 500, y: 20, w: 120, h: 150 }, [{ x: 470, y: 12, w: 120, h: 150 }], screen, { gap: 10, margin: 12, along: 'up' });
+    expect(top.x).toBeGreaterThanOrEqual(470 + 120 + 10);
+    // Three on one edge never cover each other.
+    const placed = [first];
+    for (let k = 0; k < 2; k++) placed.push(apart({ ...first, y: 320 }, placed, screen, { gap: 10, margin: 12, along: 'y' }));
+    for (let a = 0; a < placed.length; a++) for (let b = a + 1; b < placed.length; b++) expect(overlaps(placed[a], placed[b])).toBe(false);
   });
 
   it('moves the bubble out of the Lumi corner', () => {

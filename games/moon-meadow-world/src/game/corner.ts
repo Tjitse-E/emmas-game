@@ -13,6 +13,7 @@
 import type { BoardSpec, Vec2, WishSpec } from '../contracts';
 import { CORNER } from '../layout';
 import { v3Art, wordPic } from '../assets';
+import { PALETTE } from '../wardrobe';
 import { CLIPS, wishClipIds } from '../content';
 import { type Game, flat, frameAt, lumiSay, preload } from './game';
 import { crownKeep, gateKind, parkFollowers, planWish, runWish, wishExtraClipIds } from './moments';
@@ -38,6 +39,8 @@ export function boardSpec(g: Game): BoardSpec {
       jewels: wordPic('bead'),
       hair: v3Art('items/place-dressing.webp'),
     },
+    // The bead is v3's greyscale picture: pink, as on the bead tree's bubble.
+    tints: { jewels: PALETTE.pink.pic },
   };
 }
 

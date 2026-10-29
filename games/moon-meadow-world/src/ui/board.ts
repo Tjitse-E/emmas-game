@@ -1,13 +1,13 @@
 // The treasure board inside the trunk lid (docs/v4/2.3.md sections 3 and 16): every gift set as a row of places, and
 // Lumi's ribbons as a fifth row. An owned item shows its picture (swatches.ts giftSwatch); an empty place shows the
-// picture of the quest that fills it at 40%, so she can see where to earn it without reading; a full row has a gold
-// star sticker. Today's gifts sparkle. It shows on the preview side when the Dressing Corner's trunk opens, before the
+// picture of the quest that fills it, faint, so she can see where to earn it without reading; a full row has a gold
+// star sticker at its start. Today's gifts sparkle. It shows on the preview side when the Dressing Corner's trunk opens, before the
 // rails take touches, and on its own for 3.5 s when she taps the trunk after her visit (Layer.board), with the
 // trunk-lid effect. Nothing on it can be touched.
 import type { BoardSpec, PrincessLook } from '../contracts';
 import { audio } from '../audio';
 import { boardLayout } from './geometry';
-import { el, html, img, play, sleep } from './dom';
+import { el, html, img, play, sleep, wordPicEl } from './dom';
 import { PIC } from './parts';
 import { boardRows } from './wardrobe-ctl';
 import { STICKER_SVG, giftSwatch, ribbonSwatch } from './swatches';
@@ -40,9 +40,12 @@ export function showBoard(parent: HTMLElement, spec: BoardSpec, ms: number, o: {
   el('div', 'wd-board-arch', root);
   rows.forEach((row, i) => {
     const rb = L.rows[i];
-    const sticker = el('div', `wd-board-sticker${row.full ? ' full' : ''}`, root);
-    put(sticker, rb.sticker, L.board);
-    if (row.full) sticker.innerHTML = STICKER_SVG;
+    // The sticker only on a full row: an empty dashed place at the start of every row read as a missing item.
+    if (row.full) {
+      const sticker = el('div', 'wd-board-sticker full', root);
+      put(sticker, rb.sticker, L.board);
+      sticker.innerHTML = STICKER_SVG;
+    }
     row.places.forEach((p, j) => {
       const cell = el('div', `wd-board-place${p.owned ? ' owned' : ''}${p.fresh ? ' fresh' : ''}`, root);
       put(cell, rb.places[j], L.board);
@@ -51,7 +54,8 @@ export function showBoard(parent: HTMLElement, spec: BoardSpec, ms: number, o: {
         if (p.fresh) img(PIC.sparkle, 'wd-board-spark', cell);
       } else {
         // Where it is earned: the quest's own picture, faint. The ribbons come from Lumi at goodnight (the moon).
-        img(row.set === 'ribbons' ? PIC.moon : spec.pics[row.set], 'wd-board-pic hint', cell);
+        if (row.set === 'ribbons') img(PIC.moon, 'wd-board-pic hint', cell);
+        else wordPicEl({ pic: spec.pics[row.set], tint: spec.tints?.[row.set] }, 'wd-board-pic hint', cell);
       }
     });
   });

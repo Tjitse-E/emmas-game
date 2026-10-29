@@ -1,12 +1,12 @@
 // The gift picker (docs/v4/2.3.md sections 5 and 16): after a quest, one or two big cards with a gift each. Elizabeth
-// says "Pick one present!" first. A card acts on pointerdown; the other card fades, the chosen one pops with the
+// says "Pick one present!" first. The cards sit in the middle, or beside her when they would cover her. A card acts on pointerdown; the other card fades, the chosen one pops with the
 // gift-paper effect and its sparkles fly to `to` (Princess Emma on screen, who puts it on and keeps it), and the
 // picker resolves with it once they have landed. Never a checked moment: no result, no hint ladder, nothing is wrong.
 // If she waits, the line comes again, and after that the ghost hand shows a tap on a card.
 import type { GiftItem, Layer } from '../contracts';
 import { audio } from '../audio';
 import type { Ghost } from './ghost';
-import { giftCards } from './geometry';
+import { giftCards, type Box } from './geometry';
 import { centreOf, el, html, img, play, sleep } from './dom';
 import { press } from './press';
 import { PIC } from './parts';
@@ -35,7 +35,7 @@ const FLY_MS = 900;
 const CARD_BOW =
   '<svg viewBox="0 0 100 50" aria-hidden="true"><path d="M50 40 C38 14 14 12 18 30 C20 40 36 42 50 40 C64 42 80 40 82 30 C86 12 62 14 50 40 Z" fill="#ff8fbd" stroke="#d9466f" stroke-width="3" stroke-linejoin="round"/><circle cx="50" cy="40" r="7" fill="#ffb7d8" stroke="#d9466f" stroke-width="3"/></svg>';
 
-export function runGift(ctx: { parent: HTMLElement; ghost: Ghost; screen(): { w: number; h: number } }, o: GiftOpts, setOpen: (h: GiftHandle | null) => void): Promise<GiftItem> {
+export function runGift(ctx: { parent: HTMLElement; ghost: Ghost; screen(): { w: number; h: number }; clear?(): Box | null }, o: GiftOpts, setOpen: (h: GiftHandle | null) => void): Promise<GiftItem> {
   // No picker when every set is full (17.2): a call without items is the caller's mistake, so it fails at once
   // instead of waiting forever with nothing on screen.
   if (!o.items.length) return Promise.reject(new Error('layer.gift: no items to pick (no picker when every set is full)'));
@@ -46,7 +46,8 @@ export function runGift(ctx: { parent: HTMLElement; ghost: Ghost; screen(): { w:
     const undo: (() => void)[] = [];
     const root = el('div', 'gift', ctx.parent);
     undo.push(() => root.remove());
-    const boxes = giftCards(ctx.screen().w, ctx.screen().h, o.items.length);
+    // Beside her when they would cover her and there is room (layer.keepClear: at the bead tree), else centred.
+    const boxes = giftCards(ctx.screen().w, ctx.screen().h, o.items.length, ctx.clear?.() ?? null);
     const cards = o.items.map((item, i) => {
       const card = el('div', 'gift-card touch', root);
       card.setAttribute('aria-label', `gift ${item.id}`);

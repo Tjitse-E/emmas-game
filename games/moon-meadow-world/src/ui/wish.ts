@@ -13,7 +13,7 @@
 // then sounds the thing; "the" is never sounded and never lights.
 import type { MomentHooks, MomentResult, WishItem, WishSpec } from '../contracts';
 import { audio } from '../audio';
-import { bubbleBox, inBox, phraseUnits, printUnits, type Box, type Point, type PrintUnit } from './geometry';
+import { bubbleBox, clearOf, inBox, phraseUnits, printUnits, type Box, type Point, type PrintUnit } from './geometry';
 import { HintRunner } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, img, onTick, play, sleep, u, wordPicEl } from './dom';
@@ -84,12 +84,15 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
       const a = hooks.anchor();
       const w = bubble.offsetWidth;
       const h = bubble.offsetHeight;
-      const b = bubbleBox(a, w, h, scr, {
+      const corners = {
         gap: u(26),
         margin: u(12),
         topLeft: { x: 0, y: 0, w: u(160), h: u(160) },
         topRight: { x: scr.w - u(112), y: 0, w: u(112), h: u(112) },
-      });
+      };
+      // Never over Princess Emma (layer.keepClear): at the Corner a two-word bubble over a baby beside her covered her
+      // face, so it goes above her head.
+      const b = clearOf(bubbleBox(a, w, h, scr, corners), a, w, h, ctx.clear(), scr, corners);
       bubble.style.transform = `translate(${b.x}px, ${b.y}px)`;
       bubble.style.setProperty('--tail-x', `${b.tailX}px`);
     };

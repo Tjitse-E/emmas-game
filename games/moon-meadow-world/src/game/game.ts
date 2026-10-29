@@ -74,6 +74,8 @@ export interface QuestState {
    */
   wallMs: number;
   freeMs: number;
+  /** Free-play time that stood still while Lumi or Elizabeth spoke (quest-kit.ts tickFree, at most TALK_MAX_MS). */
+  talkMs: number;
   /** "When you see a bubble, someone is waiting for you." has played this play. */
   explained: boolean;
   /** The herd unicorns waiting at the hay rack (ids). */
@@ -104,7 +106,7 @@ export interface QuestState {
 
 export function startQuests(maths: QuestState['maths'] = 'beads'): QuestState {
   return {
-    offered: new Set(), done: new Set(), running: null, asked: null, wallMs: 0, freeMs: 0, explained: false, helpers: [], rose: false, hay: 0,
+    offered: new Set(), done: new Set(), running: null, asked: null, wallMs: 0, freeMs: 0, talkMs: 0, explained: false, helpers: [], rose: false, hay: 0,
     maths, dressing: false, gifts: [], over: false, cut: false, gate: null, cornerSaid: false, signSaid: false, boards: 0, signs: 0, cornerMs: 0,
   };
 }

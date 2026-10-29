@@ -6,7 +6,7 @@ import '@fontsource/andika/700.css';
 import './ui.css';
 import type { Layer, LayerDeps, PrincessLook } from '../contracts';
 import { audio } from '../audio';
-import { skyWash, unitFor } from './geometry';
+import { skyWash, unitFor, type Box } from './geometry';
 import { el, setUnit } from './dom';
 import { createGhost } from './ghost';
 import { releaseDrags } from './drag';
@@ -73,7 +73,10 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
 
   const screen = () => ({ w: root.clientWidth || innerWidth, h: root.clientHeight || innerHeight });
   const ghost = createGhost(ghostLayer);
-  const ctx: LayerCtx = { moments, drag: dragLayer, ghost, seen: new Set(), screen };
+  // The box bubbles and the gift cards keep clear of (layer.keepClear), read every frame.
+  let keep: (() => Box | null) | null = null;
+  const clear = (): Box | null => keep?.() ?? null;
+  const ctx: LayerCtx = { moments, drag: dragLayer, ghost, seen: new Set(), screen, clear };
   let open: OpenMoment | null = null;
   const setOpen = (m: OpenMoment | null) => {
     open = m;
@@ -91,7 +94,7 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
   const food = createFoodBasket(hudLayer, dragLayer);
   const home = createHome(hudLayer);
   // Offer bubbles follow places in the world like the name tags, under the moment panels.
-  const offers = createOffers(tagsLayer, screen);
+  const offers = createOffers(tagsLayer, screen, clear);
   let wardrobe: WardrobeHandle | null = null;
   let gift: GiftHandle | null = null;
   let board: BoardHandle | null = null;
@@ -174,7 +177,7 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
     gift: (o) => {
       gift?.close();
       lastLook = { ...o.look };
-      return runGift({ parent: moments, ghost, screen }, o, (h) => {
+      return runGift({ parent: moments, ghost, screen, clear }, o, (h) => {
         gift = h;
       });
     },
@@ -191,6 +194,9 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       return runBeads(ctx, spec, hooks, setOpen, o);
     },
     offer: (id, o) => offers.set(id, o),
+    keepClear: (box) => {
+      keep = box;
+    },
     foodBasket: (o) => food.set(o),
     theEnd: (o) => endScreen(screens, o),
     sky: (t) => {
@@ -212,6 +218,7 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       board?.close();
       board = null;
       offers.reset();
+      keep = null;
       ghost.hide();
       releaseDrags();
       dragLayer.innerHTML = '';

@@ -4,7 +4,20 @@
 // through the integrator.
 import type { Ghost } from './ghost';
 import type { HintRunner } from './ladder';
-import { boxOf } from './dom';
+import { audio, type Sfx } from '../audio';
+import { FX_WAIT_MS } from '../audio/sound';
+import { boxOf, sleep } from './dom';
+import type { Box } from './geometry';
+
+/**
+ * An effect that the line after it must not cut (2.3 section 20: Elizabeth's line waits for an effect, at most 1 s).
+ * It waits a task first: a stop() just before lowers the speech count only once its promises settle, and the effect
+ * is skipped while Elizabeth still counts as speaking. Resolves at the effect's end, at once when it was skipped.
+ */
+export async function effectFirst(name: Sfx): Promise<void> {
+  await sleep(0);
+  await Promise.race([audio.sfx(name), sleep(FX_WAIT_MS)]);
+}
 
 /**
  * A first touch of an item or a stone this soon after input opened (with no look at the word, for a wish) is a quick
@@ -21,6 +34,8 @@ export interface LayerCtx {
   /** First-time memory for this play ('egg-intro:warm', 'egg-demo', 'slide-demo', ...). Cleared by reset(). */
   readonly seen: Set<string>;
   screen(): { w: number; h: number };
+  /** The box a bubble keeps clear of now (layer.keepClear: Princess Emma in the afternoon), or null. */
+  clear(): Box | null;
 }
 
 /** One touchable thing on screen, for the test hook and the flows. */

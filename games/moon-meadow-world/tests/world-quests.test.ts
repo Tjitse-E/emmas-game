@@ -40,7 +40,7 @@ vi.hoisted(() => {
 import { DEFAULT_LOOK, GIFT_SETS, START_OWNED, copyOwned, owns, stillToEarn, withItem } from '../src/wardrobe';
 import { BEAD_TREE, CORNER, PICNIC } from '../src/layout';
 import {
-  CORNER_MAX_MS, CORNER_MIN_MS, FREE_PLAY_MS, QUEST_CUTOFF_MS, cornerLimitMs, fillsSet, freePlayOver, giftOffer,
+  CORNER_MAX_MS, CORNER_MIN_MS, FREE_PLAY_MS, QUEST_CUTOFF_MS, TALK_MAX_MS, cornerLimitMs, fillsSet, freePlayOver, giftOffer,
   giveGift, mathsQuestFor, pastCutoff, tickFree,
 } from '../src/game/quest-kit';
 import { type Game, startClock, startQuests } from '../src/game/game';
@@ -247,6 +247,55 @@ describe('the free-play clocks', () => {
     expect(canQuest(g, 'corner')).toBe(true);
   });
 
+  it('reach the next learning quest after a learning quest and a 60 s Corner, and end by 150 s of free time', () => {
+    const { g } = fakeGame();
+    const q = g.quests;
+    // The bead tree first, then straight to the Corner, as she will: free time is at 120 s when the wardrobe closes.
+    play(g, 55_000);
+    play(g, 90_000, 'beads');
+    q.done.add('beads');
+    play(g, 5_000);
+    expect(cornerLimitMs(q.freeMs)).toBe(CORNER_MAX_MS);
+    play(g, 40_000, 'corner');
+    play(g, cornerLimitMs(q.freeMs), 'corner', true);
+    q.done.add('corner');
+    expect(q.freeMs).toBe(FREE_PLAY_MS);
+    // The picnic's bubble still shows, so free play goes on and the picnic may start.
+    q.offered.add('picnic');
+    expect(freePlayOver(g)).toBe(false);
+    expect(canQuest(g, 'picnic')).toBe(true);
+    // Without its bubble (or with both learning quests done) the 120 s end it.
+    q.offered.delete('picnic');
+    expect(freePlayOver(g)).toBe(true);
+    q.offered.add('picnic');
+    // She never taps it: the cutoff comes at 90 s without dressing, so free time ends at 150 s at the most.
+    play(g, 29_950);
+    expect(freePlayOver(g)).toBe(false);
+    play(g, 50);
+    expect(pastCutoff(g)).toBe(true);
+    expect(canQuest(g, 'picnic')).toBe(false);
+    expect(freePlayOver(g)).toBe(true);
+    expect(q.freeMs).toBe(150_000);
+  });
+
+  it('stand still while Lumi or Elizabeth speaks outside a quest, up to 45 s a play, but never in the music box', () => {
+    const { g } = fakeGame();
+    const q = g.quests;
+    for (let t = 0; t < 13_000; t += 50) tickFree(g, 50, true);
+    expect(q.freeMs).toBe(0);
+    expect(q.talkMs).toBe(13_000);
+    expect(q.wallMs).toBe(13_000);
+    for (let t = 0; t < 40_000; t += 50) tickFree(g, 50, true);
+    expect(q.talkMs).toBe(TALK_MAX_MS);
+    expect(q.freeMs).toBe(53_000 - TALK_MAX_MS);
+    q.dressing = true;
+    q.running = 'corner';
+    const before = q.freeMs;
+    for (let t = 0; t < 10_000; t += 50) tickFree(g, 50, true);
+    expect(q.freeMs).toBe(before + 10_000);
+    expect(g.clock.dressMs.corner).toBe(10_000);
+  });
+
   it('never end free play while the Corner runs or its music box plays', () => {
     const { g } = fakeGame();
     play(g, FREE_PLAY_MS + 5000);
@@ -323,11 +372,11 @@ describe('the Dressing Corner and the bubbles', () => {
     expect(placeAt({ x: -11, z: 1 })).toBeNull();
   });
 
-  it('show a gift she can still earn on the quest bubbles, and none once every set is full', () => {
+  it('show a gift she can still earn on the quest bubbles, the trunk bubble too, and none once every set is full', () => {
     const { g } = fakeGame();
     expect(badgeOf(g, 'picnic')).toMatch(/^data:image\/svg\+xml,/);
     expect(badgeOf(g, 'beads')).toMatch(/^data:image\/svg\+xml,/);
-    expect(badgeOf(g, 'corner')).toBeUndefined();
+    expect(badgeOf(g, 'corner')).toMatch(/^data:image\/svg\+xml,/);
     let all = copyOwned(START_OWNED);
     for (const s of Object.values(GIFT_SETS)) for (const i of s.items) all = withItem(all, i);
     expect(badgeOf(fakeGame({ owned: all }).g, 'picnic')).toBeUndefined();

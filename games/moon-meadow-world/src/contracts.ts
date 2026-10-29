@@ -20,6 +20,14 @@ export interface ScreenPoint {
   visible: boolean;
 }
 
+/** A box on screen in CSS pixels, relative to the viewport. */
+export interface ScreenBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 /** The result of one checked moment (v3 spec 3.2). */
 export type Outcome = 'first' | 'miss' | 'helped';
 export interface MomentResult {
@@ -655,6 +663,12 @@ export interface Layer {
    * takes it away.
    */
   offer(id: string, o: { pic: string; tint?: string; badge?: string; at: () => ScreenPoint; onTap(): void } | null): void;
+  /**
+   * A box on screen that bubbles and cards keep clear of (2.3.0: Princess Emma in the afternoon): the offer bubbles
+   * and a wish bubble move up above it, the gift cards move beside it when there is room. Called every frame; null
+   * (or a call that returns null) keeps nothing clear. reset() clears it.
+   */
+  keepClear(box: (() => ScreenBox | null) | null): void;
   /** Free play: the food basket button (bottom right). A dragged food dropped on screen calls drop(word, x, y). */
   foodBasket(o: { show: boolean; foods?: WishItem[]; drop?(item: WishItem, x: number, y: number): boolean }): void;
   /**
@@ -682,6 +696,8 @@ export interface BoardSpec {
   ribbons: Ribbon[];
   /** The picture of the quest that fills each set, shown in its empty places. */
   pics: Record<GiftSet, string>;
+  /** A greyscale picture's colour (2.3.0: the bead tree's bead is pink, as on its bubble). */
+  tints?: Partial<Record<GiftSet, string>>;
 }
 
 /** One unicorn of the herd on the end screen. Colours are CSS hex strings. */

@@ -268,6 +268,45 @@ export function bubbleBox(head: Point, w: number, h: number, screen: { w: number
 }
 
 /**
+ * A bubble that would cover `clear` (Princess Emma, layer.keepClear) goes above it: placed as bubbleBox places it
+ * over a head at the top of `clear`, its tail still towards `head`. When there is no room above, it stays as low as
+ * the top margin allows. Without an overlap (or without `clear`) it is `b` itself.
+ */
+export function clearOf(b: { x: number; y: number; tailX: number }, head: Point, w: number, h: number, clear: Box | null, screen: { w: number; h: number }, o: { gap: number; margin: number; topLeft: Box; topRight: Box }): { x: number; y: number; tailX: number } {
+  if (!clear || !overlaps({ x: b.x, y: b.y, w, h }, clear)) return b;
+  const up = bubbleBox({ x: head.x, y: clear.y }, w, h, screen, o);
+  return { ...up, tailX: clamp(head.x - up.x, w * 0.18, w * 0.82) };
+}
+
+/**
+ * Box `b` moved off the boxes placed before it (offer bubbles, which may not cover each other), `gap` apart, in at
+ * most four steps: along the screen edge it waits at ('y' down, or up when there is no room; 'x' right, or left), or
+ * for a bubble on screen ('up') up, and sideways when there is no room above. Kept inside the margins.
+ */
+export function apart(b: Box, placed: readonly Box[], screen: { w: number; h: number }, o: { gap: number; margin: number; along: 'x' | 'y' | 'up' }): Box {
+  const r = { ...b };
+  const padded = (q: Box): Box => ({ x: q.x - o.gap, y: q.y - o.gap, w: q.w + 2 * o.gap, h: q.h + 2 * o.gap });
+  const sideways = (p: Box) => {
+    const right = p.x + p.w + o.gap;
+    r.x = right + r.w <= screen.w - o.margin ? right : Math.max(o.margin, p.x - r.w - o.gap);
+  };
+  for (let k = 0; k < 4; k++) {
+    const p = placed.find((q) => overlaps(r, padded(q)));
+    if (!p) break;
+    if (o.along === 'y') {
+      const below = p.y + p.h + o.gap;
+      r.y = below + r.h <= screen.h - o.margin ? below : Math.max(o.margin, p.y - r.h - o.gap);
+    } else if (o.along === 'x') sideways(p);
+    else {
+      const up = p.y - r.h - o.gap;
+      if (up >= o.margin) r.y = up;
+      else sideways(p);
+    }
+  }
+  return r;
+}
+
+/**
  * Where the edge arrow sits for a goal at `p`: on the inset screen rectangle in the direction of the goal from the
  * screen centre. Points behind the camera (not visible, yet projected inside the screen) are mirrored, so their
  * direction is flipped. Returns null while she can see the goal, so the arrow never covers it: when the point is on
@@ -565,11 +604,24 @@ export function boardLayout(w: number, h: number, counts: readonly number[]): Bo
 /** The gift picker's cards (section 16): one or two of 220 x 260 design px, centred on the screen, 60 apart. */
 export const GIFT_CARD = { w: 220, h: 260, gap: 60 } as const;
 
-export function giftCards(w: number, h: number, n: number): Box[] {
+export function giftCards(w: number, h: number, n: number, clear: Box | null = null): Box[] {
   const k = unitFor(Math.max(w, h), Math.min(w, h));
   const cw = GIFT_CARD.w * k;
   const ch = GIFT_CARD.h * k;
   const gap = GIFT_CARD.gap * k;
   const total = n * cw + Math.max(0, n - 1) * gap;
-  return Array.from({ length: n }, (_, i) => ({ x: (w - total) / 2 + i * (cw + gap), y: (h - ch) / 2, w: cw, h: ch }));
+  const y = (h - ch) / 2;
+  let x0 = (w - total) / 2;
+  // Cards that would cover her (layer.keepClear) move beside her, on the side with more room, when they fit there
+  // (at the bead tree she stands left of the middle in a wide frame). In a close-up there is no room: they stay.
+  if (clear && overlaps({ x: x0, y, w: total, h: ch }, clear)) {
+    const margin = 24 * k;
+    const right = clear.x + clear.w + gap;
+    const left = clear.x - gap - total;
+    const fitsRight = right + total <= w - margin;
+    const fitsLeft = left >= margin;
+    if (fitsRight && (!fitsLeft || w - (clear.x + clear.w) >= clear.x)) x0 = right;
+    else if (fitsLeft) x0 = left;
+  }
+  return Array.from({ length: n }, (_, i) => ({ x: x0 + i * (cw + gap), y, w: cw, h: ch }));
 }

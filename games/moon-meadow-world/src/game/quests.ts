@@ -8,11 +8,14 @@
 // After her first finished quest (once its gift is picked) the trunk bubble shows over the Dressing Corner, with Lumi's
 // "Come and try my Dressing Corner!" once a play; it stays until the Corner is done or free play ends.
 //
-// Time (17.3, quest-kit.ts): free time runs while no quest runs and while the Corner's music box plays. Free play
-// ends once there is 120 s of it, no quest runs and the wardrobe is closed (so at most 150 s). No picnic or maths quest
-// starts after 90 s of free time without dressing; a running quest always finishes. Every quest needs her two named
-// babies. The bubbles hide while a quest runs, once it is done, past the cutoff and at bedtime.
-import type { EggSpec, MomentHooks, Vec2, WishSpec } from '../contracts';
+// Time (17.3, quest-kit.ts): free time runs while no quest runs and nobody speaks, and while the Corner's music box
+// plays. Free play ends once there is 120 s of it, no quest runs, the wardrobe is closed and no picnic or maths bubble
+// still waits (so a learning quest, then a 60 s Corner, still leaves time for the other one; at most 150 s). No picnic
+// or maths quest starts after 90 s of free time without dressing; a running quest always finishes. Every quest needs
+// her two named babies. The bubbles hide while a quest runs, once it is done, past the cutoff and at bedtime. The
+// bubbles, the wish bubbles and the gift cards keep clear of her (layer.keepClear, herBox).
+import type { EggSpec, MomentHooks, ScreenBox, Vec2, WishSpec } from '../contracts';
+import * as THREE from 'three';
 import type { UnicornActor } from '../actors';
 import { BEAD_TREE, CORNER, GRAZE_HOMES, HAY_RACK, PICNIC, PLACES, dist2 } from '../layout';
 import { PALETTE, giftSetFor, stillToEarn } from '../wardrobe';
@@ -25,13 +28,15 @@ import { afterWish, crownKeep, momentLog, parkFollowers, planWish, runWish } fro
 import { eggAsk, noteMaths } from './maths';
 import { useSum } from './band';
 import { herdAside } from './wardrobe-part';
-import { FREE_PLAY_MS, followAgain, freePlayOver, giveGift, guests, pastCutoff, tickFree, walkThere } from './quest-kit';
+import { followAgain, freePlayOver, giveGift, guests, pastCutoff, tickFree, walkThere } from './quest-kit';
 import { beadsQuest } from './beads';
 import { cornerQuest } from './corner';
 import { QUEST_IDS, type QuestId } from './options';
 
 export { FREE_PLAY_MS, QUEST_CUTOFF_MS } from './quest-kit';
 
+/** The free-play wait's longest stretch: a safety only, free play ends by its clocks (freePlayOver) long before. */
+const FREE_WAIT_MS = 600_000;
 /** A quiet while without a touch brings the next suggestion. */
 const FREE_PROMPT_MS = 30_000;
 /** Walking this near a quest's place starts it (the nearest one when two are near). */
@@ -55,18 +60,15 @@ const MUNCH_MS = 3000;
 
 /** The bubble pictures (v3 art), their tint, and where each bubble floats. */
 const OFFER: Record<QuestId, { pic: (g: Game) => string; tint?: string; at: { x: number; y: number; z: number } }> = {
-  picnic: { pic: () => wordPic('picnic'), at: { x: PICNIC.rug.center.x, y: 1.3, z: PICNIC.rug.center.z } },
+  // Over the rug's east end: after the Corner she stands at the step north of the rug's middle, and a bubble over the
+  // middle sat on her (and on the trunk bubble, west of her).
+  picnic: { pic: () => wordPic('picnic'), at: { x: PICNIC.rug.center.x + 1.2, y: 1.3, z: PICNIC.rug.center.z } },
   rack: { pic: () => v3Art('items/item-hay-bundle.webp'), at: { x: HAY_RACK.center.x, y: 2.3, z: HAY_RACK.center.z } },
   // v3's bead picture tinted pink over the tree.
   beads: { pic: () => wordPic('bead'), tint: PALETTE.pink.pic, at: { x: BEAD_TREE.center.x, y: 3.0, z: BEAD_TREE.center.z } },
-  // Over the trunk: the newest gift's swatch (it waits in the trunk), or v3's dressing place picture.
-  corner: {
-    pic: (g) => {
-      const last = g.quests.gifts[g.quests.gifts.length - 1];
-      return last ? giftSwatchUrl(last, g.actors.princess.look) : v3Art('items/place-dressing.webp');
-    },
-    at: { x: CORNER.trunk.x, y: 1.6, z: CORNER.trunk.z },
-  },
+  // Just over the trunk (not up by the gazebo roof): v3's dressing place picture, with the badge of a hair gift she can
+  // earn there, as every bubble. 2.3.0's last pass: the newest gift's swatch here read as one more present to pick.
+  corner: { pic: () => v3Art('items/place-dressing.webp'), at: { x: CORNER.trunk.x, y: 1.1, z: CORNER.trunk.z } },
 };
 
 /**
@@ -104,10 +106,9 @@ export function askQuest(g: Game, id: QuestId): boolean {
 
 /**
  * A bubble's badge: the swatch of the first gift its quest can still give (from the set it pays from now), so the
- * prize shows without reading. None for the Corner (its picture is the gift) and none when every set is full.
+ * prize shows without reading. The Corner's too (a hair gift). None when every set is full.
  */
 export function badgeOf(g: Game, id: QuestId): string | undefined {
-  if (id === 'corner') return undefined;
   const set = giftSetFor(id, g.save.data.owned);
   const item = set ? stillToEarn(set, g.save.data.owned)[0] : undefined;
   return item ? giftSwatchUrl(item, g.actors.princess.look) : undefined;
@@ -140,6 +141,27 @@ export function hideOffers(g: Game): void {
     g.quests.offered.delete(id);
     g.layer.offer(id, null);
   }
+}
+
+const HEAD = new THREE.Vector3();
+const WAIST = new THREE.Vector3();
+/** From her head point to the top of her hair, a little under the crown's top. */
+const HAIR_TOP_M = 0.24;
+
+/**
+ * Princess Emma on screen, from the top of her hair to her waist: what the afternoon's bubbles and gift cards keep
+ * clear of (layer.keepClear). Null while she is off screen.
+ */
+export function herBox(g: Game): ScreenBox | null {
+  const her = g.actors.princess;
+  her.point('head', HEAD);
+  HEAD.y += HAIR_TOP_M;
+  const top = g.world.toScreen(HEAD);
+  const low = g.world.toScreen(her.point('dress', WAIST));
+  if (!top.visible || !low.visible) return null;
+  const h = Math.max(24, low.y - top.y);
+  const w = Math.max(24, h * 0.7);
+  return { x: top.x - w / 2, y: top.y, w, h };
 }
 
 /** The free-play food basket: tap a food to hear it, drop it on any unicorn to feed it (with the munch). */
@@ -226,12 +248,15 @@ export async function afternoon(g: Game): Promise<void> {
     basketOnce();
   }
 
+  layer.keepClear(() => herBox(g));
+  g.run.defer(() => layer.keepClear(null));
   // The afternoon's clocks, the walk-near trigger and the cutoff for new picnic and maths quests. Walking near starts
   // a quest when she comes to its place, not while she still stands where the last quest left her (after the Corner
   // she stands 1.9 m from the picnic rug).
-  let at = placeAt(princessAt(g));
+  // `at` starts empty: she may have walked to a place while the opening lines played, and that counts as coming.
+  let at: QuestId | null = null;
   const offClock = world.onFrame((dt) => {
-    tickFree(g, dt * 1000);
+    tickFree(g, dt * 1000, audio.speaking);
     if (!q.cut && pastCutoff(g)) {
       q.cut = true;
       if (!q.running) showOffers(g);
@@ -264,10 +289,11 @@ export async function afternoon(g: Game): Promise<void> {
   };
 
   for (;;) {
-    const left = FREE_PLAY_MS - q.freeMs;
-    // The free-play wait is the one skip() ends (the flows skip the two minutes). A running quest is never skipped.
-    if (left <= 0 || !(await g.run.until(() => (prompt(), q.asked !== null), left))) break;
-    const id = q.asked!;
+    // Free play waits for a quest or for its end by the clocks (freePlayOver). The free-play wait is the one skip()
+    // ends (the flows skip the two minutes). A running quest is never skipped.
+    if (freePlayOver(g) || !(await g.run.until(() => (prompt(), q.asked !== null || freePlayOver(g)), FREE_WAIT_MS))) break;
+    if (q.asked === null) break;
+    const id = q.asked;
     q.asked = null;
     hideOffers(g);
     layer.foodBasket({ show: false });
@@ -291,6 +317,7 @@ export async function afternoon(g: Game): Promise<void> {
   }
   q.over = true;
   offClock();
+  layer.keepClear(null);
   hideOffers(g);
   layer.foodBasket({ show: false });
   // This play's afternoon: the next play's maths quest comes from it (quest-kit.ts mathsQuestFor).
