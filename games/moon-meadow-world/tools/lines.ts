@@ -85,7 +85,8 @@ export function numberLine(id: string): Line | null {
     const [a, b] = [Number(m[1]), Number(m[2])];
     return { id, speaker: 'narrator', text: `${cap(word(a))} take away ${word(b)} is ${word(a - b)}!`, note: 'Snow egg solved.' };
   }
-  // v3's "This egg needs seven warm cups." for the smaller snow eggs of 2.3.0 (num-egg-4 and num-egg-5).
+  // v3's "This egg needs seven warm cups." for the smaller snow eggs: num-egg-4 and num-egg-5 (2.3.0) and num-egg-3
+  // (the sums within 10).
   m = /^num-egg-(\d+)$/.exec(id);
   if (m) return { id, speaker: 'narrator', text: `This egg needs ${word(Number(m[1]))} warm cups.`, note: 'Egg goal.' };
   m = /^num-toowarm-(\d+)$/.exec(id);

@@ -1,7 +1,8 @@
 // The hay rack (docs/v4/2.2.md section 4.3): a third maths moment at the rack by the stable, the side quest "hungry
-// herd". It is a 'warm' EggSpec with skin 'hay': the same sums as the warm egg (need 11 to 15), the same bands, the
-// same stone rules and the same fresh-sum rules, told with v3's hay rack lines ("The hay rack needs thirteen bundles.
-// Eight bundles are in. Drag the hay that fills it up."). Every clip is v3's and checked ok; no new audio.
+// herd". It is a 'warm' EggSpec with skin 'hay': one missing-part sum within 10 (eggs.ts RANGES: need 7 to 9 in band
+// A, 8 to 10 in band B), the eggs' bands and stone rules, and never a fact the play already asked (freshCombos), told
+// with v3's hay rack lines ("The hay rack needs nine bundles. Five bundles are in. Drag the hay that fills it up.").
+// Every clip is v3's and checked ok; no new audio.
 import type { EggSpec } from '../contracts.ts';
 import { type EggCombo, type MathsPick, MISS_MAX, addClip, clampK, count, eggSpec, everySumClipIds } from './eggs.ts';
 import type { Rand } from './rand.ts';

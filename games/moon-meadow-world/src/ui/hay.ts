@@ -48,7 +48,8 @@ export function haySkin(ctx: LayerCtx, spec: EggSpec, root: HTMLElement, life: L
   panel.setAttribute('aria-label', 'hay rack');
   const slots: Slot[] = [];
   const boards: HTMLElement[] = [];
-  // Always two ten-frames: the rack needs 11 to 15 bundles.
+  // Always two ten-frames. The rack needs 10 bundles or fewer, so the second is plain wood, where the bundles that do
+  // not fit land (show) and tumble off.
   for (let f = 0; f < 2; f++) {
     const frame = el('div', 'hay-frame', panel);
     const grid = el('div', 'hay-grid', frame);

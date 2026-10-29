@@ -1,11 +1,13 @@
 // The maths moments (docs/v4/2.2.md section 4): the two eggs and, through rack.ts, the hay rack. All within the v4
-// maths floor (spec 4.4): nothing adds or takes away 1 or 2, no sum's total is under 7, no stone shows 1 or 2. The
-// wrong stones are real mistakes (4.1).
+// maths floor (spec 4.4): nothing adds or takes away 1 or 2 (the answer and the other part are 3 or more), and no
+// sum's total is under 7. The wrong stones are real mistakes (4.1).
 //
-// 2.3.0 (docs/v4/2.3.md sections 12 and 19.1): each egg asks three sums (eggSums). An easy one within 10, as at her
-// school; a middle one just past 10; a hard one across ten at her band (A: 4 stones, B: 5 and wider sums). Easy comes
-// first, then middle and hard in either order. Easy and middle always show 4 stones. The hay rack keeps 2.2's one sum
-// (eggSpec, RANGES: need 11 to 15 in both bands).
+// Every sum stays within 10, as at her school (Tjitse, 29 October 2026; docs/v4/2.3.md sections 12 and 19.1): the
+// need, the warm cups, the answer and every stone are 10 or less. Each egg asks three sums (eggSums): an easy one
+// (total 7 or 8), a middle one (total 9) and a hard one, a bond to 10 (the warm egg's missing part to 10, the snow
+// egg's take away from 10), with 4 stones (band A) or 5 (band B). Easy comes first, then middle and hard in either
+// order. Easy and middle always show 4 stones. The hay rack asks one sum (eggSpec, RANGES: need 7 to 9 in band A,
+// 8 to 10 in band B).
 import type { EggSpec, Outcome, StoneDecoy, SumGrade } from '../contracts.ts';
 import { type Rand, pick } from './rand.ts';
 
@@ -16,21 +18,30 @@ type Span = readonly [number, number];
 /** One kind's numbers in one band: the egg's need, the cups warm now and the stone that is right. */
 interface Ranges { need: Span; have: Span; answer: Span }
 
-/** The ranges of 4.2. Warm (and the hay rack): need 11 to 15. Snow: have 11 to 15 (A) or 16 (B), need 7 to 10. */
+/**
+ * One sum per moment (2.2's eggSpec), within 10. Warm, the hay rack's: band A totals 7 to 9 with answers 3 to 6 (9
+ * sums), band B totals 8 to 10 with the bonds to 10 and answers 3 to 7 (12 sums). Snow, which only the ui harness asks:
+ * band A totals 7 to 9 with answers 3 to 5 (8 sums, without 9 - 6, see GRADES), band B the bonds to 10 (5 sums).
+ */
 export const RANGES: Record<EggKind, Record<Band, Ranges>> = {
   warm: {
-    a: { need: [11, 15], have: [5, 9], answer: [4, 8] },
-    b: { need: [11, 15], have: [3, 9], answer: [4, 9] },
+    a: { need: [7, 9], have: [3, 6], answer: [3, 6] },
+    b: { need: [8, 10], have: [3, 7], answer: [3, 7] },
   },
   snow: {
-    a: { need: [7, 10], have: [11, 15], answer: [3, 6] },
-    b: { need: [7, 10], have: [11, 16], answer: [3, 9] },
+    a: { need: [3, 6], have: [7, 9], answer: [3, 5] },
+    b: { need: [3, 7], have: [10, 10], answer: [3, 7] },
   },
 };
 /** Stones in the tray per band. */
 export const TRAY: Record<Band, 4 | 5> = { a: 4, b: 5 };
-/** The stones she can be shown: 3 to 9 (a 1 or a 2 would be adding or taking away 1 or 2). */
-export const STONES = { min: 3, max: 9 } as const;
+/**
+ * The stones she can be shown: 2 to 9. The answer is 3 or more by the ranges, so nothing adds or takes away 1 or 2. A
+ * wrong stone may be a 2 (the slip of a 3, or a near guess): within 10 the answers are small, and without a stone under
+ * 3 an answer of 3 would always be the smallest stone and the biggest place could hardly be reached (docs/v4/2.3.md
+ * section 19.1). A 1 is never needed.
+ */
+export const STONES = { min: 2, max: 9 } as const;
 
 export interface EggCombo {
   need: number;
@@ -40,7 +51,7 @@ export interface EggCombo {
 
 const inSpan = (v: number, [lo, hi]: Span): boolean => v >= lo && v <= hi;
 
-/** Every 2.2 sum a kind can ask in a band (the hay rack's, warm), for picking, preloading, the lines and the tests. */
+/** Every one-sum moment a kind can ask in a band (the hay rack's, warm), for picking, the lines and the tests. */
 export function eggCombos(kind: EggKind, band: Band = 'a'): EggCombo[] {
   return combosIn(kind, RANGES[kind][band]);
 }
@@ -57,18 +68,25 @@ function combosIn(kind: EggKind, r: Ranges): EggCombo[] {
   return out;
 }
 
-/** The number above ten in a sum (the warm egg's or the rack's need, the snow egg's warm cups): what must not repeat. */
+/** The whole of a sum, its bigger number: the warm egg's or the rack's need, the snow egg's warm cups. */
 export function totalOf(c: { need: number; have: number }): number {
   return Math.max(c.need, c.have);
 }
 
-/** The totals and answers this play's maths moments already asked (g.maths.used). */
+/**
+ * The totals and answers this play's maths moments already asked (g.maths.used), in the order asked: totals[i] and
+ * answers[i] are one sum.
+ */
 export interface MathsUsed {
   totals: readonly number[];
   answers: readonly number[];
 }
 
-/** The options every maths moment takes: the band and what this play and the last one asked. */
+/**
+ * The options every maths moment takes: the band and what this play asked. `lastTotals` (the last play's totals) is
+ * read by nothing since the sums stay within 10: every play asks 9 and 10, so leaving the last play's totals out would
+ * leave the rack almost nothing (docs/v4/2.3.md section 19.1).
+ */
 export interface MathsPick {
   band?: Band;
   used?: MathsUsed;
@@ -83,20 +101,16 @@ export function nextBand(band: Band, outcome: Outcome): Band {
 }
 
 /**
- * The sums still fresh: no total or answer this play has used, and none of the last play's totals while sums are
- * left. When none are left it lets go of the last play first, then of the used answers, then of everything.
+ * The sums still fresh (the hay rack's): none with the total and the answer of a sum this play asked, so the rack
+ * never asks a fact she just did, in either direction (5 + 4 = 9 after 9 - 4 = 5 or 4 + 5 = 9 with the answer 4).
+ * Within 10 every play asks the totals 9 and 10 in both eggs, so the rack's total or answer alone may come again
+ * (docs/v4/2.3.md section 19.1). When nothing is fresh, every sum is.
  */
 export function freshCombos(all: readonly EggCombo[], o: MathsPick = {}): EggCombo[] {
-  const totals = new Set(o.used?.totals ?? []);
-  const answers = new Set(o.used?.answers ?? []);
-  const last = new Set(o.lastTotals ?? []);
-  const freshTotal = (c: EggCombo) => !totals.has(totalOf(c));
-  const fresh = (c: EggCombo) => freshTotal(c) && !answers.has(c.answer);
-  for (const keep of [(c: EggCombo) => fresh(c) && !last.has(totalOf(c)), fresh, freshTotal]) {
-    const pool = all.filter(keep);
-    if (pool.length) return pool;
-  }
-  return all.slice();
+  const answers = o.used?.answers ?? [];
+  const asked = new Set((o.used?.totals ?? []).map((t, i) => `${t} ${answers[i]}`));
+  const pool = all.filter((c) => !asked.has(`${totalOf(c)} ${c.answer}`));
+  return pool.length ? pool : all.slice();
 }
 
 // ------------------------------------------------------------------------------------------------ the stones
@@ -109,9 +123,10 @@ export interface StoneCandidate {
 
 /**
  * The wrong stones of a sum, in the order of 4.1, each number once (the first kind that names it keeps it), only
- * 3 to 9 and never the answer. Warm (and the hay rack): the slip is answer ± 1, `heard` is the warm cups or bundles
- * she just heard, `first-nest` is 10 - have (only the first ten), `second-nest` is need - 10. Snow: heard is the need,
- * first-nest 10 - need, second-nest have - 10. Near is answer ± 2, then ± 3.
+ * 2 to 9 and never the answer. Warm (and the hay rack): the slip is answer ± 1, `heard` is the warm cups or bundles
+ * she just heard, `first-nest` is 10 - have (the "fills to ten" mistake), `second-nest` is need - 10. Snow: heard is
+ * the need, first-nest 10 - need (as if ten cups were warm), second-nest have - 10. Near is answer ± 2, then ± 3.
+ * Within 10 there is no second nest, and in a bond to 10 the first nest is the answer itself, so neither shows.
  */
 export function stoneCandidates(kind: EggKind, c: EggCombo): StoneCandidate[] {
   const { need, have, answer } = c;
@@ -135,13 +150,20 @@ export function stoneCandidates(kind: EggKind, c: EggCombo): StoneCandidate[] {
 
 /**
  * Stones 4 or more away are not in the table of 4.1. They fill a tray only rarely: when a sum has too few mistakes
- * (the snow egg 13 - 3 with 5 stones), or when the answer's place needs one more stone on a side.
+ * (a bond to 10 with 5 stones), or when the answer's place needs one more stone on a side.
  */
 const FAR = 0.25;
 
+/**
+ * The weight of a nest mistake: 8 (5 before the sums stayed within 10). Within 10 the "fills to ten" stone is always
+ * bigger than the answer and shares the one or two places above it with the slip and the near stones, so at 5 it
+ * showed in only 58% of the trays with room for it (the tests: at least 60%).
+ */
+const NEST = 8;
+
 /** How likely a wrong stone is picked for a free place of the tray: the two nest mistakes first, far guesses last. */
 function stoneWeight(s: StoneCandidate, answer: number): number {
-  if (s.kind === 'first-nest' || s.kind === 'second-nest') return 5;
+  if (s.kind === 'first-nest' || s.kind === 'second-nest') return NEST;
   if (s.kind !== 'near') return 2;
   const d = Math.abs(s.value - answer);
   return d === 2 ? 2 : d === 3 ? 1 : FAR;
@@ -190,7 +212,7 @@ const optionCache = new Map<string, TrayOption[][]>();
 
 /**
  * Every tray of `n` stones a sum can show, by the answer's place (index 0 is the smallest stone). Each holds the
- * heard number and a slip when they are valid. The other numbers from 3 to 9 can fill in as far `near` stones,
+ * heard number and a slip when they are valid. The other numbers from 2 to 9 can fill in as far `near` stones,
  * rarely (FAR).
  */
 export function trayOptions(kind: EggKind, c: EggCombo, n: number): TrayOption[][] {
@@ -291,8 +313,7 @@ export function placePlan(kind: EggKind, band: Band): Map<EggCombo, number[]> {
 /**
  * A maths moment's sum and tray (4.1, 4.2): a fresh sum, then the answer's place from that sum's place plan, then a
  * tray with the answer there. Over a kind's sums every place it can show is right equally often, so no rule such as
- * "the biggest" or "the middle" wins much more than a blind guess. Snow eggs in band A never show the answer as the
- * biggest stone: the need she just heard (7 to 9) is always in the tray and bigger than any answer (3 to 6).
+ * "the biggest" or "the middle" wins much more than a blind guess.
  */
 export function pickSum(kind: EggKind, rand: Rand, o: MathsPick = {}): { band: Band; combo: EggCombo } & Tray {
   const band = o.band ?? 'a';
@@ -309,26 +330,29 @@ export function pickSum(kind: EggKind, rand: Rand, o: MathsPick = {}): { band: B
 interface GradeRanges { easy: Ranges; middle: Ranges; hard: Record<Band, Ranges> }
 
 /**
- * The grade table of 2.3 section 19.1. The total (totalOf) is the bigger number. Easy stays within 10 (warm totals 7
- * to 9, snow 7 to 10), middle is 11 or 12, hard 13 and more, so they never overlap. Easy and middle never end at a
- * bond to 10 she already knows (4 + 6, 5 + 5), except the snow egg's easy take-away from 10. Their answers are 3 to 6,
- * which reach all four places of a tray of 4. The hard sums keep 2.2's answers.
+ * The grade table of 2.3 section 19.1 (Claude's call, after Tjitse's "on her school everything is until the number
+ * 10"). The total (totalOf) is the bigger number, and every number is 10 or less. Easy has the totals 7 and 8 (answers
+ * 3 to 5, 5 sums), middle the total 9, hard the bonds to 10 (answers 3 to 7, 5 sums), so the grades never overlap and
+ * the snow egg takes away from 10 only in its hard sum. The answer and the other part are 3 or more. Both bands ask the
+ * same hard sums; band B is harder by its tray of 5. The warm egg's middle sum has the answers 3 to 6 (4 sums), the
+ * snow egg's 3 to 5 (3 sums): 9 - 6 = 3 waits for its fact clip, num-take-9-6, which failed speech-to-text twice (it
+ * heard "takeaway"). With that clip made, the snow middle need goes back to 3 to 6.
  */
 export const GRADES: Record<EggKind, GradeRanges> = {
   warm: {
-    easy: { need: [7, 9], have: [3, 6], answer: [3, 6] },
-    middle: { need: [11, 12], have: [6, 9], answer: [3, 6] },
+    easy: { need: [7, 8], have: [3, 5], answer: [3, 5] },
+    middle: { need: [9, 9], have: [3, 6], answer: [3, 6] },
     hard: {
-      a: { need: [13, 15], have: [5, 9], answer: [4, 8] },
-      b: { need: [13, 15], have: [3, 9], answer: [4, 9] },
+      a: { need: [10, 10], have: [3, 7], answer: [3, 7] },
+      b: { need: [10, 10], have: [3, 7], answer: [3, 7] },
     },
   },
   snow: {
-    easy: { need: [4, 7], have: [7, 10], answer: [3, 6] },
-    middle: { need: [5, 9], have: [11, 12], answer: [3, 6] },
+    easy: { need: [3, 5], have: [7, 8], answer: [3, 5] },
+    middle: { need: [4, 6], have: [9, 9], answer: [3, 5] },
     hard: {
-      a: { need: [7, 10], have: [13, 15], answer: [3, 6] },
-      b: { need: [7, 10], have: [13, 16], answer: [3, 9] },
+      a: { need: [3, 7], have: [10, 10], answer: [3, 7] },
+      b: { need: [3, 7], have: [10, 10], answer: [3, 7] },
     },
   },
 };
@@ -380,14 +404,14 @@ interface GradePlan {
   cells: Cell[];
   places: number[];
   /**
-   * Per cell, the cells with the same place and answer, the same number she heard as the answer or not, and the same
-   * take-away from 10 or not (itself among them). A play swaps between these to keep totals fresh (freshCell), so
-   * the swap never changes a guess rule the plan keeps.
+   * Per cell, the cells with the same place and answer and the same number she heard as the answer or not (itself
+   * among them). A play swaps between these to keep totals fresh (freshCell), so the swap never changes a guess rule
+   * the plan keeps.
    */
   alike: Map<Cell, Cell[]>;
 }
 
-/** The answers a sum can have: 3 to 9. */
+/** The answers a sum can have: 3 to 7 within 10, and room to 9. */
 const ANSWERS = [3, 4, 5, 6, 7, 8, 9] as const;
 const answerAt = (c: Cell): number => c.combo.answer - ANSWERS[0];
 
@@ -401,12 +425,20 @@ function fiveAt(kind: EggKind, c: EggCombo, n: number, place: number): number {
   return total > 0 ? options.reduce((t, o) => t + o.weight * nearFiveShare(o.stones, c.answer), 0) / total : 0;
 }
 
+/** The most any place is planned in a grade, by the tray's size. */
+const PLACE_CAP: Record<4 | 5, number> = { 4: 0.3, 5: 0.25 };
+
 /**
  * How often each place of the answer is planned, per kind and grade (Claude's call): even over the places the grade
  * can reach, so the biggest, the smallest and the middle stones each win about 1 in 4 (1 in 3 where a place cannot be
  * reached). A place only one or two sums can reach gets a third or two thirds of a share, so those sums are not a
- * quarter of their grade: the warm egg's easy answer can only be the biggest stone as 9 = 3 + 6 on stones 3, 4, 5, 6,
- * and the snow egg's easy one only as 10 - 4.
+ * quarter of their grade: the easy answer can only be the biggest stone as 8 = 3 + 5 (or 8 - 5 = 3) on stones 2, 3,
+ * 4, 5, so easy plans 30%, 30%, 30% and 10%. The warm egg's middle answer is the smallest stone only as 9 = 6 + 3
+ * and 5 + 4 and the biggest only as 9 = 4 + 5 and 3 + 6, so it plans 20%, 30%, 30% and 20%.
+ *
+ * No place is planned above PLACE_CAP (30% with 4 stones, 25% with 5); what is over goes to the other places by their
+ * share. Only the snow egg's middle grade needs it: with its three sums (9 - 3, 9 - 4, 9 - 5) the lower middle place,
+ * which all three reach, would get 37.5%, over the tests' 35%.
  */
 export function gradePlaces(kind: EggKind, grade: SumGrade, band: Band = 'a'): number[] {
   const n = gradeTray(grade, band);
@@ -414,7 +446,14 @@ export function gradePlaces(kind: EggKind, grade: SumGrade, band: Band = 'a'): n
   for (const c of gradeCombos(kind, grade, band)) for (const p of placesFor(kind, c, n)) sums[p]++;
   const w = sums.map((k) => Math.min(1, k / 3));
   const total = w.reduce((t, v) => t + v, 0);
-  return w.map((v) => v / total);
+  const share = w.map((v) => v / total);
+  const cap = PLACE_CAP[n];
+  for (let round = 0; round < n && share.some((v) => v > cap + 1e-12); round++) {
+    const over = share.reduce((t, v) => t + Math.max(0, v - cap), 0);
+    const room = share.reduce((t, v) => t + (v < cap ? v : 0), 0);
+    for (let p = 0; p < n; p++) share[p] = share[p] >= cap ? cap : share[p] + (over * share[p]) / room;
+  }
+  return share;
 }
 
 function gradePlan(kind: EggKind, grade: SumGrade, band: Band): GradePlan {
@@ -427,7 +466,7 @@ function gradePlan(kind: EggKind, grade: SumGrade, band: Band): GradePlan {
       cells.push({ place, combo, five, f: 1 - CELL_FIVE_DAMP * five });
     }
   }
-  const sameAs = (c: Cell) => `${c.place} ${c.combo.answer} ${heardOf(kind, c.combo) === c.combo.answer} ${c.combo.have === 10}`;
+  const sameAs = (c: Cell) => `${c.place} ${c.combo.answer} ${heardOf(kind, c.combo) === c.combo.answer}`;
   const alike = new Map(cells.map((c) => [c, cells.filter((d) => sameAs(d) === sameAs(c))]));
   return { n, combos, cells, places: gradePlaces(kind, grade, band), alike };
 }
@@ -436,16 +475,13 @@ function gradePlan(kind: EggKind, grade: SumGrade, band: Band): GradePlan {
  * The bounds the egg plan keeps per grade, under those its tests check (2.3 section 19.1) with room for chance:
  * - "the stone nearest five" wins at most 29% with 4 stones and 24% with 5 (the tests: 35% and 30%);
  * - the number she heard is the answer at most 21% with 4 stones and 15% with 5 (the tests: blind odds, 25% and
- *   20%), or dragging the number Elizabeth just said would win more than a blind guess (8 - 4 = 4, 12 = 6 + 6);
- * - at most 36% of the snow egg's easy sums take away from 10, the bond she knows (the tests: 40%, the table's 4 in
- *   10);
+ *   20%), or dragging the number Elizabeth just said would win more than a blind guess (8 - 4 = 4, 10 = 5 + 5);
  * - no sum is planned more than 1.4 even shares of its grade (the tests: 1.5), so none comes back play after play.
- * Tighter bounds leave the snow egg's easy sums no plan: only 10 - 4 can show its answer as the biggest stone, and
- * only 9 - 4, 10 - 5 and 10 - 4 as the upper middle one.
+ * Within 10 the answer 5 always wins "nearest five" and comes in one sum per grade (8 = 3 + 5, 9 = 4 + 5, 10 = 5 + 5),
+ * so the five cap and the spread cap meet on those sums; the fitting still settles in under 100 rounds.
  */
 const PLAN_FIVE_CAP: Record<4 | 5, number> = { 4: 0.29, 5: 0.24 };
 const PLAN_HEARD_CAP: Record<4 | 5, number> = { 4: 0.21, 5: 0.15 };
-const PLAN_TEN_CAP = 0.36;
 const PLAN_SUM_SPREAD = 1.4;
 /** The fitting stops when every place and bound is within this, or after this many rounds. */
 const FIT_TOLERANCE = 1e-5;
@@ -491,7 +527,7 @@ function othersFor(w: number[][], i: number): number[] {
  * is with its answer at each place, given that the three answers of an egg differ. A plan is one cell per grade; its
  * weight is the product of the cells' factors, over the triples with three different answers. The factors are fitted
  * by iterative proportional fitting: each grade's places to gradePlaces, and its share of "nearest five" wins, of
- * answers she heard, of take-aways from 10 and of each sum under the bounds above. Easy, middle and the hard sum draw
+ * answers she heard and of each sum under the bounds above. Easy, middle and the hard sum draw
  * from overlapping answers, so this is fitted over whole eggs: the guess rules then hold for every grade and every
  * place in the egg, whatever came before. A grade's share of a cell is its factor times the weight of the other two
  * grades' different answers (othersFor), so a round costs a few thousand steps and the fitting a few milliseconds.
@@ -501,7 +537,7 @@ function eggPlan(kind: EggKind, band: Band): EggPlan {
   const cached = eggPlanCache.get(key);
   if (cached) return cached;
   const grades = SUM_GRADES.map((grade) => gradePlan(kind, grade, band));
-  const bounds = grades.map((g, i): Bound[] => {
+  const bounds = grades.map((g): Bound[] => {
     const bound = (part: (c: Cell) => number, cap: number): Bound => {
       const cells = g.cells.filter((c) => part(c) > 0);
       return { cells, part: cells.map(part), cap };
@@ -509,7 +545,6 @@ function eggPlan(kind: EggKind, band: Band): EggPlan {
     return [
       bound((c) => c.five, PLAN_FIVE_CAP[g.n]),
       bound((c) => Number(heardOf(kind, c.combo) === c.combo.answer), PLAN_HEARD_CAP[g.n]),
-      ...(kind === 'snow' && SUM_GRADES[i] === 'easy' ? [bound((c) => Number(c.combo.have === 10), PLAN_TEN_CAP)] : []),
       ...g.combos.map((x) => bound((c) => Number(c.combo === x), PLAN_SUM_SPREAD / g.combos.length)),
     ];
   });
@@ -567,9 +602,9 @@ function pickCells(grades: GradePlan[], rand: Rand): Cell[] {
 
 /**
  * The planned cell, or, when its total was asked earlier this play (the warm egg's, for the snow egg), a cell just
- * like it (alike) whose total was not, while there is one. The last play's totals are not left out: leaving them out
- * as well pushed the snow egg's sums onto the totals the warm egg can never ask (16 - 10 twice its even share), and
- * the plan's spread bound already keeps a sum from coming back play after play.
+ * like it (alike) whose total was not, while there is one. Within 10 only the easy sum can swap: both eggs ask the
+ * totals 9 and 10, one adding and one taking away. The last play's totals are not left out: every play asks 9 and 10,
+ * and the plan's spread bound already keeps a sum from coming back play after play.
  */
 function freshCell(g: GradePlan, cell: Cell, used: readonly number[], rand: Rand): Cell {
   const asked = new Set(used);
@@ -617,14 +652,14 @@ export function eggSums(kind: EggKind, rand: Rand, o: MathsPick & { first?: bool
 // ------------------------------------------------------------------------------------------------ the clips
 
 /**
- * The fact after the right stone. v3's bond clips ("Eight and five make thirteen!") cover two parts of 1 to 9, which
- * is every warm egg and hay rack (have 3 to 9); ten and some more would be the demo's own num-add clip.
+ * The fact after the right stone. v3's bond clips ("Three and four make seven!") cover two parts of 1 to 9, which is
+ * every warm egg and hay rack (have 3 to 7); ten and some more would be the demo's own num-add clip.
  */
 export function addClip(have: number, answer: number): string {
   return have <= 9 ? `num-bond-${have}-${answer}` : `num-add-${have}-${answer}`;
 }
 
-/** "Fourteen take away seven is seven!" Band B's six new facts are lines in tools/lines.ts until gen.sh runs. */
+/** "Ten take away seven is three!" Each fact is a line in tools/lines.ts (the num-take pattern) until gen.sh makes it. */
 export function takeClip(have: number, answer: number): string {
   return `num-take-${have}-${answer}`;
 }
@@ -735,7 +770,7 @@ function everyGradedClipIds(kind: EggKind): string[] {
 
 /**
  * Every clip any egg can say: the lines, every sum's goal and fact, the counting and every reachable miss line, for
- * the three graded sums of 2.3 and for 2.2's one sum (eggSpec, still the hay rack's and the ui harness's).
+ * the three graded sums of 2.3 and for the one-sum moment (eggSpec, the hay rack's and the ui harness's).
  */
 export function allEggClipIds(): string[] {
   return [...new Set((['warm', 'snow'] as const).flatMap((kind) => [

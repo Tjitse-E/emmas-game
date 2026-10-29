@@ -376,12 +376,12 @@ export interface HerdMember {
 /** Why a wrong stone is in the tray (2.2.0 section 4.1). */
 export type StoneDecoy = 'slip' | 'heard' | 'first-nest' | 'second-nest' | 'near';
 /**
- * An egg's three sums (2.3 sections 12 and 19.1): easy within 10 (total 7 to 10), middle just past 10 (total 11 or 12),
- * hard across ten at her band (total 13 and more). Only the hard sum and the hay rack move the band.
+ * An egg's three sums (2.3 sections 12 and 19.1), all within 10: easy (total 7 or 8), middle (total 9) and hard, a bond
+ * to 10 with 4 or 5 stones by her band. Only the hard sum and the hay rack move the band.
  */
 export type SumGrade = 'easy' | 'middle' | 'hard';
 
-/** An egg, or the hay rack: a 'warm' spec (adding across ten) with skin 'hay'. */
+/** An egg, or the hay rack: a 'warm' spec (adding, the missing part) with skin 'hay'. */
 export interface EggSpec {
   kind: 'warm' | 'snow';
   /** Cups the egg needs to be warm. */

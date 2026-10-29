@@ -451,7 +451,7 @@ describe('clips', () => {
     for (const id of ['g-stone', 'h-peek']) expect(v3Clips.has(id)).toBe(true);
   });
 
-  it('miss lines exist for every k a stone of 3 to 9 can give', () => {
+  it('miss lines exist for every k a stone of 2 to 9 can give', () => {
     for (const kind of ['warm', 'snow'] as const) {
       const e = C.eggSpec(kind, C.seeded(3));
       for (let k = 1; k <= 6; k++) for (const id of [...e.clips.tooBig(k), ...e.clips.tooSmall(k)]) expect(clipExists(id)).toBe(true);

@@ -28,7 +28,19 @@ for (const pack of V3_PACKS) {
  * Clips the content promises but a level with near-miss stones never reaches: the snow egg's tooSmall(k) has a clip
  * for k up to 6, as v3's num-cold and num-over have up to 9, so a wider stone rule cannot hit a missing clip.
  */
-const RESERVE = [3, 4, 5, 6].map((k) => `num-still-warm-${k}`);
+const STILL_WARM = [3, 4, 5, 6].map((k) => `num-still-warm-${k}`);
+
+/**
+ * The snow egg's goals and facts past ten, made for 2.2.0 and 2.3.0 (have 11 to 16). Since the sums stay within 10
+ * (docs/v4/2.3.md section 19.1) no content asks them, but they stay in the pack for adding and taking away within 20
+ * (GOAL.md): a line that leaves lines.json leaves the manifest at the next gen.sh run, and its paid clip with it.
+ */
+const PAST_TEN = [11, 12, 13, 14, 15, 16].flatMap((have) => {
+  const from = Math.max(3, have - 10);
+  return [`num-toowarm-${have}`, ...[0, 1, 2, 3].map((i) => `num-take-${have}-${from + i}`)];
+});
+
+const RESERVE = [...STILL_WARM, ...PAST_TEN];
 
 const byId = new Map(SENTENCES.map((l) => [l.id, l]));
 const lines: Line[] = [];

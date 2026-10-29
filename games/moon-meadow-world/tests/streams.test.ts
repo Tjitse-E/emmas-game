@@ -29,7 +29,7 @@ describe('g.randFor streams', () => {
     const full = createStreams(5);
     for (const label of ['egg1', 'hatch1', 'naming1', 'wish1', 'pond']) take(full.for(label), 40);
     const jumped = createStreams(5);
-    const o = { first: true, used: { totals: [8, 11, 15], answers: [3, 5, 7] }, lastTotals: [] };
+    const o = { first: true, used: { totals: [8, 9, 10], answers: [3, 5, 7] }, lastTotals: [] };
     const strip = (xs: ReturnType<typeof eggSums>) => xs.map((e) => ({ ...e, clips: undefined }));
     expect(strip(eggSums('snow', full.for('egg2'), o))).toEqual(strip(eggSums('snow', jumped.for('egg2'), o)));
     // Another egg's stream asks other sums.
@@ -67,10 +67,10 @@ describe('maths band', () => {
 
   it('remembers the totals and answers of the play', () => {
     const m = startMaths(null);
-    useSum(m, { kind: 'warm', need: 13, have: 8, answer: 5 });
-    useSum(m, { kind: 'snow', need: 9, have: 14, answer: 5 });
-    expect(m.used).toEqual({ totals: [13, 14], answers: [5, 5] });
-    expect(totalOf({ need: 12, have: 7 })).toBe(12);
-    expect(totalOf({ need: 8, have: 15 })).toBe(15);
+    useSum(m, { kind: 'warm', need: 8, have: 3, answer: 5 });
+    useSum(m, { kind: 'snow', need: 4, have: 9, answer: 5 });
+    expect(m.used).toEqual({ totals: [8, 9], answers: [5, 5] });
+    expect(totalOf({ need: 9, have: 4 })).toBe(9);
+    expect(totalOf({ need: 3, have: 10 })).toBe(10);
   });
 });
