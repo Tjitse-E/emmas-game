@@ -214,8 +214,11 @@ food="$(val "() => window.__game.targets().find((t) => t.name.startsWith('food '
 drag "$food" 'unicorn baby-13'
 sleep 1
 tap 'food basket'
-herd1="$(val "() => { const t = window.__game.targets().find((x) => /^unicorn (?!baby)/.test(x.name)); return t ? t.name : ''; }")"
-if [ -n "$herd1" ]; then tap "$herd1"; sleep 1; say "called $herd1"; fi
+# Found and tapped in one call, 80 px inside the screen and not under a quest bubble or the basket: a grazing unicorn
+# at the edge can step off it between two calls, and a tap on a bubble starts its quest.
+run_code "async page => { const t = await page.evaluate(() => { const m = 80; const u = window.__game.targets().find((x) => /^unicorn (?!baby)/.test(x.name) && x.x > m && x.y > m && x.x < innerWidth - m && x.y < innerHeight - m && document.elementFromPoint(x.x, x.y) === document.querySelector('#world canvas')) || null; window.__flowHerd = u ? u.name : ''; return u; }); if (t) { await page.mouse.move(t.x, t.y); await page.mouse.down(); await page.waitForTimeout(60); await page.mouse.up(); } }" || fail "cannot tap a herd unicorn"
+herd1="$(val "() => window.__flowHerd || ''")"
+if [ -n "$herd1" ]; then sleep 1; say "called $herd1"; fi
 shot 16-free
 sleep 3
 check_near_unicorns 6
