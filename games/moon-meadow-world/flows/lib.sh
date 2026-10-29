@@ -143,9 +143,28 @@ moment_targets() {
 }
 
 # Opens the page at W x H (query string from the first argument) and waits for the test hook.
+# The browser daemon runs as a child of this flow's shell. `playwright-cli open` starts it detached, with no parent
+# (ppid 1), and a cleanup hook of another project on this Mac ends such "orphaned" Playwright processes after 60 s, which
+# closed the flows' browser mid-run. MMW_PW_OPEN=1 uses `playwright-cli open` as before.
+start_browser() {
+  if [ "${MMW_PW_OPEN:-}" = 1 ]; then pw open "$1" >/dev/null; return; fi
+  local cli out
+  cli="$(readlink -f "$(command -v playwright-cli)")"
+  out="$MMW_SHOTS/daemon-$S.out"
+  : > "$out"
+  node "$(dirname "$cli")/node_modules/playwright-core/lib/entry/cliDaemon.js" "$S" > "$out" 2>&1 &
+  for _ in $(seq 1 100); do
+    grep -q 'Daemon listening' "$out" && break
+    grep -q '### Error' "$out" && fail "browser daemon: $(cat "$out")"
+    sleep 0.2
+  done
+  grep -q 'Daemon listening' "$out" || fail "browser daemon did not start: $(cat "$out")"
+  pw goto "$1" >/dev/null
+}
+
 open_page() {
   pw close >/dev/null 2>&1 || true
-  pw open "${MMW_URL}$1" >/dev/null
+  start_browser "${MMW_URL}$1"
   pw resize "$W" "$H" >/dev/null
   wait_for "() => window.__game" 20
 }
