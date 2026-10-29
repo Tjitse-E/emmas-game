@@ -11,7 +11,8 @@
 //
 // The basket is a two by two grid plus one:
 //   level 1 (4 items): {colour, a target colour of another first letter} x {thing, its partner}. The colours differ
-//     at the first letter, the things after it, so a reader of both first letters is right half the time.
+//     at the first letter, the things after it, so a reader of both first letters is right half the time. Gold and
+//     brown never share a basket (NEVER_TOGETHER).
 //   level 2 (5 items): {colour, its sibling} x {thing, its partner}, plus red or pink on one of the two things, at
 //     random. On the target's thing every time, the thing shown three times would give the wish's thing away.
 //   level 3 (5 items): the level 2 grid plus a third thing of the same first letter in one of the two colours. Sock
@@ -60,9 +61,17 @@ const alike = (t: PhraseTables, a: string, b: string): boolean =>
 /** Target colours with the same first letter (green and gold, blue and brown). */
 const siblings = (t: PhraseTables, c: string): string[] =>
   t.colours.filter((x) => x.target && x.word !== c && first(x.word) === first(c)).map((x) => x.word);
-/** Target colours of another first letter: the level 1 pairing. */
+/**
+ * Colours that never share a basket (Claude's call, 29 October 2026, docs/v4/2.3.md section 18): gold renders ochre
+ * on her iPad, close to brown. Phrases play from her first play, before Emma has named the pictures on check.html, and
+ * a cross there cannot take this pairing out without turning every phrase off. Level 2 never pairs them anyway.
+ */
+const NEVER_TOGETHER: readonly (readonly [string, string])[] = [['gold', 'brown']];
+const lookAlike = (a: string, b: string): boolean =>
+  NEVER_TOGETHER.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
+/** Target colours of another first letter that do not look alike: the level 1 pairing (gold with blue, brown with green). */
 const others = (t: PhraseTables, c: string): string[] =>
-  t.colours.filter((x) => x.target && first(x.word) !== first(c)).map((x) => x.word);
+  t.colours.filter((x) => x.target && first(x.word) !== first(c) && !lookAlike(x.word, c)).map((x) => x.word);
 /** Things of the same first letter from another look-alike group (bag: bead, bow; sock: shirt). */
 const partners = (t: PhraseTables, x: string): string[] =>
   t.things.filter((y) => first(y.word) === first(x) && !alike(t, y.word, x)).map((y) => y.word);

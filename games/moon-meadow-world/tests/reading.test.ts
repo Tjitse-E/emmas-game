@@ -644,7 +644,9 @@ describe('the phrase wish', () => {
           s.has(`${c2} ${t}`) && s.has(`${c} ${t2}`) && s.has(`${c2} ${t2}`) && (!decoys || (decoyOn(t) && decoyOn(t2)))));
         // Level 2 needs red or pink on both grid things: the decoy goes on either at random.
         expect(grid(TARGET_COLOURS.filter((c2) => c2 !== c && c2[0] === c[0]), true), `${k} level 2 with decoys`).toBe(true);
-        expect(grid(TARGET_COLOURS.filter((c2) => c2[0] !== c[0]), false), `${k} level 1`).toBe(true);
+        // Level 1 never puts gold next to brown (phrases.ts NEVER_TOGETHER).
+        const lookAlike = (c2: string) => [c, c2].sort().join() === 'brown,gold';
+        expect(grid(TARGET_COLOURS.filter((c2) => c2[0] !== c[0] && !lookAlike(c2)), false), `${k} level 1`).toBe(true);
       }
     }
   });
@@ -663,6 +665,9 @@ describe('the phrase wish', () => {
         const things = new Set(items.map((i) => i[1]));
         // Never a basket of one thing (only the colour to read) or of one colour.
         if (things.size < 2 || colours.size < 2) fail('one thing or one colour');
+        // Gold renders ochre, close to brown, and red is close to pink: neither pair shares a basket.
+        if (colours.has('gold') && colours.has('brown')) fail('gold next to brown');
+        if (colours.has('red') && colours.has('pink')) fail('red next to pink');
         for (const a of things) for (const b of things) if (a !== b && thingsAlike(a, b)) fail(`${a} and ${b} look alike`);
         for (const x of things) if (x[0] !== t[0]) fail(`${x} has another first letter`);
         if (spec.level === 1) {
