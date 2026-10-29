@@ -499,8 +499,8 @@ export interface Bead {
   colour: Colour;
 }
 export type PatternKind = 'AAB' | 'ABB' | 'ABC' | 'AABB';
-/** Why a wrong tray bead is wrong for a gap: the bead left of the gap, the other unit, its colour or its shape only. */
-export type PatternDecoy = 'copy' | 'unit' | 'colour' | 'shape';
+/** Why a wrong tray bead is wrong for a gap: the bead left of the gap, the other unit, its colour or its shape only, or nothing it shares (an ABC cross bead). */
+export type PatternDecoy = 'copy' | 'unit' | 'colour' | 'shape' | 'other';
 
 /** The bead tree's necklace: a string of 9 beads with 3 gaps, filled left to right, and one tray for every gap. */
 export interface PatternSpec {

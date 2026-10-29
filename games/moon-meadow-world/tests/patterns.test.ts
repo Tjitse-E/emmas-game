@@ -181,7 +181,7 @@ describe('pattern decoys', () => {
             if (t.shape === want.shape) return expect(kind).toBe('shape');
             // Only in ABC can a cross bead share nothing with the gap's bead.
             expect(spec.kind).toBe('ABC');
-            expect(kind).toBeUndefined();
+            expect(kind).toBe('other');
           });
         });
       }

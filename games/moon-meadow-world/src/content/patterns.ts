@@ -125,7 +125,7 @@ export function contrastFor(spec: { kind: PatternKind; gaps: readonly number[] }
 /**
  * Why each wrong tray bead is wrong for the bead at place `g` (by tray index): the bead left of the gap (copy),
  * another unit of the pattern (unit), the right colour only (colour) or the right shape only (shape). In ABC a cross
- * bead can share neither with a gap's bead; it then has no kind (PatternDecoy has no 'other').
+ * bead can share neither with a gap's bead; it is then 'other'.
  */
 export function decoysAt(string: readonly Bead[], g: number, tray: readonly Bead[], units: readonly Bead[]): Record<number, PatternDecoy> {
   const want = string[g];
@@ -137,6 +137,7 @@ export function decoysAt(string: readonly Bead[], g: number, tray: readonly Bead
     else if (units.some((u) => sameBead(u, t))) out[i] = 'unit';
     else if (t.colour === want.colour) out[i] = 'colour';
     else if (t.shape === want.shape) out[i] = 'shape';
+    else out[i] = 'other';
   });
   return out;
 }

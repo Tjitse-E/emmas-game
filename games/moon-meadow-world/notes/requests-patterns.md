@@ -18,23 +18,41 @@ Changes the patterns lane needs in files it does not own. The lane compiles and 
 
    The tests hold today's figures under ceilings (`tests/patterns.test.ts`, "lets a colour-only ... guesser"), so a better tray only needs its ceilings lowered. The planner change is a few lines in `trayOf` and `KINDS_AT`.
 
+   **Declined for now** (integrator, patterns merge): this is a learning design call, and both options change the 19.2 table Tjitse approved. The planner keeps the table. 19.2 now records the problem, the figures and both options as open for Tjitse, and section 13 points to it. When Tjitse picks one, the planner, `TRAY_SIZE` and the ceilings change together.
+
 ## For the integrator
 
 2. **`src/contracts.ts`, `PatternDecoy`: add `'other'`.** Change `export type PatternDecoy = 'copy' | 'unit' | 'colour' | 'shape';` to `export type PatternDecoy = 'copy' | 'unit' | 'colour' | 'shape' | 'other';` and the comment to "... its colour or its shape only, or nothing it shares (an ABC cross bead)". Why: in ABC the one cross bead can share neither shape nor colour with a gap's bead, so it fits none of the four kinds. Today it has no entry in `decoys`, which the result line shows as a bare bead in `tried`. After the change, `decoysAt` in `src/content/patterns.ts` sets `'other'` there (one line) and the decoy test expects it.
+
+   **Done** (integrator, patterns merge): contracts.ts adds `'other'` with the new comment, `decoysAt` sets it, the decoy test expects it, and 19.2 lists it as a decoy kind.
 3. **`docs/v4/2.3.md` section 19.2, the tree frame.** Change "`frameAt` the tree (centre 0.4 m west, 6 m wide, the tree top at 28%)" to "`frameAt` between her, the baby and the tree (centre 1.2 m west and 0.6 m south of the tree, 8.5 m wide, the tree top at 30%)". Why: measured at 1080 x 740, the 6 m frame puts the baby's head at y 735 of 740 and her feet below the screen (the view shift is clamped at 0.35). The lane uses the new frame (`TREE_FRAME` in `src/game/beads.ts`, notes/patterns.md). It was measured before the tree is drawn: after the quests-world merge, measure it again with the tree (head, baby and tree top on screen and under the string, and `budget` at 1080 x 740, 1080 x 810 and 1024 x 690).
+
+   **Done** (integrator, patterns merge): 19.2 has the new frame and says it is measured again after the quests-world merge. **Open** for the quests-world merge: the measurement with the tree drawn.
 4. **`docs/v4/2.3.md` section 19.2, calls to record.**
    - No gap at place 0 (no bead on its left to go on from), and the three gaps never all take the same bead. Both are tested.
    - The contrast lights a repeat chosen at random among the nearest repeat for each place the match can take in it (`contrastFor`), not the repeat next to the gap: that one always starts with the answer, which then scored `miss` though she was shown it. The focused hint keeps the nearest repeat (`repeatFor`) with the gold pulse.
    - The panel says `g4-beads` once a play (`ctx.seen`, in place of the goal, as the egg panel says its intro). Replace "`g4-beads` once a play," in the moment's list with "the panel says `g4-beads` once a play,"; `game/beads.ts` and quests.ts say nothing before `layer.beads`.
    - The demo runs before the tray wakes, as the contract says: the intro, the ghost fills gap 1 while the tray sleeps, the goal, then the tray wakes with its chime.
+
+   **Done** (integrator, patterns merge): 19.2 records all four, checked against `SPREAD_GAPS`, `playable`, `contrastFor`, `repeatFor` and the opening of ui/beads.ts.
 5. **`docs/v4/2.3.md` section 23, Tjitse's iPad checks:** add the bead tree to the `?perf=1` check: the open gap's glow, the lit repeat and the finished necklace over the tree frame. The glows animate only opacity and transform, but the 34 draw calls measured so far do not cover the DOM.
+
+   **Done** (integrator, patterns merge): section 23's frame rate check names the open gap's glow, the lit repeat and the finished necklace over the tree frame.
 
 ## For the quests-world lane (owner of the files named)
 
 6. **`src/game/results.ts`, `resultFields`, the pattern branch:** add `demo: d.demo as Field` after `gap`, so the diag line of the ghost's first gap says `demo=1`. Why: section 19.2 says the demo gap logs `helped` with `demo: 1`; the game sets `detail.demo`, but the diag fields leave it out, so the Mac log shows the demo gap as a struggle.
+
+   **Passed on** to quests-world (results.ts is its file).
 7. **`flows/quest.flow.sh`, the bead tree:** the panel's names are `bead <shape>-<colour>` for the tray beads and `string` for the drop target; `state().moment` has `kind: 'beads'` and `gap` (0 to 2); `answer()` gives the right tray bead; `spec()` gives the string, gaps, tray and decoys by tray index. With `?fresh=1` the ghost fills gap 1 while the tray sleeps and the phase is `busy`; wait for `gap` 1 and the phase `open` (after the goal and the wake) before the first drag. A wrong bead: any `bead ` target that is not `answer()`.
+
+   **Passed on** to quests-world (quest.flow.sh is its file).
 8. **Do not say `g4-beads`** in quests.ts before the bead tree's moment: the panel says it once a play. Saying it too makes her hear "A necklace for your baby!" twice.
+
+   **Passed on** to quests-world. On main after this merge, quests.ts and game/beads.ts do not say `g4-beads`; quests-world keeps it that way.
 9. **The bead tree's bubble** (`OFFER.beads` in quests.ts): section 17.2 asks for v3's bead picture tinted pink; step 0 shows it without a tint.
+
+   **Passed on** to quests-world (quests.ts is its file).
 
 ## Worktree setup (not code)
 
