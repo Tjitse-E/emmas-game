@@ -47,8 +47,9 @@ const sound = createSound({
   context: () => A.context ?? null,
   muted: () => !!A.muted,
   base: SFX_BASE,
-  // ?sfx=all also plays the files Tjitse has not listened to yet, in the game and on dev/sound.html.
-  listenAll: () => /[?&]sfx=all(&|$)/.test(location.search),
+  // 2.3.0 plays every made file, also one Tjitse has not approved yet (sfx.sh --approve), so the morning build has its
+  // effects. ?sfx=approved plays only the approved ones. dev/sound.html adds ?sfx=all, which plays them all too.
+  listenAll: () => !/[?&]sfx=approved(&|$)/.test(location.search),
 });
 
 /** v3 packs the demo speaks from, searched after the demo's own pack. */

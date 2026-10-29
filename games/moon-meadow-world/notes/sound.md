@@ -11,7 +11,7 @@ The v4 sound channel lives in `src/audio/` (docs/v4/2.3.md sections 8, 20 and 21
 | `src/audio/tune.ts` | The music box tune as data (`tunePlan(ms)`) |
 | `src/audio/dev.ts`, `dev/sound.html` | The listening page |
 | `tools/audio/gen-sfx.py`, `sfx.sh` | The generator |
-| `public/audio/sfx/manifest.json` | The made files. Empty until the integrator runs the generator |
+| `public/audio/sfx/manifest.json` | The made files: the 16 effects and the day loop since 2026-10-29, none approved yet |
 | `tests/sound.test.ts` | The channel on a fake shared player and a fake Web Audio graph, the tune, the list, and the generator with a fake HTTP layer |
 
 ## The rules (section 20)
@@ -59,9 +59,9 @@ The music box: `const box = audio.musicBox(limitMs)`; `await box.done` resolves 
 
 The background: `audio.ambience('day' | 'night' | null)` crossfades over 2 s. Step 0 already wires day at Play, night at dusk and the right one on a jump. Night has no file in 2.3.0, so at dusk the day loop fades out and the night is quiet. A loop asked for before its file has loaded starts when it has loaded.
 
-## Approved files only
+## Made files and approved files
 
-The game plays only files the manifest marks `approved`, so Emma never hears a sound Tjitse has not heard. Until then every effect plays its fallback or nothing. `?sfx=all` on the game address plays the others too, for listening in context. The listening page always does.
+2.3.0 plays every made file, also one the manifest does not mark `approved` yet, so the first build has its effects before Tjitse has listened (the integrator's call for the morning build, `listenAll` in `src/audio/index.ts`). `?sfx=approved` on the game address plays only the approved files, as section 20 planned; every other effect then plays its fallback or nothing. A sound he does not like is retaken (`--retake`) or its file removed. The listening page plays every made file.
 
 ## The listening page
 

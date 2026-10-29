@@ -541,17 +541,25 @@ describe('effects and who speaks', () => {
     expect(ctx.source('amb-day')).toBeUndefined();
   });
 
-  it('plays a file Tjitse has not approved only with ?sfx=all', async () => {
-    const game = await load();
+  it('plays a made file Tjitse has not approved yet, unless ?sfx=approved', async () => {
+    const game = await load({ search: '?seed=3' });
     await game.audio.preloadFx();
     void game.audio.fx('owl');
-    expect(game.ctx.source('owl')).toBeUndefined();
-    expect(game.net.fetched).not.toContain('audio/sfx/owl.mp3');
+    expect(game.ctx.source('owl')).toBeDefined();
+    expect(game.net.fetched).toContain('audio/sfx/owl.mp3');
 
     const listening = await load({ search: '?seed=3&sfx=all' });
     await listening.audio.preloadFx();
     void listening.audio.fx('owl');
     expect(listening.ctx.source('owl')).toBeDefined();
+
+    const approvedOnly = await load({ search: '?seed=3&sfx=approved' });
+    await approvedOnly.audio.preloadFx();
+    void approvedOnly.audio.fx('owl');
+    expect(approvedOnly.ctx.source('owl')).toBeUndefined();
+    expect(approvedOnly.net.fetched).not.toContain('audio/sfx/owl.mp3');
+    void approvedOnly.audio.fx('bedtime-bell');
+    expect(approvedOnly.ctx.source('bedtime-bell')).toBeDefined();
   });
 
   it('audio.stop() stops the effects', async () => {

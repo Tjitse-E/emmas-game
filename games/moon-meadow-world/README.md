@@ -22,7 +22,7 @@ http://<LocalHostName>.local:8765/games/moon-meadow-world/dist/
 
 Listen to the new clips before Emma plays (in `public/audio/v4demo/`): the 12 lines of 2.2.0 the game uses (docs/v4/2.2.md section 6, among them `g4-ready`, `g4-dress-up`, `lumi4-picnic-done` and `word-heart`), and the demo's earlier `lumi4-another-egg`, `lumi4-ribbons` and `g4-snow-egg`.
 
-Listen to the 16 effects, the day loop and the music box on `dev/sound.html` (vite dev), then approve them (notes/sound.md).
+Listen to the 16 effects, the day loop and the music box on `dev/sound.html` (vite dev), then approve them (notes/sound.md). Until then the game plays every made effect; `?sfx=approved` plays only the approved ones.
 
 ## Address options
 

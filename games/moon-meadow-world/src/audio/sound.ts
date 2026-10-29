@@ -12,9 +12,10 @@
 // story line they play on the ducked bus.
 //
 // The graph: every sound goes through one of three buses (effects, music box, background) into the channel's master,
-// which follows the shared player's mute, and on to the destination. A file plays only when the manifest
+// which follows the shared player's mute, and on to the destination. A file plays when the manifest
 // (public/audio/sfx/manifest.json, written by tools/audio/gen-sfx.py) lists it as approved, that is after Tjitse has
-// listened to it; ?sfx=all and dev/sound.html play the others too. A missing file plays the synthesised fallback
+// listened to it, or when listenAll says so (index.ts: every made file in 2.3.0, approved only with ?sfx=approved;
+// dev/sound.html adds ?sfx=all). A missing file plays the synthesised fallback
 // (synth.ts) on the same bus, or nothing. Nothing here throws or waits on a file that is not there. A manifest or a
 // file that failed to load is tried again on a later fx() or ambience(), as shared/audio.js does not remember
 // failures either (on an old iPad a decode can fail under memory pressure). Nothing starts on a clock that does not
@@ -143,7 +144,7 @@ export interface SoundDeps {
   /** Where the effect files and their manifest are, relative to the page. */
   base?: string;
   fetch?: Fetcher;
-  /** Also play files Tjitse has not approved yet (?sfx=all, dev/sound.html). Read when preloadFx() runs. */
+  /** Also play files Tjitse has not approved yet (2.3.0's default, not with ?sfx=approved). Read when preloadFx() runs. */
   listenAll?(): boolean;
 }
 
@@ -408,7 +409,7 @@ export function createSound(deps: SoundDeps) {
     return !!f && f.tries < MAX_TRIES && Date.now() - f.at >= RETRY_MS;
   }
 
-  /** Whether the game may play this entry: a known id with a file, approved by Tjitse (or ?sfx=all). */
+  /** Whether the game may play this entry: a known id with a file, approved by Tjitse or listenAll. */
   function playable(id: string, entry: SfxEntry | undefined): entry is SfxEntry {
     return isKnown(id) && !!entry && typeof entry.file === 'string' && (entry.approved || listenAll);
   }
