@@ -67,6 +67,7 @@
     {"id":"num-take-9-3","speaker":"narrator","text":"Nine take away three is six!","note":"Snow egg solved."},
     {"id":"num-take-9-4","speaker":"narrator","text":"Nine take away four is five!","note":"Snow egg solved."},
     {"id":"num-take-9-5","speaker":"narrator","text":"Nine take away five is four!","note":"Snow egg solved."},
+    {"id":"num-take-9-6","speaker":"narrator","text":"Nine take away six is three!","expect":["Nine takeaway six is three."],"note":"Snow egg solved."},
     {"id":"num-take-10-3","speaker":"narrator","text":"Ten take away three is seven!","note":"Snow egg solved."},
     {"id":"num-take-10-4","speaker":"narrator","text":"Ten take away four is six!","note":"Snow egg solved."},
     {"id":"num-take-10-5","speaker":"narrator","text":"Ten take away five is five!","note":"Snow egg solved."},

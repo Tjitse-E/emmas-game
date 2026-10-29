@@ -21,7 +21,7 @@ interface Ranges { need: Span; have: Span; answer: Span }
 /**
  * One sum per moment (2.2's eggSpec), within 10. Warm, the hay rack's: band A totals 7 to 9 with answers 3 to 6 (9
  * sums), band B totals 8 to 10 with the bonds to 10 and answers 3 to 7 (12 sums). Snow, which only the ui harness asks:
- * band A totals 7 to 9 with answers 3 to 5 (8 sums, without 9 - 6, see GRADES), band B the bonds to 10 (5 sums).
+ * band A totals 7 to 9 with answers 3 to 6 (9 sums), band B the bonds to 10 (5 sums).
  */
 export const RANGES: Record<EggKind, Record<Band, Ranges>> = {
   warm: {
@@ -29,7 +29,7 @@ export const RANGES: Record<EggKind, Record<Band, Ranges>> = {
     b: { need: [8, 10], have: [3, 7], answer: [3, 7] },
   },
   snow: {
-    a: { need: [3, 6], have: [7, 9], answer: [3, 5] },
+    a: { need: [3, 6], have: [7, 9], answer: [3, 6] },
     b: { need: [3, 7], have: [10, 10], answer: [3, 7] },
   },
 };
@@ -334,9 +334,9 @@ interface GradeRanges { easy: Ranges; middle: Ranges; hard: Record<Band, Ranges>
  * 10"). The total (totalOf) is the bigger number, and every number is 10 or less. Easy has the totals 7 and 8 (answers
  * 3 to 5, 5 sums), middle the total 9, hard the bonds to 10 (answers 3 to 7, 5 sums), so the grades never overlap and
  * the snow egg takes away from 10 only in its hard sum. The answer and the other part are 3 or more. Both bands ask the
- * same hard sums; band B is harder by its tray of 5. The warm egg's middle sum has the answers 3 to 6 (4 sums), the
- * snow egg's 3 to 5 (3 sums): 9 - 6 = 3 waits for its fact clip, num-take-9-6, which failed speech-to-text twice (it
- * heard "takeaway"). With that clip made, the snow middle need goes back to 3 to 6.
+ * same hard sums; band B is harder by its tray of 5. Both middle sums have the answers 3 to 6 (4 sums). The snow
+ * egg's 9 - 6 = 3 came back in 2.3.1: Tjitse accepted the take of num-take-9-6 that speech-to-text heard as
+ * "takeaway".
  */
 export const GRADES: Record<EggKind, GradeRanges> = {
   warm: {
@@ -349,7 +349,7 @@ export const GRADES: Record<EggKind, GradeRanges> = {
   },
   snow: {
     easy: { need: [3, 5], have: [7, 8], answer: [3, 5] },
-    middle: { need: [4, 6], have: [9, 9], answer: [3, 5] },
+    middle: { need: [3, 6], have: [9, 9], answer: [3, 6] },
     hard: {
       a: { need: [3, 7], have: [10, 10], answer: [3, 7] },
       b: { need: [3, 7], have: [10, 10], answer: [3, 7] },
@@ -458,8 +458,9 @@ const PLACE_CAP: Record<4 | 5, number> = { 4: 0.3, 5: 0.25 };
  * and 5 + 4 and the biggest only as 9 = 4 + 5 and 3 + 6, so it plans 20%, 30%, 30% and 20%.
  *
  * No place is planned above PLACE_CAP (30% with 4 stones, 25% with 5); what is over goes to the other places by their
- * share. Only the snow egg's middle grade needs it: with its three sums (9 - 3, 9 - 4, 9 - 5) the lower middle place,
- * which all three reach, would get 37.5%, over the tests' 35%.
+ * share. Since 2.3.1 no grade needs it: the snow egg's middle grade has four sums again (9 - 3 to 9 - 6) and plans
+ * 20%, 30%, 30% and 20%, as the warm one. In 2.3.0 it had three, and the lower middle place, which all three reach,
+ * would have got 37.5%, over the tests' 35%. The cap stays as a guard.
  */
 export function gradePlaces(kind: EggKind, grade: SumGrade, band: Band = 'a'): number[] {
   const n = gradeTray(grade, band);

@@ -71,8 +71,8 @@ describe('every number within 10 (2.3 section 19.1)', () => {
 
   it('keeps the need, the warm cups, the answer and every stone any tray can show at 10 or less, in every grade, band and the hay rack', () => {
     const all = everyTray();
-    // Graded: warm 5 + 4 + 5 + 5, snow 5 + 3 + 5 + 5. One sum: warm (the hay rack) 9 + 12, snow 8 + 5.
-    expect(all).toHaveLength(19 + 18 + 21 + 13);
+    // Graded: warm 5 + 4 + 5 + 5, snow 5 + 4 + 5 + 5. One sum: warm (the hay rack) 9 + 12, snow 9 + 5.
+    expect(all).toHaveLength(19 + 19 + 21 + 14);
     for (const { label, kind, c, stones } of all) {
       const at = `${label} ${c.need}/${c.have}`;
       for (const v of [c.need, c.have, c.answer, ...stones]) expect(v, at).toBeLessThanOrEqual(10);
@@ -93,20 +93,16 @@ describe('every number within 10 (2.3 section 19.1)', () => {
     for (const { c, stones } of everyTray()) if (stones.includes(2)) expect(c.answer).toBeGreaterThanOrEqual(3);
   });
 
-  it('leaves out 9 - 6 = 3 while its fact clip has not passed speech-to-text (it heard "takeaway", twice)', () => {
-    for (const { kind, c } of everyTray()) expect(kind === 'snow' && c.have === 9 && c.answer === 6, `${kind} ${c.need}/${c.have}`).toBe(false);
-    expect(clipExists('num-take-9-6')).toBe(false);
-  });
 });
 
 describe('the one-sum moment, the hay rack\'s: bands and ranges (4.2)', () => {
-  it('has the sums of the design: 9 and 12 warm (the hay rack), 8 and 5 snow (the ui harness)', () => {
+  it('has the sums of the design: 9 and 12 warm (the hay rack), 9 and 5 snow (the ui harness)', () => {
     expect(eggCombos('warm', 'a')).toHaveLength(9);
     expect(eggCombos('warm', 'b')).toHaveLength(12);
-    expect(eggCombos('snow', 'a')).toHaveLength(8);
+    expect(eggCombos('snow', 'a')).toHaveLength(9);
     expect(eggCombos('snow', 'b')).toHaveLength(5);
     // The rack: band A has the totals 7 to 9, band B 8 to 10 with the bonds to 10. The snow one-sum moment, which only
-    // the ui harness asks: band A 7 to 9 without 9 - 6, band B the bonds to 10.
+    // the ui harness asks: band A 7 to 9, band B the bonds to 10.
     for (const kind of KINDS) expect(new Set(eggCombos(kind, 'a').map(totalOf))).toEqual(new Set([7, 8, 9]));
     expect(new Set(eggCombos('warm', 'b').map(totalOf))).toEqual(new Set([8, 9, 10]));
     expect(new Set(eggCombos('snow', 'b').map(totalOf))).toEqual(new Set([10]));
@@ -350,7 +346,7 @@ describe('the hay rack (4.3)', () => {
 /** The grade table of 2.3 section 19.1, as the doc writes it: the number of sums per grade (and band for hard). */
 const SUM_COUNT: Record<EggKind, Record<string, number>> = {
   warm: { easy: 5, middle: 4, 'hard a': 5, 'hard b': 5 },
-  snow: { easy: 5, middle: 3, 'hard a': 5, 'hard b': 5 },
+  snow: { easy: 5, middle: 4, 'hard a': 5, 'hard b': 5 },
 };
 const gradeKey = (grade: SumGrade, band: Band) => (grade === 'hard' ? `hard ${band}` : grade);
 const bandsOf = (grade: SumGrade): readonly Band[] => (grade === 'hard' ? BANDS : ['a']);
@@ -407,10 +403,10 @@ describe('three sums per egg: the grade table (2.3 section 19.1)', () => {
         expect(totals('hard')).toEqual(new Set([10]));
       }
     }
-    // The answers grow with the grade: easy 3 to 5, middle 3 to 6 (the snow egg 3 to 5, without 9 - 6), hard 3 to 7.
+    // The answers grow with the grade: easy 3 to 5, middle 3 to 6, hard 3 to 7.
     for (const kind of KINDS) {
       expect(new Set(gradeCombos(kind, 'easy').map((c) => c.answer))).toEqual(new Set([3, 4, 5]));
-      expect(new Set(gradeCombos(kind, 'middle').map((c) => c.answer))).toEqual(new Set(kind === 'warm' ? [3, 4, 5, 6] : [3, 4, 5]));
+      expect(new Set(gradeCombos(kind, 'middle').map((c) => c.answer))).toEqual(new Set([3, 4, 5, 6]));
       for (const band of BANDS) expect(new Set(gradeCombos(kind, 'hard', band).map((c) => c.answer))).toEqual(new Set([3, 4, 5, 6, 7]));
     }
   });
@@ -740,9 +736,9 @@ describe('three sums per egg: the band (2.3 section 19.1)', () => {
 describe('clips', () => {
   /**
    * The number lines the sums within 10 brought (2.3 section 19.1), made with gen.sh --stt on 29 October 2026. The
-   * fifth, num-take-9-6, failed speech-to-text twice, so its sum is left out (above).
+   * fifth, num-take-9-6, failed speech-to-text twice ("takeaway"); Tjitse accepted its take and it came in 2.3.1.
    */
-  const NEW_10 = ['num-egg-3', 'num-take-7-4', 'num-take-8-5', 'num-take-10-7'];
+  const NEW_10 = ['num-egg-3', 'num-take-7-4', 'num-take-8-5', 'num-take-9-6', 'num-take-10-7'];
   const words = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
   const cap = (w: string) => w[0].toUpperCase() + w.slice(1);
 

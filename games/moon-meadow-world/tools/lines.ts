@@ -73,6 +73,12 @@ function word(n: number): string {
 }
 const cap = (s: string): string => s[0].toUpperCase() + s.slice(1);
 
+/**
+ * Take-away facts speech-to-text hears another way. Tjitse listened to the take of num-take-9-6 that it heard as
+ * "takeaway" and accepted it (29 October 2026, docs/v4/2.3.md section 19.1).
+ */
+const TAKE_EXPECT: Record<string, string[]> = { 'num-take-9-6': ['Nine takeaway six is three.'] };
+
 /** The number lines, one pattern per id family. */
 export function numberLine(id: string): Line | null {
   let m = /^num-add-(\d+)-(\d+)$/.exec(id);
@@ -83,7 +89,9 @@ export function numberLine(id: string): Line | null {
   m = /^num-take-(\d+)-(\d+)$/.exec(id);
   if (m) {
     const [a, b] = [Number(m[1]), Number(m[2])];
-    return { id, speaker: 'narrator', text: `${cap(word(a))} take away ${word(b)} is ${word(a - b)}!`, note: 'Snow egg solved.' };
+    const text = `${cap(word(a))} take away ${word(b)} is ${word(a - b)}!`;
+    const expect = TAKE_EXPECT[id];
+    return { id, speaker: 'narrator', text, ...(expect && { expect }), note: 'Snow egg solved.' };
   }
   // v3's "This egg needs seven warm cups." for the smaller snow eggs: num-egg-4 and num-egg-5 (2.3.0) and num-egg-3
   // (the sums within 10).
