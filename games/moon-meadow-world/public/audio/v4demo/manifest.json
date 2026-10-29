@@ -833,6 +833,23 @@
     "how": "exact"
    }
   },
+  "num-egg-3": {
+   "hash": "6d369aa35cbde65de85af8c9be9cbdc6dc3720f67f3fa2176afe9c9ed4ab8b63",
+   "speaker": "narrator",
+   "text": "This egg needs three warm cups.",
+   "file": "num-egg-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2518,
+   "generated": "2026-10-29T11:49:30",
+   "ok": true,
+   "stt": {
+    "hash": "6d369aa35cbde65de85af8c9be9cbdc6dc3720f67f3fa2176afe9c9ed4ab8b63",
+    "text": "This egg needs three warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "num-egg-4": {
    "hash": "906d3e2a52d27a85737af5fdbe6544433e25851b699c21daafb14d4000ece371",
    "speaker": "narrator",
@@ -986,6 +1003,23 @@
     "how": "exact"
    }
   },
+  "num-take-7-4": {
+   "hash": "1b5b12f1b1896903806ff1b56a16dd60046e0a5b431940922276db0a6843ea13",
+   "speaker": "narrator",
+   "text": "Seven take away four is three!",
+   "file": "num-take-7-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2331,
+   "generated": "2026-10-29T11:49:30",
+   "ok": true,
+   "stt": {
+    "hash": "1b5b12f1b1896903806ff1b56a16dd60046e0a5b431940922276db0a6843ea13",
+    "text": "Seven take away four is three",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "num-take-8-3": {
    "hash": "7d15b38848358392a3f766ce421b4db3797508f76c5772db13b78add09ba2d8c",
    "speaker": "narrator",
@@ -1016,6 +1050,23 @@
    "stt": {
     "hash": "a67dbab7f07e372a9759e6204e780b2ac0677e77a5342d90ef84e35a3f935d68",
     "text": "Eight take away four is four",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-8-5": {
+   "hash": "b2bde6434326d5c83f7c50fdcc7ad7ea821493a953d4b0f17d6958641516a42c",
+   "speaker": "narrator",
+   "text": "Eight take away five is three!",
+   "file": "num-take-8-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2261,
+   "generated": "2026-10-29T11:49:30",
+   "ok": true,
+   "stt": {
+    "hash": "b2bde6434326d5c83f7c50fdcc7ad7ea821493a953d4b0f17d6958641516a42c",
+    "text": "Eight take away five is three",
     "match": true,
     "how": "exact"
    }
@@ -1135,6 +1186,23 @@
    "stt": {
     "hash": "327f0c57af80f290ceaded0510818bb2b3b6b8b7306c0aa48b1910fff1868781",
     "text": "10 take away six is four",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-10-7": {
+   "hash": "b8ac6d69d48a356d9fa85e86285ac1b9c34f4ba12a28c8f501189e83eec3777a",
+   "speaker": "narrator",
+   "text": "Ten take away seven is three!",
+   "file": "num-take-10-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2351,
+   "generated": "2026-10-29T11:49:31",
+   "ok": true,
+   "stt": {
+    "hash": "b8ac6d69d48a356d9fa85e86285ac1b9c34f4ba12a28c8f501189e83eec3777a",
+    "text": "10 take away seven is three",
     "match": true,
     "how": "exact"
    }
@@ -2568,5 +2636,5 @@
    }
   }
  },
- "updated": "2026-10-29T03:31:48"
+ "updated": "2026-10-29T11:49:35"
 }
