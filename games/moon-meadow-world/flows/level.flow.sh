@@ -201,12 +201,12 @@ check_targets "$(moment_targets)"
 expect_eq "$(item_count)" 5 'items in the picnic wish'
 drag "$(hook 'answer()')" baby
 
-# ---- 11 Free play: the basket and the two side quests' bubbles (not taken here), feed a baby, call a herd unicorn;
-# the two minutes are skipped.
+# ---- 11 Free play: the basket and the two side quests' bubbles (a fresh save offers the picnic and the bead tree; not
+# taken here), feed a baby, call a herd unicorn; the two minutes are skipped.
 wait_for "() => window.__game.state().part === 'free'" 40
 wait_target 'food basket' 20
 sleep 2
-expect_eq "$(val "() => JSON.stringify(window.__game.state().quests.offered.slice().sort())")" '["picnic","rack"]' 'side quest bubbles'
+expect_eq "$(val "() => JSON.stringify(window.__game.state().quests.offered.slice().sort())")" '["beads","picnic"]' 'side quest bubbles'
 tap 'food basket'
 sleep 0.8
 shot 15-free-basket

@@ -7,21 +7,29 @@ import * as THREE from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GiftItem, Owned, PrincessLook } from '../src/contracts';
 
-/** What the narrator said (audio.sayAll), and how the phrase planner answers the gate ('real', or as before Emma's check). */
-const t = vi.hoisted(() => ({ said: [] as string[][], phrases: 'real' as 'real' | 'throw' | 'dress' }));
+/**
+ * What the narrator said (audio.sayAll), and how the phrases answer the gate: 'real', 'word' (as before Emma's
+ * picture check: gateKind says 'word' and the reading lane's planner gives a dress-up word wish), or 'throw' (no pair).
+ */
+const t = vi.hoisted(() => ({ said: [] as string[][], phrases: 'real' as 'real' | 'throw' | 'word' }));
 vi.mock('../src/audio', () => ({
   audio: {
     sfx: async () => {}, say: async () => {}, sayAll: async (ids: string[]) => void t.said.push(ids), sayWhole: async () => true,
     preload: async () => [], fx: async () => {}, checked: () => {}, stop: () => {}, speaking: false,
   },
 }));
-// Before Emma's picture check the reading lane's planner gives no phrase: it finds no pair to pick from (step 0's
-// pick() throws on an empty list), or it gives the dress-up word wish itself.
+// Before Emma's picture check the reading lane's planner gives the dress-up word wish itself (gateKind 'word'). A
+// planner that finds no pair to pick from throws; the gate still opens.
+vi.mock('../src/content/phrases', async (importOriginal) => {
+  const m = await importOriginal<typeof import('../src/content/phrases')>();
+  const gateKind: typeof m.gateKind = (o) => (t.phrases === 'word' ? 'word' : m.gateKind(o));
+  return { ...m, gateKind };
+});
 vi.mock('../src/game/moments', async (importOriginal) => {
   const m = await importOriginal<typeof import('../src/game/moments')>();
   const planWish: typeof m.planWish = (g, kind, label, o) => {
     if (kind === 'phrase' && t.phrases === 'throw') throw new Error('pick from an empty list');
-    return m.planWish(g, kind === 'phrase' && t.phrases === 'dress' ? 'dress' : kind, label, o);
+    return m.planWish(g, kind, label, o);
   };
   return { ...m, planWish };
 });
@@ -496,20 +504,38 @@ describe('the Corner visit', () => {
   });
 
   // Before Emma's picture check (2.3 section 18): the gate plays two 2.2 dress-up word wishes and the Corner still opens.
-  for (const how of ['throw', 'dress'] as const) {
-    it(`gates with two dress-up word wishes when the phrase planner gives no phrase (${how === 'throw' ? 'no pair to pick' : 'it gives a dress-up wish'})`, async () => {
+  for (const how of ['word', 'throw'] as const) {
+    it(`gates with two dress-up word wishes when there is no phrase (${how === 'throw' ? 'no pair to pick' : 'the planner gives a dress-up wish'})`, async () => {
       t.phrases = how;
       const { g, calls } = fakeGame({ search: '?seed=3' });
       g.quests.done.add('picnic');
       await cornerQuest(g);
       expect(g.results.lines.map((r) => `${r.part}:${String(r.detail.kind)}`)).toEqual(['gate1:dress', 'gate2:dress']);
       expect(g.quests.gate).toEqual({ kind: 'word', first: 2 });
-      // "Your baby wants to dress up like you!" once, before the first read.
-      expect(t.said.filter((ids) => ids.includes('g4-dress-up'))).toHaveLength(1);
+      // Each read's intro starts with "Your baby wants to dress up like you!", and the Corner says nothing of its own
+      // before a read (17.4), so she hears it once per read, never twice.
+      const intros = vi.mocked(g.layer.wish).mock.calls.map((c) => (c[0] as { clips: { intro: string[] } }).clips.intro);
+      expect(intros).toHaveLength(2);
+      for (const intro of intros) expect(intro.filter((id) => id === 'g4-dress-up')).toEqual(['g4-dress-up']);
+      for (const intro of intros) expect(intro[0]).toBe('g4-dress-up');
+      expect(t.said.flat()).not.toContain('g4-dress-up');
       expect(calls.order.slice(0, 4)).toEqual(['lumi lumi4-corner', 'wish framed', 'wish framed', 'gift framed']);
       expect(calls.wardrobe).not.toBeNull();
     });
   }
+
+  it('plans the gate reads at the phrase level, and two misses move only the phrase level (14.4, 18)', async () => {
+    const { g } = fakeGame({ search: '?seed=3&phrases=all' });
+    g.save.write((s) => {
+      s.reading = { level: 3, recent: [] };
+      s.phrases = { level: 2, recent: [] };
+    });
+    vi.mocked(g.layer.wish).mockResolvedValue({ outcome: 'miss', misses: 1, ms: 900 });
+    await cornerQuest(g);
+    expect(g.results.lines.map((r) => `${String(r.detail.kind)}:${String(r.detail.level)}`)).toEqual(['phrase:2', 'phrase:2']);
+    expect(g.save.data.reading).toEqual({ level: 3, recent: [] });
+    expect(g.save.data.phrases.level).toBe(1);
+  });
 
   it('says no "Let\'s get you ready" and no "tap play" in the Corner wardrobe: a pause is her dressing time', async () => {
     const { g, calls } = fakeGame({ search: '?seed=3&phrases=all' });

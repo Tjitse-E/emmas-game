@@ -5,6 +5,7 @@ Changes this lane needs in files it does not own. The lane compiles and passes i
 ## 1. flows/lib.sh (quests-world): check the tab tiles in the smoke flow
 
 - **Passed on** to quests-world, which owns lib.sh and merges last. The smoke flow passes without it; `dress.flow.sh` checks the tab tiles.
+- **Done** (integrator, quests-world merge): `wardrobe_targets()` filters `/^(tab|rail|swatch) /`.
 
 - **Change:** in `wardrobe_targets()`, the filter `/^(row|rail|swatch) /` becomes `/^(tab|rail|swatch) /`.
 - **Why:** the 2.3 panel has no `row <name>` targets any more; its tiles are `tab hair` to `tab sparkles` (docs/v4/2.3.md section 16, flow names). Without the change the smoke flow still checks every rail, swatch, Done and the preview, but not the six tab tiles. `dress.flow.sh` checks them itself.
@@ -20,6 +21,7 @@ Changes this lane needs in files it does not own. The lane compiles and passes i
 ## 3. src/test-hook.ts (quests-world, or the integrator in 22.3 step 4): drop `legacy()`
 
 - **Deferred** to 22.3 step 4, after the quests-world merge: test-hook.ts is quests-world's. It is now the only import of `wardrobe-legacy.ts` outside its own test.
+- **Done** (integrator, 22.3 step 4): `legacy()`, `wardrobe-legacy.ts` and its test are gone.
 
 - **Change:** remove the test hook's `legacy()` and its import of `wardrobe-legacy.ts`.
 - **Why:** `dress.flow.sh` now reads 2.3 ids from `state().look` and no flow calls `legacy()`. It is the last import of `legacyOf` outside the actors and the looks tests.
@@ -27,6 +29,7 @@ Changes this lane needs in files it does not own. The lane compiles and passes i
 ## 4. README.md (quests-world): the wardrobe paragraph and the dress flow line
 
 - **Passed on** to quests-world, which owns README.md. The integrator does not edit it.
+- **Done** (integrator, quests-world merge, the last lane): the opening paragraph names the six tabs and the dress flow sentence is the suggested text.
 
 - **Change:** the opening paragraph's "five rows of pictures (hair colour, eyes, what she wears, hair style, hair things)" and the `dress.flow.sh` sentence ("one pick per row, … the ribbon tap") describe 2.2. Suggested text for the flow: "`dress.flow.sh` checks the wardrobe at every size: every tab, rail and swatch touchable, a tab acting on pointerdown, one pick per field, a slide released off the panel, a pointercancel mid-slide, the budget in the body and face frames, Done before the music box ends, a finger held on a rail when the box ends (`?box=5`), and the saved look and the crown tab after a reload."
 - **Why:** the ribbon tap is gone (the hair things have their own colour rails) and the panel has tabs. notes/ui.md has the 2.3 details.

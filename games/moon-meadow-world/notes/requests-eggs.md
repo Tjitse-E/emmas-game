@@ -60,8 +60,8 @@ Why: `tests/maths.test.ts` checks these since the review. Without them the plan 
 
 - `flows/level.flow.sh` (this lane) still expects the free-play bubbles `["picnic","rack"]`. After quests-world's rotation the first play offers the bead tree, so that line becomes `["beads","picnic"]` when quests-world merges.
 
-  **Open** for the quests-world merge.
+  **Done** (integrator, quests-world merge): the level flow expects `["beads","picnic"]` and passes at 1080 x 740.
 
 - In a worktree, `games/moon-meadow-home/dist-test-gate` (v3's test build, not in git) is missing, so the flow server answers 404 for every v3 clip and `no_missing_clips` fails. I built it in the worktree (`npm run build:test -- --outDir dist-test-gate` in games/moon-meadow-home, gitignored) to run the level flow and removed it afterwards. `run.sh` belongs to quests-world; it could build it when it is missing.
 
-  **Open** for quests-world. The main tree has the build, so the integrator's flows are not affected.
+  **Done** (quests-world lane): `run.sh` serves the main checkout's v3 test build, read only, when the worktree has none.

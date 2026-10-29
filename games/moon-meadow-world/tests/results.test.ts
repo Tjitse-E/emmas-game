@@ -24,6 +24,17 @@ describe('diag lines', () => {
     expect(q).toMatchObject({ kind: 'result', part: 'egg1', s: 'm', o: 'helped', band: 'a', st: '4,6,7,8', pl: '3', q: '1', tried: '6:heard', dc: '4:first-nest,6:heard,7:slip' });
   });
 
+  it('writes a bead tree gap with demo=1 when the ghost filled it, and no demo otherwise', () => {
+    const gap: ResultLine = {
+      part: 'beads1', strand: 'm', outcome: 'helped', misses: 0, ms: 4000,
+      detail: { kind: 'pattern', pattern: 'ab', level: 1, gap: 0, tray: ['heart-pink', 'star-blue'], tried: [], decoys: {}, demo: 1 },
+    };
+    const q = Object.fromEntries(new URLSearchParams(diagQuery(resultFields(gap))));
+    expect(q).toMatchObject({ part: 'beads1', k: 'pattern', gap: '0', demo: '1' });
+    const own = Object.fromEntries(new URLSearchParams(diagQuery(resultFields({ ...gap, detail: { ...gap.detail, demo: undefined } }))));
+    expect(own.demo).toBeUndefined();
+  });
+
   it('stays under 400 characters, cutting long lists first', () => {
     const tried = Array.from({ length: 80 }, (_, i) => `word${i}`);
     const long = diagQuery(resultFields({ ...wish, detail: { ...wish.detail, tried } }));

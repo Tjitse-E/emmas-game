@@ -14,8 +14,8 @@ import type { BoardSpec, Vec2, WishSpec } from '../contracts';
 import { CORNER } from '../layout';
 import { v3Art, wordPic } from '../assets';
 import { CLIPS, wishClipIds } from '../content';
-import { type Game, flat, frameAt, lumiSay, preload, say } from './game';
-import { afterWish, crownKeep, parkFollowers, planWish, runWish } from './moments';
+import { type Game, flat, frameAt, lumiSay, preload } from './game';
+import { crownKeep, gateKind, parkFollowers, planWish, runWish, wishExtraClipIds } from './moments';
 import { cornerLimitMs, followAgain, giveGift, guests, herdAsideAt, walkThere } from './quest-kit';
 import { dressUp } from './wardrobe-part';
 
@@ -47,39 +47,35 @@ function walkFacing(g: Game, u: ReturnType<typeof guests>[number], s: Vec2): Pro
 }
 
 /**
- * One gate read's wish: a phrase wish ("the green sock") while the phrases are ready, else the 2.2 dress-up word
- * wish, `planWish(g, 'dress', part)` (2.3 section 18). The phrases are not ready while fewer than 6 strong ones have
- * Emma's picture check and ?phrases=all is off: the reading lane's planner then gives no phrase. It may give the
- * dress-up wish itself, or find no pair to pick from and throw. Either way the gate asks for the dress-up wish here,
- * so the Corner always opens. `word`: a read of this visit already was a word wish, so this one is too.
+ * One gate read's wish (2.3 sections 17.4 and 18): always `planWish(g, 'phrase', part)`. While gateKind(g) is 'word'
+ * (fewer than 6 strong phrases among Emma's checked pairs, ?phrases=all off) the reading lane's planner gives a 2.2
+ * dress-up word wish itself, its intro starting with "Your baby wants to dress up like you!", so the Corner says
+ * nothing of its own before a read. Only when the planner throws (no pair to pick from) does the gate plan that same
+ * dress-up word wish here, so the Corner always opens.
  */
-export function gateWish(g: Game, part: string, word: boolean): WishSpec {
-  if (!word) {
-    try {
-      const spec = planWish(g, 'phrase', part, { wish: false });
-      if (spec.kind === 'phrase' || spec.kind === 'dress') return spec;
-    } catch (e) {
-      console.info('[mmw corner] no phrase wish, a dress-up word wish instead:', e instanceof Error ? e.message : String(e));
-    }
+export function gateWish(g: Game, part: string): WishSpec {
+  try {
+    return planWish(g, 'phrase', part, { wish: false });
+  } catch (e) {
+    console.info('[mmw corner] no phrase wish, a dress-up word wish instead:', e instanceof Error ? e.message : String(e));
+    const spec = planWish(g, 'dress', part, { wish: false });
+    return { ...spec, clips: { ...spec.clips, intro: [...CLIPS.dressUp, ...spec.clips.intro] } };
   }
-  return planWish(g, 'dress', part, { wish: false });
 }
 
 /**
  * The gate: each baby wants to dress up first. A phrase wish each, or two dress-up word wishes before Emma's picture
- * check (gateWish), with "Your baby wants to dress up like you!" before the first. Results gate1 and gate2. Returns
- * the kind (word when a read was a word wish) and how many reads were first tries.
+ * check (gateWish). Results gate1 and gate2. Returns the kind (gateKind, or word when a read was a word wish) and how
+ * many reads were first tries.
  */
 async function gate(g: Game, babies: ReturnType<typeof guests>): Promise<{ kind: 'phrase' | 'word'; first: number }> {
-  let kind: 'phrase' | 'word' = 'phrase';
+  let kind = gateKind(g);
   let first = 0;
   for (const [k, u] of babies.entries()) {
     const part = `gate${k + 1}`;
-    const spec = gateWish(g, part, kind === 'word');
-    const before = spec.kind !== 'phrase' && kind === 'phrase' ? CLIPS.dressUp : [];
+    const spec = gateWish(g, part);
     if (spec.kind !== 'phrase') kind = 'word';
-    await preload(g, [...wishClipIds(spec), ...afterWish(spec), ...before]);
-    await say(g, before);
+    await preload(g, [...wishClipIds(spec), ...wishExtraClipIds(spec)]);
     u.lookAt(flat(g.actors.princess.position));
     const r = await runWish(g, u, spec, part, { frame: false });
     if (r.outcome === 'first') first++;

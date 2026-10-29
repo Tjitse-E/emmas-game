@@ -172,9 +172,9 @@ dress_done() {
   wait_for "() => window.__game.state().part === 'welcome'" 20
 }
 
-# The touchable names of the open customiser (rows, rails, swatches, Done, the preview), as a JS array literal.
+# The touchable names of the open customiser (tabs, rails, swatches, Done, the preview), as a JS array literal.
 wardrobe_targets() {
-  val "() => JSON.stringify(window.__game.targets().map((t) => t.name).filter((n) => /^(row|rail|swatch) /.test(n) || n === 'done' || n === 'preview'))"
+  val "() => JSON.stringify(window.__game.targets().map((t) => t.name).filter((n) => /^(tab|rail|swatch) /.test(n) || n === 'done' || n === 'preview'))"
 }
 
 # No missing clip. A clip that is missing but has a line in tools/lines.ts waits for the one gen.sh run after the 2.3

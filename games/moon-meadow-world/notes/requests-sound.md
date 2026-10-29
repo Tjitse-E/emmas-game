@@ -17,6 +17,7 @@
 ## 3. `README.md` (quests-world owns it): one line for the listening page
 
 - **Deferred:** README.md belongs to quests-world, which merges last. The integrator adds the line after that merge, or quests-world adds it in its lane.
+- **Done** (integrator, quests-world merge): the line is in the README under the listening checks.
 
 - Change: under the listening checks, add: "Listen to the 16 effects, the day loop and the music box on `dev/sound.html` (vite dev), then approve them (notes/sound.md)."
 - Why: Tjitse's listening list in section 23 includes them, and the README is where he looks.
@@ -29,7 +30,7 @@
 
 ## 5. Section 20: `bedtime-bell` is 2.0 s, but `g-dusk` waits for it at most 1 s
 
-- **Done, another way** (integrator, sound merge): the bell stays 2 s, so the probe is unchanged. A 2 s wait before `g-dusk` would break section 8 (her line waits for an effect at most 1 s), so section 20 now has level.ts start the bell 1 s into the 3 s dusk fade. The bell ends with the fade and `g-dusk` follows it. quests-world changes its `await g.run.w(audio.fx('bedtime-bell'))`. notes/sound.md's wiring row says the same.
+- **Done, another way** (integrator, sound merge): the bell stays 2 s, so the probe is unchanged. A 2 s wait before `g-dusk` would break section 8 (her line waits for an effect at most 1 s), so section 20 now has level.ts start the bell 1 s into the 3 s dusk fade. The bell ends with the fade and `g-dusk` follows it. quests-world changes its `await g.run.w(audio.fx('bedtime-bell'))`. notes/sound.md's wiring row says the same. **Done** (integrator, quests-world merge): level.ts starts the bell 1 s into the dusk fade, as section 20 says.
 
 - Change: decide in the doc before the probe is made (the probe is this effect). My suggestion: keep the 2 s bell, because a 2 s probe measures the rate better, and have quests-world wait the whole bell before `g-dusk` in level.ts: `await Promise.all([audio.fx('bedtime-bell'), wait(2000)])`. The other way is a 1.0 s bell with one ring (sfx.json is mine to change, but the table, the probe and the 20.1 s of section 21 are in the doc).
 - Why: `fx()` resolves at most 1 s after it started (`FX_WAIT_MS`, frozen in step 0). When `g-dusk` starts then, Elizabeth's start fades the bell out in 60 ms, so the second ring of "a bell ringing twice" is cut to a click every bedtime.

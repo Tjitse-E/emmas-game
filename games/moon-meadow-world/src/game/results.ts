@@ -75,7 +75,7 @@ export function resultFields(line: ResultLine): Record<string, Field> {
   // A bead tree gap (patterns lane): the pattern kind and level, which gap, the tray, what she tried and why.
   if (line.strand === 'm' && d.kind === 'pattern') {
     return {
-      ...base, k: 'pattern', pk: d.pattern as Field, lv: d.level as Field, gap: d.gap as Field, tray: list(d.tray), q: d.quick as Field,
+      ...base, k: 'pattern', pk: d.pattern as Field, lv: d.level as Field, gap: d.gap as Field, demo: d.demo as Field, tray: list(d.tray), q: d.quick as Field,
       tried: triedWith(d.tried, d.decoys),
     };
   }

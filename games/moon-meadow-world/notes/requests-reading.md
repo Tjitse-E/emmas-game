@@ -19,6 +19,8 @@ The reading lane compiles and passes its tests against the step 0 files as they 
 
 ## For the quests-world lane (corner.ts), at the merge
 
+**Done** (integrator, quests-world merge): `gateWish` always calls `planWish(g, 'phrase', ...)`; the Corner says no `CLIPS.dressUp` of its own (only a planner that throws gets the dress-up word wish planned in corner.ts, with the same intro); it preloads `wishExtraClipIds`; `gk` starts from `gateKind(g)`; a gate read moves its own level (tested in tests/world-quests.test.ts).
+
 - Plan each gate read with `planWish(g, 'phrase', 'gate1', { wish: false })` (and `'gate2'`), and run it with `runWish(g, baby, spec, 'gate1', { frame: false })`. When fewer than 6 phrases are strong among Emma's pairs (the live game until her picture check), `planWish` itself returns a dress-up word wish whose intro already says "Your baby wants to dress up like you!", so the Corner says nothing of its own before it and never needs `planWish(g, 'dress', ...)`.
 - Say nothing of your own before a gate read: no `CLIPS.dressUp`. Lumi's `lumi4-corner` before the two reads stays.
 - Preload with `[...wishClipIds(spec), ...wishExtraClipIds(spec)]` (`wishExtraClipIds` adds the baby's line and `word-the`); `runWish` also loads `word-the` while it frames.

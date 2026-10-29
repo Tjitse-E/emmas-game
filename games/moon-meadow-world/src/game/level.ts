@@ -293,9 +293,9 @@ async function bedtime(g: Game): Promise<void> {
   hideOffers(g);
   stable.lanterns(true);
   audio.ambience('night');
-  await g.run.w(setTime(g, 0.5, 3000));
-  // The bedtime bell after the dusk fade; "The sun is going down." waits for it.
-  await g.run.w(audio.fx('bedtime-bell'));
+  // The bedtime bell (2 s) starts 1 s into the 3 s dusk fade, so it ends with the fade; "The sun is going down."
+  // follows the fade and never cuts the bell's second ring (2.3 section 20).
+  await g.run.w(Promise.all([setTime(g, 0.5, 3000), g.run.sleep(1000).then(() => audio.fx('bedtime-bell'))]));
   await say(g, CLIPS.dusk);
   // The herd walks to the yard; her two babies come with her.
   for (const h of g.herd) {

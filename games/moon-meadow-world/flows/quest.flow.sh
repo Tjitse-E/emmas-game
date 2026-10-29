@@ -3,11 +3,11 @@
 # unless a step says otherwise.
 #   Free play: the picnic and this play's maths quest (the bead tree on a first play) offer bubbles; the budget at the
 #     Dressing Corner, the bead tree and the saddle sign in the follow view; a sign tap.
-#   ?quest=corner&box=5&phrases=all: two gate reads with one wrong (a two-word tag), the hair gift saved and worn, the
-#     trunk lid and its board, skip() never ends the wardrobe, the end of the 5 s music box (or Done while the panel
-#     has none), the budget at the Corner at 1080 x 810, 1080 x 740 and 1024 x 690, a trunk tap after the visit.
+#   ?quest=corner&box=20&phrases=all: two gate reads with one wrong (a two-word tag), the hair gift saved and worn,
+#     the trunk lid and its board, skip() never ends the wardrobe, the budget in the Corner wardrobe at 1080 x 810,
+#     1080 x 740 and 1024 x 690 before the 20 s music box ends it, a trunk tap after the visit.
 #   ?quest=corner without phrases=all: the gate plays two dress-up word wishes while no phrase has Emma's check.
-#   ?quest=beads: the bead moment's gaps with one wrong and its results when the bead panel is built, the jewel gift.
+#   ?quest=beads: the ghost fills gap 1, two gaps with one wrong, results beads1 to beads3, the jewel gift.
 #   ?quest=picnic and ?quest=rack: as 2.2, with their gifts (a crown, shoes) saved and worn.
 #   The rotation over two loads, on a real save: the bead tree comes again until she finishes it, then the hay rack.
 # Checks the results, the budget, missing clips and console errors.
@@ -46,6 +46,26 @@ answer_wish() {
   wait_for "() => window.__game.state().results.some((r) => r.part === $(jsq "$1"))" 30
 }
 
+# The gift picker after a quest (ui/gift.ts): tap a card once the cards take touches.
+pick_gift() {
+  wait_for "() => window.__game.targets().some((t) => t.name.startsWith('gift '))" "${1:-60}"
+  tap "$(val "() => window.__game.targets().filter((t) => t.name.startsWith('gift ')).pop().name")"
+}
+
+# Fill each open gap of the bead moment with the right bead until beads3 is logged (the ghost fills gap 1 on a first
+# visit ever).
+answer_beads() {
+  local k gap
+  for k in 1 2 3; do
+    wait_for "() => { const s = window.__game.state(); const m = s.moment; return s.results.some((r) => r.part === 'beads3') || (!!m && m.kind === 'beads' && m.phase === 'open'); }" 60
+    [ "$(val "() => window.__game.state().results.some((r) => r.part === 'beads3')")" = true ] && return 0
+    gap="$(val "() => window.__game.state().moment.gap")"
+    drag "$(hook 'answer()')" string
+    wait_for "() => { const s = window.__game.state(); const m = s.moment; return s.results.some((r) => r.part === 'beads3') || !m || m.kind !== 'beads' || m.gap !== $gap; }" 30
+  done
+  wait_for "() => window.__game.state().results.some((r) => r.part === 'beads3')" 30
+}
+
 # ---- Free play: the picnic and the bead tree bubbles; the new places in the follow view.
 open_page "?seed=$SEED&fresh=1&at=free"
 press_play
@@ -71,7 +91,7 @@ say "the sign shimmers on a tap (Lumi's line said: $(val "() => window.__game.st
 no_missing_clips
 
 # ---- The Dressing Corner with the phrase gate, on the busiest look.
-goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=5&phrases=all"
+goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=20&phrases=all"
 hook "setOwned($BUSIEST_OWNED)" >/dev/null
 hook "setLook($BUSIEST_LOOK)" >/dev/null
 press_play
@@ -95,12 +115,17 @@ answer_wish gate2
 expect_eq "$(results_of gate1,gate2)" '["gate1:r:missed:1","gate2:r:first:0"]' 'gate results'
 expect_eq "$(val "() => JSON.stringify(window.__game.state().quests.gate)")" '{"kind":"phrase","first":1}' 'the gate'
 # The gift from the hair set, saved at the pick and worn into the wardrobe.
+pick_gift
 wait_for "() => window.__game.state().quests.gifts.length === 1" 30
 gifts="$(gift_check)"
 say "corner gift $gifts"
 case "$gifts" in *'style:'*':true:true:true"]'|*'thing:'*':true:true:true"]') ;; *) fail "the Corner's gift is not a saved, worn hair item: $gifts" ;; esac
-# The wardrobe with the trunk lid and its board; skip() never ends it.
+# The wardrobe with the trunk lid and its board; skip() never ends it. The music box is 20 s here, so the budget at
+# three sizes is measured inside the wardrobe before the box ends it.
 wait_for "() => window.__game.state().wardrobe?.open" 30
+hook 'skip()' >/dev/null
+sleep 0.5
+expect_eq "$(val "() => { const s = window.__game.state(); return s.part + '/' + s.quests.running + '/' + !!s.wardrobe?.open; }")" 'free/corner/true' 'skip() keeps the Corner wardrobe open'
 expect_eq "$(val "() => window.__game.state().quests.boards")" 1 'the board shows as the wardrobe opens'
 wait_for "() => window.__game.state().quests.lid > 0.9" 5
 sleep 1
@@ -116,19 +141,10 @@ if [ "${W}x$H" = 1080x740 ]; then
   pw resize "$W" "$H" >/dev/null
   sleep 0.6
 fi
-hook 'skip()' >/dev/null
-sleep 0.5
-expect_eq "$(val "() => { const s = window.__game.state(); return s.part + '/' + s.quests.running + '/' + !!s.wardrobe?.open; }")" 'free/corner/true' 'skip() keeps the Corner wardrobe open'
-# The end of the 5 s music box. While the panel has no music box yet (the wardrobe-ui lane builds it), Done ends it.
-if val "() => window.__game.state().wardrobe?.box !== undefined" | grep -q true; then
-  wait_for "() => window.__game.state().quests.done.includes('corner')" 20
-  say "the music box ended the Corner"
-else
-  say "the panel has no music box in this build: Done ends the Corner"
-  wait_target done 10
-  tap done
-  wait_for "() => window.__game.state().quests.done.includes('corner')" 20
-fi
+expect_eq "$(val "() => { const s = window.__game.state(); return s.quests.running + '/' + !!s.wardrobe?.open; }")" 'corner/true' 'the budgets were measured in the Corner wardrobe'
+# The end of the music box.
+wait_for "() => window.__game.state().quests.done.includes('corner')" 40
+say "the music box ended the Corner"
 wait_for "() => !window.__game.state().quests.running && window.__game.state().quests.lid < 0.1" 20
 expect_eq "$(val "() => { const s = window.__game.state(); const g = s.quests.gifts[0].split(':'); return s.look[g[0]] === g[1] && window.__game.save().look[g[0]] === g[1]; }")" true 'the gift stays on after dressing'
 expect_eq "$(val "() => window.__game.state().framedAt")" null 'the Corner released its frame'
@@ -165,7 +181,7 @@ wait_for "() => window.__game.state().quests.gate !== null" 10
 say "gate $(val "() => JSON.stringify(window.__game.state().quests.gate)")"
 no_missing_clips
 
-# ---- The bead tree: the gaps when the bead panel is built, the jewel gift in the tree's frame.
+# ---- The bead tree: the ghost's gap, two gaps with one wrong, the results and the jewel gift in the tree's frame.
 goto_page "?seed=$SEED&fresh=1&at=free&quest=beads"
 press_play
 wait_for "() => window.__game.state().quests.running === 'beads' || window.__game.state().quests.done.includes('beads')" 30
@@ -176,6 +192,17 @@ if raw_eval "() => new Promise((ok, no) => { const t0 = Date.now(); const t = se
   shot quest-beads
   check_targets "$(val "() => JSON.stringify((window.__game.state().moment?.targets || []).map((t) => t.name).filter((n) => /^bead /.test(n)))")"
   budget 'the bead tree'
+  # The tree frame (19.2) at her other sizes: her head, the baby and the tree top on screen under the string.
+  if [ "${W}x$H" = 1080x740 ]; then
+    for size in 1080x810 1024x690; do
+      pw resize "${size%x*}" "${size#*x}" >/dev/null
+      sleep 1.2
+      shot "quest-beads-$size"
+      budget "the bead tree $size"
+    done
+    pw resize "$W" "$H" >/dev/null
+    sleep 0.6
+  fi
   string="$(val "() => window.__game.targets().find((t) => /^string/.test(t.name))?.name || ''")"
   drag "$(wrong_of bead)" "$string"
   wait_for "() => { const m = window.__game.state().moment; return m && m.misses === 1 && m.phase === 'open'; }" 20
@@ -185,8 +212,9 @@ if raw_eval "() => new Promise((ok, no) => { const t0 = Date.now(); const t = se
   wait_for "() => window.__game.state().results.some((r) => r.part === 'beads3')" 30
   expect_eq "$(results_of beads1,beads2,beads3)" '["beads1:m:helped:0","beads2:m:missed:1","beads3:m:first:0"]' 'bead results'
 else
-  say "the bead moment is the step-0 stub in this build (the patterns lane builds it)"
+  fail "the bead moment did not open at the bead tree"
 fi
+pick_gift
 wait_for "() => window.__game.state().quests.gifts.length === 1" 60
 gifts="$(gift_check)"
 say "bead tree gift $gifts"
@@ -219,6 +247,7 @@ shot quest-picnic-guest2
 check_targets "$(moment_targets)"
 answer_wish picnic2
 wait_for "() => window.__game.state().quests.rose" 60
+pick_gift
 wait_for "() => window.__game.state().quests.gifts.length === 1" 30
 sleep 1
 shot quest-picnic-gift
@@ -254,6 +283,7 @@ wait_for "() => window.__game.state().quests.hay === 1" 30
 sleep 1.5
 shot quest-rack-full
 budget 'the hay rack, full'
+pick_gift
 wait_for "() => window.__game.state().quests.done.includes('rack') && !window.__game.state().quests.running" 30
 expect_eq "$(results_of rack)" '["rack:m:missed:1"]' 'rack results'
 expect_eq "$(val "() => window.__game.state().results[0].detail.band")" a 'the rack in band A'
@@ -273,6 +303,8 @@ press_play
 expect_eq "$(val "() => window.__game.state().quests.maths")" beads 'the bead tree again when she did not finish it'
 wait_target 'offer beads' 30
 tap 'offer beads'
+answer_beads
+pick_gift
 wait_for "() => window.__game.state().quests.done.includes('beads') && !window.__game.state().quests.running" 90
 skip_free
 goto_page "?seed=$SEED&at=free"

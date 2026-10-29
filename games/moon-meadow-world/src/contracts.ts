@@ -84,8 +84,8 @@ export interface World {
   /** Opening shot: start high over the meadow and sweep down to the follow position over `ms`. */
   introSweep(ms: number): Promise<void>;
   /**
-   * World things under a screen point, nearest first by priority: door, slide, nest, rack, picnic, gazebo, pond,
-   * ground.
+   * World things under a screen point, nearest first by priority: door, slide, nest, rack, picnic, corner, beads,
+   * sign, gazebo, pond, ground.
    */
   pick(clientX: number, clientY: number): WorldPick | null;
   /** The ground point under a screen point (y = 0 plane), or null when the ray misses the ground. */

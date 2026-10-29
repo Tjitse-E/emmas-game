@@ -13,6 +13,7 @@ No code change. `src/contracts.ts`, `src/content/clips.ts`, `tools/lines.ts` and
 
 - `README.md` (quests-world): the save paragraph still names the key `mmw.save`. Since 2.3.0 it is `mmw.save2`; `mmw.save` is 2.2's, read only when `mmw.save2` is missing or broken, and never written or removed.
   - **Passed on** to quests-world in the merge report. The integrator does not edit README.md.
+  - **Done** (integrator, quests-world merge, the last lane): the README names `mmw.save2` and how `mmw.save` is read.
 - wardrobe-ui and quests-world: `railsOf` and `ownedOptions` now show earned items in the order she earned them, after the start items, not in catalogue order (notes/looks.md). A test that builds `owned` with `withItem` in catalogue order sees no difference.
   - **Passed on** in the merge report, and now in section 15 of the doc.
 - wardrobe-ui: `wordOf('eyes', id)` now gives the colour word for blue, green and brown eyes (section 15). The other eye colours give nothing.
