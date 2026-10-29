@@ -147,7 +147,7 @@ On her iPad: open `check.html` next to the game (`dist/check.html` on Emma's ser
 
 ## Maths (2.2.0)
 
-Design: [docs/v4/2.2.md](../../../docs/v4/2.2.md) sections 4.1 to 4.3.
+Design: [docs/v4/2.2.md](../../../docs/v4/2.2.md) sections 4.1 to 4.3. Since 29 October 2026 every sum stays within 10 ([docs/v4/2.3.md](../../../docs/v4/2.3.md) section 19.1, and notes/maths.md); the figures below are the one-sum moment's after that change.
 
 ### What is where
 
@@ -176,32 +176,32 @@ Design: [docs/v4/2.2.md](../../../docs/v4/2.2.md) sections 4.1 to 4.3.
 
 | | Band A (4 stones) | Band B (5 stones) |
 |---|---|---|
-| Warm egg and hay rack | need 11 to 15, have 5 to 9, answer 4 to 8: 19 sums | need 11 to 15, have 3 to 9, answer 4 to 9: 26 sums |
-| Snow egg | have 11 to 15, need 7 to 10, answer 3 to 6: 14 sums | have 11 to 16, need 7 to 10, answer 3 to 9: 21 sums |
+| Hay rack (warm) | need 7 to 9, have 3 to 6, answer 3 to 6: 9 sums | need 8 to 10, have 3 to 7, answer 3 to 7: 12 sums |
+| Snow (the ui harness only) | have 7 to 9, need 3 to 6, answer 3 to 5: 8 sums | have 10, need 3 to 7, answer 3 to 7: 5 sums |
 
-Snow sums with need 10 (13 - 3, 14 - 4, 15 - 5, 16 - 6) end on ten instead of below it. They are in the design's counts, so they stay.
+The eggs ask three graded sums each (`eggSums`, notes/maths.md). 2.2.0's ranges went to 15 and 16.
 
 ### How a tray is made
 
-1. A fresh sum: no total or answer this play has used and none of the last play's totals. When nothing is left it lets go of the last play, then of used answers, then of everything.
+1. A fresh sum: none with the total and the answer of a sum this play asked (either way round). When nothing is left, every sum is. The last play's totals are not used: every play asks 9 and 10.
 2. The answer's place from that sum's row of the place plan. The plan (iterative proportional fitting, cached per kind and band) keeps every sum equally likely and makes every place the kind can show come up equally often.
-3. A tray at that place, picked from every valid set of wrong stones: it always holds the heard number and one slip when they are valid. The nest mistakes weigh 5, slips 2, near ± 2 weighs 2, ± 3 weighs 1. Numbers 4 or more away fill in at weight 0.25 when a sum has too few mistakes or a place needs one more stone on a side. Trays where "the stone nearest five" is the answer weigh 0.05 of the rest.
+3. A tray at that place, picked from every valid set of wrong stones of 2 to 9: it always holds the heard number and one slip when they are valid. The nest mistakes weigh 8 (5 in 2.2.0), slips 2, near ± 2 weighs 2, ± 3 weighs 1. Numbers 4 or more away fill in at weight 0.25 when a sum has too few mistakes or a place needs one more stone on a side. Trays where "the stone nearest five" is the answer weigh 0.05 of the rest.
 
-Measured over 20,000 trays per kind and band (the test checks 10,000):
+Measured over 10,000 trays per kind and band, as the test checks:
 
 | | Places right | Best simple guess |
 |---|---|---|
-| Warm A | 25 / 25 / 24 / 25 % | 25 % |
-| Snow A | 33 / 33 / 33 / 0 % | 34 % (smallest, middle or nearest five) |
-| Warm B | 20 / 20 / 20 / 20 / 19 % | 21 % |
-| Snow B | 20 / 20 / 20 / 20 / 19 % | 20 % |
+| Warm A | 25 / 25 / 24 / 26 % | 26 % (nearest five) |
+| Snow A | 26 / 26 / 24 / 25 % | 31 % (nearest five) |
+| Warm B | 20 / 21 / 20 / 19 / 21 % | 27 % (nearest five) |
+| Snow B | 20 / 20 / 21 / 19 / 20 % | 23 % (nearest five) |
 
-A snow egg in band A can never show the answer as the biggest stone: the need she just heard (7 to 9) is always in the tray and bigger than every answer (3 to 6). The test checks evenness over the places a kind can reach.
+Within 10 every kind and band reaches every place. The test checks evenness over the places a kind can reach.
 
 ### Clips
 
-- `allEggClipIds()` and `allRackClipIds()` build specs of every sum in both bands with every wrong stone a tray can show, so they cannot drift from `eggSpec` and `rackSpec`. Miss distances go up to 6; `num-over`, `num-cold`, `num-still-warm` and `num-more` 1 to 6 all exist.
-- Every clip exists. The six band B take-away facts (`num-take-14-7`, `15-7`, `15-8`, `16-7`, `16-8`, `16-9`) were generated in 2.2.0 from the `num-take` pattern of `lineFor()`.
+- `allEggClipIds()` and `allRackClipIds()` build specs of every sum in both bands with every wrong stone a tray can show, so they cannot drift from `eggSpec` and `rackSpec`. Within 10 a stone is at most 6 too many and 5 too few; `num-over`, `num-cold`, `num-still-warm` and `num-more` 1 to 6 all exist.
+- Every clip exists. The six band B take-away facts (`num-take-14-7`, `15-7`, `15-8`, `16-7`, `16-8`, `16-9`) were generated in 2.2.0 from the `num-take` pattern of `lineFor()`. Since the sums stay within 10 they are a reserve in lines.json (`PAST_TEN` in tools/build-lines.ts).
 
 ## Deviations from the brief
 

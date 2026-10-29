@@ -11,15 +11,15 @@ import { type Band, noteBand, useSum } from './band';
 export interface EggAsk {
   /** The first egg of its kind: the intro (and the warm egg's spoken gesture). */
   first?: boolean;
-  /** The hard sum's and the hay rack's band: 4 stones and the narrower ranges (a), or 5 and the wider ones (b). */
+  /** The hard sum's and the hay rack's band: 4 stones (a), or 5 (b; the hay rack's sums reach 10 too). */
   band: Band;
   /**
-   * Totals and answers asked earlier this play. The hay rack asks neither again while other sums are left (2.2). An
-   * egg's sum gives way to one just like it whose total was not asked, while there is one; its answers differ only
-   * within the egg (eggSums).
+   * Totals and answers asked earlier this play, one pair per sum. The hay rack never asks a fact (a total with its
+   * answer) again while other sums are left. An egg's sum gives way to one just like it whose total was not asked, while
+   * there is one; its answers differ only within the egg (eggSums).
    */
   used: { totals: number[]; answers: number[] };
-  /** The last play's totals: the hay rack leaves them out while other sums are left. The eggs do not (freshCell). */
+  /** The last play's totals. Nothing reads them since the sums stay within 10 (every play asks 9 and 10). */
   lastTotals: number[];
 }
 
