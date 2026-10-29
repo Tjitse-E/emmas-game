@@ -1,8 +1,8 @@
 // The bead tree's patterns (docs/v4/2.3.md sections 6 and 19.2, tests of 22.4): every string the planner makes is
 // checked against the rules themselves (computed here from the string, the gaps and the tray, not from the planner's
 // own helpers): a copier, a swapper, a colour-only and a shape-only matcher are each wrong at least once, and how often
-// those matchers and a child who takes only beads she sees on the string fill a whole string at first try; the tray
-// and the odds per gap; the decoy kinds; the full repeat the hints light, and a contrast whose lights do not show the
+// those matchers and a child who takes only beads she sees on the string fill a whole string at first try; how often
+// copying wins each end gap of level 1; the tray, the share of ABC and the odds per gap; the decoy kinds; the full repeat the hints light, and a contrast whose lights do not show the
 // answer; the level fold, the save after a visit and the first-visit demo.
 import { describe, expect, it } from 'vitest';
 import type { Bead, MomentResult, Outcome, PatternSpec } from '../src/contracts';
@@ -95,13 +95,13 @@ describe('pattern guessers', () => {
 
   // How often a guesser fills all three gaps at first try (three first tries in a row move the level up), as the exact
   // chance over each string: a colour-only matcher takes any tray bead in the gap's colour, a shape-only matcher any in
-  // its shape, and an on-string guesser any tray bead she can see on the string. The ceilings are what the doc's trays
-  // give (19.2): at level 1 the one cross bead leaves A the only bead in its colour and B the only one in its shape,
-  // and at levels 2 and 3 an ABC tray has room for one cross bead only (requests-patterns.md asks for a better tray).
+  // its shape, and an on-string guesser any tray bead she can see on the string. Claude's call on 19.2: a tray of 4 at
+  // level 1 with both cross beads (each 1 in 8), and ABC rare at levels 2 and 3, so colour alone and shape alone stay
+  // under 15% there (about 14.5%; on the string about 12%).
   const CEILING: Record<PatternLevel, { colour: number; shape: number; string: number; blind: number }> = {
-    1: { colour: 0.4, shape: 0.4, string: 0.14, blind: 0.04 },
-    2: { colour: 0.24, shape: 0.24, string: 0.12, blind: 0.02 },
-    3: { colour: 0.24, shape: 0.24, string: 0.12, blind: 0.02 },
+    1: { colour: 0.13, shape: 0.13, string: 0.13, blind: 0.02 },
+    2: { colour: 0.15, shape: 0.15, string: 0.13, blind: 0.02 },
+    3: { colour: 0.15, shape: 0.15, string: 0.13, blind: 0.02 },
   };
   it('lets a colour-only, a shape-only or an on-string guesser fill a whole string at first try only within the ceilings', () => {
     for (const level of LEVELS) {
@@ -127,14 +127,30 @@ describe('pattern guessers', () => {
       for (const k of ['colour', 'shape', 'string', 'blind'] as const) expect(sum[k] / n, `level ${level} ${k}`).toBeLessThan(CEILING[level][k]);
     }
   });
+
+  it('lets copying the bead on the left win each end gap of level 1 about 1 time in 3, her first own gap after the demo too', () => {
+    // A level 1 string may start anywhere in its unit, so the one end gap where copying works is any of the three. On
+    // her first visit the ghost fills gap 1 and her first own gap is gap 2 (the playtest's 50% with the unit first).
+    const wins = [0, 0, 0];
+    let n = 0;
+    for (const spec of specs(1)) {
+      n++;
+      spec.gaps.forEach((g, i) => {
+        if (same(spec.string[g - 1], spec.string[g])) wins[i]++;
+      });
+      // Copying never fills her two own gaps.
+      expect(spec.gaps.slice(1).every((g) => same(spec.string[g - 1], spec.string[g]))).toBe(false);
+    }
+    for (const [i, w] of wins.entries()) expect(Math.abs(w / n - 1 / 3), `gap ${i + 1}`).toBeLessThan(0.03);
+  });
 });
 
 describe('pattern tray', () => {
-  it('has 3 beads at level 1 and 4 at levels 2 and 3, all different, with every unit and every answer', () => {
+  it('has 4 beads at every level, all different, with every unit and every answer', () => {
     for (const level of LEVELS) {
       for (const spec of specs(level)) {
         expect(spec.tray).toHaveLength(TRAY_SIZE[level]);
-        expect(TRAY_SIZE[level]).toBe(level === 1 ? 3 : 4);
+        expect(TRAY_SIZE[level]).toBe(4);
         expect(new Set(spec.tray.map(key)).size).toBe(spec.tray.length);
         for (const u of unitsOf(spec)) expect(spec.tray.some((t) => same(t, u))).toBe(true);
         for (const g of spec.gaps) expect(spec.tray.filter((t) => same(t, spec.string[g]))).toHaveLength(1);
@@ -142,15 +158,33 @@ describe('pattern tray', () => {
     }
   });
 
-  it("level 1's third bead is A's shape in B's colour", () => {
-    for (const spec of specs(1)) {
-      const [a, b] = unitsOf(spec);
-      const cross = spec.tray.filter((t) => !same(t, a) && !same(t, b));
-      expect(cross).toEqual([{ shape: a.shape, colour: b.colour }]);
+  it('holds both cross beads with two units (at every level), and one with ABC', () => {
+    for (const level of LEVELS) {
+      for (const spec of specs(level)) {
+        const units = unitsOf(spec);
+        const cross = spec.tray.filter((t) => !units.some((u) => same(t, u)));
+        if (units.length === 3) {
+          expect(cross).toHaveLength(1);
+          continue;
+        }
+        const [a, b] = units;
+        const key2 = (x: Bead[]) => x.map(key).sort();
+        expect(key2(cross)).toEqual(key2([{ shape: a.shape, colour: b.colour }, { shape: b.shape, colour: a.colour }]));
+      }
     }
   });
 
-  it('gives a blind pick 1 in 3 or 1 in 4 per gap, with the answer spread over the tray places', () => {
+  it('plays ABC rarely at levels 2 and 3, and every other kind about as often as the others', () => {
+    for (const level of [2, 3] as const) {
+      const count: Record<string, number> = {};
+      for (const spec of specs(level)) count[spec.kind] = (count[spec.kind] ?? 0) + 1;
+      expect(count.ABC / SEEDS, `level ${level} ABC`).toBeGreaterThan(0.03);
+      expect(count.ABC / SEEDS, `level ${level} ABC`).toBeLessThan(0.08);
+      for (const k of ['AAB', 'ABB', 'AABB']) expect(Math.abs(count[k] / SEEDS - 0.316), `level ${level} ${k}`).toBeLessThan(0.03);
+    }
+  });
+
+  it('gives a blind pick 1 in 4 per gap, with the answer spread over the tray places', () => {
     for (const level of LEVELS) {
       const n = TRAY_SIZE[level];
       const at = Array.from({ length: 3 }, () => new Array<number>(n).fill(0));

@@ -13,8 +13,8 @@ The bead tree's pattern moment (docs/v4/2.3.md sections 6 and 19.2). Three files
 
 | Level | Kinds | Gaps | Tray |
 |---|---|---|---|
-| 1 | AAB, ABB, starting with the unit | 6, 7, 8 | A, B and A's shape in B's colour (1 in 3) |
-| 2 | AAB, ABB, ABC, AABB, starting anywhere in the unit | 6, 7, 8 | the units, then cross beads up to 4 (1 in 4) |
+| 1 | AAB, ABB, starting anywhere in the unit | 6, 7, 8 | A, B and both cross beads (1 in 4) |
+| 2 | AAB, ABB, AABB, and ABC about 1 string in 19 (`KIND_WEIGHTS`), starting anywhere in the unit | 6, 7, 8 | the units, then cross beads up to 4 (1 in 4) |
 | 3 | the same | three of 1 to 8, never side by side | as level 2 |
 
 Units are drawn from four shapes and five colours (`BEAD_COLOURS`, drawn in the palette's `small` shade) and differ in both. The tray is shuffled; the answer of each gap lands on each tray place evenly (tested within 5 points).
@@ -29,15 +29,17 @@ Every string passes these checks, each tested from the string, the gaps and the 
 
 No gap is at place 0, because there is no bead on its left to go on from (Claude's call; the doc allows 0).
 
-How often a guesser fills a whole string at first try (the exact chance, over 20,000 strings per level; three first tries in a row move the level up). The tests hold these under ceilings of 0.40, 0.24 and 0.24 (colour and shape), 0.14 and 0.12 (on the string):
+How often a guesser fills a whole string at first try (the exact chance, over 20,000 strings per level; three first tries in a row move the level up). The tests hold these under ceilings of 0.13, 0.15 and 0.15 (colour and shape), 0.13 (on the string) and 0.02 (blind):
 
 | Level | Colour only | Shape only | Beads on the string | Blind |
 |---|---|---|---|---|
-| 1 | 0.376 | 0.374 | 0.125 | 0.037 |
-| 2 | 0.219 | 0.219 | 0.103 | 0.016 |
-| 3 | 0.208 | 0.208 | 0.103 | 0.016 |
+| 1 | 0.125 | 0.125 | 0.125 | 0.016 |
+| 2 | 0.145 | 0.145 | 0.120 | 0.016 |
+| 3 | 0.143 | 0.143 | 0.120 | 0.016 |
 
-The doc's trays cause the level 1 figure: with one cross bead (A's shape in B's colour) A is the only bead in its colour and B the only one in its shape, so colour alone fills every A gap. At levels 2 and 3 an ABC tray has room for one cross bead only (50% colour only). Section 6 says colour alone never fills a gap; that needs a different tray, which is Tjitse's call (requests-patterns.md, request 1).
+Claude's call on 19.2's open point (the trays let colour alone fill a whole string, 38% at level 1 and 21 to 22% at levels 2 and 3 before). With two units the tray holds both cross beads, at level 1 too, so every gap has two beads in its colour and two in its shape: 1 in 8 for a whole string. An ABC tray has room for one cross bead only (about 50% colour only), so ABC is drawn with weight 1 against 6 for each other kind; the planner turns down more ABC strings than others, so about 5% of strings at levels 2 and 3 are ABC. Fewer ABC strings raise beads on the string from 0.103 to 0.120.
+
+Copying the bead on the left: a level 1 string may start anywhere in its unit, so each end gap is the one where copying works 1 time in 3. On her first visit the ghost fills gap 1, and copying wins her first own gap 33% of the time (50% when every level 1 string started with its unit) and never both of her gaps. 0% would need the planner to know about the demo (`game/beads.ts` passing `visit.demo` to `patternSpec`). At levels 2 and 3 copying wins a gap 28 to 37% of the time.
 
 Decoy kinds per gap, by tray index: `copy` (the bead left of the gap), `unit` (another unit), `colour` (right colour only), `shape` (right shape only). In ABC a cross bead can share nothing with a gap's bead; it then has no kind, because `PatternDecoy` has no `other` (requests-patterns.md). The game logs the decoys by bead (`"star-pink": "colour"`), so `tried` in the diag line reads `star-pink:colour`.
 

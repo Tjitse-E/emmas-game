@@ -20,6 +20,8 @@ Changes the patterns lane needs in files it does not own. The lane compiles and 
 
    **Declined for now** (integrator, patterns merge): this is a learning design call, and both options change the 19.2 table Tjitse approved. The planner keeps the table. 19.2 now records the problem, the figures and both options as open for Tjitse, and section 13 points to it. When Tjitse picks one, the planner, `TRAY_SIZE` and the ceilings change together.
 
+   **Done** (Claude's call, final reading fixes): both options. Level 1 has both cross beads, and ABC is rare at levels 2 and 3. Colour only and shape only: 12.5% at level 1, 14.5% and 14.3% at levels 2 and 3. 19.2 and notes/patterns.md have the figures.
+
 ## For the integrator
 
 2. **`src/contracts.ts`, `PatternDecoy`: add `'other'`.** Change `export type PatternDecoy = 'copy' | 'unit' | 'colour' | 'shape';` to `export type PatternDecoy = 'copy' | 'unit' | 'colour' | 'shape' | 'other';` and the comment to "... its colour or its shape only, or nothing it shares (an ABC cross bead)". Why: in ABC the one cross bead can share neither shape nor colour with a gap's bead, so it fits none of the four kinds. Today it has no entry in `decoys`, which the result line shows as a bare bead in `tried`. After the change, `decoysAt` in `src/content/patterns.ts` sets `'other'` there (one line) and the decoy test expects it.

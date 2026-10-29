@@ -1,11 +1,15 @@
 // The bead tree's patterns (docs/v4/2.3.md sections 6 and 19.2): a baby's necklace of 9 beads with 3 gaps, filled
-// left to right from one tray. A bead is a shape in a colour, and the units of one pattern differ in both, so neither
-// colour alone nor shape alone fills a gap.
+// left to right from one tray. A bead is a shape in a colour, and the units of one pattern differ in both.
 //
-//   level 1  AAB, ABB; the gaps are the last three places; tray of 3: both units and one cross bead (A's shape in B's
-//            colour), so a blind pick is right 1 time in 3
-//   level 2  AAB, ABB, ABC, AABB; the last three places; tray of 4: the units and cross beads up to 4 (1 in 4)
-//   level 3  the same kinds; three spread gaps, never side by side, at least one in places 0 to 5 (1 in 4)
+//   level 1  AAB, ABB; the gaps are the last three places
+//   level 2  AAB, ABB, AABB, and now and then ABC (KIND_WEIGHTS); the last three places
+//   level 3  the same kinds; three spread gaps, never side by side, at least one in places 0 to 5
+//
+// The tray has 4 beads at every level (1 in 4 per gap): the units and cross beads (one unit's shape in another unit's
+// colour). With two units both cross beads are in it, so every gap has two beads in its colour and two in its shape,
+// and colour alone or shape alone fills a whole string at first try 1 time in 8 (Claude's call on 19.2's open point).
+// ABC has room for one cross bead only, which leaves most of its gaps one bead in their colour and one in their shape,
+// so ABC is rare (about 1 string in 19 at levels 2 and 3) and the whole-string figure stays under 15% there.
 //
 // AB is left out: swapping between two beads always solves it. Every string the planner returns passes these checks
 // (tests/patterns.test.ts): copying the bead left of the gap is wrong at least once; swapping between the last two
@@ -13,8 +17,9 @@
 // each be wrong at least once (a tray bead has the right colour and the wrong shape at some gap, and one the right
 // shape and the wrong colour at some gap). Claude's calls on top of the doc: the three gaps never all take the same
 // bead (so repeating her last right bead never wins), no gap is at place 0 (there is no bead on its left to go on
-// from), the strings of level 1 start with their unit, and at every gap one full repeat of the pattern can be seen
-// whole, so the hints always have a repeat to light (repeatFor, contrastFor).
+// from), a string may start anywhere in its unit (so copying the bead on the left wins each end gap 1 time in 3,
+// her first own gap after the demo too), and at every gap one full repeat of the pattern can be seen whole, so the
+// hints always have a repeat to light (repeatFor, contrastFor).
 //
 // The pattern level is its own small level (game/beads.ts, save.patterns); it never moves the maths band.
 import type { Bead, BeadShape, Colour, MomentResult, Outcome, PatternDecoy, PatternKind, PatternSpec } from '../contracts.ts';
@@ -29,14 +34,31 @@ export const BEAD_SHAPES: readonly BeadShape[] = ['heart', 'star', 'moon', 'roun
 /** Places on a string, and gaps per string. */
 export const STRING_LENGTH = 9;
 export const GAPS = 3;
-/** Tray beads per level: 1 in 3 per gap at level 1, 1 in 4 at levels 2 and 3. */
-export const TRAY_SIZE: Record<PatternLevel, 3 | 4> = { 1: 3, 2: 4, 3: 4 };
-/** The pattern kinds each level draws from (AB is left out: swapping between two beads always solves it). */
-export const KINDS_AT: Record<PatternLevel, readonly PatternKind[]> = {
-  1: ['AAB', 'ABB'],
-  2: ['AAB', 'ABB', 'ABC', 'AABB'],
-  3: ['AAB', 'ABB', 'ABC', 'AABB'],
+/** Tray beads per level: 4 at every level, so a blind pick is right 1 time in 4 per gap. */
+export const TRAY_SIZE: Record<PatternLevel, 4> = { 1: 4, 2: 4, 3: 4 };
+/**
+ * How often each level draws each kind (AB is left out: swapping between two beads always solves it). ABC is rare at
+ * levels 2 and 3 (Claude's call): its tray of 4 has room for one cross bead only, so most of its gaps have one bead in
+ * their colour and one in their shape, and colour alone or shape alone would fill the string about half the time.
+ */
+export const KIND_WEIGHTS: Record<PatternLevel, Readonly<Partial<Record<PatternKind, number>>>> = {
+  1: { AAB: 1, ABB: 1 },
+  2: { AAB: 6, ABB: 6, AABB: 6, ABC: 1 },
+  3: { AAB: 6, ABB: 6, AABB: 6, ABC: 1 },
 };
+/** The pattern kinds each level draws from. */
+export const KINDS_AT: Record<PatternLevel, readonly PatternKind[]> = {
+  1: Object.keys(KIND_WEIGHTS[1]) as PatternKind[],
+  2: Object.keys(KIND_WEIGHTS[2]) as PatternKind[],
+  3: Object.keys(KIND_WEIGHTS[3]) as PatternKind[],
+};
+/** A kind drawn by its level's weights. */
+function pickKind(rand: Rand, level: PatternLevel): PatternKind {
+  const w = Object.entries(KIND_WEIGHTS[level]) as [PatternKind, number][];
+  let r = rand() * w.reduce((a, [, n]) => a + n, 0);
+  for (const [k, n] of w) if ((r -= n) < 0) return k;
+  return w[w.length - 1][0];
+}
 /** Each kind's repeating unit, as indexes of its units (A 0, B 1, C 2). */
 export const UNIT: Record<PatternKind, readonly number[]> = { AAB: [0, 0, 1], ABB: [0, 1, 1], ABC: [0, 1, 2], AABB: [0, 0, 1, 1] };
 /** The gaps of levels 1 and 2: the last three places. */
@@ -142,10 +164,12 @@ export function decoysAt(string: readonly Bead[], g: number, tray: readonly Bead
   return out;
 }
 
-/** The tray before shuffling: the units, then cross beads (one unit's shape in another unit's colour) up to the size. */
-function trayOf(level: PatternLevel, units: readonly Bead[], rand: Rand): Bead[] {
+/**
+ * The tray before shuffling: the units, then cross beads (one unit's shape in another unit's colour) up to 4. Two units
+ * take both cross beads, so every gap has two beads in its colour and two in its shape; ABC has room for one.
+ */
+function trayOf(units: readonly Bead[], rand: Rand): Bead[] {
   const [a, b] = units;
-  if (level === 1) return [...units, { shape: a.shape, colour: b.colour }];
   if (units.length === 2) return [...units, { shape: a.shape, colour: b.colour }, { shape: b.shape, colour: a.colour }];
   const pairs: [Bead, Bead][] = [];
   for (const p of units) for (const q of units) if (p !== q) pairs.push([p, q]);
@@ -168,16 +192,17 @@ function playable(string: readonly Bead[], gaps: readonly number[], tray: readon
 /** A necklace string at `level` from its own stream. */
 export function patternSpec(rand: Rand, level: PatternLevel = 1): PatternSpec {
   for (let tries = 0; tries < 400; tries++) {
-    const kind = pick(rand, KINDS_AT[level]);
+    const kind = pickKind(rand, level);
     const n = new Set(UNIT[kind]).size;
     const shapes = shuffle(rand, BEAD_SHAPES).slice(0, n);
     const colours = shuffle(rand, BEAD_COLOURS).slice(0, n);
     const units: Bead[] = shapes.map((shape, k) => ({ shape, colour: colours[k] }));
     const period = periodOf(kind);
-    // Level 1 starts with the unit (AAB AAB AAB); later levels may start anywhere in it (ABA ABA ABA).
-    const phase = level === 1 ? 0 : Math.floor(rand() * period);
+    // A string may start anywhere in its unit (ABA ABA ABA), at level 1 too: then each of the three end gaps is the one
+    // where copying the bead on its left works equally often (1 in 3), also her first own gap after the demo.
+    const phase = Math.floor(rand() * period);
     const string = Array.from({ length: STRING_LENGTH }, (_, p) => ({ ...units[UNIT[kind][(p + phase) % period]] }));
-    const tray = shuffle(rand, trayOf(level, units, rand));
+    const tray = shuffle(rand, trayOf(units, rand));
     const sets = level === 3 ? shuffle(rand, SPREAD_GAPS) : [END_GAPS];
     const gaps = sets.find((s) => playable(string, s, tray, kind));
     if (!gaps) continue;
