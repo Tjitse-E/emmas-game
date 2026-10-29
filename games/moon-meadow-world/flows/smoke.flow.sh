@@ -34,6 +34,15 @@ wait_moment egg 30
 wait_phase open 30
 sleep 1.5
 shot smoke-egg2-band-b
+# 2.3: the easy sum comes first and the middle one may come second, both with 4 stones in every band. Answer them,
+# then the hard sum shows band B's 5 stones.
+check_targets "$(moment_targets)"
+for k in 1 2 3; do
+  [ "$(val "() => window.__game.spec().grade")" = hard ] && break
+  expect_eq "$(val "() => JSON.parse('$(stones_of)').length")" 4 'easy and middle stones'
+  drag "$(hook 'answer()')" cups
+  wait_for "() => { const m = window.__game.state().moment; return m && m.kind === 'egg' && m.round && m.round.index === $k && m.phase === 'open'; }" 40
+done
 check_targets "$(moment_targets)"
 expect_eq "$(val "() => JSON.parse('$(stones_of)').length")" 5 'band B stones'
 
