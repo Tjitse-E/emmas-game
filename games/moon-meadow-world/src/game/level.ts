@@ -78,7 +78,8 @@ const onLand = (g: Game): boolean => ['idle', 'walk', 'run'].includes(g.actors.p
 // ---- the parts -------------------------------------------------------------------------------------------------
 
 async function welcome(g: Game): Promise<void> {
-  if (g.save.data.plays >= 2) return welcomeBack(g);
+  // The long welcome until Lumi has given the crown: a first play left before the crown would else never save it.
+  if (g.save.data.plays >= 2 && g.save.data.seen.crown) return welcomeBack(g);
   const { actors, layer, world } = g;
   // She may walk and call unicorns while Lumi talks; taps never cut Lumi (names wait their turn).
   g.free = true;
@@ -96,11 +97,12 @@ async function welcome(g: Game): Promise<void> {
   // effect, at most 1 s).
   await g.run.w(actors.fx.starfall(head));
   actors.princess.crown(true);
+  // From now on the wardrobe has its crown tab (2.3 section 16). Saved as it appears, so leaving during Lumi's line
+  // keeps it.
+  g.save.write((s) => void (s.seen.crown = true));
   actors.fx.sparkle(head, { count: 16 });
   await g.run.w(audio.fx('crown-twinkle'));
   await lumiSay(g, CLIPS.crown);
-  // From now on the wardrobe has its crown tab (2.3 section 16).
-  g.save.write((s) => void (s.seen.crown = true));
   await g.run.w(actors.princess.emote('clap'));
   world.releaseFrame();
   actors.egg.place(NEST_EGG, 'warm');

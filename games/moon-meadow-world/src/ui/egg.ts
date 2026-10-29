@@ -17,13 +17,14 @@
 // sum's runEgg takes it over with new cups and new sleeping stones. After the third it slides away as before.
 import type { EggSpec, MomentHooks, MomentResult } from '../contracts';
 import { audio } from '../audio';
+import { FX_WAIT_MS } from '../audio/sound';
 import { blanketPatches, cupStates, hintCups, inBox, nestsFor, stoneEffect, type CupState, type Point } from './geometry';
 import { HintRunner } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, html, img, play, sleep, u } from './dom';
 import { hayPileEl, haySkin } from './hay';
 import { pulse, type Skin } from './skin';
-import { Life, QUICK_MS, leave, target, type LayerCtx, type OpenMoment } from './moment';
+import { Life, QUICK_MS, effectFirst, leave, target, type LayerCtx, type OpenMoment } from './moment';
 import { PIC, sparkleBurst, stoneEl } from './parts';
 
 const STEAM = '<svg viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"><path d="M12 38 C4 30 20 24 12 16 C8 12 12 6 14 2"/><path d="M28 38 C20 30 36 24 28 16 C24 12 28 6 30 2"/></g></svg>';
@@ -302,6 +303,9 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
       focused: async (_reason, still) => {
         // The cover lifts (or the extra cups show), then Elizabeth counts the places that matter, one by one.
         const revealing = skin.revealAfterHintLine ? null : skin.reveal();
+        // The blanket's whoosh plays out before her line (at most 1 s), or the line cuts it to a click.
+        if (revealing) await Promise.race([revealing, sleep(FX_WAIT_MS)]);
+        if (!life.alive) return;
         await audio.sayAll(spec.clips.hint);
         if (!life.alive) return;
         await (revealing ?? skin.reveal());
@@ -414,17 +418,21 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         { transform: 'rotate(0)' }, { transform: 'rotate(-7deg)' }, { transform: 'rotate(6deg)' }, { transform: 'rotate(-4deg)' }, { transform: 'rotate(0)' },
       ], { duration: 420, easing: 'ease-in-out' });
     };
-    /** The goal is said: the stones brighten and hop awake one after another, with a chime. */
-    const wake = () => {
-      if (!asleep) return;
+    /**
+     * The goal is said: the stones brighten and hop awake one after another, with a chime. Resolves when the chime
+     * has played (at most 1 s), so a line after it does not cut it.
+     */
+    const wake = (): Promise<void> => {
+      if (!asleep) return Promise.resolve();
       asleep = false;
       tray.classList.remove('asleep');
-      void audio.sfx('chime');
+      const chimed = effectFirst('chime');
       stones.forEach((s, i) => void play(s, [
         { transform: 'translateY(0) scale(1)' },
         { transform: `translateY(${-u(22)}px) scale(1.06)`, offset: 0.4 },
         { transform: 'translateY(0) scale(1)' },
       ], { duration: 380, delay: i * WAKE_STEP_MS, easing: 'ease-out' }));
+      return chimed;
     };
 
     stones.forEach((s) => {
@@ -521,7 +529,7 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
       ctx.seen.add(introKey);
       await Promise.race([audio.sayAll(clips), sleep(WAKE_CAP_MS)]);
       if (!life.alive) return;
-      wake();
+      const chimed = wake();
       busy = false;
       openedAt = performance.now();
       ladder.open(openedAt);
@@ -529,7 +537,12 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         const showDemo = !ctx.seen.has('egg-demo');
         const wrong = stones.find((s) => Number(s.dataset.value) !== spec.answer);
         const demo = showDemo && wrong ? ctx.ghost.drag(() => centreOf(wrong), () => dropSpot(), { fraction: 0.5 }) : Promise.resolve();
-        if (afterGoal) await audio.sayAll(takeAfterGoal());
+        if (afterGoal) {
+          // "Drag one stone" waits for the wake chime.
+          await chimed;
+          if (!life.alive) return;
+          await audio.sayAll(takeAfterGoal());
+        }
         await demo;
       }
       ctx.seen.add('egg-demo');

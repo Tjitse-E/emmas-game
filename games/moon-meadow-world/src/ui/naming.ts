@@ -9,7 +9,7 @@ import { clamp, inBox, judgeBuild, nameGems, planTray, type Point } from './geom
 import { HintRunner, bellIdleDelay } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, html, img, onTick, play, sleep, u } from './dom';
-import { Life, leave, target, type LayerCtx, type OpenMoment } from './moment';
+import { Life, effectFirst, leave, target, type LayerCtx, type OpenMoment } from './moment';
 import { PIC, gemEl, slotEl, sparkleBurst, starSlider, type StarSlider } from './parts';
 import { namePill } from './hud';
 
@@ -91,10 +91,12 @@ export function runNaming(ctx: LayerCtx, spec: NamingSpec, hooks: NamingHooks, s
       void play(e.querySelector('.bell-pic')!, [
         { transform: 'rotate(0)' }, { transform: 'rotate(16deg)' }, { transform: 'rotate(-13deg)' }, { transform: 'rotate(8deg)' }, { transform: 'rotate(-4deg)' }, { transform: 'rotate(0)' },
       ], { duration: 900, easing: 'ease-in-out' });
-      void audio.sfx('chime');
       const first = !rung;
       rung = true;
       if (!byGhost) armBells();
+      // The chime first, then the name: her line would cut the chime to a click.
+      await effectFirst('chime');
+      if (!life.alive) return;
       // Emma asked for the name, so it is never cut short; the drag line follows once per moment.
       await audio.sayAll(first ? [b.clip, ...spec.clips.drag] : [b.clip]);
       if (first && bellsOpen() && !ctx.seen.has('bell-drag-demo')) {
@@ -233,7 +235,8 @@ export function runNaming(ctx: LayerCtx, spec: NamingSpec, hooks: NamingHooks, s
         const result = ladder.finish();
         hooks.log?.('naming', { name: chosen.name, ...result });
         panel?.classList.add('right');
-        void audio.sfx('sparkle');
+        await effectFirst('sparkle');
+        if (!life.alive) return;
         await audio.sayAll([chosen.clip, ...spec.clips.done]);
         if (!life.alive) return;
         await tagToBaby(chosen);

@@ -103,6 +103,8 @@ export class HintRunner {
   private readonly opts: LadderOpts;
   /** True while a hint (repeat, contrast or focused) is running. */
   hinting = false;
+  /** close() was called: a hint still running when it resolves never arms the timer again (an orphan ladder). */
+  private closed = false;
 
   constructor(strand: Strand, hooks: LadderHooks, opts: LadderOpts = {}) {
     this.strand = strand;
@@ -170,6 +172,7 @@ export class HintRunner {
   }
 
   close(): void {
+    this.closed = true;
     this.stopTimer();
     this.hintToken++;
   }
@@ -181,12 +184,12 @@ export class HintRunner {
 
   private arm(): void {
     this.stopTimer();
-    if (this.state.done || !this.opened) return;
+    if (this.closed || this.state.done || !this.opened) return;
     this.timer = setTimeout(() => this.idle(), idleDelay(this.strand, this.opts.items));
   }
 
   private idle(force = false): void {
-    if (this.state.done) return;
+    if (this.closed || this.state.done) return;
     // Never talk over Elizabeth: wait a little and try again.
     if (!force && this.hooks.busy?.()) {
       this.stopTimer();
