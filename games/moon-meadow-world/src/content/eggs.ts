@@ -393,6 +393,9 @@ interface Cell {
   combo: EggCombo;
   /** How often "the stone nearest five" wins over this sum's trays with its answer here. */
   five: number;
+  /** How often the smallest and the biggest live stone win over this sum's trays with its answer here. */
+  low: number;
+  high: number;
   /** The plan's factor for this cell (fitted by eggPlan). */
   f: number;
 }
@@ -423,6 +426,24 @@ function fiveAt(kind: EggKind, c: EggCombo, n: number, place: number): number {
   const options = trayOptions(kind, c, n)[place] ?? [];
   const total = options.reduce((t, o) => t + o.weight, 0);
   return total > 0 ? options.reduce((t, o) => t + o.weight * nearFiveShare(o.stones, c.answer), 0) / total : 0;
+}
+
+/**
+ * The answers any sum can have within 10: 3 to 7. A stone of 2, 8 or 9 is only ever wrong, so a child who has seen
+ * that could leave those stones out and then take the smallest or the biggest of the rest.
+ */
+export const LIVE = { min: 3, max: 7 } as const;
+/** The answer is the smallest stone of 3 or more ('low') or the biggest stone of 7 or less ('high'). */
+export function liveEnd(stones: readonly number[], answer: number, end: 'low' | 'high'): boolean {
+  const live = stones.filter((s) => s >= LIVE.min && s <= LIVE.max);
+  return (end === 'low' ? live[0] : live[live.length - 1]) === answer;
+}
+
+/** How often "the smallest (or biggest) live stone" wins over the trays a sum can show with its answer at `place`. */
+function liveAt(kind: EggKind, c: EggCombo, n: number, place: number, end: 'low' | 'high'): number {
+  const options = trayOptions(kind, c, n)[place] ?? [];
+  const total = options.reduce((t, o) => t + o.weight, 0);
+  return total > 0 ? options.reduce((t, o) => t + o.weight * Number(liveEnd(o.stones, c.answer, end)), 0) / total : 0;
 }
 
 /** The most any place is planned in a grade, by the tray's size. */
@@ -463,7 +484,7 @@ function gradePlan(kind: EggKind, grade: SumGrade, band: Band): GradePlan {
   for (const combo of combos) {
     for (const place of placesFor(kind, combo, n)) {
       const five = fiveAt(kind, combo, n, place);
-      cells.push({ place, combo, five, f: 1 - CELL_FIVE_DAMP * five });
+      cells.push({ place, combo, five, low: liveAt(kind, combo, n, place, 'low'), high: liveAt(kind, combo, n, place, 'high'), f: 1 - CELL_FIVE_DAMP * five });
     }
   }
   const sameAs = (c: Cell) => `${c.place} ${c.combo.answer} ${heardOf(kind, c.combo) === c.combo.answer}`;
@@ -476,12 +497,21 @@ function gradePlan(kind: EggKind, grade: SumGrade, band: Band): GradePlan {
  * - "the stone nearest five" wins at most 29% with 4 stones and 24% with 5 (the tests: 35% and 30%);
  * - the number she heard is the answer at most 21% with 4 stones and 15% with 5 (the tests: blind odds, 25% and
  *   20%), or dragging the number Elizabeth just said would win more than a blind guess (8 - 4 = 4, 10 = 5 + 5);
- * - no sum is planned more than 1.4 even shares of its grade (the tests: 1.5), so none comes back play after play.
+ * - no sum is planned more than 1.4 even shares of its grade (the tests: 1.5), so none comes back play after play;
+ * - in the hard sum, the smallest stone of 3 or more and the biggest of 7 or less win at most 29% and 24%
+ *   (PLAN_LIVE_CAP).
  * Within 10 the answer 5 always wins "nearest five" and comes in one sum per grade (8 = 3 + 5, 9 = 4 + 5, 10 = 5 + 5),
  * so the five cap and the spread cap meet on those sums; the fitting still settles in under 100 rounds.
  */
 const PLAN_FIVE_CAP: Record<4 | 5, number> = { 4: 0.29, 5: 0.24 };
 const PLAN_HEARD_CAP: Record<4 | 5, number> = { 4: 0.21, 5: 0.15 };
+/**
+ * The hard sum's cap on "the smallest live stone" and "the biggest live stone" (LIVE; the tests: 35% and 30%). Without
+ * it the biggest stone under 8 won 47% of band A hard sums and 40% of band B, as the answer 7 is always the biggest
+ * stone under 8. Easy and middle have no such cap: with only the answers 3 to 5 (or 3 to 6) a cap on the smallest
+ * stone above 2 pushes "the 4" over half of the easy sums (docs/v4/2.3.md section 19.1).
+ */
+const PLAN_LIVE_CAP: Record<4 | 5, number> = { 4: 0.29, 5: 0.24 };
 const PLAN_SUM_SPREAD = 1.4;
 /** The fitting stops when every place and bound is within this, or after this many rounds. */
 const FIT_TOLERANCE = 1e-5;
@@ -537,13 +567,14 @@ function eggPlan(kind: EggKind, band: Band): EggPlan {
   const cached = eggPlanCache.get(key);
   if (cached) return cached;
   const grades = SUM_GRADES.map((grade) => gradePlan(kind, grade, band));
-  const bounds = grades.map((g): Bound[] => {
+  const bounds = grades.map((g, i): Bound[] => {
     const bound = (part: (c: Cell) => number, cap: number): Bound => {
       const cells = g.cells.filter((c) => part(c) > 0);
       return { cells, part: cells.map(part), cap };
     };
     return [
       bound((c) => c.five, PLAN_FIVE_CAP[g.n]),
+      ...(SUM_GRADES[i] === 'hard' ? [bound((c) => c.low, PLAN_LIVE_CAP[g.n]), bound((c) => c.high, PLAN_LIVE_CAP[g.n])] : []),
       bound((c) => Number(heardOf(kind, c.combo) === c.combo.answer), PLAN_HEARD_CAP[g.n]),
       ...g.combos.map((x) => bound((c) => Number(c.combo === x), PLAN_SUM_SPREAD / g.combos.length)),
     ];

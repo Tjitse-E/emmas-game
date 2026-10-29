@@ -10,8 +10,8 @@ import { describe, expect, it } from 'vitest';
 import type { EggSpec, MomentResult, Outcome, SumGrade } from '../src/contracts.ts';
 import {
   type Band, type EggCombo, type EggKind, RANGES, STONES, SUM_GRADES, TRAY, allEggClipIds, eggClipIds, eggCombos,
-  eggPlanFit, eggSpec, eggSums, freshCombos, gradeCombos, gradeRanges, gradeReach, gradeTray, heardOf, nearFiveShare,
-  nextBand, placesFor, reachableStones, stoneCandidates, totalOf,
+  LIVE, eggPlanFit, eggSpec, eggSums, freshCombos, gradeCombos, gradeRanges, gradeReach, gradeTray, heardOf, liveEnd,
+  nearFiveShare, nextBand, placesFor, reachableStones, stoneCandidates, totalOf,
 } from '../src/content/eggs.ts';
 import { allRackClipIds, rackSpec } from '../src/content/rack.ts';
 import { seeded, stream } from '../src/content/rand.ts';
@@ -610,6 +610,23 @@ describe('three sums per egg: the trays and the guess rules (2.3 section 19.1)',
             const sums = eggs.map((s) => s[i]).filter((s) => s.stones.length === n);
             if (sums.length) check(sums, `${kind} ${band} sum ${i + 1} with ${n} stones`);
           }
+        }
+      }
+    }
+  });
+
+  it('keeps the hard sum\'s "leave out 2, 8 and 9, then take the smallest or the biggest" under 35% with 4 stones and 30% with 5', () => {
+    // No answer is under 3 or over 7, so a child who has seen that a 2, 8 or 9 is never right could leave them out.
+    // 2.3.0's first plan within 10 let the biggest stone under 8 win 47% of band A hard sums. Easy and middle keep
+    // this open: with three answers there, a cap pushes "the 4" over half (docs/v4/2.3.md section 19.1).
+    expect(LIVE).toEqual({ min: 3, max: 7 });
+    for (const band of BANDS) {
+      for (const kind of KINDS) {
+        const hard = eggsOf(kind, band).map((sums) => sums.find((s) => s.grade === 'hard') as EggSpec);
+        const limit = TRAY[band] === 5 ? 0.3 : 0.35;
+        for (const end of ['low', 'high'] as const) {
+          const wins = hard.filter((e) => liveEnd(e.stones, e.answer, end)).length / hard.length;
+          expect(wins, `${kind} ${band} ${end}`).toBeLessThanOrEqual(limit);
         }
       }
     }
