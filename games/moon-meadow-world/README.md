@@ -6,7 +6,7 @@ One playable level of v4 in 3D: "Emma's first day in Moon Meadow" ([docs/v4/demo
 
 Her look, the things she owns, her ribbon colours, hidden reading, phrase and pattern levels and the last play's words and sums are saved in the browser (`localStorage`, key `mmw.save2` since 2.3.0). 2.2's `mmw.save` is read only while `mmw.save2` is missing or broken, and is never written or removed. On the next play she taps Play, sees her saved look in the customiser and taps the play button once; Lumi's welcome is shorter. Each address (Emma's server, a test server, another host name) has its own save, and Safari may clear it after 7 days without a visit: she then starts fresh with the default look and the middle reading level.
 
-The demo is throwaway. It shows Tjitse how v4 plays, whether Emma likes it, and how her iPad (8th generation, STACK.md) copes with 14 code-built unicorns, the pond and the slide. Vite 8, TypeScript 6 and three.js 0.186.1, built for Safari 15. Speech is pre-generated ElevenLabs audio: v3's clips and pictures from `games/moon-meadow-home/`, and the demo's own 151 clips in `public/audio/v4demo/`. Sound effects and the day loop are in `public/audio/sfx/`.
+The demo is throwaway. It shows Tjitse how v4 plays, whether Emma likes it, and how her iPad (8th generation, STACK.md) copes with 14 code-built unicorns, the pond and the slide. Vite 8, TypeScript 6 and three.js 0.186.1, built for Safari 15. Speech is pre-generated ElevenLabs audio: v3's clips and pictures from `games/moon-meadow-home/`, and the demo's own 155 clips in `public/audio/v4demo/`. Sound effects and the day loop are in `public/audio/sfx/`.
 
 ## Play it on Emma's iPad
 

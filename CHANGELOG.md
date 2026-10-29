@@ -13,27 +13,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 The finished 2.3.0. This entry lists everything that is new since 2.2.0, so it repeats 2.3.0-pre.1.
 
-Still open: Tjitse listens to the new clips and sound effects (until he approves them, the game plays them all), and confirms the 30 seconds at the start mirror after her first plays. The phrase wishes start once Emma has done her picture check. Waiting for 2.3.1: the flower crown's 3D shape does not match its picture, the white swatches and the gala gloves need an outline, the bead string sits close to the corner buttons, a present is saved about 1.6 seconds after she picks it, copying the bead on the left still wins her first own bead gap 1 time in 3, and there is no night sound yet.
+Still open: Tjitse listens to the new clips and sound effects (until he approves them, the game plays them all). The snow egg's sum nine take away six waits until he has listened to its clip. Waiting for 2.3.1: the flower crown's 3D shape does not match its picture, the white swatches and the gala gloves need an outline, the bead string sits close to the corner buttons, a present is saved about 1.6 seconds after she picks it, copying the bead on the left still wins her first own bead gap 1 time in 3, and there is no night sound yet. In the easy sums a stone of 2 is never right, so a child who leaves it out and takes the smallest stone is right about half the time; the fix needs Tjitse's choice. When a snow stone is bigger than the number of warm cups, Elizabeth says the wrong number of cups too many.
 
 ### Added
 - Moon Meadow World: the Dressing Corner at Lumi's gazebo. After her first side quest a trunk bubble invites her there. Her two babies dress up first, and she reads what each one wishes for. Then she dresses Princess Emma at the trunk and the mirror while a music box plays for 30 to 60 seconds. When the tune ends, Princess Emma curtsies and her look is kept.
 - Moon Meadow World: a bigger wardrobe. There are 12 hair styles instead of 4, and new rows for the crown, the shoes, earrings and a necklace. Hair, gown, crown, shoes, hair things and jewels each take any of 12 colours or rainbow, so green eyes, a green gown and green hair work together. Every colour is free from the first play. Elizabeth says the name of each colour she picks, and the short colour words are printed.
 - Moon Meadow World: presents she keeps. Every finished side quest lets her pick one of two new things: a crown at the picnic, shoes at the hay rack, earrings or a necklace at the bead tree, and a hair style or a hair thing at the Dressing Corner. She keeps wearing it. The inside of the trunk lid shows her collection, and a full row gets a sticker.
 - Moon Meadow World: the bead tree, a new side quest. She finishes a necklace for her baby by filling three gaps in a pattern of beads that differ in shape and colour. On her first visit a ghost hand fills the first gap to show her how.
-- Moon Meadow World: phrase wishes at the Dressing Corner. A baby wishes for a coloured thing, such as "the green sock", and she must read both words to pick the right picture. They start once Emma has named the coloured pictures in her picture check. Until then the babies wish for dress-up words.
-- Moon Meadow World: a picture check page for Tjitse (`check.html`). Emma names each of the 30 coloured pictures and Tjitse taps a tick or a cross. The ticks count at once on that iPad, without a new build.
+- Moon Meadow World: phrase wishes at the Dressing Corner. From her first play a baby wishes for a coloured thing, such as "the green sock", and she must read both words to pick the right picture. Gold and brown never share a basket.
+- Moon Meadow World: a picture check page for Tjitse (`check.html`). Emma names each of the 30 coloured pictures and Tjitse taps a tick or a cross. A cross turns that picture off in the game at once on that iPad, without a new build.
 - Moon Meadow World: a bigger meadow, with the Dressing Corner, the bead tree, and a moon mist with a saddle sign that says what opens next.
 - Moon Meadow World: 16 sound effects (among them an egg crack, a unicorn's nicker, splashes, a bedtime bell and an owl), a soft day sound and the music box tune. No sound plays over Elizabeth's words or letter sounds, and the day sound is silent while Emma works on a sum or a word.
 
 ### Changed
-- Moon Meadow World: each egg hatches after three sums instead of one: an easy sum within 10, one just past 10 and one across ten. A heart lights up after each right answer.
+- Moon Meadow World: each egg hatches after three sums instead of one, all within 10 as at her school: an easy one, a middle one and a bond to 10. The easy one comes first, then the two harder ones in either order. A heart lights up after each right answer. The hay rack's sum is within 10 too.
 - Moon Meadow World: the side quests take turns. Free play offers the royal picnic and one maths quest, the bead tree or the hay rack, and the one she did not finish comes again next time. Free play lasts two minutes, or up to two and a half while a quest bubble still waits.
-- Moon Meadow World: at the start she has 30 seconds at the mirror to dress, with the same music box. Her look from 2.2 carries over.
+- Moon Meadow World: at the start she has 45 seconds at the mirror to dress, with the same music box. Her look from 2.2 carries over.
 
 ### Fixed
 - Moon Meadow World: since 2.3.0-pre.1, the bead trays are fairer. Matching only the colour or only the shape rarely fills a whole string.
 - Moon Meadow World: since 2.3.0-pre.1, the babies at the Dressing Corner no longer wish for a dress-up word she read earlier in the same play.
 - Moon Meadow World: since 2.3.0-pre.1, a touch after a wrong egg stone stops the hint, so Elizabeth's hint no longer starts after Emma has picked up a stone.
+- Moon Meadow World: since 2.3.0-pre.1, every egg sum and the hay rack's sum stay within 10. The pre-release asked sums up to 16.
+- Moon Meadow World: since 2.3.0-pre.1, the start mirror gives her 45 seconds again instead of 30, as Tjitse decided.
 
 ## [2.3.0-pre.1] - 2026-10-29
 
