@@ -442,6 +442,431 @@
     "how": "exact"
    }
   },
+  "g4-nearly": {
+   "hash": "ab1828248768ab0d632ba582e488de89a2a42933b2ff3440d53f513b91d6f7e5",
+   "speaker": "narrator",
+   "text": "Nearly ready!",
+   "file": "g4-nearly.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1063,
+   "generated": "2026-10-29T03:31:11",
+   "ok": true,
+   "stt": {
+    "hash": "ab1828248768ab0d632ba582e488de89a2a42933b2ff3440d53f513b91d6f7e5",
+    "text": "Nearly ready",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-hearts": {
+   "hash": "1bb5fe02ff453e93b8539b28a83c325f6b014b8d35114a09455e4ff4d7a8b1e9",
+   "speaker": "narrator",
+   "text": "Fill all three hearts, and the egg will hatch.",
+   "file": "g4-hearts.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3038,
+   "generated": "2026-10-29T03:31:14",
+   "ok": true,
+   "stt": {
+    "hash": "1bb5fe02ff453e93b8539b28a83c325f6b014b8d35114a09455e4ff4d7a8b1e9",
+    "text": "Fill all three hearts and the egg will hatch",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-heart": {
+   "hash": "6b0e241cd087393da75f33bf90e1fae1f91aa229334bf4785473d987d30b7fcf",
+   "speaker": "narrator",
+   "text": "A happy heart!",
+   "file": "g4-heart.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1600,
+   "generated": "2026-10-29T03:31:11",
+   "ok": true,
+   "stt": {
+    "hash": "6b0e241cd087393da75f33bf90e1fae1f91aa229334bf4785473d987d30b7fcf",
+    "text": "A happy heart",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-gift": {
+   "hash": "f5aeed54f5f266573e10ebbf9cdc58b97a1d4112dca4fabed52a2bee160aa166",
+   "speaker": "narrator",
+   "text": "Pick one present!",
+   "file": "g4-gift.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1595,
+   "generated": "2026-10-29T03:31:11",
+   "ok": true,
+   "stt": {
+    "hash": "f5aeed54f5f266573e10ebbf9cdc58b97a1d4112dca4fabed52a2bee160aa166",
+    "text": "Pick one present",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-corner": {
+   "hash": "129cad57d7e1a18f0ece3018c72e8defcf45578d7a9d96d5996a6af15c4b0ad6",
+   "speaker": "queen",
+   "text": "Your babies want to dress up first!",
+   "file": "lumi4-corner.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2115,
+   "generated": "2026-10-29T03:31:11",
+   "ok": true,
+   "stt": {
+    "hash": "129cad57d7e1a18f0ece3018c72e8defcf45578d7a9d96d5996a6af15c4b0ad6",
+    "text": "Your babies want to dress up first?",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-sticker": {
+   "hash": "b4f6d7acb9019bc499ff7b4d180563b806d456eccae1d630b3f64b45e62fc4a3",
+   "speaker": "queen",
+   "text": "You found them all! A sticker for your trunk.",
+   "file": "lumi4-sticker.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2109,
+   "generated": "2026-10-29T03:31:12",
+   "ok": true,
+   "stt": {
+    "hash": "b4f6d7acb9019bc499ff7b4d180563b806d456eccae1d630b3f64b45e62fc4a3",
+    "text": "You found them all. A sticker for your trunk",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-soon": {
+   "hash": "b6c948b2d6ed6b8b7e6e5075820ca2ddd87c55e02d93634f172eb463be223fc7",
+   "speaker": "queen",
+   "text": "Soon you can ride here!",
+   "file": "lumi4-soon.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1234,
+   "generated": "2026-10-29T03:31:11",
+   "ok": true,
+   "stt": {
+    "hash": "b6c948b2d6ed6b8b7e6e5075820ca2ddd87c55e02d93634f172eb463be223fc7",
+    "text": "Soon you can ride here",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-beads": {
+   "hash": "2cc83070d4fb586e3f0efbb9e925212b2d1ea30048659b01104e05b5b37d5d43",
+   "speaker": "narrator",
+   "text": "A necklace for your baby! Finish the pattern.",
+   "file": "g4-beads.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2996,
+   "generated": "2026-10-29T03:31:13",
+   "ok": true,
+   "stt": {
+    "hash": "2cc83070d4fb586e3f0efbb9e925212b2d1ea30048659b01104e05b5b37d5d43",
+    "text": "A necklace for your baby. Finish the pattern",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-pattern": {
+   "hash": "c51a10244b371f7e02751c5e5e2ecd555ec36ab007297e4d90c7f1d7085c6d58",
+   "speaker": "narrator",
+   "text": "Finish the pattern.",
+   "file": "g4-pattern.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1360,
+   "generated": "2026-10-29T03:31:12",
+   "ok": true,
+   "stt": {
+    "hash": "c51a10244b371f7e02751c5e5e2ecd555ec36ab007297e4d90c7f1d7085c6d58",
+    "text": "Finish the pattern",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb4-pattern": {
+   "hash": "dce0e229047be1b0258d7450ed45a847f5957f785686af1276eb48648feab179",
+   "speaker": "narrator",
+   "text": "Look at the pattern again.",
+   "file": "fb4-pattern.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1332,
+   "generated": "2026-10-29T03:31:13",
+   "ok": true,
+   "stt": {
+    "hash": "dce0e229047be1b0258d7450ed45a847f5957f785686af1276eb48648feab179",
+    "text": "Look at the pattern again",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h4-pattern": {
+   "hash": "3ea7a41a000d064dca2b1612b0a730a17dfee477170b32bef2e5e9d2988c1f77",
+   "speaker": "narrator",
+   "text": "Let's look at the pattern.",
+   "file": "h4-pattern.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1268,
+   "generated": "2026-10-29T03:31:13",
+   "ok": true,
+   "stt": {
+    "hash": "3ea7a41a000d064dca2b1612b0a730a17dfee477170b32bef2e5e9d2988c1f77",
+    "text": "Let's look at the pattern",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "fb4-necklace": {
+   "hash": "10238c88ac2668e87353c40b7d9f512b82bfd8f7ce84680d1e6a9b342f77eeb7",
+   "speaker": "narrator",
+   "text": "What a pretty necklace!",
+   "file": "fb4-necklace.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1771,
+   "generated": "2026-10-29T03:31:14",
+   "ok": true,
+   "stt": {
+    "hash": "10238c88ac2668e87353c40b7d9f512b82bfd8f7ce84680d1e6a9b342f77eeb7",
+    "text": "What a pretty necklace",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-pink": {
+   "hash": "a00a33a9fc9ed191d3f001b5945314e60a366d5ffbc0c9152bb865f7eb2afcbd",
+   "speaker": "narrator",
+   "text": "Pink.",
+   "file": "word-pink.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 594,
+   "generated": "2026-10-29T03:31:16",
+   "ok": true,
+   "stt": {
+    "hash": "a00a33a9fc9ed191d3f001b5945314e60a366d5ffbc0c9152bb865f7eb2afcbd",
+    "text": "Pink",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-red": {
+   "hash": "747ec845eeef2d2b131409c8e5825247fa2ee4049b55c2812fab1fcdbaa4c46e",
+   "speaker": "narrator",
+   "text": "Red.",
+   "file": "word-red.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 620,
+   "generated": "2026-10-29T03:31:13",
+   "ok": true,
+   "stt": {
+    "hash": "747ec845eeef2d2b131409c8e5825247fa2ee4049b55c2812fab1fcdbaa4c46e",
+    "text": "Red",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-orange": {
+   "hash": "e49484e059dd189273724f458343e71630938b92215faa0d878cd9c729b4ff55",
+   "speaker": "narrator",
+   "text": "Orange.",
+   "file": "word-orange.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 718,
+   "generated": "2026-10-29T03:31:14",
+   "ok": true,
+   "stt": {
+    "hash": "e49484e059dd189273724f458343e71630938b92215faa0d878cd9c729b4ff55",
+    "text": "Orange",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-gold": {
+   "hash": "5e0093806f2b10fdc852870dcfde3e9e75a658a2ccd03280eade4b3608d7acab",
+   "speaker": "narrator",
+   "text": "Gold.",
+   "file": "word-gold.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 667,
+   "generated": "2026-10-29T03:31:14",
+   "ok": true,
+   "stt": {
+    "hash": "5e0093806f2b10fdc852870dcfde3e9e75a658a2ccd03280eade4b3608d7acab",
+    "text": "Gold",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-green": {
+   "hash": "ac640a3dff48cd035401388e189fd8ad45f6e3cc65cd444ba673a1d565daa755",
+   "speaker": "narrator",
+   "text": "Green.",
+   "file": "word-green.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 680,
+   "generated": "2026-10-29T03:31:14",
+   "ok": true,
+   "stt": {
+    "hash": "ac640a3dff48cd035401388e189fd8ad45f6e3cc65cd444ba673a1d565daa755",
+    "text": "Green",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-blue": {
+   "hash": "df7e1759c248d91d71788014fa24e86058b3c530cb48913f42f6e2d05639d2fd",
+   "speaker": "narrator",
+   "text": "Blue.",
+   "file": "word-blue.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 635,
+   "generated": "2026-10-29T03:31:15",
+   "ok": true,
+   "stt": {
+    "hash": "df7e1759c248d91d71788014fa24e86058b3c530cb48913f42f6e2d05639d2fd",
+    "text": "Blue",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-lilac": {
+   "hash": "ad2fd5cbb72a3ce8b0964d025d981be41d853c79fd67f48c2319eb79e8525181",
+   "speaker": "narrator",
+   "text": "Lilac.",
+   "file": "word-lilac.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 785,
+   "generated": "2026-10-29T03:31:15",
+   "ok": true,
+   "stt": {
+    "hash": "ad2fd5cbb72a3ce8b0964d025d981be41d853c79fd67f48c2319eb79e8525181",
+    "text": "Lilac",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-purple": {
+   "hash": "9ab956fcf7d9ae98faf74b98b6b17cc19a59cb475ad6bdc052258cd7c91aa4e0",
+   "speaker": "narrator",
+   "text": "Purple.",
+   "file": "word-purple.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 634,
+   "generated": "2026-10-29T03:31:15",
+   "ok": true,
+   "stt": {
+    "hash": "9ab956fcf7d9ae98faf74b98b6b17cc19a59cb475ad6bdc052258cd7c91aa4e0",
+    "text": "Purple",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-white": {
+   "hash": "714babcf4b0b30e68b8241f6d8aae803d278f8a5477ab79e5998ab0278302472",
+   "speaker": "narrator",
+   "text": "White.",
+   "file": "word-white.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 656,
+   "generated": "2026-10-29T03:31:16",
+   "ok": true,
+   "stt": {
+    "hash": "714babcf4b0b30e68b8241f6d8aae803d278f8a5477ab79e5998ab0278302472",
+    "text": "White",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-silver": {
+   "hash": "fef3c1094cb0c0a5963d1c1842a95d7f085057bedcdac154e966434a8e1280f8",
+   "speaker": "narrator",
+   "text": "Silver.",
+   "file": "word-silver.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 715,
+   "generated": "2026-10-29T03:31:16",
+   "ok": true,
+   "stt": {
+    "hash": "fef3c1094cb0c0a5963d1c1842a95d7f085057bedcdac154e966434a8e1280f8",
+    "text": "Silver",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "word-brown": {
+   "hash": "ad69995a93fc690ff4169f87a5f2c09f2a2f7d7db57421e9b6ce9b33b3586a24",
+   "speaker": "narrator",
+   "text": "Brown.",
+   "file": "word-brown.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 707,
+   "generated": "2026-10-29T03:31:31",
+   "ok": true,
+   "stt": {
+    "hash": "ad69995a93fc690ff4169f87a5f2c09f2a2f7d7db57421e9b6ce9b33b3586a24",
+    "text": "Brown",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-4": {
+   "hash": "906d3e2a52d27a85737af5fdbe6544433e25851b699c21daafb14d4000ece371",
+   "speaker": "narrator",
+   "text": "This egg needs four warm cups.",
+   "file": "num-egg-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2518,
+   "generated": "2026-10-29T03:31:17",
+   "ok": true,
+   "stt": {
+    "hash": "906d3e2a52d27a85737af5fdbe6544433e25851b699c21daafb14d4000ece371",
+    "text": "This egg needs four warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-egg-5": {
+   "hash": "fa74a2bb6da39626a7ecfbfe8b79930d44645c0f0313a839146929f900592e7d",
+   "speaker": "narrator",
+   "text": "This egg needs five warm cups.",
+   "file": "num-egg-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2626,
+   "generated": "2026-10-29T03:31:17",
+   "ok": true,
+   "stt": {
+    "hash": "fa74a2bb6da39626a7ecfbfe8b79930d44645c0f0313a839146929f900592e7d",
+    "text": "This egg needs five warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "num-still-warm-1": {
    "hash": "6ba5529c1b57b8b74beb7468f9a66e66423e9136a3c39e4697b0ab70f19a027a",
    "speaker": "narrator",
@@ -544,6 +969,176 @@
     "how": "exact"
    }
   },
+  "num-take-7-3": {
+   "hash": "3500b5dc2b1690c79a080f8aded9924ea856e47d831e7435bdbaef2e1106deca",
+   "speaker": "narrator",
+   "text": "Seven take away three is four!",
+   "file": "num-take-7-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2364,
+   "generated": "2026-10-29T03:31:17",
+   "ok": true,
+   "stt": {
+    "hash": "3500b5dc2b1690c79a080f8aded9924ea856e47d831e7435bdbaef2e1106deca",
+    "text": "Seven take away three is four",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-8-3": {
+   "hash": "7d15b38848358392a3f766ce421b4db3797508f76c5772db13b78add09ba2d8c",
+   "speaker": "narrator",
+   "text": "Eight take away three is five!",
+   "file": "num-take-8-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2400,
+   "generated": "2026-10-29T03:31:18",
+   "ok": true,
+   "stt": {
+    "hash": "7d15b38848358392a3f766ce421b4db3797508f76c5772db13b78add09ba2d8c",
+    "text": "Eight take away three is five",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-8-4": {
+   "hash": "a67dbab7f07e372a9759e6204e780b2ac0677e77a5342d90ef84e35a3f935d68",
+   "speaker": "narrator",
+   "text": "Eight take away four is four!",
+   "file": "num-take-8-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2236,
+   "generated": "2026-10-29T03:31:18",
+   "ok": true,
+   "stt": {
+    "hash": "a67dbab7f07e372a9759e6204e780b2ac0677e77a5342d90ef84e35a3f935d68",
+    "text": "Eight take away four is four",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-9-3": {
+   "hash": "bcf52b25e43f39e570dc75eea6ebbe69a66dba656fcd683d41ecf4161a6a500f",
+   "speaker": "narrator",
+   "text": "Nine take away three is six!",
+   "file": "num-take-9-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2318,
+   "generated": "2026-10-29T03:31:18",
+   "ok": true,
+   "stt": {
+    "hash": "bcf52b25e43f39e570dc75eea6ebbe69a66dba656fcd683d41ecf4161a6a500f",
+    "text": "Nine take away three is six",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-9-4": {
+   "hash": "507054617effb3effdae4c1798cf1eb34210674a221e7705a0490727811a24ad",
+   "speaker": "narrator",
+   "text": "Nine take away four is five!",
+   "file": "num-take-9-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2354,
+   "generated": "2026-10-29T03:31:19",
+   "ok": true,
+   "stt": {
+    "hash": "507054617effb3effdae4c1798cf1eb34210674a221e7705a0490727811a24ad",
+    "text": "Nine take away four is five",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-9-5": {
+   "hash": "913ee873b91af4257fc4472281c0a8aff93602ca98ff9b216be5935dffcfdca6",
+   "speaker": "narrator",
+   "text": "Nine take away five is four!",
+   "file": "num-take-9-5.mp3",
+   "model": "eleven_v4",
+   "seed": 1011,
+   "duration_ms": 2301,
+   "generated": "2026-10-29T03:31:47",
+   "ok": true,
+   "stt": {
+    "hash": "913ee873b91af4257fc4472281c0a8aff93602ca98ff9b216be5935dffcfdca6",
+    "text": "Nine take away five is four",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-10-3": {
+   "hash": "d47b2c65392fbcbacb13ec902c92fd3f538e5fbe5538c4422b591531d67f313e",
+   "speaker": "narrator",
+   "text": "Ten take away three is seven!",
+   "file": "num-take-10-3.mp3",
+   "model": "eleven_v4",
+   "seed": 1011,
+   "duration_ms": 2305,
+   "generated": "2026-10-29T03:31:47",
+   "ok": true,
+   "stt": {
+    "hash": "d47b2c65392fbcbacb13ec902c92fd3f538e5fbe5538c4422b591531d67f313e",
+    "text": "10 take away three is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-10-4": {
+   "hash": "7450b12760eaafc1876f5082fd53f6c78cd04215aacbb26f846387d304f1f2c9",
+   "speaker": "narrator",
+   "text": "Ten take away four is six!",
+   "file": "num-take-10-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2358,
+   "generated": "2026-10-29T03:31:20",
+   "ok": true,
+   "stt": {
+    "hash": "7450b12760eaafc1876f5082fd53f6c78cd04215aacbb26f846387d304f1f2c9",
+    "text": "10 take away four is six",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-10-5": {
+   "hash": "ac5190673948e6171e019e27bbfb682ad057e74ae8835411c06b75ba5626d832",
+   "speaker": "narrator",
+   "text": "Ten take away five is five!",
+   "file": "num-take-10-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2473,
+   "generated": "2026-10-29T03:31:20",
+   "ok": true,
+   "stt": {
+    "hash": "ac5190673948e6171e019e27bbfb682ad057e74ae8835411c06b75ba5626d832",
+    "text": "10 take away five is five",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-10-6": {
+   "hash": "327f0c57af80f290ceaded0510818bb2b3b6b8b7306c0aa48b1910fff1868781",
+   "speaker": "narrator",
+   "text": "Ten take away six is four!",
+   "file": "num-take-10-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2318,
+   "generated": "2026-10-29T03:31:20",
+   "ok": true,
+   "stt": {
+    "hash": "327f0c57af80f290ceaded0510818bb2b3b6b8b7306c0aa48b1910fff1868781",
+    "text": "10 take away six is four",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "num-take-11-3": {
    "hash": "9e6d22c5a1aa4e7e0d22395b6fa142e8f9252e6e9647418097e1d895a0e79ef9",
    "speaker": "narrator",
@@ -574,6 +1169,40 @@
    "stt": {
     "hash": "d09b9313cf6894db4c15099a5c52691e651ecb6f68cc9aae4225ba5305fcbd99",
     "text": "11 take away four is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-11-5": {
+   "hash": "50ffed87b76eb9b8dbd2f56027bea0ddfd306523618f2c5724e68fac37cf7018",
+   "speaker": "narrator",
+   "text": "Eleven take away five is six!",
+   "file": "num-take-11-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2594,
+   "generated": "2026-10-29T03:31:21",
+   "ok": true,
+   "stt": {
+    "hash": "50ffed87b76eb9b8dbd2f56027bea0ddfd306523618f2c5724e68fac37cf7018",
+    "text": "11 take away five is six",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-11-6": {
+   "hash": "5c3d9d78edc51483bb3330e1dbd93d080fdacc24f74c9c66dc894fc7691bdccc",
+   "speaker": "narrator",
+   "text": "Eleven take away six is five!",
+   "file": "num-take-11-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2584,
+   "generated": "2026-10-29T03:31:21",
+   "ok": true,
+   "stt": {
+    "hash": "5c3d9d78edc51483bb3330e1dbd93d080fdacc24f74c9c66dc894fc7691bdccc",
+    "text": "11 take away six is five",
     "match": true,
     "how": "exact"
    }
@@ -625,6 +1254,23 @@
    "stt": {
     "hash": "9155776e055342e7c5912cb2510d74431ebe414164a46180a615a048fdbf0823",
     "text": "12 take away five is seven",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-take-12-6": {
+   "hash": "96c0b063688308099834856bd5e218f4330ed4e0d191ddd4d2c30dee529f19d0",
+   "speaker": "narrator",
+   "text": "Twelve take away six is six!",
+   "file": "num-take-12-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2531,
+   "generated": "2026-10-29T03:31:21",
+   "ok": true,
+   "stt": {
+    "hash": "96c0b063688308099834856bd5e218f4330ed4e0d191ddd4d2c30dee529f19d0",
+    "text": "12 take away six is six",
     "match": true,
     "how": "exact"
    }
@@ -1241,6 +1887,74 @@
     "how": "exact"
    }
   },
+  "num-toowarm-7": {
+   "hash": "c9abf76df297183a53cd84bd991165cea1d85841437d15fd232b9f72bc01fd14",
+   "speaker": "narrator",
+   "text": "But seven cups are warm!",
+   "file": "num-toowarm-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2028,
+   "generated": "2026-10-29T03:31:22",
+   "ok": true,
+   "stt": {
+    "hash": "c9abf76df297183a53cd84bd991165cea1d85841437d15fd232b9f72bc01fd14",
+    "text": "But seven cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-8": {
+   "hash": "eb4545e32c50f18c17a97605ecd47634b2a775f5acbb5b567e37ee12e4f27008",
+   "speaker": "narrator",
+   "text": "But eight cups are warm!",
+   "file": "num-toowarm-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1867,
+   "generated": "2026-10-29T03:31:22",
+   "ok": true,
+   "stt": {
+    "hash": "eb4545e32c50f18c17a97605ecd47634b2a775f5acbb5b567e37ee12e4f27008",
+    "text": "But eight cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-9": {
+   "hash": "5032b1added85ab8db0b495b280c7a250894df87a50a447402d59b817c1671bc",
+   "speaker": "narrator",
+   "text": "But nine cups are warm!",
+   "file": "num-toowarm-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1963,
+   "generated": "2026-10-29T03:31:22",
+   "ok": true,
+   "stt": {
+    "hash": "5032b1added85ab8db0b495b280c7a250894df87a50a447402d59b817c1671bc",
+    "text": "But nine cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-toowarm-10": {
+   "hash": "b2210b73fe26d48fef832356645a07e0129880ece125f92a9cdcc3198a0243a7",
+   "speaker": "narrator",
+   "text": "But ten cups are warm!",
+   "file": "num-toowarm-10.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1870,
+   "generated": "2026-10-29T03:31:23",
+   "ok": true,
+   "stt": {
+    "hash": "b2210b73fe26d48fef832356645a07e0129880ece125f92a9cdcc3198a0243a7",
+    "text": "But 10 cups are warm",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "num-toowarm-11": {
    "hash": "6bed990784dda0fae18bf04c61dbeb2fef22414ae72e842815799a9bc65fbb52",
    "speaker": "narrator",
@@ -1342,7 +2056,517 @@
     "match": true,
     "how": "exact"
    }
+  },
+  "phrase-blue-bag": {
+   "hash": "fac94c82fa2da2f385bf53202668a483ff780b47bd2c20bdc1fd5b066a64990c",
+   "speaker": "narrator",
+   "text": "The blue bag.",
+   "file": "phrase-blue-bag.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1163,
+   "generated": "2026-10-29T03:31:23",
+   "ok": true,
+   "stt": {
+    "hash": "fac94c82fa2da2f385bf53202668a483ff780b47bd2c20bdc1fd5b066a64990c",
+    "text": "The Blue Bag",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-blue-bead": {
+   "hash": "ba1e20d04b274c7cfd5af97170b2b374956f5ef36f81ddc5e31b991fad1c79a6",
+   "speaker": "narrator",
+   "text": "The blue bead.",
+   "file": "phrase-blue-bead.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1177,
+   "generated": "2026-10-29T03:31:23",
+   "ok": true,
+   "stt": {
+    "hash": "ba1e20d04b274c7cfd5af97170b2b374956f5ef36f81ddc5e31b991fad1c79a6",
+    "text": "The Blue Bead",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-blue-bow": {
+   "hash": "49e7ff0cec2f5d4547a1ffe1048da61ed3eb833c80a11fe0a6d3300b63df8a43",
+   "speaker": "narrator",
+   "text": "The blue bow.",
+   "file": "phrase-blue-bow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1104,
+   "generated": "2026-10-29T03:31:24",
+   "ok": true,
+   "stt": {
+    "hash": "49e7ff0cec2f5d4547a1ffe1048da61ed3eb833c80a11fe0a6d3300b63df8a43",
+    "text": "The Blue Bow",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-blue-shirt": {
+   "hash": "685cc98e51f34dcc51313e251389488d58ccfab77e42216d14ea350840d6cb6a",
+   "speaker": "narrator",
+   "text": "The blue shirt.",
+   "file": "phrase-blue-shirt.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1226,
+   "generated": "2026-10-29T03:31:24",
+   "ok": true,
+   "stt": {
+    "hash": "685cc98e51f34dcc51313e251389488d58ccfab77e42216d14ea350840d6cb6a",
+    "text": "The Blue Shirt",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-blue-sock": {
+   "hash": "8ce4aa2b38072514c96ba5b7fcfb90604989c9f496a8d7f194d45ec4c1f41dad",
+   "speaker": "narrator",
+   "text": "The blue sock.",
+   "file": "phrase-blue-sock.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1440,
+   "generated": "2026-10-29T03:31:24",
+   "ok": true,
+   "stt": {
+    "hash": "8ce4aa2b38072514c96ba5b7fcfb90604989c9f496a8d7f194d45ec4c1f41dad",
+    "text": "The Blue Sock",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-brown-bag": {
+   "hash": "f540085d899bd4558cd65e668e10338741418289a51286c7aea984a587f8a49e",
+   "speaker": "narrator",
+   "text": "The brown bag.",
+   "file": "phrase-brown-bag.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1229,
+   "generated": "2026-10-29T03:31:25",
+   "ok": true,
+   "stt": {
+    "hash": "f540085d899bd4558cd65e668e10338741418289a51286c7aea984a587f8a49e",
+    "text": "The brown bag",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-brown-bead": {
+   "hash": "f41955f9d331a592342e898380f461860a0be41613432897d1465da1c1efe4f4",
+   "speaker": "narrator",
+   "text": "The brown bead.",
+   "file": "phrase-brown-bead.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1314,
+   "generated": "2026-10-29T03:31:25",
+   "ok": true,
+   "stt": {
+    "hash": "f41955f9d331a592342e898380f461860a0be41613432897d1465da1c1efe4f4",
+    "text": "The Brown Bead",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-brown-bow": {
+   "hash": "6a8bf279f2ea1e72daff106939e4feea4ef4cb72b7d6d469e37973d0616b34d7",
+   "speaker": "narrator",
+   "text": "The brown bow.",
+   "file": "phrase-brown-bow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1215,
+   "generated": "2026-10-29T03:31:25",
+   "ok": true,
+   "stt": {
+    "hash": "6a8bf279f2ea1e72daff106939e4feea4ef4cb72b7d6d469e37973d0616b34d7",
+    "text": "The Brown Bow",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-brown-shirt": {
+   "hash": "7a247d40e36a59e2083f68a4c52fe10e6ffc06a05e2fa16975dc5a65601bc16e",
+   "speaker": "narrator",
+   "text": "The brown shirt.",
+   "file": "phrase-brown-shirt.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1301,
+   "generated": "2026-10-29T03:31:26",
+   "ok": true,
+   "stt": {
+    "hash": "7a247d40e36a59e2083f68a4c52fe10e6ffc06a05e2fa16975dc5a65601bc16e",
+    "text": "The Brown Shirt",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-brown-sock": {
+   "hash": "4db935c408b21650627ce5b894c6fbfdefc222daa7e4430fba65adbaad765e94",
+   "speaker": "narrator",
+   "text": "The brown sock.",
+   "file": "phrase-brown-sock.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1250,
+   "generated": "2026-10-29T03:31:26",
+   "ok": true,
+   "stt": {
+    "hash": "4db935c408b21650627ce5b894c6fbfdefc222daa7e4430fba65adbaad765e94",
+    "text": "The Brown Sock",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-gold-bag": {
+   "hash": "bc120ef0e842dc9555747d018d7fcdfc7f3aaa0b5b81e0d152ed977995e802f8",
+   "speaker": "narrator",
+   "text": "The gold bag.",
+   "file": "phrase-gold-bag.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1266,
+   "generated": "2026-10-29T03:31:26",
+   "ok": true,
+   "stt": {
+    "hash": "bc120ef0e842dc9555747d018d7fcdfc7f3aaa0b5b81e0d152ed977995e802f8",
+    "text": "The Gold Bag",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-gold-bead": {
+   "hash": "52b0af5caa273b5c4da9651581bb7ce884bbf096530b802603bf5651b57f063d",
+   "speaker": "narrator",
+   "text": "The gold bead.",
+   "file": "phrase-gold-bead.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1294,
+   "generated": "2026-10-29T03:31:27",
+   "ok": true,
+   "stt": {
+    "hash": "52b0af5caa273b5c4da9651581bb7ce884bbf096530b802603bf5651b57f063d",
+    "text": "The Gold Bead",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-gold-bow": {
+   "hash": "149219bbce2a1edc8ba5b5b1615ab584bb244e6337be2d55aca58bbb6feb712d",
+   "speaker": "narrator",
+   "text": "The gold bow.",
+   "file": "phrase-gold-bow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1189,
+   "generated": "2026-10-29T03:31:27",
+   "ok": true,
+   "stt": {
+    "hash": "149219bbce2a1edc8ba5b5b1615ab584bb244e6337be2d55aca58bbb6feb712d",
+    "text": "The Gold Bow",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-gold-shirt": {
+   "hash": "630d5f93d0361a37023ddab327ab663c959d7aaa61114bd1cda65d1a42bb7201",
+   "speaker": "narrator",
+   "text": "The gold shirt.",
+   "file": "phrase-gold-shirt.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1319,
+   "generated": "2026-10-29T03:31:27",
+   "ok": true,
+   "stt": {
+    "hash": "630d5f93d0361a37023ddab327ab663c959d7aaa61114bd1cda65d1a42bb7201",
+    "text": "The Gold Shirt",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-gold-sock": {
+   "hash": "d736cea4b34e779fe7fcaaf15652a9f7cc4499452a121fe4729d080784f76295",
+   "speaker": "narrator",
+   "text": "The gold sock.",
+   "file": "phrase-gold-sock.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1313,
+   "generated": "2026-10-29T03:31:27",
+   "ok": true,
+   "stt": {
+    "hash": "d736cea4b34e779fe7fcaaf15652a9f7cc4499452a121fe4729d080784f76295",
+    "text": "The Gold Sock",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-green-bag": {
+   "hash": "1afdd3206752eb9b5a2d4418df9b28cb227f8d1d4e8353670fc3df14d4db7dbc",
+   "speaker": "narrator",
+   "text": "The green bag.",
+   "file": "phrase-green-bag.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1223,
+   "generated": "2026-10-29T03:31:27",
+   "ok": true,
+   "stt": {
+    "hash": "1afdd3206752eb9b5a2d4418df9b28cb227f8d1d4e8353670fc3df14d4db7dbc",
+    "text": "The Green Bag",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-green-bead": {
+   "hash": "e16c192f02dd4d78308ff141399814a6e33da64f0c3fb06cdae08402114e5919",
+   "speaker": "narrator",
+   "text": "The green bead.",
+   "file": "phrase-green-bead.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1274,
+   "generated": "2026-10-29T03:31:27",
+   "ok": true,
+   "stt": {
+    "hash": "e16c192f02dd4d78308ff141399814a6e33da64f0c3fb06cdae08402114e5919",
+    "text": "The Green Bead",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-green-bow": {
+   "hash": "77b5c2a312126ddc588b3ce564c3a32030ca4a077ac1cbed409b448f6911881a",
+   "speaker": "narrator",
+   "text": "The green bow.",
+   "file": "phrase-green-bow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1186,
+   "generated": "2026-10-29T03:31:28",
+   "ok": true,
+   "stt": {
+    "hash": "77b5c2a312126ddc588b3ce564c3a32030ca4a077ac1cbed409b448f6911881a",
+    "text": "The Green Bow",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-green-shirt": {
+   "hash": "9e1fd1b6715a5fb98b4e710508f66aa0ab9d147398c179589ead41c9e3315edc",
+   "speaker": "narrator",
+   "text": "The green shirt.",
+   "file": "phrase-green-shirt.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1317,
+   "generated": "2026-10-29T03:31:28",
+   "ok": true,
+   "stt": {
+    "hash": "9e1fd1b6715a5fb98b4e710508f66aa0ab9d147398c179589ead41c9e3315edc",
+    "text": "The Green Shirt",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-green-sock": {
+   "hash": "f984a73776315b1aed30141d0d047ecc56b1cf920315736c7c8e8acb2c8efc07",
+   "speaker": "narrator",
+   "text": "The green sock.",
+   "file": "phrase-green-sock.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1252,
+   "generated": "2026-10-29T03:31:28",
+   "ok": true,
+   "stt": {
+    "hash": "f984a73776315b1aed30141d0d047ecc56b1cf920315736c7c8e8acb2c8efc07",
+    "text": "The Green Sock",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-pink-bag": {
+   "hash": "4da42300e9a1f50fc561cd0361b23fc56138a32b99a6b3ce0bc52ed3c2239557",
+   "speaker": "narrator",
+   "text": "The pink bag.",
+   "file": "phrase-pink-bag.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1119,
+   "generated": "2026-10-29T03:31:29",
+   "ok": true,
+   "stt": {
+    "hash": "4da42300e9a1f50fc561cd0361b23fc56138a32b99a6b3ce0bc52ed3c2239557",
+    "text": "The Pink Bag",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-pink-bead": {
+   "hash": "dfa90a57e0273f15a2e15c39dd64f880f4d1bf94094297b3a5f684d935927580",
+   "speaker": "narrator",
+   "text": "The pink bead.",
+   "file": "phrase-pink-bead.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1183,
+   "generated": "2026-10-29T03:31:29",
+   "ok": true,
+   "stt": {
+    "hash": "dfa90a57e0273f15a2e15c39dd64f880f4d1bf94094297b3a5f684d935927580",
+    "text": "The Pink Bead",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-pink-bow": {
+   "hash": "ab40f37a33380cce66df14fcb849e3212dd5c5ae764e728e3435844f69d62652",
+   "speaker": "narrator",
+   "text": "The pink bow.",
+   "file": "phrase-pink-bow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1087,
+   "generated": "2026-10-29T03:31:29",
+   "ok": true,
+   "stt": {
+    "hash": "ab40f37a33380cce66df14fcb849e3212dd5c5ae764e728e3435844f69d62652",
+    "text": "The pink bow",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-pink-shirt": {
+   "hash": "ebb5abb476153941da271504781f05d07b749439d2a493dbb3d4baf2a06ef625",
+   "speaker": "narrator",
+   "text": "The pink shirt.",
+   "file": "phrase-pink-shirt.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1165,
+   "generated": "2026-10-29T03:31:30",
+   "ok": true,
+   "stt": {
+    "hash": "ebb5abb476153941da271504781f05d07b749439d2a493dbb3d4baf2a06ef625",
+    "text": "The pink shirt",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-pink-sock": {
+   "hash": "3d25978d323da20a3ed0df51c94d64d9f67fbce7f09e8c76a6df06f7785b036f",
+   "speaker": "narrator",
+   "text": "The pink sock.",
+   "file": "phrase-pink-sock.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1152,
+   "generated": "2026-10-29T03:31:30",
+   "ok": true,
+   "stt": {
+    "hash": "3d25978d323da20a3ed0df51c94d64d9f67fbce7f09e8c76a6df06f7785b036f",
+    "text": "The Pink Sock",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-red-bag": {
+   "hash": "ea6253d5fc447bf96190630fed03f5bb2fac82e8fe54a87a62039079c6a0841f",
+   "speaker": "narrator",
+   "text": "The red bag.",
+   "file": "phrase-red-bag.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1150,
+   "generated": "2026-10-29T03:31:30",
+   "ok": true,
+   "stt": {
+    "hash": "ea6253d5fc447bf96190630fed03f5bb2fac82e8fe54a87a62039079c6a0841f",
+    "text": "The Red Bag",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-red-bead": {
+   "hash": "854951e736ab2c5957276934b66120583f1ad3d4f0a4b75de33334507bf29a62",
+   "speaker": "narrator",
+   "text": "The red bead.",
+   "file": "phrase-red-bead.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1162,
+   "generated": "2026-10-29T03:31:31",
+   "ok": true,
+   "stt": {
+    "hash": "854951e736ab2c5957276934b66120583f1ad3d4f0a4b75de33334507bf29a62",
+    "text": "The Red Bead",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-red-bow": {
+   "hash": "b48e1e0e3492d4bfe7f0191f0a14418a9a4c485f875431566aa139e396393804",
+   "speaker": "narrator",
+   "text": "The red bow.",
+   "file": "phrase-red-bow.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1042,
+   "generated": "2026-10-29T03:31:31",
+   "ok": true,
+   "stt": {
+    "hash": "b48e1e0e3492d4bfe7f0191f0a14418a9a4c485f875431566aa139e396393804",
+    "text": "The Red Bow",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-red-shirt": {
+   "hash": "3d4f8a5352a42f50d5c2783e2a59a275dae1574c56ad865d723cde5ef2f461a7",
+   "speaker": "narrator",
+   "text": "The red shirt.",
+   "file": "phrase-red-shirt.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1158,
+   "generated": "2026-10-29T03:31:33",
+   "ok": true,
+   "stt": {
+    "hash": "3d4f8a5352a42f50d5c2783e2a59a275dae1574c56ad865d723cde5ef2f461a7",
+    "text": "The Red Shirt",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "phrase-red-sock": {
+   "hash": "08521b3b169e6828d7fbc91b31437858005fa2f8fe2147cabafde7161031b7be",
+   "speaker": "narrator",
+   "text": "The red sock.",
+   "file": "phrase-red-sock.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1154,
+   "generated": "2026-10-29T03:31:31",
+   "ok": true,
+   "stt": {
+    "hash": "08521b3b169e6828d7fbc91b31437858005fa2f8fe2147cabafde7161031b7be",
+    "text": "The Red Sock",
+    "match": true,
+    "how": "exact"
+   }
   }
  },
- "updated": "2026-10-28T00:45:15"
+ "updated": "2026-10-29T03:31:48"
 }

@@ -2,3 +2,5 @@
 {"t": "2026-10-25T20:13:51", "lines": "menu-audio/lines.json", "made": 1, "chars": 18, "credits": 18.34, "credits_before": 30322, "stt_calls": 1, "stt_credits": 0.34}
 {"t": "2026-10-28T00:45:15", "lines": "games/moon-meadow-world/public/audio/v4demo/lines.json", "made": 13, "chars": 411, "credits": 415.42, "credits_before": 30230, "stt_calls": 13, "stt_credits": 4.42}
 {"t": "2026-10-29T00:55:06", "lines": "sfx", "made": 1, "seconds": 2.0, "credits": 80.0, "credits_before": 27261, "attempts": 1, "ids": ["bedtime-bell"], "run": "sfx-20261029T005506.895522"}
+{"t": "2026-10-29T03:31:48", "lines": "games/moon-meadow-world/public/audio/v4demo/lines.json", "made": 74, "chars": 1388, "credits": 1413.16, "credits_before": 27241, "stt_calls": 74, "stt_credits": 25.16}
+{"t": "2026-10-29T03:32:07", "lines": "sfx", "made": 16, "seconds": 33.1, "credits": 1324.0, "credits_before": 26677, "attempts": 16, "ids": ["egg-crack", "nicker-1", "nicker-2", "stable-door", "trunk-lid", "gift-paper", "dress-swish", "bead-clink", "crown-twinkle", "hay-rustle", "splash-1", "splash-2", "slide-whoosh", "owl", "heart-glow", "amb-day"], "run": "sfx-20261029T033207.916822"}

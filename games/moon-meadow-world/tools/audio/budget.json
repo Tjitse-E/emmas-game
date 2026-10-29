@@ -12,7 +12,11 @@
   "counterAfter": 30230,
   "counterNote": "The account counter moved 805 credits (31,035 to 30,230) against 1,861 booked; as in v3, the ledger books 1 credit per character and is the number the cap counts.",
   "v2.2.0": "13 new clips for 2.2.0 (the customiser lines, the dress-up wish, word-heart, the two picnic lines for Lumi and six take-away facts for band B), 411 characters and 13 speech-to-text checks: 415.42 credits booked on 2026-10-28. All 13 passed speech-to-text on the first take. word-heart passes as 'Heart.' or 'Hart.'; Tjitse listens to it.",
-  "counterAfter2.2.0": "30,230 before the run (the account counter lags a few minutes)."
+  "counterAfter2.2.0": "30,230 before the run (the account counter lags a few minutes).",
+  "v2.3.0": "72 new clips for 2.3.0 (docs/v4/2.3.md section 21: the hearts, gift, Corner, sticker, saddle sign and pattern lines, 11 colour words, 30 phrases, num-egg-4 and 5, num-toowarm-7 to 10 and 13 take-away facts), 1,388 characters with two retakes (word-red came from the raw cache), 74 speech-to-text checks: 1,413.16 credits booked on 2026-10-29 (gen.sh --stt --stt-retry 1). All 72 passed; num-take-9-5 and num-take-10-3 failed their first take and passed on the retry (seed 1011, overrides.json). lumi4-corner is heard with a question mark; Tjitse listens to it.",
+  "counterBefore2.3.0": "27,241 before the speech run, 26,677 before the effects pack (the account counter lags a few minutes).",
+  "sfx2.3.0": "The probe (bedtime-bell, 2 s) booked 80 and took 20 on the counter, so sfxPerSecond stays 40. The pack: the other 15 effects and amb-day, 33.1 s in one run, 16 attempts, no failures: 1,324 credits booked on 2026-10-29. amb-night stays in later for 2.3.1. None approved yet.",
+  "ledgerAfter2.3.0": 5094.06
  },
  "note": "Audio budget for the v4 playable demo and its 2.x versions (docs/v4/demo.md section 5): at most 4,000 credits, never fewer than 10,000 credits left on the account. Tjitse's cap for v4 itself is still open (spec 7.1 and 10). It covers the demo's own lines (public/audio/v4demo/) and the menu line menu-moon-meadow-world. Every run goes through tools/audio/gen.sh, which passes the floor, the cap, the ledger and the speech-to-text cost per check (v3's measured 0.34 credits, games/moon-meadow-home/tools/audio/budget.json).",
  "capNote": "Raised from 4,000 to 7,277 on 2026-10-28: Tjitse gave 5,000 credits for 2.3.0 (speech and ElevenLabs sound effects) on top of the 2,276.9 booked before it.",
