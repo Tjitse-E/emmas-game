@@ -11,14 +11,19 @@
 // a hop and a chime; the ladder and decision time start at the wake.
 //
 // 2.3.0 (docs/v4/2.3.md section 19.1): an egg asks three sums on one panel. Three hearts sit on the cups panel's rim;
-// `round.index` of them are lit when a sum opens. After the right stone of a sum the next heart lights (with the
-// heart-glow effect, awaited, so the line that follows never plays under it) and react('heart') lets the 3D egg glow.
-// After the first and the second sum the panel stays on screen: the moment resolves and keeps its root, and the next
-// sum's runEgg takes it over with new cups and new sleeping stones. After the third it slides away as before.
+// `round.index` of them are lit when a sum opens. After the right stone of a sum the next heart lights and
+// react('heart') lets the 3D egg glow. After the first and the second sum the panel stays on screen: the moment
+// resolves and keeps its root, and the next sum's runEgg takes it over with new cups and new sleeping stones. After the
+// third it slides away as before.
+//
+// 2.3.2 (faster eggs): the stones wake as soon as both numbers are said; what follows them (the snow egg's ask, the
+// first warm egg's "Drag one stone") plays with the stones awake. Between sums the heart lights as Elizabeth says the
+// fact, the one line after a right stone, and no effect plays. The third sum keeps the praise, the fact and the
+// heart-glow before the panel leaves. The hearts line is said once per layer (each play), before the first egg.
 import type { EggSpec, MomentHooks, MomentResult } from '../contracts';
 import { audio } from '../audio';
 import { FX_WAIT_MS } from '../audio/sound';
-import { blanketPatches, cupStates, hintCups, inBox, nestsFor, stoneEffect, type CupState, type Point } from './geometry';
+import { blanketPatches, cupStates, eggOpening, hintCups, inBox, nestsFor, stoneEffect, type CupState, type Point } from './geometry';
 import { HintRunner } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, html, img, play, sleep, u } from './dom';
@@ -291,6 +296,8 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
     let firstStoneAt: number | null = null;
     /** "Drag one stone to the nest." is said once: after the first goal, at her first stone tap or with the first idle repeat. */
     let afterGoal = spec.clips.afterGoal?.length ? spec.clips.afterGoal : null;
+    /** What to do, after the goal's numbers (the snow egg's "Drag the snow stone that cools the extra cups."). */
+    const ask = spec.clips.ask ?? [];
     const takeAfterGoal = (): string[] => {
       const a = afterGoal ?? [];
       afterGoal = null;
@@ -299,7 +306,7 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
     const touched = new Map<number, number>();
     const ladder = new HintRunner('maths', {
       busy: () => audio.speaking,
-      repeat: () => audio.sayAll([...spec.clips.goal, ...takeAfterGoal()]),
+      repeat: () => audio.sayAll([...spec.clips.goal, ...ask, ...takeAfterGoal()]),
       focused: async (_reason, still) => {
         // The cover lifts (or the extra cups show), then Elizabeth counts the places that matter, one by one.
         const revealing = skin.revealAfterHintLine ? null : skin.reveal();
@@ -374,22 +381,28 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
           decoys: spec.decoys, ...result, quick,
         });
         if (now) hooks.react(now);
+        if (!last && hearts) {
+          // Between sums (2.3.2): the next heart lights and the egg glows more as Elizabeth says the fact, the one
+          // line here. No effect: it could only play under her or hold up the next goal.
+          hearts.light(ctx.drag);
+          hooks.react('heart');
+        }
         await audio.sayAll(spec.clips.right);
         if (!life.alive) return;
         if (skin.afterPraise) hooks.react(skin.afterPraise);
         finished = true;
-        if (hearts) {
-          // The next heart lights and the egg glows more. Its effect is awaited, so "A happy heart!" (said by the game
-          // after this resolves) or Lumi's hatching line never plays under it.
-          hearts.light(ctx.drag);
-          hooks.react('heart');
-          await audio.fx('heart-glow');
-          if (!life.alive) return;
-        }
         if (!last && hearts) {
           keep(hearts);
           resolve(result);
           return;
+        }
+        if (hearts) {
+          // The third heart lights after the praise and the fact. Its effect is awaited, so Lumi's hatching line never
+          // plays under it.
+          hearts.light(ctx.drag);
+          hooks.react('heart');
+          await audio.fx('heart-glow');
+          if (!life.alive) return;
         }
         if (await leave(root, life, setOpen)) {
           frame.end();
@@ -473,7 +486,7 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         // Asleep, the goal is still being said; a replay never puts awake stones back to sleep.
         if (asleep) return;
         if (ladder.touch()) audio.stop();
-        void audio.sayAll(spec.clips.goal);
+        void audio.sayAll([...spec.clips.goal, ...ask]);
       },
       close: () => {
         ladder.close();
@@ -518,16 +531,13 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
       });
     };
 
-    // ---- the opening: the panels come in with the stones asleep while Elizabeth says the goal (the intro first for a
-    // new kind). When it ends the stones wake and input is on, so decision time starts there. Then, for the first warm
-    // egg, how to play; the first egg ever shows how a stone is dragged with a stone that is not the answer, halfway.
+    // ---- the opening: the panels come in with the stones asleep while Elizabeth says the goal's numbers (the intro
+    // first for a new kind). When they end the stones wake and input is on, so decision time starts there. Then what
+    // to do (the snow egg) and, for the first warm egg, how to play; the first egg ever shows how a stone is dragged
+    // with a stone that is not the answer, halfway.
     void (async () => {
-      // The kind's intro is said once per layer. An egg's first sum ends its intro with the hearts line ("Fill all
-      // three hearts", content/eggs.ts sumClips), which every egg says, so a second egg of a kind keeps it.
-      const introKey = `egg-intro:${hay ? 'hay' : spec.kind}`;
-      const everyEgg = round?.index === 0 ? spec.clips.intro.slice(-1) : [];
-      const clips = [...(ctx.seen.has(introKey) ? everyEgg : spec.clips.intro), ...spec.clips.goal];
-      ctx.seen.add(introKey);
+      // The kind's intro once per layer, and the hearts line before the play's first egg (eggOpening).
+      const clips = eggOpening(spec.clips, `egg-intro:${hay ? 'hay' : spec.kind}`, round?.index === 0, ctx.seen);
       await Promise.race([audio.sayAll(clips), sleep(WAKE_CAP_MS)]);
       if (!life.alive) return;
       const chimed = wake();
@@ -538,11 +548,12 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
         const showDemo = !ctx.seen.has('egg-demo');
         const wrong = stones.find((s) => Number(s.dataset.value) !== spec.answer);
         const demo = showDemo && wrong ? ctx.ghost.drag(() => centreOf(wrong), () => dropSpot(), { fraction: 0.5 }) : Promise.resolve();
-        if (afterGoal) {
-          // "Drag one stone" waits for the wake chime.
+        if (ask.length || afterGoal) {
+          // What to do and "Drag one stone" wait for the wake chime. A touch in the chime has stopped Elizabeth: she
+          // is at work, so they wait for a tap or an idle repeat.
           await chimed;
           if (!life.alive) return;
-          await audio.sayAll(takeAfterGoal());
+          if (!everTouched) await audio.sayAll([...ask, ...takeAfterGoal()]);
         }
         await demo;
       }

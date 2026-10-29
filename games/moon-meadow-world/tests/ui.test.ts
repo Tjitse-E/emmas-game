@@ -4,7 +4,7 @@
 // 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own.
 import { describe, expect, it, vi } from 'vitest';
 import {
-  CUP_GRID, apart, blanketPatches, bubbleBox, capitalOf, clearOf, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
+  CUP_GRID, apart, blanketPatches, bubbleBox, capitalOf, clearOf, eggOpening, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
   menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, tintedPicStyle,
   unitFor,
 } from '../src/ui/geometry';
@@ -98,6 +98,31 @@ describe('the blanket', () => {
     const [p] = blanketPatches(9, 0, 7);
     expect(p.x).toBe(4 * (cupW + colGap) - 7);
     expect(p.w).toBe(cupW + 14);
+  });
+});
+
+// 2.3.2 (faster eggs): what an egg says before its stones wake.
+describe('the egg opening', () => {
+  const warm1 = { intro: ['g-egg', 'g4-hearts'], goal: ['num-egg-8', 'num-warm-5'] };
+  const warm2 = { intro: [], goal: ['num-egg-10', 'num-warm-6'] };
+  const snow1 = { intro: ['g4-snow-egg', 'g4-hearts'], goal: ['num-egg-5', 'num-toowarm-8'] };
+
+  it('says the hearts line before the play\'s first egg only, and the goal\'s numbers last', () => {
+    const seen = new Set<string>();
+    expect(eggOpening(warm1, 'egg-intro:warm', true, seen)).toEqual(['g-egg', 'g4-hearts', 'num-egg-8', 'num-warm-5']);
+    expect(eggOpening(warm2, 'egg-intro:warm', false, seen)).toEqual(['num-egg-10', 'num-warm-6']);
+    // The second egg: its kind's intro, no hearts line.
+    expect(eggOpening(snow1, 'egg-intro:snow', true, seen)).toEqual(['g4-snow-egg', 'num-egg-5', 'num-toowarm-8']);
+    // A second egg of a kind: the goal alone.
+    expect(eggOpening(snow1, 'egg-intro:snow', true, seen)).toEqual(['num-egg-5', 'num-toowarm-8']);
+    // The next play (the layer's reset clears what it has seen) says it again; a jump to the wild egg too.
+    seen.clear();
+    expect(eggOpening(snow1, 'egg-intro:snow', true, seen)).toEqual(['g4-snow-egg', 'g4-hearts', 'num-egg-5', 'num-toowarm-8']);
+  });
+
+  it('keeps the hay rack\'s whole intro, which has no hearts line', () => {
+    const seen = new Set<string>(['egg-hearts']);
+    expect(eggOpening({ intro: ['g-hay-rack-intro'], goal: ['num-rack-9'] }, 'egg-intro:hay', false, seen)).toEqual(['g-hay-rack-intro', 'num-rack-9']);
   });
 });
 

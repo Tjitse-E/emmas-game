@@ -90,6 +90,25 @@ export function hintCups(kind: 'warm' | 'snow', need: number, have: number): num
     : Array.from({ length: Math.max(0, have - need) }, (_, i) => need + i);
 }
 
+/** The layer's `seen` key of "Fill all three hearts, and the egg will hatch.". */
+export const HEARTS_SEEN = 'egg-hearts';
+
+/**
+ * What an egg sum (or the hay rack) says before its stones wake (2.3.2): the kind's intro once per layer (`introKey`),
+ * the hearts line once per layer, then the goal's numbers. The hearts line is the last clip of an egg's first sum's
+ * intro (content/eggs.ts sumClips), so `firstSum` takes it from there. The layer forgets what it has seen at each
+ * play's reset, so the hearts line comes before the play's first egg only. Marks what it says in `seen`.
+ */
+export function eggOpening(clips: { intro: readonly string[]; goal: readonly string[] }, introKey: string, firstSum: boolean, seen: Set<string>): string[] {
+  const { intro, goal } = clips;
+  const hearts = firstSum ? intro.slice(-1) : [];
+  const kindIntro = intro.slice(0, intro.length - hearts.length);
+  const out = [...(seen.has(introKey) ? [] : kindIntro), ...(seen.has(HEARTS_SEEN) ? [] : hearts), ...goal];
+  seen.add(introKey);
+  if (hearts.length) seen.add(HEARTS_SEEN);
+  return out;
+}
+
 /** The ten-frame grid in a nest, in design px (ui.css .cup-grid): five columns and two rows of cups. */
 export const CUP_GRID = { cupW: 66, cupH: 56, colGap: 8, rowGap: 4 } as const;
 

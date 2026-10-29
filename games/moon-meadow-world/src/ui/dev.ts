@@ -184,7 +184,7 @@ const hooks: MomentHooks = { anchor, react, log: (e, d) => log(`${e} ${JSON.stri
 const warmEgg: EggSpec = eggSpec('warm', seeded(1), { first: true, band: 'a' });
 const snowEgg: EggSpec = eggSpec('snow', seeded(2), { first: true, band: 'b' });
 const hayRack: EggSpec = rackSpec(seeded(3), { band: 'a' });
-/** An egg's three sums, one after another on the panel that stays, with "A happy heart!" between them. */
+/** An egg's three sums, one after another on the panel that stays (the fact between them, 2.3.2). */
 async function threeSums(kind: EggSpec['kind'], band: 'a' | 'b', seed: number) {
   // Imported here, so the lane's lines stay inside this block.
   const { eggSums } = await import('../content/eggs');
@@ -193,7 +193,6 @@ async function threeSums(kind: EggSpec['kind'], band: 'a' | 'b', seed: number) {
     const r = await layer.egg(spec, hooks);
     results.push({ egg: kind, grade: spec.grade, round: spec.round?.index, ...r });
     log(`egg ${kind} ${spec.grade} ${spec.need}/${spec.have} ${JSON.stringify(r)}`);
-    if ((spec.round?.index ?? 2) < 2) await audio.sayAll(['g4-heart']);
   }
 }
 const eggRuns: Record<string, () => Promise<unknown> | void> = {

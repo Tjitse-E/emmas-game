@@ -40,7 +40,13 @@ const PAST_TEN = [11, 12, 13, 14, 15, 16].flatMap((have) => {
   return [`num-toowarm-${have}`, ...[0, 1, 2, 3].map((i) => `num-take-${have}-${from + i}`)];
 });
 
-const RESERVE = [...STILL_WARM, ...PAST_TEN];
+/**
+ * "A happy heart!", said between an egg's sums until 2.3.2, when the fact became the one line there (docs/v4/2.3.md
+ * section 19.1). Its paid clip stays in the pack.
+ */
+const HEART = ['g4-heart'];
+
+const RESERVE = [...STILL_WARM, ...PAST_TEN, ...HEART];
 
 const byId = new Map(SENTENCES.map((l) => [l.id, l]));
 const lines: Line[] = [];

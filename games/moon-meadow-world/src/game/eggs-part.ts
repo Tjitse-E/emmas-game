@@ -1,7 +1,7 @@
 // The two egg parts of the level (moved out of level.ts in 2.3.0, so the eggs lane owns them): she walks to the egg,
 // the egg moment runs, and the baby hatches. 2.3.0 asks three sums per egg (docs/v4/2.3.md sections 12 and 19.1), all
 // within 10: an easy one, a middle one and a bond to 10 at her band, each its own checked moment and result line, on
-// one panel that stays on screen between them. Three hearts light one per sum ("A happy heart!"), the
+// one panel that stays on screen between them. Three hearts light one per sum (as Elizabeth says the fact, 2.3.2), the
 // egg glows and wobbles more with each, and it hatches after the third. The background stays silent across all three
 // (audio.checked(true) around them), and checked() per sum keeps the clock.
 import * as THREE from 'three';
@@ -47,10 +47,10 @@ export async function egg(g: Game, i: 0 | 1): Promise<void> {
   // leaves out and ?at=egg2&seed=5 asks the same three sums as a whole play with seed 5 (in the same band).
   if (i === 1 && g.maths.used.totals.length === 0) planEggs(g, 'warm', 'egg1', true);
   const specs = planEggs(g, kind, part, true);
-  await preload(g, [...new Set([...specs.flatMap((s) => eggClipIds(s)), ...CLIPS.heart])]);
+  await preload(g, [...new Set(specs.flatMap((s) => eggClipIds(s)))]);
   const eggPoint = actors.egg.position.clone();
   await frameAt(g, flat(eggPoint), EGG_WIDTH, eggPoint, 0.4);
-  // The background stays out from before the first sum to after the third, "A happy heart!" included.
+  // The background stays out from before the first sum to after the third, between the sums too.
   audio.checked(true);
   try {
     for (const spec of specs) {
@@ -67,9 +67,9 @@ export async function egg(g: Game, i: 0 | 1): Promise<void> {
 }
 
 /**
- * One of the egg's three sums on the panel. After the first and the second, the panel stays while its next heart
- * lights (the ui's react('heart'), and the egg glows and wobbles more), and Elizabeth says "A happy heart!" once the
- * heart's effect has played (the ui awaits it before it resolves).
+ * One of the egg's three sums on the panel. After the first and the second, the panel stays and its next heart lights
+ * as Elizabeth says the fact (the ui's react('heart'), and the egg glows and wobbles more); the next sum's goal follows
+ * at once (2.3.2).
  */
 async function eggSum(g: Game, spec: EggSpec, t: MomentLog): Promise<MomentResult> {
   const { actors, layer, world } = g;
@@ -86,9 +86,7 @@ async function eggSum(g: Game, spec: EggSpec, t: MomentLog): Promise<MomentResul
     },
     log: t.log,
   };
-  const r = await layer.egg(spec, hooks);
-  if (lit < 3) await say(g, CLIPS.heart);
-  return r;
+  return layer.egg(spec, hooks);
 }
 
 async function hatch(g: Game, i: 0 | 1): Promise<void> {

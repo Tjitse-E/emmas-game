@@ -411,11 +411,19 @@ export interface EggSpec {
   clips: {
     /** The first time this kind of egg is seen: how the egg works ("Make every cup warm, and the egg will hatch."). */
     intro: string[];
-    /** The goal, said at the start, on idle and on a replay tap. */
+    /** The goal's numbers, said at the start (the stones wake when they end), on idle and on a replay tap. */
     goal: string[];
+    /**
+     * What to do, said after the goal with the stones awake (2.3.2), and after it on idle and on a replay tap: the snow
+     * egg's "Drag the snow stone that cools the extra cups.".
+     */
+    ask?: string[];
     /** Said once after the first goal, when present: how to play ("Drag one stone to the nest."). */
     afterGoal?: string[];
-    /** After the right stone: the praise and the fact ("Every cup is warm!", "Eight and five make thirteen!"). */
+    /**
+     * After the right stone: the praise and the fact ("Every cup is warm!", "Eight and five make thirteen!"). Between an
+     * egg's sums only the fact (2.3.2).
+     */
     right: string[];
     /** After a stone that is k too big. */
     tooBig(k: number): string[];
