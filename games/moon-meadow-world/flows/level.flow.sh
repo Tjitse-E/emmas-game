@@ -11,9 +11,10 @@ SEED="${SEED:-7}"
 
 # One egg's three sums on one panel (docs/v4/2.3.md sections 19.1 and 22.5). $1 is the part (egg1 or egg2), $2 the sum
 # (1 to 3) that first gets one wrong stone (the one she heard, else a slip), or 0. Each sum waits for its stones to wake
-# (phase open), and checks: the hearts lit so far, the same panel as the first sum, easy first, 4 stones for easy and
-# middle and 4 (A) or 5 (B) for the hard one, the result line (part, grade, heart), and that only the hard sum moves
-# the band. The baby hatches after the third sum, not before. Sets EGG_TRIED to the wrong stone.
+# (phase open), and checks: the hearts lit so far, the same panel as the first sum, easy first, every number within 10
+# (stones 2 to 9), 4 stones for easy and middle and 4 (A) or 5 (B) for the hard one, the result line (part, grade,
+# heart), and that only the hard sum moves the band. The baby hatches after the third sum, not before. Sets EGG_TRIED
+# to the wrong stone.
 EGG_TRIED=''
 egg_sums() {
   local part="$1" wrong="$2" baby k grade band n before outcome want sb
@@ -23,7 +24,9 @@ egg_sums() {
     sleep 0.8
     shot "egg-$part-sum$((k + 1))"
     check_targets "$(moment_targets)"
-    expect_eq "$(val "() => window.__game.state().moment.targets.filter((t) => /^stone /.test(t.name)).every((t) => +t.name.slice(6) >= 3)")" true "$part sum $((k + 1)): stones 3 to 9"
+    expect_eq "$(val "() => window.__game.state().moment.targets.filter((t) => /^stone /.test(t.name)).every((t) => +t.name.slice(6) >= 2 && +t.name.slice(6) <= 9)")" true "$part sum $((k + 1)): stones 2 to 9"
+    # Every sum within 10 (2.3 section 19.1): the need, the warm cups and the answer, which is 3 or more.
+    expect_eq "$(val "() => { const s = window.__game.spec(); return s.need <= 10 && s.have <= 10 && s.answer >= 3 && s.answer <= 7; }")" true "$part sum $((k + 1)): within 10"
     expect_eq "$(val "() => window.__game.state().moment.round.lit + '/' + document.querySelectorAll('.egg-moment .egg-heart.lit').length")" "$k/$k" "$part sum $((k + 1)): hearts lit"
     if [ "$k" = 0 ]; then
       val "() => { document.querySelector('.egg-moment').dataset.flow = '$part'; return 'ok'; }" >/dev/null
