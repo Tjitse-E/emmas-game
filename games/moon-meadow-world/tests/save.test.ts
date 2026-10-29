@@ -347,7 +347,7 @@ describe('parseOptions', () => {
   it('reads every option', () => {
     const o = parseOptions('?seed=5&at=wardrobe&fresh=1&rl=3&maths=b&contrast=0&quest=beads&pl=2&phrases=all&box=5&portrait=0&perf=1', 1);
     expect(o).toEqual({
-      seed: 5, at: 'wardrobe', fresh: true, readingLevel: 3, band: 'b', contrast: false, quest: 'beads', patternLevel: 2, phrasesAll: true,
+      seed: 5, at: 'wardrobe', fresh: true, readingLevel: 3, band: 'b', contrast: false, quest: 'beads', patternLevel: 2, phraseRule: 'all',
       boxMs: 5000, portrait: false, perf: true,
     });
   });
@@ -355,8 +355,14 @@ describe('parseOptions', () => {
   it('falls back for missing and unknown values', () => {
     const o = parseOptions('?rl=7&maths=c&quest=hunt&pl=0&phrases=some&seed=x', 42);
     expect(o).toEqual({
-      seed: 42, at: null, fresh: false, readingLevel: null, band: null, contrast: true, quest: null, patternLevel: null, phrasesAll: false,
+      seed: 42, at: null, fresh: false, readingLevel: null, band: null, contrast: true, quest: null, patternLevel: null, phraseRule: 'default',
       boxMs: null, portrait: true, perf: false,
     });
+  });
+
+  it('reads ?phrases=emma as the rule of Emma\'s checks only, and no ?phrases= as the default rule', () => {
+    expect(parseOptions('?phrases=emma', 1).phraseRule).toBe('emma');
+    expect(parseOptions('?phrases=all', 1).phraseRule).toBe('all');
+    expect(parseOptions('', 1).phraseRule).toBe('default');
   });
 });

@@ -238,7 +238,7 @@ describe('phrase wishes', () => {
     const { P, pic } = await load();
     for (const s of seeds) {
       const level = ((s % 3) + 1) as 1 | 2 | 3;
-      const spec = P.phraseSpec(C.seeded(s), { level, all: true });
+      const spec = P.phraseSpec(C.seeded(s), { level, rule: 'all' });
       expect(spec.basket.map((b) => b.word)).toContain(spec.target.word);
       for (const b of spec.basket) {
         const [c, t] = b.word.split(' ');
@@ -259,7 +259,7 @@ describe('phrase wishes', () => {
     const { P } = await load();
     const all = new Set(C.allClipIds());
     for (const s of seeds) {
-      const spec = P.phraseSpec(C.seeded(s), { level: ((s % 3) + 1) as 1 | 2 | 3, all: true });
+      const spec = P.phraseSpec(C.seeded(s), { level: ((s % 3) + 1) as 1 | 2 | 3, rule: 'all' });
       for (const id of C.wishClipIds(spec)) {
         expect(all.has(id), id).toBe(true);
         expect(clipExists(id) || !!lineFor(id), id).toBe(true);

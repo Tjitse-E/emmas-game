@@ -162,11 +162,12 @@ export function reactOf(item: WishItem, kind: WishSpec['kind']): 'munch' | 'play
 }
 
 /**
- * What the Dressing Corner's gate plays this load (the `gk` of the kind=play line): phrase wishes once at least 6
- * phrases are strong among the pairs Emma has checked (all pairs with ?phrases=all), or else word wishes.
+ * What the Dressing Corner's gate plays this load (the `gk` of the kind=play line): phrase wishes while at least 6
+ * phrases are strong among the pairs ?phrases= allows (every ok pair minus this device's crosses by default), or else
+ * word wishes.
  */
 export function gateKind(g: Game): 'phrase' | 'word' {
-  return phraseGateKind({ all: g.options.phrasesAll });
+  return phraseGateKind({ rule: g.options.phraseRule });
 }
 
 /**
@@ -206,7 +207,7 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
     spec = gateWordSpec(rand, { ...opts, exclude, avoid: [...dressWordsOf(g)] });
     spec.clips = { ...spec.clips, intro: [...CLIPS.dressUp, ...spec.clips.intro] };
   } else {
-    spec = kind === 'phrase' ? phraseSpec(rand, { ...opts, exclude, all: g.options.phrasesAll }) : wishSpec(kind, rand, exclude, opts);
+    spec = kind === 'phrase' ? phraseSpec(rand, { ...opts, exclude, rule: g.options.phraseRule }) : wishSpec(kind, rand, exclude, opts);
   }
   if (spec.kind === 'dress') for (const w of [spec.target, ...spec.basket]) dressWordsOf(g).add(w.word);
   g.today.words.push(spec.target.word);

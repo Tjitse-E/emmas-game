@@ -4,9 +4,10 @@
 // src/game/reading.ts and tests/reading-level.test.ts.
 //
 // 2.3.0 (docs/v4/2.3.md sections 18 and 22.4): the phrase wish. Its tinted picture check and clip lines, the strong
-// rule, the planner per level and the guessers it must beat, Emma's checks (the file's and her iPad's, check.html) and
-// the word-wish fallback with its own planner (no word of the play's earlier dress-up reads, borrowed pictures), the
-// two-word contrast and the hint's letter sounds.
+// rule, the planner per level and the guessers it must beat, the rule of ?phrases= over the file's checks and her
+// iPad's (check.html: a cross turns a pair off; ?phrases=emma only her checks), the word-wish fallback with its own
+// planner (no word of the play's earlier dress-up reads, borrowed pictures), the two-word contrast and the hint's
+// letter sounds.
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
@@ -558,7 +559,9 @@ describe('the phrase wish', () => {
   const split = (k: string) => k.split(' ') as [string, string];
   const thingsAlike = (a: string, b: string) => a === b || !!DATA.phraseThings.find((t) => t.word === a)?.alike?.includes(b);
   /** Every pair as Claude checked it, as ?phrases=all sees it. */
-  const ALL = { all: true } as const;
+  const ALL = { rule: 'all' } as const;
+  /** Only the pairs Emma checked, as ?phrases=emma sees them (2.3.0's rule). */
+  const EMMA = { rule: 'emma' } as const;
 
   /** SEEDS baskets of a level (as ?phrases=all), with the target's colour and thing. */
   function phraseBaskets(level: 1 | 2 | 3, scope: Parameters<typeof P.phraseSpec>[1] = ALL) {
@@ -795,66 +798,100 @@ describe('the phrase wish', () => {
     expect(P.phraseSpec(seeded(1), ALL).clips.again).toEqual(['fb-letters']);
   });
 
-  it('without ?phrases=all only the pairs Emma checked play, and with fewer than 6 strong the gate plays word wishes', () => {
-    // The live data: no pair checked by Emma yet, so the gate plays the dress-up word wishes.
+  it('by default every ok pair plays, Claude\'s checks too, so a fresh device plays phrase wishes', () => {
+    // The live data on a device without verdicts: every ok pair of the file, as ?phrases=all.
+    expect(P.phraseTargets({ device: {} })).toEqual(P.phraseTargets(ALL));
+    expect(P.phraseTargets({ device: {} }).length).toBeGreaterThanOrEqual(P.MIN_PHRASES);
+    expect(P.gateKind({ device: {} })).toBe('phrase');
+    // node has no localStorage, so the default scope reads this device as a fresh one.
+    expect(P.gateKind({})).toBe('phrase');
+    for (let s = 1; s <= 50; s++) expect(P.phraseSpec(seeded(s), {}).kind).toBe('phrase');
+    // Pairs only Claude has checked play by default.
+    const claude = Object.fromEntries(P.phraseCombos().map(([c, t]) => [`${c} ${t}`, 'claude']));
+    expect(P.phraseTargets({ pairs: claude, device: {} })).toEqual(P.phraseTargets({ pairs: claude, ...ALL }));
+    expect(P.gateKind({ pairs: claude, device: {} })).toBe('phrase');
+  });
+
+  it('with ?phrases=emma only the pairs Emma checked play, and with fewer than 6 strong the gate plays word wishes', () => {
+    // The live data: no pair checked by Emma yet, so ?phrases=emma plays the dress-up word wishes.
     const emma = Object.entries(DATA.phrasePairs).filter(([, by]) => by === 'emma').map(([k]) => k);
-    expect(P.gateKind({}), 'live data').toBe(P.phraseTargets({}).length >= 6 ? 'phrase' : 'word');
+    expect(P.gateKind(EMMA), 'live data').toBe(P.phraseTargets(EMMA).length >= 6 ? 'phrase' : 'word');
     if (!emma.length) {
-      expect(P.gateKind({})).toBe('word');
-      expect(() => P.phraseSpec(seeded(1), {})).toThrow();
+      expect(P.gateKind(EMMA)).toBe('word');
+      expect(() => P.phraseSpec(seeded(1), EMMA)).toThrow();
     }
     expect(P.gateKind(ALL)).toBe('phrase');
     // Emma checked every colour on bag, bead and bow, Claude the rest: only her pairs are ever shown.
     const pairs = Object.fromEntries(P.phraseCombos().map(([c, t]) => [`${c} ${t}`, ['bag', 'bead', 'bow'].includes(t) ? 'emma' : 'claude']));
-    expect(P.gateKind({ pairs })).toBe('phrase');
+    expect(P.gateKind({ pairs, ...EMMA })).toBe('phrase');
     for (const level of LEVELS) {
       for (let s = 1; s <= 1000; s++) {
-        const spec = P.phraseSpec(seeded(s), { pairs, level });
+        const spec = P.phraseSpec(seeded(s), { pairs, level, ...EMMA });
         for (const b of spec.basket) expect(pairs[b.word], b.word).toBe('emma');
       }
     }
-    const wider = new Set(Array.from({ length: 300 }, (_, s) => P.phraseSpec(seeded(s + 1), { pairs, all: true }).target.word));
-    expect([...wider].some((k) => k.endsWith('sock') || k.endsWith('shirt'))).toBe(true);
+    for (const scope of [ALL, {}]) {
+      const wider = new Set(Array.from({ length: 300 }, (_, s) => P.phraseSpec(seeded(s + 1), { pairs, ...scope }).target.word));
+      expect([...wider].some((k) => k.endsWith('sock') || k.endsWith('shirt'))).toBe(true);
+    }
     // A pair whose basket cannot be shown is no target, and takes its grid with it: without red or pink on the bead,
     // nothing on the bead or the bag is strong (the bag's grids need beads), so the gate plays word wishes.
     const beads = Object.fromEntries(['green', 'gold', 'blue', 'brown'].flatMap((c) => ['bag', 'bead'].map((t) => [`${c} ${t}`, 'emma'])).concat([['red bag', 'emma']]));
     expect(P.phraseTargets({ pairs: beads })).toEqual([]);
     expect(P.gateKind({ pairs: beads })).toBe('word');
-    // The gate's choice follows the count on any set of Emma's checks.
+    expect(P.gateKind({ pairs: beads, ...EMMA })).toBe('word');
+    // The gate's choice follows the count on any set of Emma's checks; by default Claude's count too.
     const r = seeded(5);
     for (let n = 0; n < 200; n++) {
       const some = Object.fromEntries(P.phraseCombos().map(([c, t]) => [`${c} ${t}`, r() < 0.6 ? 'emma' : 'claude']));
-      const strong = P.phraseTargets({ pairs: some });
+      const strong = P.phraseTargets({ pairs: some, ...EMMA });
       for (const k of strong) expect(some[k]).toBe('emma');
-      expect(P.gateKind({ pairs: some })).toBe(strong.length >= 6 ? 'phrase' : 'word');
+      expect(P.gateKind({ pairs: some, ...EMMA })).toBe(strong.length >= 6 ? 'phrase' : 'word');
+      expect(P.phraseTargets({ pairs: some, device: {} })).toEqual(P.phraseTargets({ pairs: some, ...ALL }));
     }
   });
 
-  it('takes a pair as Emma\'s when the file says emma or her iPad holds a tick; a cross on the iPad turns it off', () => {
+  it('by default a cross on the iPad turns a pair off; ?phrases=emma takes a pair when the file says emma or the iPad holds a tick', () => {
     const file = { 'green sock': 'emma', 'gold sock': 'emma', 'blue sock': 'claude', 'brown sock': 'claude' };
     const device = { 'gold sock': 'cross', 'blue sock': 'tick', 'red bag': 'tick' } as const;
-    // green by the file, blue by the tick; gold crossed on the iPad although the file has it; brown by Claude only;
-    // red bag ticked but not an ok pair of the file, so it changes nothing.
-    expect([...D.checkedPairs(file, device)].sort()).toEqual(['blue sock', 'green sock']);
-    expect([...D.checkedPairs(file, {})].sort()).toEqual(['gold sock', 'green sock']);
+    // The default: every ok pair of the file but gold, crossed on the iPad; red bag ticked but not an ok pair of the
+    // file, so it changes nothing.
+    expect([...D.checkedPairs(file, device)].sort()).toEqual(['blue sock', 'brown sock', 'green sock']);
+    expect([...D.checkedPairs(file, {})].sort()).toEqual(Object.keys(file).sort());
+    expect([...P.allowedPairs({ pairs: file, device })].sort()).toEqual(['blue sock', 'brown sock', 'green sock']);
+    // ?phrases=emma: green by the file, blue by the tick; gold crossed on the iPad although the file has it; brown by
+    // Claude only.
+    expect([...D.checkedPairs(file, device, 'emma')].sort()).toEqual(['blue sock', 'green sock']);
+    expect([...D.checkedPairs(file, {}, 'emma')].sort()).toEqual(['gold sock', 'green sock']);
+    expect([...P.allowedPairs({ pairs: file, device, ...EMMA })].sort()).toEqual(['blue sock', 'green sock']);
     // ?phrases=all: every ok pair of the file, whatever the iPad holds.
-    expect([...D.checkedPairs(file, device, true)].sort()).toEqual(Object.keys(file).sort());
-    expect([...P.allowedPairs({ pairs: file, device })].sort()).toEqual(['blue sock', 'green sock']);
-    expect([...P.allowedPairs({ pairs: file, device, all: true })].sort()).toEqual(Object.keys(file).sort());
-    // Every pair ticked on the iPad plays as if the file said emma; crossing one gives the same as leaving it Claude's.
+    expect([...D.checkedPairs(file, device, 'all')].sort()).toEqual(Object.keys(file).sort());
+    expect([...P.allowedPairs({ pairs: file, device, ...ALL })].sort()).toEqual(Object.keys(file).sort());
+    // ?phrases=emma: every pair ticked on the iPad plays as if the file said emma; crossing one gives the same as
+    // leaving it Claude's. By default the ticks change nothing.
     const claude = Object.fromEntries(P.phraseCombos().map(([c, t]) => [`${c} ${t}`, 'claude']));
     const emma = Object.fromEntries(Object.keys(claude).map((k) => [k, 'emma']));
     const ticks = Object.fromEntries(Object.keys(claude).map((k) => [k, 'tick' as const]));
-    expect(P.phraseTargets({ pairs: claude, device: ticks })).toEqual(P.phraseTargets({ pairs: emma, device: {} }));
-    expect(P.gateKind({ pairs: claude, device: ticks })).toBe('phrase');
-    expect(P.gateKind({ pairs: claude, device: {} })).toBe('word');
+    expect(P.phraseTargets({ pairs: claude, device: ticks, ...EMMA })).toEqual(P.phraseTargets({ pairs: emma, device: {}, ...EMMA }));
+    expect(P.gateKind({ pairs: claude, device: ticks, ...EMMA })).toBe('phrase');
+    expect(P.gateKind({ pairs: claude, device: {}, ...EMMA })).toBe('word');
+    expect(P.phraseTargets({ pairs: claude, device: ticks })).toEqual(P.phraseTargets({ pairs: claude, device: {} }));
     const noGold = { ...ticks, 'gold bag': 'cross' as const };
     const fileNoGold = { ...emma, 'gold bag': 'claude' };
-    expect(P.phraseTargets({ pairs: claude, device: noGold })).toEqual(P.phraseTargets({ pairs: fileNoGold, device: {} }));
-    expect(P.phraseTargets({ pairs: emma, device: noGold })).toEqual(P.phraseTargets({ pairs: fileNoGold, device: {} }));
+    expect(P.phraseTargets({ pairs: claude, device: noGold, ...EMMA })).toEqual(P.phraseTargets({ pairs: fileNoGold, device: {}, ...EMMA }));
+    expect(P.phraseTargets({ pairs: emma, device: noGold, ...EMMA })).toEqual(P.phraseTargets({ pairs: fileNoGold, device: {}, ...EMMA }));
+    // By default a cross is as if the file did not have the pair at all.
+    const { 'gold bag': _, ...withoutGoldBag } = claude;
+    expect(P.phraseTargets({ pairs: claude, device: { 'gold bag': 'cross' } })).toEqual(P.phraseTargets({ pairs: withoutGoldBag, device: {} }));
     for (let s = 1; s <= 300; s++) {
-      for (const b of P.phraseSpec(seeded(s), { pairs: claude, device: noGold, level: LEVELS[s % 3] }).basket) expect(b.word).not.toBe('gold bag');
+      for (const b of P.phraseSpec(seeded(s), { pairs: claude, device: noGold, level: LEVELS[s % 3], ...EMMA }).basket) expect(b.word).not.toBe('gold bag');
+      for (const b of P.phraseSpec(seeded(s), { device: { 'gold bag': 'cross' }, level: LEVELS[s % 3] }).basket) expect(b.word).not.toBe('gold bag');
     }
+    // The live data with every gold picture crossed: green has no sibling, so no phrase is on and the gate plays word
+    // wishes (check.html says so).
+    const golds = Object.fromEntries(THINGS.map((t) => [`gold ${t}`, 'cross' as const]));
+    expect(P.phraseTargets({ device: golds })).toEqual([]);
+    expect(P.gateKind({ device: golds })).toBe('word');
   });
 
   it('keeps the iPad verdicts under their own key, never the game\'s save, and reads a bad or missing store as none', () => {
