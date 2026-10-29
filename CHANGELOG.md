@@ -9,6 +9,23 @@ show the newest version, bottom right. `scripts/deploy.sh` refuses to deploy a v
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.3.0-pre.1] - 2026-10-29
+
+A pre-release of 2.3.0, so Emma can play it before the last checks are done. 2.3.0 adds fairer bead trays and the picture check page.
+
+### Added
+- Moon Meadow World: the Dressing Corner at Lumi's gazebo. After her first side quest a trunk bubble invites her there. Her two babies dress up first, and she reads what they wish for. Then she dresses Princess Emma at the trunk and the mirror while a music box plays. Her look is kept.
+- Moon Meadow World: presents she keeps. Every finished side quest lets her pick one of two new things: crowns, shoes, earrings, a necklace, hair styles and hair things. They go into the trunk, and the inside of its lid shows her collection.
+- Moon Meadow World: more to wear. There are 12 hair styles instead of 4, and new rows for the crown, the shoes, earrings and a necklace. Hair, gown, crown, shoes, hair things and jewels each take any of about 12 colours or rainbow, so green eyes, a green gown and green hair work together.
+- Moon Meadow World: the bead tree, a new side quest where she finishes colour and shape patterns on a string.
+- Moon Meadow World: a bigger meadow, with a moon mist and a saddle sign that says what opens next.
+- Moon Meadow World: 16 new sound effects and a soft day sound.
+
+### Changed
+- Moon Meadow World: each egg hatches after three sums instead of one: an easy sum within 10, one just past 10 and one across ten. A heart lights up after each right answer.
+- Moon Meadow World: the side quests take turns. Free play offers the royal picnic and one maths quest, the bead tree or the hay rack. It lasts two minutes, or up to two and a half while a quest bubble still waits.
+- Moon Meadow World: at the start she has 30 seconds at the mirror to dress. Her look from 2.2 carries over.
+
 ## [2.2.0] - 2026-10-28
 
 ### Added

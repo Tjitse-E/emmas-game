@@ -37,7 +37,7 @@ function v3Assets(): Plugin {
 
 /** The release version (the newest entry in the repo's CHANGELOG.md), shown on the start screen. */
 function version(): string {
-  const m = /^## \[(\d+\.\d+\.\d+)\]/m.exec(readFileSync(join(repo, 'CHANGELOG.md'), 'utf8'));
+  const m = /^## \[(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)\]/m.exec(readFileSync(join(repo, 'CHANGELOG.md'), 'utf8'));
   return m ? `v${m[1]}` : 'dev';
 }
 
