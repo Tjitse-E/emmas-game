@@ -14,7 +14,7 @@ Changes this lane needs in files it does not own, and seams with other lanes tha
 
 3. **`CHANGELOG.md`.** The `kind=play` line's `v` is the build's version (`__MMW_VERSION__`, the newest CHANGELOG entry without its v). It reads 2.3.0 once the 2.3.0 entry is written (22.3 step 8); until then it says 2.2.0.
 
-   **Deferred** to 22.3 step 8: the 2.3.0 entry is written once, after `gen.sh`, Tjitse's listening and the iPad check. Until then `v` says 2.2.0.
+   **Done** (22.3 step 8): the 2.3.0 entry is written, so the start screen and the `kind=play` line's `v` say 2.3.0.
 
 4. **`src/test-hook.ts` `legacy()` and its import of `wardrobe-legacy.ts`.** Kept on purpose: `flows/dress.flow.sh` (wardrobe-ui) still reads it. Section 22.3 step 4 gives its removal to the integrator: delete `legacy()` and the `legacyOf` import in `src/test-hook.ts` together with `wardrobe-legacy.ts`. This lane has no other import of it.
 

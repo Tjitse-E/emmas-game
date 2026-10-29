@@ -130,9 +130,11 @@ Measured over 10,000 baskets per level with `?phrases=all`; the tests hold them 
 
 ### Emma's picture check
 
+On her iPad: open `check.html` next to the game (`dist/check.html` on Emma's server), ask her what each picture is, and tap the tick or the cross. A tick counts at once on that iPad and address (`mmw.phrasecheck1`), with no rebuild; a cross turns the pair off. The page shows the strong count. To keep a verdict in the code as well, use the file:
+
 1. Open `dev/content.html` and scroll to "Phrase pictures". "Hide the words" hides every word (cards, badges, rows, column heads and tooltips) and makes taps silent, so she names each picture without reading or hearing it. Ask what each one is and what colour it is; gold against yellow above all (the dashed yellow row is only there to compare).
 2. For each pair she names right, set `"by": "emma"` in `tools/phrase-check.json`; for one she does not know, `"verdict": "drop"` (keep `by` as who decided).
-3. Run `node tools/build-content.ts` and check the strong count. At 8 or more the gate plays phrases.
+3. Run `node tools/build-content.ts` and check the strong count. At 6 or more (`MIN_PHRASES`) the gate plays phrases.
 
 ### Claude's calls
 
@@ -224,4 +226,5 @@ A snow egg in band A can never show the answer as the biggest stone: the need sh
 
 - `fb-letters` and every pool word's clip are ok v3 clips. The 13 new lines of 2.2.0 are generated and 12 are used; the demo's pack has 79 clips, and `dev/content.html` reports none missing.
 - The clips of sail, pail, reed, pie, leek and mat passed speech-to-text only as homophones (Sale, Pale, Read, Pi, Leak, Matt). Tjitse listens to them once.
-- Booked so far: 2,276.90 credits in `tools/audio/ledger.jsonl` against the cap of 4,000.
+- 2.3.0 added 72 lines (docs/v4/2.3.md section 21), all passing speech-to-text after two retakes, so the pack has 151 clips.
+- Booked so far: 5,094.06 credits in `tools/audio/ledger.jsonl` (speech and sound effects) against the cap of 7,277.
