@@ -3,7 +3,10 @@
 // Priority: a unicorn before the world. While a checked ui moment is open the world takes no taps; during a door
 // moment a door counts as the answer, and a waiting unicorn only hops and looks at its own door.
 // A tap never cuts the speech that plays: names wait their turn (sayAside).
-// In free play a tap on the picnic rug or the hay rack starts that side quest when it is offered (quests.ts).
+// In free play a tap on a quest's place (the picnic rug, the hay rack, the bead tree, the Dressing Corner's trunk,
+// mirror or step) starts that side quest when it is offered (quests.ts), and so does the gazebo while the trunk bubble
+// shows. After her Corner visit the trunk shows its treasure board (corner.ts trunkTap); the saddle sign shimmers and
+// Lumi says "Soon you can ride here!" once a play.
 // A touch is a press() (ui/press.ts): it also ends on a release only the window hears, a cancel, a lost capture or the
 // next touch. On her iPad the release does not always reach the canvas, and a touch waiting for it blocked every later
 // world tap. Only a real release taps; the other ends set a carried unicorn down where the finger last was.
@@ -16,6 +19,8 @@ import { press as pressable, type PressEnd } from '../ui/press';
 import { type Game, GOALS, doorPoint, flat, memberOf, princessAt, sayAside, walkTo } from './game';
 import { peekDoor } from './doors';
 import { askQuest } from './quests';
+import { trunkTap } from './corner';
+import { CLIPS } from '../content';
 import type { QuestId } from './options';
 
 /** Where a tap on a quest's place walks her when the quest cannot start now. */
@@ -160,18 +165,23 @@ export function installInput(g: Game): void {
         void walkTo(g, world.nearestWalkable(p.at));
         return;
       // A side quest's place: the quest starts when it is offered; otherwise she walks to its spot.
+      case 'corner':
+        // After her visit the trunk opens on her treasure board; it never starts the Corner again.
+        if (!g.bedtime && trunkTap(g)) return;
+      // falls through
       case 'rack':
       case 'picnic':
       case 'beads':
-      case 'corner':
         if (askQuest(g, p.kind)) return;
         void walkTo(g, QUEST_STAND[p.kind]);
         return;
-      // The saddle sign at the moon mist (2.3.0): the quests-world lane gives it Lumi's line and a shimmer.
       case 'sign':
-        void walkTo(g, world.nearestWalkable(MIST.sign));
+        signTap();
         return;
       case 'gazebo':
+        // While the trunk bubble shows, the gazebo means the Dressing Corner at its step.
+        if (g.quests.offered.has('corner') && askQuest(g, 'corner')) return;
+      // falls through
       case 'ground': {
         const at = p.kind === 'ground' ? p.at : world.groundAt(x, y);
         if (!at) return;
@@ -182,6 +192,21 @@ export function installInput(g: Game): void {
         void walkTo(g, at, run);
         return;
       }
+    }
+  }
+
+  /**
+   * The saddle sign at the moon mist (2.3.0): it shimmers with a sparkle and Lumi says "Soon you can ride here!" once
+   * a play (never over a line that plays). She does not walk there: a big tree stands between the follow camera and
+   * the sign, and the sign is only a look ahead.
+   */
+  function signTap(): void {
+    g.quests.signs++;
+    world.sign.shimmer();
+    actors.fx.sparkle(new THREE.Vector3(MIST.sign.x, 1.7, MIST.sign.z + 0.1), { count: 14, colour: '#e6dcff' });
+    if (!g.quests.signSaid && !audio.speaking) {
+      g.quests.signSaid = true;
+      void g.layer.lumi.speak(CLIPS.soon);
     }
   }
 

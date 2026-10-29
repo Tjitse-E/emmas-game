@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import type { Owned, PrincessLook, Ribbon } from './contracts';
 import type { UiTarget } from './ui';
-import { HAY_RACK, NEST, PICNIC, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
+import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
 import { audio } from './audio';
 import { parseOwned } from './wardrobe';
 import { legacyOf } from './wardrobe-legacy';
@@ -74,6 +74,11 @@ export function installHook(g: Game): void {
     out.push(target3d(g, 'slide top', SLIDE.top.clone(), 1.2));
     out.push(target3d(g, 'rack', new THREE.Vector3(HAY_RACK.center.x, 0.9, HAY_RACK.center.z), 1.8));
     out.push(target3d(g, 'picnic', new THREE.Vector3(PICNIC.rug.center.x, 0.1, PICNIC.rug.center.z), 2));
+    // 2.3.0: the Dressing Corner's trunk and mirror, the bead tree and the saddle sign (picker shapes in world/pick.ts).
+    out.push(target3d(g, 'trunk', new THREE.Vector3(CORNER.trunk.x, 0.4, CORNER.trunk.z), 1.0));
+    out.push(target3d(g, 'mirror', new THREE.Vector3(CORNER.mirror.x, 1.0, CORNER.mirror.z), 1.0));
+    out.push(target3d(g, 'bead tree', new THREE.Vector3(BEAD_TREE.center.x, 1.6, BEAD_TREE.center.z), 1.8));
+    out.push(target3d(g, 'sign', new THREE.Vector3(MIST.sign.x, 1.3, MIST.sign.z), 1.0));
     if (g.goal) out.push(target3d(g, 'goal', new THREE.Vector3(g.goal.stand.x, 0, g.goal.stand.z), 1.2));
     return out.filter((t): t is UiTarget => t !== null);
   };
@@ -103,7 +108,17 @@ export function installHook(g: Game): void {
           maths: q.maths,
           dressing: q.dressing,
           gifts: q.gifts.map((i) => `${i.field}:${i.id}`),
+          over: q.over,
+          cut: q.cut,
+          gate: q.gate,
+          boards: q.boards,
+          signSaid: q.signSaid,
+          signs: q.signs,
+          cornerMs: q.cornerMs,
+          lid: +world.corner.open.toFixed(2),
         },
+        /** The ground point the camera holds in a frame, or null while it follows. */
+        framedAt: world.framedAt ? { x: +world.framedAt.x.toFixed(2), z: +world.framedAt.z.toFixed(2) } : null,
         owned: g.save.data.owned,
         clock: { checkedMs: Math.round(g.clock.checkedMs), dressMs: { ...g.clock.dressMs } },
         sound: audio.soundState(),
@@ -169,6 +184,13 @@ export function installHook(g: Game): void {
     },
     missingClips(): string[] {
       return audio.missing.slice();
+    },
+    /** Put Princess Emma at a ground point at once, the camera with her (the flows measure the budget there). */
+    placeAt(x: number, z: number): { x: number; z: number } {
+      const p = world.nearestWalkable({ x, z });
+      actors.placePrincess(p, 0);
+      world.snapCamera();
+      return p;
     },
     /** A world point on screen (flows tap the ground with it). */
     screenOf(x: number, z: number, y = 0) {

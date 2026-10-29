@@ -1,9 +1,10 @@
 // What a tap hits in the world: doors (by where the ray meets the stable fronts, so every door gets its full width),
-// the slide, the nest, the hay rack, the picnic and the gazebo (generous invisible shapes), the rest of the stable
-// buildings (their roofs and walls count as the nearest door, so a tap there never walks her behind them), then the
-// pond and the ground.
+// the slide, the nest, the hay rack, the picnic, the Dressing Corner (the trunk, the mirror and the gazebo's south
+// step), the bead tree, the saddle sign and the gazebo (generous invisible shapes), the rest of the stable buildings
+// (their roofs and walls count as the nearest door, so a tap there never walks her behind them), then the pond and the
+// ground.
 import * as THREE from 'three';
-import { GAZEBO, HAY_RACK, NEST, PICNIC, SLIDE, SLIDE_CURVE, STABLE, inPond, type Vec2 } from '../layout';
+import { BEAD_TREE, CORNER, GAZEBO, HAY_RACK, MIST, NEST, PICNIC, SLIDE, SLIDE_CURVE, STABLE, inPond, type Vec2 } from '../layout';
 import type { WorldPick } from '../contracts';
 
 /** A tap this far in front of a lower door (on the ground) still counts as the door. */
@@ -16,6 +17,14 @@ const BUILDING = { halfX: 3.9 + 0.8, top: STABLE.upperFloorY * 2 + 1.4, eave: 0.
 const RACK_BOX = { x: 2.1, y: 1.5, z: 1.4 } as const;
 /** The picnic's tap box: the rug with its tassels and the hamper, as high as the hamper's handle. */
 const PICNIC_BOX = { pad: 0.1, hamper: 0.3, y: 0.55 } as const;
+/**
+ * The Dressing Corner's tap shapes: the trunk with its lid open, the mirror on its stand, and the gazebo's south step
+ * between them (not her spot in front of it, which stays grass).
+ */
+const CORNER_PICK = { trunk: { r: 0.55, y: 1.0 }, mirror: { r: 0.48, y: 1.9 }, step: { x: 2.2, y: 0.4, z: 0.7, z0: 1.55 } } as const;
+/** The bead tree's crown and strings, and the saddle sign's post and board. */
+const TREE_PICK = { r: 1.0, y: 2.7 } as const;
+const SIGN_BOX = { x: 1.25, y: 2.0, z: 0.6 } as const;
 
 export interface Picker {
   pick(ray: THREE.Ray): WorldPick | null;
@@ -51,7 +60,20 @@ export function buildPicker(): Picker {
     box.position.set(r.centerX + outer * 0.4, BUILDING.top / 2, STABLE.frontZ + BUILDING.eave - depth / 2);
     return box;
   });
-  group.add(slide, slideTop, nest, gazebo, rack, picnic, ...buildings);
+  const cyl = (at: Vec2, r: number, h: number): THREE.Mesh => {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 12), hidden);
+    m.position.set(at.x, h / 2, at.z);
+    return m;
+  };
+  const trunk = cyl(CORNER.trunk, CORNER_PICK.trunk.r, CORNER_PICK.trunk.y);
+  const mirror = cyl(CORNER.mirror, CORNER_PICK.mirror.r, CORNER_PICK.mirror.y);
+  const { step } = CORNER_PICK;
+  const stepBox = new THREE.Mesh(new THREE.BoxGeometry(step.x, step.y, step.z), hidden);
+  stepBox.position.set(CORNER.stand.x, step.y / 2, step.z0 + step.z / 2);
+  const tree = cyl(BEAD_TREE.center, TREE_PICK.r, TREE_PICK.y);
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(SIGN_BOX.x, SIGN_BOX.y, SIGN_BOX.z), hidden);
+  sign.position.set(MIST.sign.x, SIGN_BOX.y / 2, MIST.sign.z);
+  group.add(slide, slideTop, nest, gazebo, rack, picnic, trunk, mirror, stepBox, tree, sign, ...buildings);
   group.updateMatrixWorld(true);
   const raycaster = new THREE.Raycaster();
   const hit = new THREE.Vector3();
@@ -102,6 +124,10 @@ export function buildPicker(): Picker {
       // The rack and the picnic come after the doors, so they can never take a door's tap.
       if (hits(ray, rack)) return { kind: 'rack' };
       if (hits(ray, picnic)) return { kind: 'picnic' };
+      // The Corner's trunk and mirror stand on the gazebo's step: they come before the gazebo (2.3.0).
+      if (hits(ray, trunk, mirror, stepBox)) return { kind: 'corner' };
+      if (hits(ray, tree)) return { kind: 'beads' };
+      if (hits(ray, sign)) return { kind: 'sign' };
       if (hits(ray, gazebo)) return { kind: 'gazebo' };
       const b = building(ray);
       if (b !== null) return { kind: 'door', door: b };

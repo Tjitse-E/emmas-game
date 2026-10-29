@@ -1,7 +1,8 @@
 // The results log's server lines (src/game/results.ts): every diag.txt query stays under 400 characters and keeps
 // the fields Tjitse reads first.
 import { describe, expect, it } from 'vitest';
-import { DIAG_MAX, type ResultLine, diagQuery, resultFields } from '../src/game/results';
+import { DIAG_MAX, type PlayLine, type ResultLine, diagQuery, playFields, resultFields } from '../src/game/results';
+import { GIFT_SETS } from '../src/wardrobe';
 
 const wish: ResultLine = {
   part: 'wish1', strand: 'r', outcome: 'miss', misses: 1, ms: 5234.6,
@@ -35,5 +36,46 @@ describe('diag lines', () => {
 
   it('leaves out empty fields', () => {
     expect(diagQuery({ kind: 'look', rows: '', ms: 12, hair: 'candy', x: undefined, y: null })).toBe('kind=look&ms=12&hair=candy');
+  });
+});
+
+describe('the kind=play line (2.3 section 17.5)', () => {
+  const play: PlayLine = {
+    v: '2.3.0', plays: 3, playMs: 21.4 * 60_000, checkedMs: 571_000, mirrorMs: 45_000, cornerDressMs: 60_000, cornerMs: 74_000,
+    freeMs: 148_000, gate: { kind: 'phrase', first: 1 }, quests: ['picnic', 'beads', 'corner'],
+    gifts: [{ field: 'crown', id: 'tiara' }, { field: 'earrings', id: 'drops' }, { field: 'style', id: 'lowbun' }],
+    reading: 2, phrases: 1, band: 'b', patterns: 2,
+  };
+
+  it('writes the checked, dressing, mirror, Corner dressing, Corner visit and free time, the gate, the quests, the gifts and the levels', () => {
+    const q = Object.fromEntries(new URLSearchParams(diagQuery(playFields(play))));
+    expect(q).toEqual({
+      kind: 'play', v: '2.3.0', pl: '3', min: '21.4', ck: '571', dr: '105', mi: '45', co: '60', cv: '74', fr: '148', gk: 'phrase', gt: '1',
+      q: 'picnic,beads,corner', rl: '2', ph: '1', mb: 'b', pt: '2', gf: 'crown:tiara,earrings:drops,style:lowbun',
+    });
+  });
+
+  it('stays under 400 characters, even with every gift of every set on one play', () => {
+    const all = Object.values(GIFT_SETS).flatMap((s) => s.items);
+    const busiest = { ...play, plays: 9999, playMs: 99 * 60_000, gate: { kind: 'word' as const, first: 2 }, quests: ['picnic', 'rack', 'beads', 'corner'], gifts: all };
+    const line = diagQuery(playFields(busiest));
+    expect(line.length).toBeLessThan(400);
+    // The fields Tjitse reads first always arrive.
+    const q = new URLSearchParams(line);
+    for (const k of ['v', 'pl', 'min', 'ck', 'dr', 'gk', 'gt', 'q', 'rl', 'ph', 'mb', 'pt']) expect(q.has(k), k).toBe(true);
+  });
+
+  it('leaves the gate out when she did not visit the Corner', () => {
+    const q = new URLSearchParams(diagQuery(playFields({ ...play, gate: null, cornerMs: 0, cornerDressMs: 0 })));
+    expect(q.has('gk')).toBe(false);
+    expect(q.has('gt')).toBe(false);
+    expect(q.get('co')).toBe('0');
+    expect(q.get('cv')).toBe('0');
+  });
+
+  it('counts only the music box as the Corner dressing, so dressing is the mirror plus the Corner', () => {
+    const q = new URLSearchParams(diagQuery(playFields(play)));
+    expect(Number(q.get('dr'))).toBe(Number(q.get('mi')) + Number(q.get('co')));
+    expect(Number(q.get('cv'))).toBeGreaterThan(Number(q.get('co')));
   });
 });

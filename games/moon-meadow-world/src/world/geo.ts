@@ -119,6 +119,9 @@ export class Scenery {
   private readonly regions = new Map<string, Geo[]>();
   private readonly box = new THREE.Box3();
   private readonly centre = new THREE.Vector3();
+  /** Parts that move inside their merged region (the trunk lid), found again after build() by their key. */
+  private readonly movers = new Map<Geo, string>();
+  private readonly placed = new Map<string, MovablePart>();
 
   /** Add a painted part. Its region comes from where its bounding box centre is, unless `region` is given. */
   add(g: Geo, region?: string): void {
@@ -129,6 +132,20 @@ export class Scenery {
     let list = this.regions.get(region);
     if (!list) this.regions.set(region, (list = []));
     list.push(g);
+  }
+
+  /**
+   * Add a part that moves later (a hinged lid) without a mesh of its own: it is merged into its region like any part,
+   * and movable(key) after build() says where its vertices are, so they can be rewritten in place. No draw call.
+   */
+  addMovable(g: Geo, region: string, key: string): void {
+    this.movers.set(g, key);
+    this.add(g, region);
+  }
+
+  /** Where a movable part's vertices ended up (after build()). */
+  movable(key: string): MovablePart | undefined {
+    return this.placed.get(key);
   }
 
   /** Thirds of the meadow, west to east and north to south, plus the land far beyond the fence (north, and the rest). */
@@ -143,14 +160,32 @@ export class Scenery {
   build(material: THREE.Material, name: string): THREE.Mesh[] {
     const out: THREE.Mesh[] = [];
     for (const [region, parts] of this.regions) {
+      // mergeGeometries keeps the parts' vertices in order, so a movable part starts after the ones before it.
+      const found: { key: string; start: number; count: number }[] = [];
+      let at = 0;
+      for (const p of parts) {
+        const n = p.attributes.position.count;
+        const key = this.movers.get(p);
+        if (key) found.push({ key, start: at, count: n });
+        at += n;
+      }
       const mesh = new THREE.Mesh(fillSouth(merge(parts)), material);
       mesh.name = `${name}-${region}`;
       mesh.matrixAutoUpdate = false;
+      for (const f of found) this.placed.set(f.key, { mesh, start: f.start, count: f.count });
       out.push(mesh);
     }
     this.regions.clear();
+    this.movers.clear();
     return out;
   }
+}
+
+/** A movable part inside a merged region mesh: its first vertex and how many it has. */
+export interface MovablePart {
+  mesh: THREE.Mesh;
+  start: number;
+  count: number;
 }
 
 /**

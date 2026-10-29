@@ -1,7 +1,7 @@
 // The world lane's harness (dev/world.html): the whole world, a cone that walks routes to taps, buttons for every
 // world call and a stats box. window.__world and window.__dev are there for playwright-cli.
 import * as THREE from 'three';
-import { HAY_RACK, NEST, PICNIC, PLACES, POND, SLIDE, STABLE, START, type Place, type Vec2 } from '../layout';
+import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, PLACES, POND, SLIDE, STABLE, START, type Place, type Vec2 } from '../layout';
 import { createWorld } from './index';
 import { createActors, type ActorsImpl } from '../actors';
 import type { UnicornLook } from '../contracts';
@@ -101,6 +101,12 @@ const picnicFrame = (ms?: number): Promise<void> =>
 /** The hay rack moment: 6 m wide, the top of the heap at 28% so the rack stays above the hay panel. */
 const rackFrame = (ms?: number): Promise<void> =>
   frameAt(HAY_RACK.center, 6, new THREE.Vector3(HAY_RACK.center.x, 1.25, HAY_RACK.center.z), 0.28, ms);
+/** The Corner's gate (2.3.0 section 17.4): the step at (-14, 3.0), 5.5 m wide, the babies' heads at 45%. */
+const cornerFrame = (ms?: number): Promise<void> =>
+  frameAt({ x: -14, z: 3.0 }, 5.5, new THREE.Vector3(CORNER.babies[0].x, 0.9, CORNER.babies[0].z), 0.45, ms);
+/** The bead tree moment (2.3.0 section 19.2): 0.4 m west of the tree, 6 m wide, the tree top at 28%. */
+const beadFrame = (ms?: number): Promise<void> =>
+  frameAt({ x: BEAD_TREE.center.x - 0.4, z: BEAD_TREE.center.z }, 6, new THREE.Vector3(BEAD_TREE.center.x, 2.6, BEAD_TREE.center.z), 0.28, ms);
 
 /**
  * The customiser's portrait camera (design 2.2 section 2.4) with Princess Emma at `her`: a low camera that looks
@@ -132,12 +138,22 @@ button('picnic', () => void picnicFrame());
 button('rack', () => void rackFrame());
 button('portrait body', () => void portrait('body'));
 button('portrait face', () => void portrait('face'));
+button('corner', () => void cornerFrame());
+button('corner portrait', () => void portrait('body', CORNER.stand));
+button('bead tree', () => void beadFrame());
 button('release', () => world.releaseFrame());
 button('intro', () => void world.introSweep(4500));
 section('Walk to');
 button('picnic spot', () => void walkTo(PICNIC.stand));
 button('rack stand', () => void walkTo(HAY_RACK.stand));
+button('corner stand', () => void walkTo(CORNER.stand));
+button('bead tree stand', () => void walkTo(BEAD_TREE.stand));
+button('sign', () => void walkTo(MIST.signStand));
 button('start', () => void walkTo(START));
+section('Dressing Corner and sign (2.3.0)');
+button('lid open', () => void world.corner.lid(true));
+button('lid close', () => void world.corner.lid(false));
+button('sign shimmer', () => world.sign.shimmer());
 section('Hay rack');
 button('hay 0', () => world.stable.hay(0));
 button('hay ½', () => world.stable.hay(0.5));
@@ -254,6 +270,12 @@ function measure(): Record<string, unknown> {
     ['pond', () => (at(POND.center), world.releaseFrame(), world.snapCamera())],
     ['stableFollow', () => (at(STABLE.emmaStand), world.releaseFrame(), world.snapCamera())],
     ['stableFrame', () => (void world.frame(STABLE_FRAME, 18, { ms: 0 }), world.snapCamera())],
+    ['cornerFollow', () => (at(CORNER.stand), world.releaseFrame(), world.snapCamera())],
+    ['cornerFrame', () => (void cornerFrame(0), world.snapCamera())],
+    ['cornerPortrait', () => (at(CORNER.stand), void portrait('body', CORNER.stand, 0), world.snapCamera())],
+    ['beadFollow', () => (at(BEAD_TREE.stand), world.releaseFrame(), world.snapCamera())],
+    ['beadFrame', () => (void beadFrame(0), world.snapCamera())],
+    ['signFollow', () => (at(MIST.signStand), world.releaseFrame(), world.snapCamera())],
     ['intro', () => world.introStart()],
   ];
   for (const [name, set] of poses) {
@@ -307,5 +329,5 @@ function place(x: number, z: number): void {
   world.snapCamera();
 }
 
-Object.assign(window, { __world: world, __dev: { marker, walkTo, measure, numerals, place, stalled, frameAt, picnicFrame, rackFrame, portrait, THREE } });
+Object.assign(window, { __world: world, __dev: { marker, walkTo, measure, numerals, place, stalled, frameAt, picnicFrame, rackFrame, cornerFrame, beadFrame, portrait, THREE } });
 world.start();

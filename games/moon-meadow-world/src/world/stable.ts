@@ -1,14 +1,19 @@
 // The two stable rows: cream walls with stone-trimmed arches, a coral tiled roof, a narrow balcony with a ramp, dark
 // cosy stalls with straw, half doors that swing, gold number plaques and lanterns. The doors are one instanced mesh
 // and the plaques one merged mesh, so twenty doors cost two draw calls. West of the yard stands the hay rack: its
-// wood is stable scenery, its hay one small mesh that is only drawn while there is hay in it.
+// wood is stable scenery, its hay one small mesh that is only drawn while there is hay in it. A door that swings open
+// plays the stable-door effect (2.3.0), at most once per DOOR_FX_MS, so the herd going in does not clatter.
 import '@fontsource/andika/700.css';
 import * as THREE from 'three';
 import { HAY_RACK, STABLE, doorCenter, doorColumn, doorIsUpper, doorRow } from '../layout';
 import type { StableApi } from '../contracts';
+import { audio } from '../audio';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Scenery, canvasTexture, matrixOf, merge, paint, paintBy, paintY, place, softDotTexture, type Geo } from './geo';
 import { CRIB, RACK_YAW, hayDepth, hayGeometry, rackGeometry } from './hayrack';
+
+/** The stable-door effect plays at most this often (a row of doors opening at bedtime is one creak). */
+const DOOR_FX_MS = 1500;
 
 const ROW_HALF = 3.9;
 const STOREY = STABLE.upperFloorY;
@@ -514,9 +519,16 @@ export function buildStable(scene: THREE.Scene, scenery: Scenery, material: THRE
     });
   const valid = (n: number): boolean => Number.isInteger(n) && n >= 1 && n <= 20;
 
+  let doorFxAt = -Infinity;
   const api: StableApi = {
     open(n) {
       if (!valid(n)) return Promise.resolve();
+      // The effect never plays under Elizabeth (the channel skips it), and a missing file is silent.
+      const now = performance.now();
+      if (now - doorFxAt >= DOOR_FX_MS) {
+        doorFxAt = now;
+        void audio.fx('stable-door');
+      }
       return animate(n, { from: angle[n - 1], to: OPEN_ANGLE, ms: 600 });
     },
     close(n) {

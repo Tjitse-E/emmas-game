@@ -1,7 +1,7 @@
 // The sky and the time of day: a gradient dome, clouds, stars and fireflies, the castle on its misty hill far to the
 // north, and the light, fog and sky colours for day (0), sunset (0.5) and night (1).
 import * as THREE from 'three';
-import { BOUNDS } from '../layout';
+import { BOUNDS, MIST } from '../layout';
 import { Scenery, canvasTexture, paint, paintY, place, rng, softDotTexture, starTexture, type Geo } from './geo';
 import { CASTLE_HILL, groundHeight } from './terrain';
 
@@ -88,6 +88,22 @@ function quads(list: { x: number; y: number; z: number; w: number; h: number; ti
   out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   out.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   out.setIndex(idx);
+  return out;
+}
+
+/**
+ * The moon mist's banks (layout.ts MIST): five low quads over its 4.5 by 2.8 m ellipse, the far ones a little higher,
+ * tilted like the far banks so the raised cameras look at them face on.
+ */
+export function meadowMist(): { x: number; y: number; z: number; w: number; h: number; tilt: number }[] {
+  const r = rng(29);
+  const out = [];
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 4) * Math.PI;
+    const x = MIST.center.x - Math.cos(a) * MIST.rx * 0.75 + (r() - 0.5) * 0.6;
+    const z = MIST.center.z - Math.sin(a) * MIST.rz * 0.6 + (r() - 0.5) * 0.5;
+    out.push({ x, y: 0.75 + r() * 0.35 + (MIST.center.z - z) * 0.1, z, w: 3.6 + r() * 1.2, h: 1.7 + r() * 0.5, tilt: -0.25 });
+  }
   return out;
 }
 
@@ -178,6 +194,9 @@ export function buildSky(scene: THREE.Scene, scenery: Scenery, hemi: THREE.Hemis
   for (const [mx, mz] of [[-62, -60], [60, -55], [-30, -78], [38, -84], [-85, -30], [86, -24]]) {
     mistList.push({ x: mx, y: groundHeight(mx, mz) + 3, z: mz, w: 46, h: 10, tilt: -0.25 });
   }
+  // 2.3.0: the moon mist over the empty north-east of the meadow, behind the stables' back line, where the meadow
+  // opens with riding in 2.4. Low soft banks in the same mesh, so it costs no draw call and no shader of its own.
+  for (const m of meadowMist()) mistList.push(m);
   const mistMat = new THREE.MeshBasicMaterial({ alphaMap: softDotTexture(), transparent: true, depthWrite: false, opacity: 0.65 });
   const mist = new THREE.Mesh(quads(mistList), mistMat);
   mist.name = 'mist';

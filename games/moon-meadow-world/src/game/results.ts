@@ -82,6 +82,47 @@ export function resultFields(line: ResultLine): Record<string, Field> {
   return { ...base, door: d.door as Field, name: d.name as Field, tried: list(d.tried) };
 }
 
+/** One play, as the game measured it, for its kind=play line (2.3 section 17.5). Times in ms. */
+export interface PlayLine {
+  v: string;
+  plays: number;
+  /** Since the Play tap. */
+  playMs: number;
+  checkedMs: number;
+  /** The start mirror's time, and the Corner's music box time (its dressing, clock.dressMs.corner). */
+  mirrorMs: number;
+  cornerDressMs: number;
+  /** The whole Corner visit: the walk, the gate, the gift and the wardrobe (cv; its gate is also checked time). */
+  cornerMs: number;
+  /** Free play's free time (the Corner's music box included). */
+  freeMs: number;
+  /** The Corner's gate: phrase reads, or word reads before Emma's picture check, and how many were first tries. */
+  gate: { kind: 'phrase' | 'word'; first: number } | null;
+  quests: readonly string[];
+  gifts: readonly { field: string; id: string }[];
+  reading: number;
+  phrases: number;
+  band: string;
+  patterns: number;
+}
+
+const secs = (ms: number): number => Math.round(ms / 1000);
+
+/**
+ * The kind=play line's fields: v, pl plays, min play minutes, ck checked s, dr dressing s (mi + co), mi mirror s, co
+ * the Corner's dressing s (its music box), cv the whole Corner visit s, fr free s, gk the gate's kind, gt gate first
+ * tries, q quests finished, gf gifts as field:id, rl reading level, ph phrase level, mb maths band, pt pattern level.
+ * After three plays these show whether dressing is pushing out learning, and the play's length (2.3 section 9).
+ */
+export function playFields(p: PlayLine): Record<string, Field> {
+  return {
+    kind: 'play', v: p.v, pl: p.plays, min: Math.round(p.playMs / 6000) / 10, ck: secs(p.checkedMs),
+    dr: secs(p.mirrorMs + p.cornerDressMs), mi: secs(p.mirrorMs), co: secs(p.cornerDressMs), cv: secs(p.cornerMs), fr: secs(p.freeMs),
+    gk: p.gate?.kind, gt: p.gate?.first, q: p.quests.join(','), rl: p.reading, ph: p.phrases, mb: p.band, pt: p.patterns,
+    gf: p.gifts.map((i) => `${i.field}:${i.id}`).join(','),
+  };
+}
+
 /** Send a line to the server log. It never throws and never waits. */
 export function sendDiag(query: string): void {
   try {
