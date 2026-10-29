@@ -171,12 +171,12 @@ export const TAB_RAILS = 5;
  * The six fixed tabs and the fields each one holds, in rail order. Earrings and the necklace sit on the eyes tab
  * (the face frame), because the sparkles tab cannot hold hair things, jewels and two colour runs in five rails.
  */
-export const TABS: readonly { tab: LookTab; fields: readonly LookField[]; frame: 'body' | 'face' }[] = [
+export const TABS: readonly { tab: LookTab; fields: readonly LookField[]; frame: 'body' | 'face' | 'feet' }[] = [
   { tab: 'hair', fields: ['style', 'hair'], frame: 'body' },
   { tab: 'eyes', fields: ['eyes', 'earrings', 'necklace', 'jewelColour'], frame: 'face' },
   { tab: 'gown', fields: ['gown', 'extra', 'gownColour'], frame: 'body' },
   { tab: 'crown', fields: ['crown', 'crownColour'], frame: 'body' },
-  { tab: 'shoes', fields: ['shoes', 'shoeColour'], frame: 'body' },
+  { tab: 'shoes', fields: ['shoes', 'shoeColour'], frame: 'feet' },
   { tab: 'sparkles', fields: ['thing', 'thingColour'], frame: 'face' },
 ];
 
@@ -441,6 +441,29 @@ export function crownOutline(hair: HairColour, crown: Colour): string {
   const h = HAIR_HEX[hair].base;
   const options = [OUTLINES[0], PALETTE[crown].deep, OUTLINES[1], OUTLINES[2]];
   return options.find((c) => contrast(c, h) >= CROWN_CONTRAST) ?? OUTLINES[2];
+}
+
+/** `a` moved towards `b` by t (0 to 1), as #rrggbb. */
+function mixHex(a: string, b: string, t: number): string {
+  const ch = (hex: string, i: number) => parseInt(hex.slice(1 + 2 * i, 3 + 2 * i), 16);
+  return `#${[0, 1, 2].map((i) => Math.round(ch(a, i) + (ch(b, i) - ch(a, i)) * t).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * The colour her hair things are painted on this hair (2.3.0's last pass): the colour's small shade, or when it does
+ * not stand out from the hair base by CROWN_CONTRAST (green bows on green hair vanished), that shade moved the least
+ * towards a deep plum or towards white that does. Rainbow things keep their bands.
+ */
+export function thingShade(hair: HairColour, colour: Colour): string {
+  const h = HAIR_HEX[hair].base;
+  const c = PALETTE[colour].small;
+  for (const t of [0, 0.25, 0.4, 0.55, 0.7, 0.85]) {
+    for (const to of ['#3d2a55', '#ffffff']) {
+      const m = mixHex(c, to, t);
+      if (contrast(m, h) >= CROWN_CONTRAST) return m;
+    }
+  }
+  return luminance(h) > 0.3 ? '#3d2a55' : '#ffffff';
 }
 
 // ------------------------------------------------------------------------------------------------ the log and the clips

@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import type { Princess, PrincessEmote, PrincessLook, PrincessMode, Vec2 } from '../contracts';
 import { POND, SLIDE } from '../layout';
-import { DEFAULT_LOOK, EYE_HEX, HAIR_HEX, PALETTE, crownOutline, normaliseLook } from '../wardrobe';
+import { DEFAULT_LOOK, EYE_HEX, HAIR_HEX, PALETTE, crownOutline, normaliseLook, thingShade } from '../wardrobe';
 import { B, CAPACITY, PartList, Xf, col, rimLambert, shapeTriangles, type BatchId } from './parts';
 import * as S from './shapes';
 import { Hair, crownForward, hairExtra } from './hair';
@@ -283,7 +283,7 @@ export class PrincessActor implements Princess {
     const was = this.worn;
     const next = normaliseLook({ ...was, ...look }, was);
     this.worn = next;
-    if (next.thingColour !== was.thingColour) this.paintThings();
+    if (next.thingColour !== was.thingColour || next.hair !== was.hair) this.paintThings();
     if (next.eyes !== was.eyes) this.c.iris.set(EYE_HEX[next.eyes]);
     if (next.hair !== was.hair) this.hair.setColour(next.hair);
     if (next.gown !== was.gown || next.gownColour !== was.gownColour) this.wearGown();
@@ -385,11 +385,15 @@ export class PrincessActor implements Princess {
     else glow.set(p.small).multiplyScalar(0.5);
   }
 
-  /** Her hair things' colour, and a light tint of it for the knots (a highlight that reads as a bow at a glance). */
+  /**
+   * Her hair things' colour, and a light tint of it for the knots (a highlight that reads as a bow at a glance). On
+   * hair of nearly the same colour the shade moves until it stands out (thingShade).
+   */
   private paintThings(): void {
     const p = PALETTE[this.worn.thingColour];
-    this.ribbon.set(p.small);
-    this.ribbonLight.set(p.small).lerp(_white, 0.55);
+    const shade = thingShade(this.worn.hair, this.worn.thingColour);
+    this.ribbon.set(shade);
+    this.ribbonLight.set(shade).lerp(_white, 0.55);
     this.colours.bands = p.bands ? this.rainbow : null;
   }
 

@@ -274,6 +274,22 @@ describe('wardrobeLayout', () => {
         }
       });
 
+      it('moves the gift cards beside her when they would cover her and there is room, and keeps them centred in a close-up', () => {
+        for (const n of [1, 2]) {
+          // At the bead tree she stands left of the middle in a wide frame.
+          const her = { x: w * 0.33, y: h * 0.35, w: 60, h: 120 };
+          const cards = giftCards(w, h, n, her);
+          for (const c of cards) {
+            expect(inside(c, screen)).toBe(true);
+            expect(overlaps(c, her)).toBe(false);
+            expect(overlaps(c, l.home)).toBe(false);
+          }
+          // Close up in the middle there is no room beside her: centred as before.
+          const close = { x: w / 2 - 350, y: h * 0.2, w: 700, h: h * 0.6 };
+          expect(giftCards(w, h, n, close)).toEqual(giftCards(w, h, n));
+        }
+      });
+
       it('centres one or two gift cards of at least 64 px on screen, 60 design px apart', () => {
         for (const n of [1, 2]) {
           const cards = giftCards(w, h, n);
@@ -1238,12 +1254,14 @@ describe('the panel on a page', () => {
     expect(o.log).toEqual(['box true', 'box false']);
   });
 
-  it('at the end stops her word, chimes, and says "Lovely!" when the chime is over, at most 1 s later', async () => {
+  it('at the end stops her word, chimes a task later (once the stopped speech has settled), and says "Lovely!" when the chime is over, at most 1 s later', async () => {
     const o = opts();
     open(o.w);
     await run(500);
     fake.s.log.length = 0;
     down(parent.byLabel('done'));
+    expect(sounds()).toEqual(['stop']);
+    await run(0);
     expect(sounds()).toEqual(['stop', 'sfx chime']);
     await run(FX_WAIT_MS - 1);
     expect(sounds()).toEqual(['stop', 'sfx chime']);

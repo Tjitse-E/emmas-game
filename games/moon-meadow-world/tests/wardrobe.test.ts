@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import type { GiftItem, GiftSet, LookField, Owned, OwnedField, PrincessLook } from '../src/contracts';
 import {
   COLOURS, COLOUR_FIELDS, CROWN_CONTRAST, DEFAULT_LOOK, EYE_HEX, GIFT_SETS, HAIR_COLOURS, HAIR_HEX, OPTIONS, OWNED_FIELDS, PALETTE,
-  RAIL_CELLS, START_OWNED, TABS, TAB_RAILS, contrast, crownOutline, fieldRows, fromLegacy, giftChoices, giftSetFor, lookFields,
+  RAIL_CELLS, START_OWNED, TABS, TAB_RAILS, contrast, crownOutline, thingShade, fieldRows, fromLegacy, giftChoices, giftSetFor, lookFields,
   nextRibbon, normaliseLook, owns, parseOwned, railsOf, setOfQuest, stillToEarn, wardrobeClipIds, withItem, wordOf,
 } from '../src/wardrobe';
 import { DIAG_MAX, diagQuery } from '../src/game/results';
@@ -404,6 +404,23 @@ describe('the goodnight ribbons', () => {
     const all = ['lilac', 'sky', 'mint', 'gold', 'coral'] as const;
     expect(nextRibbon(all, 'pink')).toBe('lilac');
     expect(nextRibbon(all, 'orange')).toBe('pink');
+  });
+});
+
+describe('hair things on her hair', () => {
+  it('stand out from every one of the 18 hair colours in every one of the 12 colours, and keep their own shade when they do', () => {
+    let pairs = 0;
+    for (const h of HAIR_COLOURS) {
+      for (const c of COLOURS) {
+        const s = thingShade(h, c);
+        const at = `${c} things on ${h} hair`;
+        expect(s).toMatch(/^#[0-9a-f]{6}$/);
+        expect(contrast(s, HAIR_HEX[h].base), at).toBeGreaterThanOrEqual(1.8);
+        if (contrast(PALETTE[c].small, HAIR_HEX[h].base) >= 1.8) expect(s, at).toBe(PALETTE[c].small);
+        pairs++;
+      }
+    }
+    expect(pairs).toBe(18 * 12);
   });
 });
 

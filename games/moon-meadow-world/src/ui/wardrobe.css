@@ -4,7 +4,9 @@
 
 .wardrobe { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; }
 .wd-slide { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; will-change: transform; }
+/* Opaque: through the shared panel's 0.94 the stable door numbers showed behind the rails. */
 .wd-panel { position: absolute; }
+.wd-panel.panel { background: #fffaf2; }
 
 /* A tab tile in the icon column: a rounded square, so it never looks like a swatch. The open tab is raised and gold;
    the crown's place stays empty until Lumi has given the crown. */
@@ -107,7 +109,7 @@
 .wd-board-place.owned { background: #ffffff; border-color: #ffffff; box-shadow: 0 calc(2 * var(--u)) calc(4 * var(--u)) rgba(110, 80, 160, 0.3); }
 .wd-board-pic { position: absolute; left: 6%; top: 6%; width: 88%; height: 88%; object-fit: contain; }
 .wd-board-pic svg { display: block; width: 100%; height: 100%; }
-.wd-board-pic.hint { opacity: 0.4; }
+.wd-board-pic.hint { opacity: 0.55; }
 .wd-board-place.fresh { animation: wd-fresh 1.2s ease-in-out infinite; }
 .wd-board-spark { position: absolute; right: -30%; top: -30%; width: 60%; animation: mmw-twinkle 1.1s ease-in-out infinite; }
 .wd-board-sticker { border: calc(3 * var(--u)) dashed #eadcff; }

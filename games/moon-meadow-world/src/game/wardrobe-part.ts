@@ -1,7 +1,7 @@
 // The start mirror (docs/v4/2.2.md 2.1 to 2.4, 2.3.md section 16): the first part after the sweep, before
 // Lumi's welcome. dressUp is shared with the Dressing Corner (corner.ts), which dresses her at the gazebo step. Princess Emma stands at START, close up on the left of the screen; the layer's tabs and rails are on
 // the right. Nothing is checked or refused. Every pick changes her at once, a released pick plays her reaction and is
-// saved, and the big pink play button (Done) or the end of the music box (45 s) ends the part with a curtsy. Lumi
+// saved, and the big pink play button (Done) or the end of the music box (30 s) ends the part with a curtsy. Lumi
 // stays hidden, the home button stays. Her crown shows once Lumi has given it (the crown tab too).
 import type { BoardSpec, LookField, LookTab, PrincessEmote, PrincessLook, Vec2 } from '../contracts';
 import { GRAZE_HOMES, dist2 } from '../layout';
@@ -21,8 +21,12 @@ const ASIDE: [Vec2, Vec2][] = [
   [{ x: -7, z: 9 }, { x: -4, z: 12 }],
 ];
 
-/** The start mirror's music box (2.3 decision 1): 45 s, no challenge. */
-export const MIRROR_MS = 45_000;
+/**
+ * The start mirror's music box (2.3 decision 1): 30 s, no challenge. 2.3.0's last pass (Claude's call, docs/v4/2.3.md
+ * section 9): from 45 s to 30 s, the first cut section 9 names, as dressing is earned and free play now keeps its
+ * second learning quest.
+ */
+export const MIRROR_MS = 30_000;
 
 /** Her reaction when a pick is released, per field (2.2.md 2.4; 2.3 adds the crown, shoes and jewels). */
 const REACTION: Record<LookField, PrincessEmote> = {
@@ -109,8 +113,8 @@ export async function dressUp(g: Game, o: DressOpts): Promise<{ look: PrincessLo
   her.hold(true);
   if (g.options.portrait) her.portrait(true);
 
-  // The camera: the body frame; eyes and hair things bring it to her face, and it goes back to the body 2.5 s after
-  // the last touch on those rows. A resize or a rotation frames again (frame() measures with the aspect of the moment).
+  // The camera: the body frame; eyes and hair things bring it to her face and shoes to her feet, and it goes back to
+  // the body 2.5 s after the last touch on those rows. A resize or a rotation frames again (frame() measures with the aspect of the moment).
   let frameRow: LookTab | null = null;
   let camera: Vec2 = { x: at.x, z: at.z + 4 };
   const frameNow = (ms: number): Promise<void> => {
@@ -150,7 +154,7 @@ export async function dressUp(g: Game, o: DressOpts): Promise<{ look: PrincessLo
     goFrame(null);
     restFace();
   };
-  const lingers = (row: LookTab | null): boolean => !!row && (portraitKind(row) === 'face' || SIDE_TABS.includes(row));
+  const lingers = (row: LookTab | null): boolean => !!row && (portraitKind(row) !== 'body' || SIDE_TABS.includes(row));
   const touch = (row: LookTab) => {
     stopBack();
     const turn = focus !== row;

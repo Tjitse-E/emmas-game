@@ -8,25 +8,34 @@ import { TABS } from '../wardrobe';
 import { FOV } from '../world/camera';
 import { wardrobeLayout } from '../ui/geometry';
 
-export type PortraitKind = 'body' | 'face';
+export type PortraitKind = 'body' | 'face' | 'feet';
 
 /** hvis: metres seen top to bottom at her; lookY: the height at the middle of the screen; pitch in degrees. */
 export const PORTRAIT: Record<PortraitKind, { hvis: number; lookY: number; pitch: number }> = {
-  /** The hair, gown, crown and shoes tabs and the default: all of her, feet at about 77%. */
+  /** The hair, gown and crown tabs and the default: all of her, feet at about 77%. */
   body: { hvis: 2.08, lookY: 0.58, pitch: 8 },
-  /** The eyes tab (eyes, earrings, necklace) and the sparkles tab: her head about 390 px high. */
-  face: { hvis: 1.05, lookY: 1.08, pitch: 6 },
+  /**
+   * The eyes tab (eyes, earrings, necklace) and the sparkles tab: her head about 330 px high. 2.3.0's last pass: a
+   * little wider and lower than 2.2's (1.05 m at 1.08 m), so the necklace shows above Done and a hair thing on her
+   * left stays on screen.
+   */
+  face: { hvis: 1.25, lookY: 0.98, pitch: 6 },
+  /**
+   * The shoes tab (2.3.0's last pass): a little closer than the body frame and lower, so her shoes (whose toes stand
+   * about 0.3 m in front of her) are above Done, which hid them in the body frame.
+   */
+  feet: { hvis: 1.6, lookY: 0.3, pitch: 10 },
 };
 
 /** The tabs that bring the camera to her face (wardrobe.ts TABS). */
 export const FACE_TABS: readonly LookTab[] = TABS.filter((t) => t.frame === 'face').map((t) => t.tab);
-/** A face frame goes back to the body frame this long after the last touch on a face tab. */
+/** A face or feet frame goes back to the body frame this long after the last touch on its tab. */
 export const FACE_RETURN_MS = 2500;
 /** The first move into the portrait, and every move between the frames. */
 export const ENTER_MS = 900;
 export const MOVE_MS = 500;
 
-export const portraitKind = (tab: LookTab | null): PortraitKind => (tab && FACE_TABS.includes(tab) ? 'face' : 'body');
+export const portraitKind = (tab: LookTab | null): PortraitKind => (tab ? (TABS.find((t) => t.tab === tab)?.frame ?? 'body') : 'body');
 
 /** The panel's left edge in CSS px, as the layer draws it (2.2): she stands at half of it. */
 export function panelLeftOf(w: number, h: number): number {

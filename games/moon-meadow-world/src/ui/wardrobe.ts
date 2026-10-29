@@ -229,7 +229,8 @@ export function runWardrobe(
     };
 
     // ---- words on release, never over Elizabeth's guidance
-    let guiding = false;
+    /** Guide lines running now: a word waits until the last one has ended (two may overlap). */
+    let guiding = 0;
     const voice = new WordVoice({
       say: (clip) => void audio.say(clip),
       show: (p) => {
@@ -240,18 +241,18 @@ export function runWardrobe(
         }
         pill.classList.toggle('on', p !== null);
       },
-      guiding: () => guiding,
+      guiding: () => guiding > 0,
     });
     undo.push(() => voice.close());
     const guide = async (clips: string[]) => {
       if (!clips.length || !alive) return;
-      guiding = true;
+      guiding++;
       try {
         await audio.sayAll(clips);
       } finally {
-        guiding = false;
+        guiding--;
       }
-      if (alive && !finished) voice.pump();
+      if (alive && !finished && guiding === 0) voice.pump();
     };
 
     // ---- the rails' rules
@@ -452,10 +453,14 @@ export function runWardrobe(
       if (end === 'done') done.classList.add('pressed');
       // Her last word stops and the chime sounds on its own; "Lovely!" follows it, as her line waits for an effect (at
       // most 1 s, section 8), and only when no other speech has begun by then, so it never cuts a line.
+      // The speech count drops only once stop()'s promises settle (microtasks), and the chime and the line both check
+      // it, so they wait a task, as the gift paper does (gift.ts).
       audio.stop();
-      void Promise.race([audio.sfx('chime'), sleep(FX_WAIT_MS)]).then(() => {
-        if (!reset && !audio.speaking) void audio.sayAll(o.clips.done);
-      });
+      setTimeout(() => {
+        void Promise.race([audio.sfx('chime'), sleep(FX_WAIT_MS)]).then(() => {
+          if (!reset && !audio.speaking) void audio.sayAll(o.clips.done);
+        });
+      }, 0);
       resolve({ look: rails.look, end });
       root.classList.add('leaving');
       void play(slide, [{ transform: 'none' }, { transform: `translateX(${ctx.screen().w - L.panel.x + 24}px)` }], { duration: SLIDE_MS, easing: 'cubic-bezier(.5, 0, .8, .4)', fill: 'forwards' });

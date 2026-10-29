@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { FOV } from '../src/world/camera';
 import { CORNER, START } from '../src/layout';
 import { PORTRAIT, panelLeftOf, portraitFrame, portraitKind } from '../src/game/portrait';
+import { unitFor } from '../src/ui/geometry';
 
 const SIZES: [number, number][] = [[1080, 810], [1080, 740], [1024, 768], [1024, 690], [1180, 820], [1366, 1024]];
 
@@ -66,16 +67,32 @@ describe('portraitFrame', () => {
     expect(feet.y - metre.y).toBeLessThan(366);
     const face = portraitFrame(START, 'sparkles', { w, h, panelLeft: panelLeftOf(w, h) });
     const fc = rigCamera(face, w, h);
-    const head = onScreen(fc, START.x, 1.08, START.z, w, h);
+    const head = onScreen(fc, START.x, PORTRAIT.face.lookY, START.z, w, h);
     expect(head.y).toBeCloseTo(h / 2, 1);
     // The camera stays well beyond the near plane (0.5 m).
     expect(Math.hypot(face.camera.x - face.look.x, face.camera.y - face.look.y, face.camera.z - face.look.z)).toBeGreaterThan(1.2);
   });
 
-  it('picks the face frame for the eyes and sparkles tabs only', () => {
+  it('picks the face frame for the eyes and sparkles tabs and the feet frame for the shoes', () => {
     expect(portraitKind(null)).toBe('body');
     const tabs = ['hair', 'eyes', 'gown', 'crown', 'shoes', 'sparkles'] as const;
-    expect(tabs.map((t) => portraitKind(t))).toEqual(['body', 'face', 'body', 'body', 'body', 'face']);
+    expect(tabs.map((t) => portraitKind(t))).toEqual(['body', 'face', 'body', 'body', 'feet', 'face']);
+  });
+
+  it('keeps her shoes and her necklace above Done (bottom 18 + 140 design px) at every size', () => {
+    for (const [w, h] of SIZES) {
+      const doneTop = h - 158 * unitFor(Math.max(w, h), Math.min(w, h));
+      const feet = portraitFrame(START, 'shoes', { w, h, panelLeft: panelLeftOf(w, h) });
+      // Her toes stand about 0.3 m in front of her (measured in the game at 1080 x 740).
+      const toe = onScreen(rigCamera(feet, w, h), START.x, 0, START.z + 0.3, w, h);
+      expect(toe.y, `${w}x${h} shoes`).toBeLessThan(doneTop - 30);
+      // Her head still shows.
+      expect(onScreen(rigCamera(feet, w, h), START.x, 1.0, START.z, w, h).y).toBeGreaterThan(0);
+      const face = portraitFrame(START, 'eyes', { w, h, panelLeft: panelLeftOf(w, h) });
+      // The necklace's pendant hangs about 0.72 m up.
+      const pendant = onScreen(rigCamera(face, w, h), START.x, 0.72, START.z, w, h);
+      expect(pendant.y, `${w}x${h} necklace`).toBeLessThan(doneTop);
+    }
   });
 
   it('frames her at the Dressing Corner step the same way, with the trunk and the mirror behind her', () => {
