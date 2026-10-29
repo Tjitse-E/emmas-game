@@ -9,6 +9,13 @@ show the newest version, bottom right. `scripts/deploy.sh` refuses to deploy a v
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.3.1] - 2026-10-29
+
+A small patch. In the easy sums a stone of 2 is never the answer. This stays as it is for now, by Tjitse's choice: her first tries show whether it needs to change.
+
+### Changed
+- Moon Meadow World: the snow egg can ask nine take away six again. Tjitse listened to Elizabeth's clip and approved it.
+
 ## [2.3.0] - 2026-10-29
 
 The finished 2.3.0. This entry lists everything that is new since 2.2.0, so it repeats 2.3.0-pre.1.
