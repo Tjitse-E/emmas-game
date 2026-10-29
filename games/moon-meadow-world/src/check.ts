@@ -83,13 +83,17 @@ function render(): void {
   const crosses = cards.filter((x) => verdicts[x.key] === 'cross').length;
   // The game's own default rule over the file's checks and this device's verdicts: every ok pair minus the crosses.
   const strong = phraseTargets({ device: verdicts }).length;
-  // Green and gold are each other's partner colour, and blue and brown are shown next to one of them at level 1, so
-  // with every green or every gold picture crossed no phrase is on.
+  // Every target colour is needed: green and gold are each other's sibling, so are blue and brown, and level 1 pairs
+  // gold with blue and brown with green. With every picture of one of them crossed no phrase is on. A phrase also needs
+  // the other three items of its baskets, so a few crosses on one colour can turn many phrases off.
   const left = (c: string) => cards.some((x) => x.key.startsWith(`${c} `) && verdicts[x.key] !== 'cross');
+  const gone = ['green', 'gold', 'blue', 'brown'].filter((c) => !left(c));
+  const why = gone.length
+    ? ` With every ${gone[0]} picture crossed, no phrase is on.`
+    : ' A phrase plays only with the other pictures of its baskets, so a few crosses on one colour can turn many phrases off.';
   const gate = strong >= MIN_PHRASES
     ? `${strong} phrases are on now: the Dressing Corner plays phrase wishes.`
-    : `${strong} phrases are on now; the Dressing Corner plays phrase wishes from ${MIN_PHRASES}, so it plays word wishes.`
-      + (left('green') && left('gold') ? '' : ' Green and gold are needed most: with every green or every gold picture crossed, no phrase is on.');
+    : `${strong} phrases are on now; the Dressing Corner plays phrase wishes from ${MIN_PHRASES}, so it plays word wishes.${why}`;
   status.textContent = `${ticks} right, ${crosses} not right, ${cards.length - ticks - crosses} to go. ${gate}`
     + (saved ? '' : ' This browser cannot save the verdicts (a private tab?), so the game will not see them.');
   status.classList.toggle('warn', !saved);

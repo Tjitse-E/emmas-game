@@ -51,9 +51,9 @@ function walkFacing(g: Game, u: ReturnType<typeof guests>[number], s: Vec2): Pro
 
 /**
  * One gate read's wish (2.3 sections 17.4 and 18): always `planWish(g, 'phrase', part)`. While gateKind(g) is 'word'
- * (fewer than 6 strong phrases among the pairs ?phrases= allows: many crosses on check.html, or ?phrases=emma before
- * her checks) the reading lane's planner gives a 2.2 dress-up word wish itself, its intro starting with "Your baby
- * wants to dress up like you!", so the Corner says nothing of its own before a read. Only when the planner throws (no
+ * (fewer than 6 strong phrases among the pairs ?phrases= allows: a few crosses on one colour on check.html, or
+ * ?phrases=emma before her checks) the reading lane's planner gives a 2.2 dress-up word wish itself, its intro
+ * starting with "Your baby wants to dress up like you!", so the Corner says nothing of its own before a read. Only when the planner throws (no
  * pair to pick from) does the gate plan that same dress-up word wish here, so the Corner always opens.
  */
 export function gateWish(g: Game, part: string): WishSpec {
