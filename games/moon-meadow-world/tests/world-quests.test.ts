@@ -1,7 +1,7 @@
 // The afternoon's rules (docs/v4/2.3.md section 17): the free-play clocks of 17.3, the maths quest's rotation, which
 // quest may start, gifts that are saved at the pick and kept on, a full set that keeps paying, every quest resolving
 // framed with the gift picker before its release, the Dressing Corner's visit (its gate with phrase wishes on a fresh
-// device and word wishes with too few strong phrases), and the trunk tap after it. A small fake game stands in for the world, the actors and the layer; the game code
+// device and word wishes with too few strong phrases), the trunk tap after it, and the start mirror's music box. A small fake game stands in for the world, the actors and the layer; the game code
 // under test is the real one.
 import * as THREE from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -46,7 +46,7 @@ import {
 import { type Game, startClock, startQuests } from '../src/game/game';
 import { askQuest, badgeOf, canQuest, placeAt, runQuest } from '../src/game/quests';
 import { cornerQuest, trunkTap } from '../src/game/corner';
-import { dressClips } from '../src/game/wardrobe-part';
+import { MIRROR_MS, dressClips, wardrobe } from '../src/game/wardrobe-part';
 import { gateKind as phraseGateKind } from '../src/content/phrases';
 import { createSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
@@ -623,6 +623,20 @@ describe('the Corner visit', () => {
     const { g, calls } = fakeGame({ search: '?seed=4&box=5&phrases=all' });
     await cornerQuest(g);
     expect(calls.wardrobe!.limitMs).toBe(5000);
+  });
+});
+
+describe('the start mirror', () => {
+  it('plays its music box for 45 s, as decision 1 says, with no board; ?box= shortens it', async () => {
+    expect(MIRROR_MS).toBe(45_000);
+    const { g, calls } = fakeGame();
+    await wardrobe(g);
+    expect(calls.wardrobe!.limitMs).toBe(45_000);
+    expect(calls.wardrobe!.board).toBeUndefined();
+    expect(calls.wardrobe!.clips.idle).toEqual(['g4-ready-play']);
+    const box = fakeGame({ search: '?seed=3&box=5' });
+    await wardrobe(box.g);
+    expect(box.calls.wardrobe!.limitMs).toBe(5000);
   });
 });
 
