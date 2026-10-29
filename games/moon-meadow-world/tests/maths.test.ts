@@ -225,25 +225,40 @@ describe('the trays (4.1)', () => {
     }
   });
 
+  const rules: Record<string, (stones: number[], answer: number) => number> = {
+    biggest: (s, a) => Number(s[s.length - 1] === a),
+    smallest: (s, a) => Number(s[0] === a),
+    'lower middle': (s, a) => Number(s[Math.floor((s.length - 1) / 2)] === a),
+    'upper middle': (s, a) => Number(s[Math.ceil((s.length - 1) / 2)] === a),
+    'nearest five': nearFiveShare,
+  };
+  const check = (eggs: EggSpec[], limit: number, label: string) => {
+    for (const [name, rule] of Object.entries(rules)) {
+      const wins = eggs.reduce((t, e) => t + rule(e.stones, e.answer), 0) / eggs.length;
+      expect(wins, `${label}: ${name}`).toBeLessThanOrEqual(limit);
+    }
+  };
+
   it('lets no simple guess win above 35% with 4 stones or 30% with 5: biggest, smallest, middle, nearest five', () => {
-    const rules: Record<string, (stones: number[], answer: number) => number> = {
-      biggest: (s, a) => Number(s[s.length - 1] === a),
-      smallest: (s, a) => Number(s[0] === a),
-      'lower middle': (s, a) => Number(s[Math.floor((s.length - 1) / 2)] === a),
-      'upper middle': (s, a) => Number(s[Math.ceil((s.length - 1) / 2)] === a),
-      'nearest five': nearFiveShare,
-    };
-    const check = (eggs: EggSpec[], limit: number, label: string) => {
-      for (const [name, rule] of Object.entries(rules)) {
-        const wins = eggs.reduce((t, e) => t + rule(e.stones, e.answer), 0) / eggs.length;
-        expect(wins, `${label}: ${name}`).toBeLessThanOrEqual(limit);
-      }
-    };
     for (const band of BANDS) {
       const limit = band === 'a' ? 0.35 : 0.3;
       const byMoment = MOMENTS.map((m) => many(m, band, 10_000, 3));
       byMoment.forEach((eggs, i) => check(eggs, limit, `${MOMENTS[i]} ${band}`));
       check(byMoment.flat(), limit, `all ${band}`);
+    }
+  });
+
+  it('keeps the same bounds for the hay rack in whole plays, after both eggs asked their sums', () => {
+    // The rack leaves out the facts the eggs asked (freshCombos), so its sums in a play are not its sums alone. 2.3.0
+    // let "the biggest" win 47% of the rack in whole plays; this holds it.
+    for (const band of BANDS) {
+      const limit = band === 'a' ? 0.35 : 0.3;
+      const racks = Array.from({ length: PLAYS[band].length / 2 }, (_, i) => {
+        const sums = [...PLAYS[band][2 * i].sums, ...PLAYS[band][2 * i + 1].sums];
+        const used = { totals: sums.map((e) => totalOf(e)), answers: sums.map((e) => e.answer) };
+        return rackSpec(stream(i + 1, 'rack'), { band, used });
+      });
+      check(racks, limit, `rack in plays ${band}`);
     }
   });
 });
