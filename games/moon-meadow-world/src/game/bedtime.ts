@@ -18,7 +18,7 @@ import { doorMoment, heartsBetween } from './doors';
 import { ownedRibbons } from './save';
 import { hideOffers } from './quests';
 import { diagQuery, playFields, sendDiag } from './results';
-import { playOf } from './report';
+import { mergeLast, playOf, todayOf } from './report';
 
 /** The ribbons close-up: her chest at `frac` of the height, both door rows with their peeking heads behind her. */
 const RIBBONS = { width: 8.6, pitch: 24, frac: 0.64 };
@@ -221,9 +221,11 @@ export async function goodnight(g: Game): Promise<void> {
   inside.forEach((u, k) => setTimeout(() => u.peek(false), k * 90));
   await lumiSay(g, CLIPS.goodnight);
   g.part = 'end';
-  // This play's targets and totals: the next play leaves them out while it can.
+  // This play's targets and totals added to the ones it started with (as after each place): the next play leaves them
+  // out while it can, and a short play never drops the last full play's words.
+  const last = mergeLast(g.start.last, todayOf(g));
   g.save.write((s) => {
-    s.last = { words: [...g.today.words], totals: [...g.maths.used.totals] };
+    s.last = last;
   });
   // One kind=play line per play, before the end screen and its reload (2.3 section 17.5).
   sendDiag(diagQuery(playFields(playOf(g))));

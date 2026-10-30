@@ -8,6 +8,10 @@ import { DEFAULT_LOOK, GIFT_SETS, START_OWNED, fromLegacy, withItem } from '../s
 import { type KeyStore, SAVE_KEY, SAVE_KEY_V1, createSave, defaultSave, memoryStore, ownedRibbons, parseSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
 import { parseSave233 } from './fixtures/parse-save-2.3.3';
+import { afterPlace } from '../src/game/report';
+import { startHub } from '../src/game/hub';
+import { Results } from '../src/game/results';
+import type { Game } from '../src/game/game';
 
 const here = import.meta.dirname;
 
@@ -402,5 +406,53 @@ describe('the 2.4 save', () => {
     const stored = parseSave(JSON.stringify(v24), true);
     const back = parseSave233(JSON.stringify(stored), true);
     for (const k of Object.keys(raw)) expect(back[k as keyof typeof back], k).toEqual(raw[k]);
+  });
+});
+
+describe('the save after each place (2.4.0)', () => {
+  /** A play on her 2.3.3 save in a store that records its writes, as far as afterPlace reads it. */
+  function playOn(store: KeyStore) {
+    store.setItem(SAVE_KEY, readFileSync(join(here, 'fixtures/save-2.3.3.json'), 'utf8'));
+    const save = createSave(() => store);
+    const start = {
+      last: { words: [...save.data.last.words], totals: [...save.data.last.totals] },
+      afternoon: { maths: save.data.afternoon.maths, done: [...save.data.afternoon.done] },
+    };
+    const g = {
+      save, start, hub: startHub(), results: new Results(), quests: { maths: 'beads' },
+      today: { wishes: 0, words: [] as string[] }, maths: { used: { totals: [] as number[], answers: [] as number[] } },
+    };
+    return g as unknown as Game & { today: { words: string[] }; maths: { used: { totals: number[] } } };
+  }
+
+  it('writes last, afternoon after each place into mmw.save2 only, from the start copy, and 2.3.3 still reads it', () => {
+    const store = recording();
+    const g = playOn(store);
+    const before = structuredClone(g.start);
+    const signs = structuredClone(g.save.data.signs);
+    const info = console.info;
+    console.info = () => {};
+    try {
+      // Two words her last play did not read (a play leaves the last play's words out while it can).
+      g.today.words.push('peach', 'boot');
+      g.hub.done.push('picnic');
+      afterPlace(g, 'picnic', { n: 1, fromMs: 0, checkedMs: 60_000 });
+      g.maths.used.totals.push(8, 9, 10);
+      g.hub.done.push('egg');
+      afterPlace(g, 'egg', { n: 1, fromMs: 60_000, checkedMs: 90_000 });
+    } finally {
+      console.info = info;
+    }
+    expect([...new Set(store.touched)]).toEqual([SAVE_KEY]);
+    const stored = JSON.parse(store.getItem(SAVE_KEY)!);
+    // Her last play's 16 words and totals with today's added, newest last, cut to 16.
+    expect(stored.last).toEqual({ words: [...before.last.words.slice(2), 'peach', 'boot'], totals: [...before.last.totals.slice(3), 8, 9, 10] });
+    expect(stored.afternoon).toEqual({ maths: 'beads', done: ['picnic'] });
+    // The play's own copies never change, and a place leaves the sign level as it was.
+    expect(g.start).toEqual(before);
+    expect(stored.signs).toEqual(signs);
+    // 2.3.3 reads the save a place wrote, with every 2.3 field as 2.4 has it.
+    const old = parseSave233(store.getItem(SAVE_KEY), true);
+    for (const k of ['look', 'owned', 'ribbons', 'plays', 'reading', 'phrases', 'patterns', 'last', 'afternoon'] as const) expect(old[k], k).toEqual(stored[k]);
   });
 });

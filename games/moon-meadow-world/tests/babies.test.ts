@@ -35,6 +35,8 @@ import { Run } from '../src/game/run';
 import { startMaths } from '../src/game/band';
 import { startHub } from '../src/game/hub';
 import { bedtimeLines, toTheYard, waitSpot } from '../src/game/bedtime';
+import { afterPlace, mergeLast, playOf } from '../src/game/report';
+import { diagQuery, playFields } from '../src/game/results';
 
 // ---- a fake game ---------------------------------------------------------------------------------------------------
 
@@ -411,5 +413,92 @@ describe('bedtime with no baby up to four', () => {
     expect(b16.position.z).toBeCloseTo(waitSpot(16).z);
     expect(unicorn(g, foal.id).position.x).toBeCloseTo(waitSpot(foal.door).x);
     expect(b13.followSlot).toBe(0);
+  });
+});
+
+// ---- Task 11: the record -------------------------------------------------------------------------------------------
+
+/** The diag.txt queries sent while `f` runs (fetch and location stubbed, as on her home server). */
+function sent(f: () => void): string[] {
+  const out: string[] = [];
+  vi.stubGlobal('fetch', (url: string) => (out.push(url.replace(/^diag\.txt\?/, '')), Promise.resolve()));
+  const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+  try {
+    f();
+  } finally {
+    vi.unstubAllGlobals();
+    info.mockRestore();
+    (globalThis as { location?: unknown }).location ??= { pathname: '/games/moon-meadow-world/index.html' };
+  }
+  return out;
+}
+
+describe('the record', () => {
+  it('afterPlace merges last from the start copy, newest last, cut to 16', () => {
+    const start = { words: Array.from({ length: 16 }, (_, i) => `w${i}`), totals: [9, 10] };
+    expect(mergeLast(start, { words: ['plum', 'boot'], totals: [8] })).toEqual({ words: [...start.words.slice(2), 'plum', 'boot'], totals: [9, 10, 8] });
+    expect(mergeLast({ words: [], totals: [] }, { words: [], totals: [] })).toEqual({ words: [], totals: [] });
+    // A word read again keeps only its newest place.
+    expect(mergeLast({ words: ['plum', 'cape'], totals: [] }, { words: ['plum'], totals: [] }).words).toEqual(['cape', 'plum']);
+    const totals = Array.from({ length: 20 }, (_, i) => i);
+    expect(mergeLast({ words: [], totals: [] }, { words: [], totals }).totals).toEqual(totals.slice(-16));
+  });
+
+  it('writes last, afternoon and the hub line after each place, and the play\'s own copies never change', () => {
+    const g = fakeGame([], 3);
+    const start = { last: { words: ['sock', 'cape'], totals: [7, 9] }, afternoon: { maths: 'rack' as const, done: ['picnic' as const] } };
+    Object.assign(g, { start: structuredClone(start) });
+    g.results.pn = 6;
+    g.quests.maths = 'beads';
+    // The picnic: two words read, then the first place's line at 4:12 of play time.
+    g.today.words.push('plum', 'mug');
+    g.hub.done.push('picnic');
+    g.hub.playMs = 252_000;
+    const one = sent(() => afterPlace(g, 'picnic', { n: 1, fromMs: 140_000, checkedMs: 61_400 }));
+    expect(one).toEqual(['kind=hub&v=' + encodeURIComponent(playOf(g).v) + '&pn=6&p=p&n=1&min=4.2&t=112&ck=61']);
+    expect(g.save.data.last).toEqual({ words: ['sock', 'cape', 'plum', 'mug'], totals: [7, 9] });
+    expect(g.save.data.afternoon).toEqual({ maths: 'beads', done: ['picnic'] });
+    // The nest egg: three sums; its letter, its count and the save from the start copy again, not from the save.
+    g.maths.used.totals.push(8, 9, 10);
+    g.hub.done.push('egg');
+    g.hub.playMs = 500_000;
+    const two = sent(() => afterPlace(g, 'egg', { n: 1, fromMs: 260_000, checkedMs: 120_000 }));
+    expect(new URLSearchParams(two[0]).get('p')).toBe('e');
+    expect(g.save.data.last).toEqual({ words: ['sock', 'cape', 'plum', 'mug'], totals: [7, 9, 8, 9, 10] });
+    expect(g.save.data.afternoon).toEqual({ maths: 'beads', done: ['picnic'] });
+    expect(g.start).toEqual(start);
+    // Each place letter: e s w p b k r o c.
+    const letters = (['egg', 'shore', 'wish', 'picnic', 'beads', 'rack', 'ride', 'pond', 'corner'] as const).map((p) => {
+      g.hub.done.push(p);
+      return new URLSearchParams(sent(() => afterPlace(g, p, { n: 1, fromMs: 0, checkedMs: 0 }))[0]).get('p');
+    });
+    expect(letters.join('')).toBe('eswpbkroc');
+    expect(g.save.data.afternoon.done).toEqual(['picnic', 'beads', 'rack', 'corner']);
+  });
+
+  it('counts reading, spelling and maths moments and first tries from the result lines', () => {
+    const g = fakeGame([], 3);
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const r = (outcome: 'first' | 'miss') => ({ outcome, misses: outcome === 'first' ? 0 : 1, ms: 1000 });
+    g.results.add('picnic1', 'r', r('first'));
+    g.results.add('picnic2', 'r', r('miss'));
+    g.results.add('naming-1', 's', r('first'));
+    for (let k = 0; k < 3; k++) g.results.add('egg-nest', 'm', r('first'));
+    vi.mocked(console.info).mockRestore();
+    g.hub.done.push('egg', 'picnic', 'pond');
+    g.hub.pondMs = 150_400;
+    g.hub.bedtimeAt = 1_800_000;
+    g.clock.rideMs = 61_000;
+    g.babies.push(fakeBaby());
+    const p = playOf(g);
+    expect(p).toMatchObject({ nr: 2, ns: 1, nm: 3, r1: 1, s1: 1, m1: 3, sq: 'e,p,o', pondVisits: 1, pondMs: 150_400, rideMs: 61_000, bedtimeMin: 30, babies: 1, signs: 1 });
+    const q = new URLSearchParams(diagQuery(playFields(p)));
+    expect(Object.fromEntries(['nr', 'ns', 'nm', 'r1', 's1', 'm1', 'sq', 'pv', 'po', 'ri', 'bt', 'bb', 'sg'].map((k) => [k, q.get(k)]))).toEqual({
+      nr: '2', ns: '1', nm: '3', r1: '1', s1: '1', m1: '3', sq: 'e,p,o', pv: '1', po: '150', ri: '61', bt: '30', bb: '1', sg: '1',
+    });
+    // ?sign= forces the level on the line; no bedtime yet leaves bt out.
+    const forced = fakeGame([], 3, '&sign=3');
+    expect(playOf(forced)).toMatchObject({ signs: 3, bedtimeMin: null, sq: '', babies: 0 });
+    expect(new URLSearchParams(diagQuery(playFields(playOf(forced)))).has('bt')).toBe(false);
   });
 });
