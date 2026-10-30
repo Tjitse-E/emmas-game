@@ -9,6 +9,18 @@ show the newest version, bottom right. `scripts/deploy.sh` refuses to deploy a v
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.3.2] - 2026-10-29
+
+A patch after two test plays of 2.3.1, in which the eggs felt slow.
+
+### Changed
+- Moon Meadow World: the eggs are quicker. The stones wake as soon as Elizabeth has said both numbers of a sum. After a right answer in the first and the second sum she says one short line, the sum itself, while the heart lights up. "Fill all three hearts" is said before the first egg of a play only.
+- Moon Meadow World: when a baby wishes for something, Elizabeth waits longer before she reminds Emma to read the wish: 20 seconds for a word and 25 seconds for two words, and the wait starts again after each touch.
+- Moon Meadow World: the last wish before free play is a pond toy instead of something to eat, with none of the words of the first pond wish. The royal picnic has two food wishes of its own, so she no longer meets three food baskets in a row.
+
+### Fixed
+- Moon Meadow World: when she slides the star along a name she built, the last letter sound no longer plays under the baby's name or under "Listen again".
+
 ## [2.3.1] - 2026-10-29
 
 A small patch. In the easy sums a stone of 2 is never the answer. This stays as it is for now, by Tjitse's choice: her first tries show whether it needs to change.
