@@ -521,8 +521,8 @@ async function starEgg(g: Game, t: Trip, hatchOnly: boolean): Promise<void> {
     await runEggSums(g, 'trail');
   }
   setStep(g, 'naming');
+  // The hatch, the naming and the baby's first wish (its 'wish' step is only a place a jump starts from).
   const baby: Baby = await newbornAt(g, 'trail');
-  setStep(g, 'wish');
   t.wild = baby.unicorn;
   t.wild.trackBehind(mount, RIDE.gaps[2]);
   if (g.ride) g.ride.followers = [...t.riders, t.wild].map((u) => u.id);
