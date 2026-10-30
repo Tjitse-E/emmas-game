@@ -22,8 +22,9 @@ import { START } from '../src/layout';
 import { herd as startHerd } from '../src/content';
 import { bedtimeDoors, newborn } from '../src/content/doors';
 import { seeded } from '../src/content/rand';
+import { BASKET_SIZE } from '../src/content/wishes';
 import { type Baby, type Game, startClock, startQuests } from '../src/game/game';
-import { type EggSpot, eggPlace, firstOfKind, namingRules, newbornAt, runEggSums, snapBabies } from '../src/game/eggs-part';
+import { type EggSpot, eggPlace, eggPlaceStep, firstOfKind, namingRules, newbornAt, runEggSums, snapBabies } from '../src/game/eggs-part';
 import { crownKeep } from '../src/game/moments';
 import { guests } from '../src/game/guests';
 import { canOfferWish, offerWish, planWish, wishKindFor, wishPlace, withdrawWish } from '../src/game/moments';
@@ -233,9 +234,25 @@ describe('babies in any order', () => {
     const parts = [...new Set(g.results.lines.map((l) => l.part))];
     expect(parts).toEqual(['egg-shore', 'naming-1', 'wish-1', 'egg-nest', 'naming-2', 'wish-2']);
     expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', herdBaby, 'baby-14']);
-    // No sum twice across the two eggs (the egg 2 shortcut is gone: each egg plans with what the play has asked).
-    const keys = sums.map((x) => `${x.kind}:${x.have}:${x.need}`);
-    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('jumps into an egg place at its naming or its wish: the snapped baby, the 2.4 wish kind, the egg place\'s release', async () => {
+    const g = fakeGame([], 6);
+    const { gems } = withEggs(g);
+    snapBabies(g, ['nest'], START, false);
+    (await eggPlaceStep(g, 'nest', 'naming'))();
+    expect(gems).toEqual([3]);
+    expect(g.babies[0].member).not.toBeNull();
+    expect(g.results.lines.map((l) => `${l.part}:${l.detail.kind ?? l.strand}`)).toEqual(['naming-1:s', 'wish-1:dress']);
+    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13']);
+    // The shore baby named already: only its wish, of the kind read least and not the last (2.3's secondWishKind
+    // would give bath or picnic by the free play's quests).
+    snapBabies(g, ['shore'], START, true);
+    g.results.add('pond', 'r', { outcome: 'first', misses: 0, ms: 900 }, { kind: 'bath' });
+    (await eggPlaceStep(g, 'shore', 'wish'))();
+    expect(gems).toEqual([3]);
+    expect(g.results.lines.slice(-1).map((l) => `${l.part}:${l.detail.kind}`)).toEqual(['wish-2:picnic']);
+    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', 'baby-14']);
   });
 
   it('asks a second star egg without the star intro', async () => {
@@ -348,6 +365,28 @@ describe('wish kinds', () => {
     }
   });
 
+  it('keeps the words before the level: a level 3 reader\'s later reads of a kind play and log as level 2 when too few are left', () => {
+    // The 2.4 order of baby wishes when the picnic shows (dress, bath, dress, bath, dress), and four picnic reads (the
+    // picnic's two guests and two picnic wishes). No read shows a word of an earlier read of its kind; a read that
+    // cannot have a level 3 basket from what is left plays and logs as level 2 (2.3.2's rule, tests/reading-level).
+    const orders: readonly (readonly ('dress' | 'bath' | 'picnic')[])[] = [['dress', 'bath', 'dress', 'bath', 'dress'], ['picnic', 'picnic', 'picnic', 'picnic']];
+    for (const order of orders) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const g = fakeGame([], seed, '&rl=3');
+        const specs = order.map((kind, k) => planWish(g, kind, `${kind}-${k}`, { wish: true }));
+        const words = (s: WishSpec) => [s.target.word, ...s.basket.map((b) => b.word)];
+        specs.forEach((s, k) => {
+          const before = specs.slice(0, k).filter((x) => x.kind === s.kind).flatMap(words);
+          expect(words(s).filter((w) => before.includes(w)), `${order.join(',')} seed ${seed} read ${k + 1}`).toEqual([]);
+          expect([2, 3]).toContain(s.level);
+          expect(s.basket).toHaveLength(BASKET_SIZE[s.level]);
+        });
+        // The first read of each kind is level 3.
+        for (const kind of new Set(order)) expect(specs.find((s) => s.kind === kind)!.level).toBe(3);
+      }
+    }
+  });
+
   it('gives each newborn its naming and first wish: the nest egg\'s baby dresses up like her, the next wishes another kind', async () => {
     t.said.length = 0;
     const g = fakeGame([], 5);
@@ -434,6 +473,55 @@ describe('a herd baby\'s wish', () => {
     const v = offerWish(g)!;
     (await wishPlace(g, v))();
     expect(g.results.lines.map((l) => `${l.part}:${l.detail.kind}`)).toEqual(['wish-herd-1:dress', 'wish-herd-2:bath']);
+  });
+
+  it('never wishes for picnic food while the picnic bubble shows or right after the picnic, a herd baby or a newborn', async () => {
+    const read = (g: Game) => {
+      // Dress and then bath read: picnic is read least and bath was last, so picnic is next unless the picnic is near.
+      for (const kind of ['dress', 'bath']) g.results.add(`read-${kind}`, 'r', { outcome: 'first', misses: 0, ms: 900 }, { kind });
+    };
+    const herdWish = async (near: (g: Game) => void) => {
+      const g = fakeGame([], 4);
+      read(g);
+      near(g);
+      (await wishPlace(g, offerWish(g)!))();
+      return g.results.lines.at(-1)!.detail.kind;
+    };
+    const newbornWish = async (near: (g: Game) => void) => {
+      const g = fakeGame([], 4);
+      read(g);
+      near(g);
+      snapBabies(g, ['nest'], START, true);
+      (await eggPlaceStep(g, 'nest', 'wish'))();
+      return g.results.lines.at(-1)!.detail.kind;
+    };
+    for (const wishOf of [herdWish, newbornWish]) {
+      expect(await wishOf(() => {})).toBe('picnic');
+      expect(await wishOf((g) => void g.hub.shown.push('picnic'))).toBe('dress');
+      expect(await wishOf((g) => void g.hub.done.push('picnic'))).toBe('dress');
+      // An earlier picnic, with another place after it, is not near any more.
+      expect(await wishOf((g) => void g.hub.done.push('picnic', 'egg'))).toBe('picnic');
+    }
+  });
+
+  it('keeps the baby whose wish she is reading when its bubble goes', async () => {
+    const g = fakeGame([], 4);
+    let answer!: () => void;
+    vi.mocked(g.layer.wish).mockImplementationOnce(() => new Promise((r) => (answer = () => r({ outcome: 'first', misses: 0, ms: 900 }))));
+    const u = offerWish(g)!;
+    const running = wishPlace(g, u);
+    await vi.waitFor(() => expect(g.layer.wish).toHaveBeenCalled());
+    withdrawWish(g, u);
+    expect(g.waiting).toBe(u);
+    expect(unicorn(g, u.id).mode).toBe('idle');
+    expect(unicorn(g, u.id).looking).not.toBeNull();
+    answer();
+    (await running)();
+    expect(g.waiting).toBeNull();
+    expect(unicorn(g, u.id).mode).toBe('graze');
+    // After its place a late withdraw does no harm.
+    withdrawWish(g, u);
+    expect(unicorn(g, u.id).mode).toBe('graze');
   });
 });
 

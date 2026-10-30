@@ -276,6 +276,9 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   } else {
     // A dress-up, pond or picnic wish leaves out every word of the play's earlier ones of its kind (2.4.0: the picnic
     // too, so the picnic's second guest and a later picnic wish never show the first guest's words again).
+    // The words come before the level, as for 2.3.2's second pond wish (tests/reading-level.test.ts): with too few
+    // words left for a level 3 basket (a level 3 reader's third dress-up wish, a fourth picnic read) the wish plays and
+    // logs as level 2. Level 3 is the top, so such a first try can only keep her at 3 a little longer, as the warm-up.
     spec = wishSpec(kind, rand, exclude, isFresh(kind) ? { ...opts, avoid: [...wordsOf(g, kind)] } : opts);
   }
   if (isFresh(spec.kind)) for (const w of [spec.target, ...spec.basket]) wordsOf(g, spec.kind).add(w.word);

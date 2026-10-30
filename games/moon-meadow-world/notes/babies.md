@@ -12,6 +12,9 @@ names blocks of `tests/content.test.ts`. Flow: `flows/bedtime.flow.sh`.
   followers, frames the egg, asks the three sums (`runEggSums`), then the hatch, the naming and the newborn's first wish.
   It resolves framed on the wish. Its release lets the frame go, brings the parked followers back and makes the newborn
   follow (slot 0 when no other baby follows; with three followers a herd follower goes back to graze first).
+- `eggPlaceStep(g, 'nest' | 'shore', 'naming' | 'wish')` is the hub's `?step=naming|wish` jump: the spot's snapped
+  baby, its naming for `naming`, then its first wish of the 2.4 kind rule, with `eggPlace`'s release. With no baby of
+  that spot it runs the whole egg place.
 - `runEggSums(g, spot)` plans with `firstOfKind`: a kind's intro plays only on its first egg of the play. The caller
   frames. The 2.3 "plan egg 1 first" shortcut for `?at=egg2` is gone.
 - `newbornAt(g, spot)` is the hatch, the naming and the first wish, and resolves with the camera back on her. The ride
@@ -26,12 +29,17 @@ names blocks of `tests/content.test.ts`. Flow: `flows/bedtime.flow.sh`.
 
 - `guests(g, at, n)`: her babies in hatch order, then the babies among her followers in slot order, then the grazing
   herd babies nearest the place. Foals that follow her stay followers, because the places are made for babies. The
-  step 0 contract test pins hatch order, so "her newest named babies" in the design is read as "her newborns".
+  step 0 contract test pins hatch order, so "her newest named babies" in the design is read as "her newborns"
+  until the integrator decides (requests-babies.md, request 4).
 - `wishKindFor(read, last, picnicNear)` (pure): the kind read least, a tie going dress, bath, picnic. Never the kind of
   the last word read, and never picnic while the picnic's bubble shows or right after the picnic. `nextWishKind(g)`
   counts the reads from the result lines. The play's first baby still wants to dress up like her.
 - Every dress-up, pond and picnic wish leaves out the play's earlier basket words of its kind. This now includes the
   picnic, so the picnic's second guest never sees the first guest's words.
+- The words come before the level, as 2.3.2 chose for the second pond wish (tests/reading-level.test.ts): when the
+  words left cannot make a level 3 basket (a level 3 reader's third dress-up wish, a fourth picnic read), the read
+  plays and logs as level 2. Level 3 is the top, so such a first try only keeps her at 3 a little longer, as the
+  warm-up does (requests-babies.md, request 6).
 - `offerWish(g)`: the grazing herd baby nearest her stops (`goTo` its own spot), looks at her and waits
   (`g.waiting`). It is never a foal, a follower, a hay rack helper or one parked for a place. One waits at a time.
   `withdrawWish` sends it back to graze. It does nothing while its wish place runs.

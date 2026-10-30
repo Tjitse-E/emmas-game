@@ -120,6 +120,28 @@ export async function eggPlace(g: Game, spot: 'nest' | 'shore'): Promise<() => v
 }
 
 /**
+ * A jump into an egg place at a step (`?at=hub&place=egg|shore&step=naming|wish`): the spot's newborn is already there
+ * (the jump snaps it, named for 'wish'). Its naming for 'naming' (or when it has no name yet), then its first wish of
+ * the 2.4 kind rule (nextWishKind), as in eggPlace. Resolves framed on the wish, with eggPlace's release. With no baby
+ * of that spot the whole egg place runs.
+ */
+export async function eggPlaceStep(g: Game, spot: 'nest' | 'shore', step: 'naming' | 'wish'): Promise<() => void> {
+  const baby = [...g.babies].reverse().find((b) => b.spot === spot);
+  if (!baby) return eggPlace(g, spot);
+  setGoal(g, null);
+  g.free = false;
+  g.followers.remove(baby.unicorn);
+  parkFollowers(g, homeOf(spot).side);
+  if (step === 'naming' || !baby.member) await nameBaby(g, baby);
+  await firstWish(g, baby, true);
+  return () => {
+    g.world.releaseFrame();
+    for (const p of g.parked.splice(0)) g.followers.add(p);
+    followHer(g, baby.unicorn);
+  };
+}
+
+/**
  * The egg's three sums at `spot` (the caller frames: the egg place at home, the ride on the trail with her on the mount
  * beside the egg), each a checked moment, from the stream egg-nest, egg-shore or egg-trail-<k>. The kind's intro only
  * on its first egg of the play.
