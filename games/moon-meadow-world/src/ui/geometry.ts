@@ -136,6 +136,76 @@ export function blanketPatches(have: number, f: number, pad = 7): Box[] {
   return out;
 }
 
+// ------------------------------------------------------------------------------------------------ sign cards
+
+/**
+ * The signpost's print cards (2.4.0, docs/v4/2.4.md section 5.5), in design px: one word in Andika at `font` on a card
+ * `h` high, at least 64 CSS px at every iPad size, wide enough for five letters. They keep `palm` CSS px off the left,
+ * right and bottom edges, where a palm rests while she taps (docs/v4/2.4-plan.md Review Focus 2), and below `top`, clear
+ * of Lumi's moon and the home button.
+ */
+export const SIGN_CARD = { h: 92, font: 58, letter: 36, pad: 26, gap: 18, palm: 100, top: 170 } as const;
+
+/** A card's size in CSS px for a word. */
+export function signCardSize(word: string, unit: number): { w: number; h: number } {
+  return {
+    w: Math.round((SIGN_CARD.pad * 2 + Math.max(3, word.length) * SIGN_CARD.letter) * unit),
+    h: Math.max(64, Math.round(SIGN_CARD.h * unit)),
+  };
+}
+
+/**
+ * The three cards on screen in arm order, west, north and east, each centred on the end of its arm (`anchors`, the
+ * arms' ends on screen), kept inside the palm bands and apart: the west and east cards side by side when they meet,
+ * the north card above them when it meets either, and as a last resort all three in a row in arm order. Pure.
+ */
+export function signCardBoxes(anchors: readonly Point[], words: readonly string[], screen: { w: number; h: number }): Box[] {
+  const unit = unitFor(screen.w, screen.h);
+  const gap = Math.round(SIGN_CARD.gap * unit);
+  const minX = SIGN_CARD.palm;
+  const maxX = screen.w - SIGN_CARD.palm;
+  const minY = Math.round(SIGN_CARD.top * unit);
+  const maxY = screen.h - SIGN_CARD.palm;
+  const fit = (b: Box): Box => ({ ...b, x: clamp(b.x, minX, maxX - b.w), y: clamp(b.y, minY, maxY - b.h) });
+  const near = (a: Box, b: Box) => overlaps({ x: a.x - gap, y: a.y - gap, w: a.w + 2 * gap, h: a.h + 2 * gap }, b);
+  const sizes = [0, 1, 2].map((i) => signCardSize(words[i] ?? '', unit));
+  const at = [0, 1, 2].map((i) => anchors[i] ?? anchors[0] ?? { x: screen.w / 2, y: screen.h / 2 });
+  let [w, n, e] = sizes.map((s, i) => fit({ x: at[i].x - s.w / 2, y: at[i].y - s.h / 2, ...s }));
+  // Side by side around the middle of the two, at their own heights.
+  const pairUp = () => {
+    const mid = (w.x + w.w / 2 + e.x + e.w / 2) / 2;
+    const total = w.w + gap + e.w;
+    const x0 = clamp(mid - total / 2, minX, maxX - total);
+    w = fit({ ...w, x: x0 });
+    e = fit({ ...e, x: x0 + w.w + gap });
+  };
+  if (near(w, e) || w.x + w.w / 2 > e.x + e.w / 2) pairUp();
+  if (near(n, w) || near(n, e)) {
+    const y = Math.min(w.y, e.y) - n.h - gap;
+    if (y >= minY) n = fit({ ...n, y });
+    else {
+      n = fit({ ...n, y: minY });
+      const below = minY + n.h + gap;
+      w = fit({ ...w, y: Math.max(w.y, below) });
+      e = fit({ ...e, y: Math.max(e.y, below) });
+    }
+  }
+  let boxes = [w, n, e];
+  if (boxes.some((a, i) => boxes.some((b, j) => i < j && near(a, b)))) {
+    // One row in arm order, centred on the arms, at their mean height.
+    const total = sizes.reduce((s, b) => s + b.w, 0) + 2 * gap;
+    const cx = at.reduce((s, p) => s + p.x, 0) / 3;
+    const cy = at.reduce((s, p) => s + p.y, 0) / 3;
+    let x = clamp(cx - total / 2, minX, maxX - total);
+    boxes = sizes.map((s) => {
+      const b = fit({ x, y: cy - s.h / 2, ...s });
+      x += s.w + gap;
+      return b;
+    });
+  }
+  return boxes.map((b) => ({ x: Math.round(b.x), y: Math.round(b.y), w: b.w, h: b.h }));
+}
+
 // ------------------------------------------------------------------------------------------------ gems and slots
 
 /** A vowel gem is pink, a consonant gem blue, y both (v3's gem colours). */

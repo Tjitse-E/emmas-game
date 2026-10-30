@@ -1,12 +1,13 @@
 // The 2D layer's pure helpers (src/ui/geometry.ts, ladder.ts). 2.3.0 splits this file by describe block, as
 // content.test.ts is split (docs/v4/2.3.md section 22.2): eggs owns 'stones', 'moon cups' and 'the blanket'; reading
 // owns 'gems and slots', 'print', 'hint ladder', 'hint runner', 'hint runner timing' and 'colour'; wardrobe-ui owns
-// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own.
+// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own. 2.4.0's
+// signs-star lane adds 'sign cards' (after 'print') and 'stars' (after 'the egg opening').
 import { describe, expect, it, vi } from 'vitest';
 import {
   CUP_GRID, apart, blanketPatches, bubbleBox, capitalOf, clearOf, eggOpening, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
-  menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, tintedPicStyle,
-  unitFor,
+  menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, signCardBoxes, skyWash, stoneEffect,
+  tintedPicStyle, unitFor,
 } from '../src/ui/geometry';
 import { HintRunner, bellIdleDelay, onIdle, onMiss, onTouch, openLadder, outcomeOf, idleDelay, remindDelay } from '../src/ui/ladder';
 
@@ -219,6 +220,51 @@ describe('print', () => {
       expect(body, name).not.toMatch(/(?:^|[{;\s])color:/);
     }
     for (const r of phraseDiff.filter((x) => /animation:/.test(x.body))) expect(r.body, r.sel).toMatch(/mmw-phrase-/);
+  });
+});
+
+// 2.4.0 (docs/v4/2.4.md section 5.5): the signpost's print cards on the ends of its arms.
+describe('sign cards', () => {
+  /** The arms' ends on screen at the fork frame (west, north, east), and the cases a camera or a stub can give. */
+  const FORK_ANCHORS: Record<string, { x: number; y: number }[][]> = Object.fromEntries([[1080, 740], [1080, 810]].map(([w, h]) => [`${w}x${h}`, [
+    [{ x: w / 2 - 170, y: h / 2 - 40 }, { x: w / 2, y: h / 2 - 150 }, { x: w / 2 + 170, y: h / 2 - 40 }],
+    [{ x: w / 2 - 90, y: h / 2 }, { x: w / 2, y: h / 2 - 30 }, { x: w / 2 + 90, y: h / 2 }],
+    [{ x: w / 2, y: h / 2 }, { x: w / 2, y: h / 2 }, { x: w / 2, y: h / 2 }],     // step 0's stub: every arm at the fork
+    [{ x: 30, y: h - 20 }, { x: 60, y: h - 60 }, { x: 120, y: h - 10 }],           // the fork low on the left, into the palm bands
+    [{ x: w - 40, y: 40 }, { x: w - 10, y: 10 }, { x: w + 200, y: 60 }],          // high on the right, one off screen
+    [{ x: -300, y: h / 2 }, { x: w / 2, y: -200 }, { x: w + 300, y: h + 300 }],   // all off screen
+  ]]));
+  const SETS = [['stump', 'stone', 'swing'], ['shed', 'barn', 'pines'], ['bench', 'beach', 'barn']];
+
+  it('cards keep clear of the palm bands', () => {   // Review Focus 2: 100 px from the left, right and bottom edges
+    for (const [w, h] of [[1080, 740], [1080, 810]]) for (const anchors of FORK_ANCHORS[`${w}x${h}`]) {
+      for (const b of signCardBoxes(anchors, ['stump', 'stone', 'swing'], { w, h })) {
+        expect(b.h).toBeGreaterThanOrEqual(64); expect(b.x).toBeGreaterThanOrEqual(100);
+        expect(b.x + b.w).toBeLessThanOrEqual(w - 100); expect(b.y + b.h).toBeLessThanOrEqual(h - 100);
+      }
+    }
+  });
+
+  it('never lets two cards touch, and keeps the west card left of the east card, below Lumi and the home button', () => {
+    for (const [w, h] of [[1080, 740], [1080, 810], [1024, 690], [1366, 1024]]) {
+      const all = [...(FORK_ANCHORS[`${w}x${h}`] ?? FORK_ANCHORS['1080x810'])];
+      for (const anchors of all) for (const words of SETS) {
+        const boxes = signCardBoxes(anchors, words, { w, h });
+        expect(boxes.some((a, i) => boxes.some((b, j) => i < j && overlaps(a, b))), `${w}x${h} ${words}`).toBe(false);
+        expect(boxes[0].x).toBeLessThan(boxes[2].x);
+        for (const b of boxes) expect(b.y).toBeGreaterThanOrEqual(Math.round(160 * unitFor(w, h)));
+        for (const [i, word] of words.entries()) expect(boxes[i].w).toBeGreaterThanOrEqual(word.length * 30 * unitFor(w, h));
+      }
+    }
+  });
+
+  it('puts each card on the end of its arm when they are apart', () => {
+    const anchors = FORK_ANCHORS['1080x810'][0];
+    const boxes = signCardBoxes(anchors, ['sand', 'barn', 'pond'], { w: 1080, h: 810 });
+    boxes.forEach((b, i) => {
+      expect(Math.abs(b.x + b.w / 2 - anchors[i].x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(b.y + b.h / 2 - anchors[i].y)).toBeLessThanOrEqual(1);
+    });
   });
 });
 

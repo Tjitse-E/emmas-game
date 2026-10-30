@@ -305,6 +305,37 @@ html.mmw-guarded body {
   transition: opacity 400ms ease, transform 400ms ease; opacity: 0;
 }
 
+/* ---------------------------------------------------------------------------------------------- the signpost moment */
+/* 2.4.0 (docs/v4/2.4.md section 5.5): three print cards on the signpost's arms, placed by sign.ts (geometry.ts
+   signCardBoxes) with left, top, width and height. A painted board in the normal print ink, no picture, a point on the
+   side of its road. Asleep while Elizabeth says the goal; the right card glows gold; a wrong card's differing letters
+   glow as the wish's contrast does. The whole card takes the tap. */
+.sign-card {
+  position: absolute; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(#fff8ea, #f6e4c4); border: calc(5 * var(--u)) solid #b9824a; border-radius: calc(18 * var(--u));
+  box-shadow: inset 0 calc(4 * var(--u)) 0 rgba(255, 255, 255, 0.7), 0 calc(6 * var(--u)) 0 #8f5c2c, 0 calc(12 * var(--u)) calc(22 * var(--u)) rgba(70, 40, 15, 0.3);
+  font: 700 calc(58 * var(--u)) / 1 'Andika', sans-serif; color: var(--ink); white-space: nowrap;
+  transition: opacity 320ms ease-out, filter 320ms ease-out, transform 320ms ease-out;
+}
+.sign-moment { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; animation: mmw-sign-in 420ms ease-out both; }
+@keyframes mmw-sign-in { from { opacity: 0; } }
+.sign-card.asleep { opacity: 0.6; filter: saturate(0.4); }
+.sign-print { display: flex; align-items: baseline; padding-bottom: calc(6 * var(--u)); pointer-events: none; }
+.sign-unit { display: block; padding: 0 calc(1 * var(--u)); border-radius: calc(10 * var(--u)); }
+.sign-unit.diff { color: #b25a00; background: rgba(255, 214, 102, 0.55); box-shadow: 0 0 calc(10 * var(--u)) rgba(255, 200, 70, 0.8); animation: mmw-diff-glow 1.1s ease-in-out 3; }
+/* The point of the board, on the side of its road: west left, east right, north up. */
+.sign-point {
+  position: absolute; width: 0; height: 0; pointer-events: none;
+  border: calc(24 * var(--u)) solid transparent;
+}
+.sign-card.arm-west .sign-point { left: calc(-29 * var(--u)); top: 50%; margin-top: calc(-24 * var(--u)); border-left: 0; border-right-color: #b9824a; }
+.sign-card.arm-east .sign-point { right: calc(-29 * var(--u)); top: 50%; margin-top: calc(-24 * var(--u)); border-right: 0; border-left-color: #b9824a; }
+.sign-card.arm-north .sign-point { top: calc(-29 * var(--u)); left: 50%; margin-left: calc(-24 * var(--u)); border-top: 0; border-bottom-color: #b9824a; }
+.sign-card.right { border-color: #f0b52e; animation: mmw-glow-ring 1.1s ease-in-out 2; }
+.sign-card.right .sign-print { color: #8a3fc0; text-shadow: 0 0 calc(12 * var(--u)) #fff1b8; }
+.sign-card.wrong .sign-print { animation: mmw-hum 400ms ease-in-out 2; }
+.sign-moment.leaving .sign-card { transition: opacity 400ms ease, transform 400ms ease; opacity: 0; transform: translateY(calc(-14 * var(--u))); }
+
 /* ---------------------------------------------------------------------------------------------- the naming moment */
 .bells { position: absolute; bottom: calc(26 * var(--u)); left: 50%; transform: translateX(-50%); display: flex; gap: calc(54 * var(--u)); align-items: flex-end; }
 .bells.leaving { transition: opacity 380ms, transform 380ms; opacity: 0; transform: translate(-50%, calc(40 * var(--u))); }
