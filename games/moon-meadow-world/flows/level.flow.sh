@@ -5,7 +5,8 @@
 # unicorn waits in the yard) and the visit (an empty stall), the rest right; the slide, the bath wish at the pond, the
 # wild egg and its three sums, the picnic wish, free play (skipped with a hook call), bedtime and goodnight with its
 # ribbon gift. Checks each egg's three sums on one panel with its hearts and the band (2.3), the results log (with
-# what she tried), the basket and tray sizes, the save, missing clips and console errors. Screenshots of every part.
+# what she tried), the basket and tray sizes, no letter sound under a line at naming 1 (2.3.2), the save, missing
+# clips and console errors. Screenshots of every part.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-7}"
 
@@ -129,10 +130,18 @@ else
 fi
 sleep 0.5
 shot 06-naming1-spell
+# 2.3.2: "Listen again" after the wrong build, and the name after the right one, wait until the star's last letter
+# sound has ended: no letter sound plays under a line.
+trace_speech
 slide_star
 wait_for "() => window.__game.state().moment?.misses === 1" 15
 sleep 2.5
 spell_right
+wait_moment wish 40
+heard="$(speech_after_letters fb-listen,fb-spelled)"
+say "naming 1 speech after the star: $heard"
+expect_eq "$(val "() => JSON.parse($(jsq "$heard")).over")" 0 'naming 1: no letter sound under a line'
+expect_eq "$(val "() => JSON.parse($(jsq "$heard")).gaps.length")" 2 'naming 1: "Listen again" and the name after a letter sound'
 
 # ---- 5 The dress-up wish (the warm-up: a level lower, 4 items): one wrong item shows its word with the letters that
 # differ (the light contrast), then the right one.
