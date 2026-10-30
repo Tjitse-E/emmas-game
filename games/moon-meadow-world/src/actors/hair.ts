@@ -136,9 +136,9 @@ export class Hair {
 
   /**
    * Step the chains from their ties on the head (world matrix) and rebuild the tubes. `collide` keeps a point out of
-   * her head and dress.
+   * her head and dress. `lift` (0 to 1) takes away that much of the hair's weight: it flies on a galloping mount.
    */
-  update(dt: number, head: THREE.Matrix4, collide: (q: THREE.Vector3) => void, ground: number, water: number | null): void {
+  update(dt: number, head: THREE.Matrix4, collide: (q: THREE.Vector3) => void, ground: number, water: number | null, lift = 0): void {
     const s = this.def;
     for (let i = 0; i < this.chains.length; i++) {
       const sg = s.chains === 1 ? 0 : i ? 1 : -1;
@@ -146,7 +146,7 @@ export class Hair {
       _tie.set(x * s.tie[0], s.tie[1], s.tie[2]).applyMatrix4(head);
       _flare.set(x * s.flare[0], s.flare[1], s.flare[2]).applyMatrix4(head);
       const c = this.chains[i];
-      c.update(dt, _tie, _flare, collide, ground, water);
+      c.update(dt, _tie, _flare, collide, ground, water, lift);
       if (s.draw === 'tubes') this.tubes.set(i, c.p, this.radius, s.bulge, s.waves);
     }
   }

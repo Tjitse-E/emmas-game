@@ -39,8 +39,8 @@ export interface HerdImpl extends Herd {
   /** Make the herd cheaper on a slow iPad: 0 full, 1 and 2 fewer full-detail unicorns, cheap ones posed less often. */
   setDetail(level: 0 | 1 | 2): void;
   /**
-   * These ids come first for full detail (2.4.0: while riding, the mount, then her followers nearest it); an empty list
-   * goes back to distance alone. Step 0 does nothing (the mount lane fills it).
+   * These ids come first for full detail, in this order (2.4.0: while riding, the mount, then her followers nearest
+   * it); an empty list goes back to distance alone.
    */
   setFocus(ids: readonly string[]): void;
 }
@@ -64,6 +64,8 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
   const ranked: { u: UnicornActor; d: number }[] = [];
   const byDistance = (a: { d: number }, b: { d: number }): number => a.d - b.d;
   let detail: (typeof DETAIL)[number] = DETAIL[0];
+  /** The ids ranked first for full detail (setFocus), and where in that order each one is. */
+  let focus = new Map<string, number>();
   let frame = 0;
   let play: { kind: PlayKind; t: number; dur: number; centre: Vec2; who: UnicornActor[] } | null = null;
   let playPause = 0;
@@ -150,7 +152,10 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
     }
   }
 
-  /** Keep unicorns on the grass a little apart from each other and from Princess Emma. */
+  /**
+   * Keep unicorns on the grass a little apart from each other and from Princess Emma. A grown mount (2.4.0) stands its
+   * ground: the other one steps aside for both. Nobody is pushed off her while she sits on a mount.
+   */
   function separate(): void {
     const L = ctx.leader;
     for (let i = 0; i < list.length; i++) {
@@ -166,10 +171,12 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
         const d = Math.hypot(dx, dz);
         if (d >= min || d < 1e-4) continue;
         const push = (min - d) * 0.25;
-        nudge(a, (-dx / d) * push, (-dz / d) * push);
-        nudge(b, (dx / d) * push, (dz / d) * push);
+        const ka = a.isMount ? 0 : b.isMount ? 2 : 1;
+        const kb = b.isMount ? 0 : a.isMount ? 2 : 1;
+        if (ka) nudge(a, (-dx / d) * push * ka, (-dz / d) * push * ka);
+        if (kb) nudge(b, (dx / d) * push * kb, (dz / d) * push * kb);
       }
-      if (!L.riding) {
+      if (!L.riding && !L.seated && !a.isMount) {
         const dx = a.position.x - L.position.x;
         const dz = a.position.z - L.position.z;
         const d = Math.hypot(dx, dz);
@@ -247,7 +254,9 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
     setDetail(level) {
       detail = DETAIL[level] ?? DETAIL[0];
     },
-    setFocus() {},
+    setFocus(ids) {
+      focus = new Map(ids.map((id, k) => [id, k]));
+    },
     followersRide() {
       for (const u of followers()) u.rideAfterPrincess();
     },
@@ -271,7 +280,9 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
       ranked.length = list.length;
       for (let i = 0; i < list.length; i++) {
         const u = list[i];
-        const d = (u.position.x - eye.x) ** 2 + (u.position.y - eye.y) ** 2 + (u.position.z - eye.z) ** 2;
+        // The focus comes first, in its own order; then the rest by distance.
+        const f = focus.get(u.id);
+        const d = f !== undefined ? f - 1e9 : (u.position.x - eye.x) ** 2 + (u.position.y - eye.y) ** 2 + (u.position.z - eye.z) ** 2;
         const e = ranked[i];
         if (e) {
           e.u = u;

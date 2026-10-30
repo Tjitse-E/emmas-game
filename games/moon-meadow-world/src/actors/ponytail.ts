@@ -1,5 +1,6 @@
 // A ponytail as a verlet chain: two pinned points at the tie (so it flares out from the head) and free points that
-// hang, swing, trail behind in the air when she runs or slides, and float on the water when she swims.
+// hang, swing, trail behind in the air when she runs or slides, float on the water when she swims, and fly out behind
+// her on a galloping mount (2.4.0: `lift` takes away some of the weight).
 import * as THREE from 'three';
 
 const STEP = 1 / 120;
@@ -25,7 +26,7 @@ export class Ponytail {
    * Advance the chain. `tie` and `flare` are the two pinned points (world), `collide` pushes a point out of her head and
    * body, `ground` is the floor height under her and `water` the water surface while she swims (or null).
    */
-  update(dt: number, tie: THREE.Vector3, flare: THREE.Vector3, collide: (q: THREE.Vector3) => void, ground: number, water: number | null): void {
+  update(dt: number, tie: THREE.Vector3, flare: THREE.Vector3, collide: (q: THREE.Vector3) => void, ground: number, water: number | null, lift = 0): void {
     const p = this.p;
     if (!this.placed) {
       this.placed = true;
@@ -39,11 +40,11 @@ export class Ponytail {
     this.acc = Math.min(this.acc + dt, STEP * 6);
     while (this.acc >= STEP) {
       this.acc -= STEP;
-      this.step(tie, flare, collide, ground, water);
+      this.step(tie, flare, collide, ground, water, lift);
     }
   }
 
-  private step(tie: THREE.Vector3, flare: THREE.Vector3, collide: (q: THREE.Vector3) => void, ground: number, water: number | null): void {
+  private step(tie: THREE.Vector3, flare: THREE.Vector3, collide: (q: THREE.Vector3) => void, ground: number, water: number | null, lift: number): void {
     const { p, prev, seg } = this;
     const h = STEP;
     p[0].copy(tie);
@@ -56,7 +57,7 @@ export class Ponytail {
       prev[i].copy(q);
       const wet = water !== null && q.y < water + 0.03;
       const drag = wet ? 7 : DRAG;
-      let ay = GRAVITY - drag * vy;
+      let ay = GRAVITY * (1 - lift) - drag * vy;
       // Floating: hair in the water rises to the surface and spreads.
       if (wet) ay += 16 + (water! - q.y) * 60;
       const ax = -drag * vx;

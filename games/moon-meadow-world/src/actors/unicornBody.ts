@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import type { Breed, Stage, UnicornLook } from '../contracts';
 import { B, PartList, Xf, col, mix } from './parts';
+import { SADDLE_HEX, type MountShape } from './mount';
 
 export interface Build {
   legLen: number;
@@ -24,9 +25,13 @@ export interface Build {
   bed: number;
   /** Generous tap radius (at least 64 px at the game camera). */
   hit: number;
+  /** Metres per leg cycle faster than a trot (2.4.0: a grown mount's gallop, so its legs cycle about 4 times a second). */
+  gallopStride?: number;
+  /** A saddle on its back (2.4.0: the grown mounts), drawn from the batches it already uses. */
+  saddle?: boolean;
 }
 
-/** A build with every length times k (2.4.0's grown stub: the foal times 1.4, until the mount lane draws its own). */
+/** A build with every length times k (2.4.0: the grown mounts start from the foal times 1.4). */
 function scaled(b: Build, k: number): Build {
   const m = (xs: readonly number[]) => xs.map((x) => x * k);
   return {
@@ -54,9 +59,45 @@ export const BUILDS: Record<Stage, Build> = {
     stride: 0.38, bed: 0.46, hit: 0.56,
   },
   foal: FOAL,
-  // The mounts (2.4.0): a stub the mount lane replaces with its own build and saddle.
-  grown: scaled(FOAL, 1.4),
+  // The mounts (2.4.0, docs/v4/2.4.md section 5.4): a foal times 1.4, so the back is at about 0.86 m and Princess Emma
+  // (1.05 m) looks right on top. A grown head is a little smaller for its body and sits on a longer neck; the gallop
+  // stride is about 1.1 m; a saddle on.
+  grown: { ...scaled(FOAL, 1.4), headR: 0.235, neckAt: [0.82, 0.3], headAt: [0.2, 0.08], hit: 0.9, gallopStride: 1.1, saddle: true },
 };
+
+const SEAT_UP = 0.03;
+/** The top of the saddle's seat (where Princess Emma sits), in world space for a pose. */
+export function saddlePoint(p: Pose, b: Build, out: THREE.Vector3): THREE.Vector3 {
+  bodyMatrix(p, b, body);
+  return out.set(0, b.body[1] + SEAT_UP, -b.body[2] * 0.05).applyMatrix4(body);
+}
+
+/** A build's body and chest in its own frame, and its seat: what the side-saddle skirt is pressed out of. */
+export function mountShape(b: Build): MountShape {
+  const [bx, by, bz] = b.body;
+  const [cx, cy, cz, crx, cry, crz] = b.chest;
+  return {
+    seatY: b.bodyY + by + SEAT_UP,
+    seatZ: -bz * 0.05,
+    ellipsoids: [
+      { c: [0, b.bodyY, 0], r: [bx, by, bz] },
+      { c: [cx, cy, cz], r: [crx, cry, crz] },
+    ],
+  };
+}
+
+/**
+ * The unit-sphere matrices of the body and the chest for a pose (what a rider, her gown and her hair keep out of),
+ * written into `out` when given.
+ */
+export function bodyEllipsoids(p: Pose, b: Build, out: [THREE.Matrix4, THREE.Matrix4] = [new THREE.Matrix4(), new THREE.Matrix4()]): [THREE.Matrix4, THREE.Matrix4] {
+  bodyMatrix(p, b, body);
+  const [bx, by, bz] = b.body;
+  const [cx, cy, cz, crx, cry, crz] = b.chest;
+  out[0].copy(k.from(body).size(bx, by, bz));
+  out[1].copy(k.from(body).at(cx, cy - b.bodyY, cz).size(crx, cry, crz));
+  return out;
+}
 
 export type Eyes = 'open' | 'blink' | 'happy' | 'sleepy' | 'closed';
 export type Mouth = 'smile' | 'open' | 'chew' | 'grin';
@@ -120,6 +161,8 @@ export interface Coat {
   hoof: THREE.Color;
   sheen: number;
   breed: Breed;
+  /** The saddle's seat, trim and blanket (the grown mounts). */
+  saddle: { seat: THREE.Color; trim: THREE.Color; blanket: THREE.Color };
 }
 
 const WHITE = col('#ffffff');
@@ -147,8 +190,11 @@ export function coatOf(look: UnicornLook): Coat {
     hoof: col('#f2b93c'),
     sheen: look.shiny ? 1 : 0.12,
     breed: look.breed,
+    saddle: SADDLE,
   };
 }
+
+const SADDLE = { seat: col(SADDLE_HEX.seat), trim: col(SADDLE_HEX.trim), blanket: col(SADDLE_HEX.blanket) };
 
 const m = new Xf();
 const root = new Xf();
@@ -206,6 +252,7 @@ export function drawUnicorn(L: PartList, p: Pose, b: Build, c: Coat, full: boole
   const [cx, cy, cz, crx, cry, crz] = b.chest;
   m.from(body).at(cx, cy - b.bodyY, cz).size(crx, cry, crz);
   L.push(M, m, c.body, c.sheen);
+  if (b.saddle) drawSaddle(L, b, c, full);
 
   // Short legs with golden hooves. Diagonal pairs move together; folded under when sitting.
   const hipY = b.bodyY - by * 0.45;
@@ -383,6 +430,36 @@ export function drawUnicorn(L: PartList, p: Pose, b: Build, c: Coat, full: boole
       const tw = 0.5 + 0.5 * Math.sin(p.t * 3 + i * 2.1);
       m.from(head).at((i - 1) * 0.35 * R, (0.95 + (i % 2) * 0.22) * R, (-0.25 - i * 0.12) * R).size(0.06 * R * tw);
       L.push(B.Dot, m, WHITE, 0);
+    }
+  }
+}
+
+/**
+ * The saddle on a grown mount's back (2.4.0): a cream blanket with two flaps down the sides, a rose seat with a gold
+ * pommel at the front and a raised back. Only spheres the herd already draws (Mid and Lo), so no new batch or call.
+ */
+function drawSaddle(L: PartList, b: Build, c: Coat, full: boolean): void {
+  const [bx, by, bz] = b.body;
+  const z = -bz * 0.05;
+  const S = c.saddle;
+  const M = full ? B.Mid : B.Lo;
+  m.from(body).at(0, by * 0.8, z).size(bx * 1.02, by * 0.3, bz * 0.5);
+  L.push(M, m, S.blanket, 0.2);
+  for (const sx of [-1, 1]) {
+    m.from(body).at(sx * bx * 0.86, by * 0.12, z).roll(sx * 0.12).size(bx * 0.2, by * 0.48, bz * 0.36);
+    L.push(B.Lo, m, S.blanket, 0.2);
+  }
+  m.from(body).at(0, by * 0.92, z).size(bx * 0.82, by * 0.2, bz * 0.38);
+  L.push(M, m, S.seat, 0.35);
+  m.from(body).at(0, by * 1.02, z + bz * 0.34).size(bx * 0.2, by * 0.18, bz * 0.1);
+  L.push(B.Lo, m, S.trim, 0.7);
+  m.from(body).at(0, by * 1.0, z - bz * 0.36).size(bx * 0.6, by * 0.17, bz * 0.1);
+  L.push(B.Lo, m, S.seat, 0.35);
+  if (full) {
+    // The gold trim round the seat's edge, front and back.
+    for (const k of [-1, 1]) {
+      m.from(body).at(0, by * 0.95, z + k * bz * 0.3).size(bx * 0.74, by * 0.08, bz * 0.06);
+      L.push(B.Lo, m, S.trim, 0.7);
     }
   }
 }

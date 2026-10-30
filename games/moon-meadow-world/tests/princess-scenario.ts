@@ -9,9 +9,10 @@ import type { Vec2 } from '../src/contracts';
 /** An fx stub: the princess only calls it for sparkles, splashes and ripples. */
 export const fxStub = { sparkle() {}, hearts() {}, splash() {}, ripple() {}, starfall: async () => {}, moonbeam: async () => {} } as unknown as FxImpl;
 
-export function makePrincess(at: Vec2 = { x: -9, z: 3 }): PrincessActor {
+/** Princess Emma on flat walkable ground; pass `scene` to find her dress, crown and hair meshes in it (2.4.0's side-saddle test). */
+export function makePrincess(at: Vec2 = { x: -9, z: 3 }, scene: THREE.Scene = new THREE.Scene()): PrincessActor {
   return new PrincessActor(
-    new THREE.Scene(),
+    scene,
     {
       deps: { route: (_a, b) => [b], isWalkable: () => true, nearestWalkable: (q) => q },
       fx: fxStub,

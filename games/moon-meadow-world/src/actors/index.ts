@@ -65,8 +65,14 @@ export function createActors(scene: THREE.Scene, deps: ActorDepsPlus): ActorsImp
       herd.setDetail(level);
     },
     update(dt, t) {
-      princess.update(dt, t);
-      herd.update(dt, t, parts.camera);
+      // On a mount (2.4.0) she sits where its saddle is this frame, so the herd moves first.
+      if (princess.mountedOn) {
+        herd.update(dt, t, parts.camera);
+        princess.update(dt, t);
+      } else {
+        princess.update(dt, t);
+        herd.update(dt, t, parts.camera);
+      }
       egg.update(dt, t);
       trailEgg.update(dt, t);
       fx.update(dt, t);
