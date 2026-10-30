@@ -5,8 +5,9 @@
 //
 //   right  the card glows, Elizabeth says the word and "Yes!", then the mount nickers and gallops (hooks.road).
 //   wrong  the mount steps onto that road and back (hooks.road) while Elizabeth says the tapped word; the letters that
-//          differ from the goal word glow on its card; then "Look at the letters again." No letter sound of the goal
-//          word until the next idle, as with the wish's miss.
+//          differ from the goal word glow on its card; then "Look at the letters again.", before the mount is back.
+//          The letters glow until the cards wake. No letter sound of the goal word until the next idle, as with the
+//          wish's miss.
 //
 // The ladder: 20 s without a tap, the goal again; the next 20 s (or after a miss) "Listen to the sounds." and the goal
 // word's letter sounds (pines ends in z); the next 20 s, or a second miss, the ghost taps the right card (helped).
@@ -24,8 +25,6 @@ import { press } from './press';
 export const IDLE_MS = 20_000;
 /** While Elizabeth speaks an idle step waits this long and tries again. */
 const BUSY_RETRY_MS = 1500;
-/** How long the letters of a wrong card that differ from the goal word glow. */
-const GLOW_MS = 3600;
 /** The pause after the tapped word before "Look at the letters again.". */
 const AFTER_WORD_MS = 350;
 /** A line that never ends (a clip that fails to play) holds the cards no longer than this; the opening at most WAKE_CAP_MS. */
@@ -107,21 +106,18 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
       }
     };
 
-    // ---- the contrast after a wrong card: the letters that differ from the goal word glow on it
-    let glowTimer: ReturnType<typeof setTimeout> | null = null;
+    // ---- the contrast after a wrong card: the letters that differ from the goal word glow on it until the cards wake
     const unglow = () => {
-      if (glowTimer) clearTimeout(glowTimer);
-      glowTimer = null;
       for (const x of cards) x.units.forEach((u) => u.classList.remove('diff'));
     };
-    life.own(unglow);
     const glowDiff = (i: number) => {
       unglow();
       const x = cards[i];
       const lit = diffUnits(printUnits(x.c.word, x.c.gpcs), targetUnits).a;
       x.units.forEach((u, k) => u.classList.toggle('diff', lit.includes(k)));
-      glowTimer = setTimeout(unglow, GLOW_MS);
     };
+    /** The wrong card's steps onto its road and back (hooks.road), while they run: the ghost waits for them. */
+    let stepping: Promise<void> = Promise.resolve();
 
     // ---- the ladder and its idle timer
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
@@ -154,6 +150,9 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
       wake(false);
       stopIdle();
       ladder.state = { ...ladder.state, level: 3 };
+      // After a second miss the mount first comes back from the wrong road.
+      await stepping;
+      if (!life.alive || finished) return;
       await ctx.ghost.tap(() => centre(right));
       if (!life.alive || finished) return;
       await answer(right, performance.now());
@@ -198,18 +197,21 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
       }
       hooks.log?.('tried', { what: x.c.word });
       const step = hooks.road(i as 0 | 1 | 2, false);
+      stepping = step;
       x.card.classList.add('wrong');
       x.card.classList.remove('resting');
       await said([x.c.clip]);
       if (!life.alive) return;
       glowDiff(i);
       await sleep(AFTER_WORD_MS);
+      if (!life.alive || finished) return;
+      // The first miss: "Look at the letters again." while the mount steps back (the design's order); the second: the
+      // ghost taps the right card once the mount is back.
+      await ladder.miss();
       await step;
       x.card.classList.remove('wrong');
       if (!life.alive || finished) return;
-      // The first miss: "Look at the letters again."; the second: the ghost taps the right card.
-      await ladder.miss();
-      if (!life.alive || finished) return;
+      unglow();
       wake(true);
       armIdle();
     };
@@ -232,6 +234,9 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
       kind: 'sign',
       ladder,
       replay: () => {
+        // Not before the cards first wake (the goal is still being said), nor while a card's word, its contrast, the
+        // praise or the ghost plays, nor once answered: Lumi's tap then never cuts Elizabeth or repeats a done goal.
+        if (busy || finished || !woken) return;
         if (ladder.touch()) audio.stop();
         void audio.sayAll(spec.clips.goal);
         armIdle();

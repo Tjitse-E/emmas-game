@@ -182,7 +182,8 @@ const spec = (words: [string, string, string], target: string, n: 1 | 2 = 1): Si
   clips: { intro: n === 1 ? ['g4-signs'] : [], goal: [`g4-go-bella-${target}`], right: [`word-${target}`, 'fb-yes'], hint: ['h-sounds'], again: ['fb-letters'] },
 });
 
-function open(s: SignSpec) {
+/** `roadMs`: how long the mount's steps take (the mount lane's wrong road is about 3.5 s: out, the shake, back). */
+function open(s: SignSpec, roadMs = 1500) {
   const roads: [number, boolean][] = [];
   const logs: [string, Record<string, unknown> | undefined][] = [];
   const ghost = { taps: 0, tap: async (at: () => { x: number; y: number }) => { ghost.taps++; ghost.at = at(); }, drag: async () => {}, glide: async () => {}, hide() {}, at: null as null | { x: number; y: number } };
@@ -198,7 +199,7 @@ function open(s: SignSpec) {
     cardAt: (i) => anchors[i],
     road: async (i, right) => {
       roads.push([i, right]);
-      await new Promise((r) => setTimeout(r, 1500));
+      await new Promise((r) => setTimeout(r, roadMs));
     },
   }, (m) => {
     handle = m as never;
@@ -294,6 +295,47 @@ describe('the signpost moment', () => {
     expect(m.snap().phase).toBe('open');
     m.tap('sand');
     await run(8000);
+    expect(m.result()).toMatchObject({ outcome: 'miss', misses: 1 });
+  });
+
+  it('says "Look at the letters again." while the mount steps back, and keeps the letters lit until the cards wake', async () => {
+    const m = open(spec(['sand', 'pool', 'barn'], 'sand'), 3500);
+    await run(2200);
+    const tapped = Math.round(performance.now());
+    m.tap('pool');
+    // The word (2 s), 350 ms, then the line: before the mount is back at 3.5 s.
+    await run(2400);
+    expect(said('say fb-letters')).toHaveLength(1);
+    expect(said('say fb-letters')[0] - tapped).toBeLessThan(3500);
+    await run(1500);
+    // The line has ended (4.35 s) and the mount is back (3.5 s): the cards wake with the letters still lit.
+    const lit = () => m.card('pool').all().filter((n) => n.classList.contains('diff')).length;
+    expect(m.snap().phase).toBe('busy');
+    expect(lit()).toBe(3);
+    await run(600);
+    expect(m.snap().phase).toBe('open');
+    expect(lit()).toBe(0);
+  });
+
+  it('ignores a Lumi tap before the cards wake, while a card plays out and once answered', async () => {
+    const m = open(spec(['sand', 'pool', 'barn'], 'sand', 2));
+    await run(500);
+    m.replay();
+    await run(1700);
+    expect(said('say g4-go-bella-sand')).toHaveLength(1);
+    m.tap('pool');
+    await run(500);
+    m.replay();
+    expect(fake.s.log.some((l) => l.what === 'stop')).toBe(false);
+    await run(5000);
+    expect(m.snap().phase).toBe('open');
+    m.tap('sand');
+    await run(500);
+    m.replay();
+    await run(8000);
+    expect(said('say g4-go-bella-sand')).toHaveLength(1);
+    expect(said('say word-sand fb-yes')).toHaveLength(1);
+    expect(fake.s.log.some((l) => l.what === 'stop')).toBe(false);
     expect(m.result()).toMatchObject({ outcome: 'miss', misses: 1 });
   });
 

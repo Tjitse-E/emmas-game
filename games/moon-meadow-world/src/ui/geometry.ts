@@ -146,6 +146,18 @@ export function blanketPatches(have: number, f: number, pad = 7): Box[] {
  */
 export const SIGN_CARD = { h: 92, font: 58, letter: 36, pad: 26, gap: 18, palm: 100, top: 170 } as const;
 
+/**
+ * The hud's food basket in design px (ui.css .food-btn: 112 wide and high, 18 from the right and the bottom). It sits
+ * above the moments layer, so a sign card keeps off it as off a palm band.
+ */
+export const FOOD_BTN = { size: 112, edge: 18 } as const;
+
+/** The food basket's box on screen, in CSS px. */
+export function foodBtnBox(screen: { w: number; h: number }, unit = unitFor(screen.w, screen.h)): Box {
+  const size = FOOD_BTN.size * unit;
+  return { x: screen.w - (FOOD_BTN.edge * unit + size), y: screen.h - (FOOD_BTN.edge * unit + size), w: size, h: size };
+}
+
 /** A card's size in CSS px for a word. */
 export function signCardSize(word: string, unit: number): { w: number; h: number } {
   return {
@@ -166,8 +178,15 @@ export function signCardBoxes(anchors: readonly Point[], words: readonly string[
   const maxX = screen.w - SIGN_CARD.palm;
   const minY = Math.round(SIGN_CARD.top * unit);
   const maxY = screen.h - SIGN_CARD.palm;
-  const fit = (b: Box): Box => ({ ...b, x: clamp(b.x, minX, maxX - b.w), y: clamp(b.y, minY, maxY - b.h) });
   const near = (a: Box, b: Box) => overlaps({ x: a.x - gap, y: a.y - gap, w: a.w + 2 * gap, h: a.h + 2 * gap }, b);
+  // A card in the bottom-right corner moves up off the food basket (or left, when up has no room).
+  const basket = foodBtnBox(screen, unit);
+  const fit = (b: Box): Box => {
+    const c = { ...b, x: clamp(b.x, minX, maxX - b.w), y: clamp(b.y, minY, maxY - b.h) };
+    if (!near(c, basket)) return c;
+    const up = basket.y - gap - c.h;
+    return up >= minY ? { ...c, y: up } : { ...c, x: Math.max(minX, basket.x - gap - c.w) };
+  };
   const sizes = [0, 1, 2].map((i) => signCardSize(words[i] ?? '', unit));
   // An arm behind the camera can come back without a usable point: the card then starts at the screen's middle.
   const usable = (p: Point | undefined): p is Point => !!p && Number.isFinite(p.x) && Number.isFinite(p.y);
