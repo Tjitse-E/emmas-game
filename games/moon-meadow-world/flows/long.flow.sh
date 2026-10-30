@@ -5,8 +5,8 @@
 #               by a ground tap beside it when it is on screen (the walk's end starts it), else by its bubble
 #   LONG=pond   the pond-lover: every play bubble at once, staying until each visit ends, else the nearest bubble
 #   LONG=slide  the slide-only child: she taps only the slide, so it rests all play and no place starts
-# After every place: no reload, no console error, and the scene's geometry and texture counts and the run's deferred
-# list the same as after the first place. At the end it reads the kind=play line (__game.playLine()) and checks the
+# After every place: no reload, no console error, the run's deferred list as after the first place, and the scene's
+# geometry and texture counts never higher after a kind of place she has done before (check_level). At the end it reads the kind=play line (__game.playLine()) and checks the
 # history's targets. LONG_BED=<seconds> plays to an earlier bedtime and skips the count checks (a quick run of the
 # driver itself).
 source "$(dirname "$0")/lib.sh"
@@ -47,17 +47,37 @@ go_to() {
   tap_offer "$id" 30
 }
 
+# Level from place to place (section 8): one page load and the same deferred cleanups as after the first place, always.
+# Geometries and textures may grow only at the first place of a kind (a gift she wears, a newborn's look: first
+# loads), never after a kind she has done before (a second ride or wish, every pond visit after the first), where a
+# leak would show.
 LEVEL=''
+MAXG=0
+MAXT=0
+KINDS=' '
 check_level() {
-  local now
-  now="$(val "() => { const p = window.__game.perf(); return [window.__mmwLoads, p.geometries, p.textures, window.__game.state().run.deferred].join('/'); }")"
+  local now loads geo tex def kind
+  now="$(val "() => { const p = window.__game.perf(); return [window.__mmwLoads, p.geometries, p.textures, window.__game.state().run.deferred].join(' '); }")"
+  read -r loads geo tex def <<<"$now"
+  kind="${1:-none}"
+  case "$kind" in shore) kind=egg ;; rack) kind=beads ;; esac
+  say "after $1: loads $loads, geometries $geo, textures $tex, deferred $def"
+  expect_eq "$loads" 1 'one page load'
   if [ -z "$LEVEL" ]; then
-    LEVEL="$now"
-    say "after the first place: loads/geometries/textures/deferred $LEVEL"
-    expect_eq "${LEVEL%%/*}" 1 'one page load'
+    LEVEL="$def"
   else
-    expect_eq "$now" "$LEVEL" 'loads, geometries, textures and deferred cleanups after a place'
+    expect_eq "$def" "$LEVEL" 'the deferred cleanups after a place'
   fi
+  case "$KINDS" in
+    *" $kind "*)
+      [ "$geo" -le "$MAXG" ] || fail "geometries grew after a second $1: $geo > $MAXG"
+      [ "$tex" -le "$MAXT" ] || fail "textures grew after a second $1: $tex > $MAXT"
+      ;;
+    *) KINDS="$KINDS$kind " ;;
+  esac
+  [ "$geo" -gt "$MAXG" ] && MAXG="$geo"
+  [ "$tex" -gt "$MAXT" ] && MAXT="$tex"
+  return 0
 }
 
 open_page "?seed=$SEED&fresh=1$BED"
@@ -86,7 +106,9 @@ while [ "$(field part)" = hub ]; do
       play_place 900
     fi
     places=$((places + 1))
-    check_level
+    # A place that ends at bedtime ends the hub: its cleanups and the night's are bedtime's, not the hub's.
+    [ "$(field part)" = hub ] || break
+    check_level "$running"
     continue
   fi
   case "$LONG" in
@@ -113,7 +135,7 @@ while [ "$(field part)" = hub ]; do
   esac
 done
 say "bedtime at $(val "() => (window.__game.state().hub.playMs / 60000).toFixed(2)") min after $places places ($slides slide taps)"
-[ "$LONG" = slide ] && check_level
+[ "$LONG" = slide ] && check_level slide
 
 # Bedtime and goodnight: into the yard, every door right at a child's pace.
 wait_for "() => window.__game.state().goal === 'stable' || window.__game.state().part === 'goodnight'" 60

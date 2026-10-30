@@ -493,7 +493,10 @@ describe('the start mirror', () => {
   it('plays its music box for 45 s, as decision 1 says, with no board; ?box= shortens it', async () => {
     expect(MIRROR_MS).toBe(45_000);
     const { g, calls } = fakeGame();
+    const deferred = g.run.deferred;
     await wardrobe(g);
+    // 2.4.0: the mirror leaves the run's cleanups level, and the play clock running again.
+    expect([g.run.deferred, g.clock.mirror]).toEqual([deferred, false]);
     expect(calls.wardrobe!.limitMs).toBe(45_000);
     expect(calls.wardrobe!.board).toBeUndefined();
     expect(calls.wardrobe!.clips.idle).toEqual(['g4-ready-play']);
