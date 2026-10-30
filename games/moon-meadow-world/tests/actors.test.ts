@@ -1346,6 +1346,11 @@ describe('side-saddle', () => {
       run(2.5);
       void u.ridePath(line({ x: 5, z: -5 }, { x: 5, z: -40 }), 0, 35, { speed: 4.2 });
       run(3);
+      // Her reactions on the mount (a right answer's twirl or jump) keep the skirt where it lies.
+      for (const e of ['twirl', 'jump', 'curtsy', 'show'] as const) {
+        void p.emote(e);
+        run(1.7);
+      }
       const what = JSON.stringify({ gown, worst });
       expect(worst.dress, what).toBeLessThan(0.01);
       expect(worst.legs, what).toBeLessThan(0.01);

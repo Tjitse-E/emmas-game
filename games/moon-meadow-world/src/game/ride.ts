@@ -196,8 +196,8 @@ export async function ridePlace(g: Game, trip: 1 | 2): Promise<() => void> {
   g.ride ??= { trip, mount: t.id, step: 'paddock', followers: [] };
   g.ride.trip = trip;
   g.free = false;
-  t.undo = g.run.defer(() => abort(g, t));
   const at = g.ride.step;
+  t.undo = g.run.defer(() => abort(g, t));
   const from = (s: RideStep) => STEP_ORDER.indexOf(at) <= STEP_ORDER.indexOf(s);
 
   if (from('paddock')) await paddock(g, t);
@@ -396,6 +396,10 @@ async function rideOut(g: Game, t: Trip): Promise<void> {
     }
   });
   try {
+    // A mount that grazed a little off its spot first steps onto the path's start.
+    const start = out.getPointAt(0);
+    const off = Math.hypot(t.mount!.position.x - start.x, t.mount!.position.z - start.z);
+    if (off > 0.15) await g.run.w(t.mount!.ridePath(new THREE.LineCurve3(t.mount!.position.clone().setY(0), start), 0, off, { speed: 1.5 }));
     await g.run.w(t.mount!.ridePath(out, 0, Math.max(0, lenOf(out) - FORK_STOP), { speed: RIDE.speed }));
   } finally {
     off();
@@ -504,8 +508,9 @@ async function starEgg(g: Game, t: Trip, hatchOnly: boolean): Promise<void> {
   const mount = t.mount!;
   setStep(g, 'egg');
   const yaw = mount.yaw;
-  // On her side of the mount, a little ahead, between it and the clearing's kit.
-  const egg = g.world.nearestWalkable({ x: mount.position.x + Math.sin(yaw) * 1.3 + Math.cos(yaw) * 0.9, z: mount.position.z + Math.cos(yaw) * 1.3 - Math.sin(yaw) * 0.9 });
+  // On her side of the mount, a little ahead, between it and the clearing's kit (the trail is beyond the walk grid,
+  // so no nearestWalkable here: it would pull the egg back inside the fence).
+  const egg = { x: mount.position.x + Math.sin(yaw) * 1.3 + Math.cos(yaw) * 0.9, z: mount.position.z + Math.cos(yaw) * 1.3 - Math.sin(yaw) * 0.9 };
   if (!actors.trailEgg.visible) {
     void actors.fx.moonbeam(new THREE.Vector3(egg.x, 0, egg.z), 1800);
     actors.trailEgg.place(new THREE.Vector3(egg.x, 0, egg.z), 'star');
@@ -690,8 +695,8 @@ export function snapTrip(g: Game, step: StartStep): void {
   t.mount = mount;
   t.plan = plan(g, 1, id);
   t.roads = t.plan.signs.map((s) => Math.max(0, s.cards.indexOf(s.target)));
-  // Sign 1 counts as read, so the level folds as after a whole trip.
-  t.outcomes = step === 'sign2' ? ['first'] : ['first', 'first'];
+  // The signs it skips were never read: only the ones she answers fold into her level.
+  t.outcomes = [];
   const ride: RideState = { trip: 1, mount: id, step: 'sign2', followers: [] };
   let at: THREE.Vector3;
   let yaw: number;

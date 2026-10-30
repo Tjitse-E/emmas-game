@@ -969,6 +969,15 @@ export class PrincessActor implements Princess {
         happy = up > 0.5 ? 1 : 0;
       }
     }
+    // No twirl, turn, jump or knee bend of her own on a mount: her skirt lies over its flank, and her legs stay down
+    // its side whatever her arms do.
+    if (sk > 0) {
+      for (let i = 0; i < 2; i++) hip[i] = THREE.MathUtils.lerp(hip[i], -0.95 + (i ? 0.05 : -0.05), sk);
+      spin *= 1 - sk;
+      knees *= 1 - sk;
+      bob *= 1 - sk;
+      flare = THREE.MathUtils.lerp(flare, 1, sk);
+    }
     // The blink reaction owns her eyelids.
     const blinking = e?.kind === 'blink';
 

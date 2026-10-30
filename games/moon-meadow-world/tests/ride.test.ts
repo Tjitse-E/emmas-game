@@ -155,7 +155,8 @@ function fakeGame(o: Opts = {}) {
     world: {
       camera: new THREE.PerspectiveCamera(38, 1080 / 740, 0.5, 700),
       route: (a: Vec2, b: Vec2) => [a, b],
-      nearestWalkable: (p: Vec2) => p,
+      // As the real walk grid: nothing north of the fence (z -22) is walkable.
+      nearestWalkable: (p: Vec2) => ({ x: p.x, z: Math.max(-22, p.z) }),
       isWalkable: () => true,
       frame: vi.fn(async () => {}),
       releaseFrame: vi.fn(),
@@ -305,6 +306,10 @@ describe('the ride place', () => {
     expect(f.g.followers.list.map((u) => u.id)).toContain('baby-13');
     expect(f.g.clock.rideMs).toBeGreaterThan(0);
     expect(f.g.run.deferred).toBe(deferred);
+    // The star egg lies at clearing 2 beside the mount, out on the trail (never pulled back inside the fence).
+    const egg = (f.g.actors.trailEgg.place as unknown as { mock: { calls: [THREE.Vector3, string][] } }).mock.calls[0];
+    expect(egg[1]).toBe('star');
+    expect(egg[0].z).toBeLessThan(-28);
     f.stop();
   });
 
