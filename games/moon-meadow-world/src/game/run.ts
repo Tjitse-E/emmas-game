@@ -74,10 +74,14 @@ export class Run {
       new Promise<boolean>((resolve) => {
         let ms = 0;
         let done = false;
+        // 2.4.0: a settled wait takes its cleanup off the run again, so a 36-minute play of many waits keeps the
+        // run's deferred list level (the long play checks it).
+        let undo: () => void = () => {};
         const finish = (v: boolean) => {
           if (done) return;
           done = true;
           off();
+          undo();
           this.skippable.delete(skip);
           resolve(v);
         };
@@ -88,7 +92,7 @@ export class Run {
           else if (ms >= maxMs) finish(false);
         });
         if (Number.isFinite(maxMs)) this.skippable.add(skip);
-        this.defer(() => finish(false));
+        if (!done) undo = this.defer(() => finish(false));
       }),
     );
   }

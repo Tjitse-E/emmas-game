@@ -270,7 +270,17 @@ export async function wardrobe(g: Game): Promise<void> {
   actors.princess.crown(g.save.data.seen.crown);
   actors.princess.setLook(g.save.data.look);
   herdAside(g, true);
-  const { ms } = await dressUp(g, { at: 'mirror', limitMs: g.options.boxMs ?? MIRROR_MS, firstTime: !g.save.data.seen.wardrobe });
+  // 2.4.0: the play clock stands still while the start mirror is open (hub.ts tickPlay), so dressing never costs her
+  // a learning place.
+  g.clock.mirror = true;
+  const open = g.run.defer(() => void (g.clock.mirror = false));
+  let ms: number;
+  try {
+    ({ ms } = await dressUp(g, { at: 'mirror', limitMs: g.options.boxMs ?? MIRROR_MS, firstTime: !g.save.data.seen.wardrobe }));
+  } finally {
+    g.clock.mirror = false;
+    open();
+  }
   g.clock.dressMs.mirror += ms;
   world.releaseFrame();
   herdAside(g, false);

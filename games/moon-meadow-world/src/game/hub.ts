@@ -67,6 +67,69 @@ export function startHub(bedMs: number = BEDTIME_MS): HubState {
   };
 }
 
+// ---- the play clock, the cutoffs and bedtime (5.6; plan Task 1) ---------------------------------------------------
+
+/** The play clock's times for one bedtime: the last ride, the last egg, the last place, done early's last check and wait. */
+export interface Cutoffs {
+  ride: number;
+  egg: number;
+  all: number;
+  early: number;
+  wait: number;
+  bed: number;
+}
+
+/** Bedtime under this is a flow's short ?bed=: its cutoffs scale with it. */
+const SHORT_BED_MS = 5 * 60_000;
+
+/**
+ * 4, 3, 2 and 1 minutes before bedtime and a 2-minute wait; under 5 minutes 87%, 90%, 93% and 97% of it and a wait of
+ * 7%. Everything derives from the one bedtime, so ?bed= moves every cutoff with it.
+ */
+export function cutoffs(bedMs: number): Cutoffs {
+  if (bedMs < SHORT_BED_MS) {
+    const at = (f: number) => Math.round(bedMs * f);
+    return { ride: at(0.87), egg: at(0.9), all: at(0.97), early: at(0.93), wait: at(0.07), bed: bedMs };
+  }
+  const min = 60_000;
+  return { ride: bedMs - 4 * min, egg: bedMs - 3 * min, all: bedMs - min, early: bedMs - 2 * min, wait: 2 * min, bed: bedMs };
+}
+
+/** The longest frame the play clock counts: a hidden tab or a stall never jumps the clock. */
+const FRAME_CAP_MS = 1000;
+
+/**
+ * One frame of play time: rawMs capped at 1000, nothing while paused (the start mirror, the Corner's music box). With
+ * `hub` (the hub part runs) and no place running it also adds to idleMs, nudgeIdleMs and, after done early, earlyIdleMs.
+ */
+export function tickPlay(h: HubState, rawMs: number, o: { paused: boolean; hub: boolean }): void {
+  if (o.paused || !(rawMs > 0)) return;
+  const ms = Math.min(rawMs, FRAME_CAP_MS);
+  h.playMs += ms;
+  if (!o.hub || h.running) return;
+  h.idleMs += ms;
+  h.nudgeIdleMs += ms;
+  if (h.early !== null) h.earlyIdleMs += ms;
+}
+
+/** Past the place's cutoff: ride at `ride`, egg and shore at `egg`, every other place at `all`. */
+export function isPast(h: HubState, p: HubPlace): boolean {
+  const c = cutoffs(h.bedMs);
+  return h.playMs >= (p === 'ride' ? c.ride : p === 'egg' || p === 'shore' ? c.egg : c.all);
+}
+
+/**
+ * Bedtime may start: no place runs and the wardrobe is closed, and the play clock has reached bedtime, or she is done
+ * early and either no play bubble is left or done early's wait has passed with no place running. Nothing else starts
+ * bedtime before 30:00.
+ */
+export function bedtimeDue(h: HubState, o: { dressing: boolean }): boolean {
+  if (h.running || o.dressing) return false;
+  const c = cutoffs(h.bedMs);
+  if (h.playMs >= c.bed) return true;
+  return h.early !== null && (h.play.length === 0 || h.earlyIdleMs >= c.wait);
+}
+
 /** The hub for the test hook (__game.state().hub). */
 export function hubSnapshot(g: Game): {
   shown: HubPlace[];

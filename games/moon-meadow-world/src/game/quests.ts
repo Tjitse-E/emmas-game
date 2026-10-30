@@ -28,13 +28,12 @@ import { afterWish, crownKeep, momentLog, parkFollowers, planWish, runWish } fro
 import { eggAsk, noteMaths } from './maths';
 import { useSum } from './band';
 import { herdAside } from './wardrobe-part';
-import { freePlayOver, giveGift, pastCutoff, tickFree, walkThere } from './quest-kit';
+import { giveGift, walkThere } from './quest-kit';
+import { bedtimeDue, isPast } from './hub';
 import { followAgain, guests } from './guests';
 import { beadsQuest } from './beads';
 import { cornerQuest } from './corner';
 import { QUEST_IDS, type QuestId } from './options';
-
-export { FREE_PLAY_MS, QUEST_CUTOFF_MS } from './quest-kit';
 
 /** The free-play wait's longest stretch: a safety only, free play ends by its clocks (freePlayOver) long before. */
 const FREE_WAIT_MS = 600_000;
@@ -101,10 +100,10 @@ export function playQuests(g: Game): QuestId[] {
 /** May this quest start now? */
 export function canQuest(g: Game, id: QuestId): boolean {
   const q = g.quests;
-  if (g.part !== 'free' || g.bedtime || q.over || !bothNamed(g) || q.done.has(id) || q.running) return false;
+  if (g.part !== 'free' || g.bedtime || !bothNamed(g) || q.done.has(id) || q.running) return false;
   if (!playQuests(g).includes(id)) return false;
   if (id === 'corner') return cornerOpen(g);
-  return !pastCutoff(g);
+  return !isPast(g.hub, id);
 }
 
 /** Start a quest at the afternoon's next frame (a bubble tap, a tap on its place, walking near). False when it cannot. */
@@ -266,11 +265,6 @@ export async function afternoon(g: Game): Promise<void> {
   // `at` starts empty: she may have walked to a place while the opening lines played, and that counts as coming.
   let at: QuestId | null = null;
   const offClock = world.onFrame((dt) => {
-    tickFree(g, dt * 1000, audio.speaking);
-    if (!q.cut && pastCutoff(g)) {
-      q.cut = true;
-      if (!q.running) showOffers(g);
-    }
     const now = placeAt(princessAt(g));
     const came = now !== at;
     at = now;
@@ -298,6 +292,7 @@ export async function afternoon(g: Game): Promise<void> {
     prompted = now;
   };
 
+  const freePlayOver = (gg: Game): boolean => !gg.quests.running && bedtimeDue(gg.hub, { dressing: gg.quests.dressing });
   for (;;) {
     // Free play waits for a quest or for its end by the clocks (freePlayOver). The free-play wait is the one skip()
     // ends (the flows skip the two minutes). A running quest is never skipped.
@@ -325,7 +320,6 @@ export async function afternoon(g: Game): Promise<void> {
     prompted = performance.now();
     if (freePlayOver(g)) break;
   }
-  q.over = true;
   offClock();
   layer.keepClear(null);
   hideOffers(g);
