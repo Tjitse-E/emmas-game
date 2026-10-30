@@ -49,6 +49,23 @@ export function armEnd(i: 0 | 1 | 2, out = new THREE.Vector3()): THREE.Vector3 {
 
 const WOOD = { dark: '#9b6a42', light: '#c08a5c' } as const;
 
+/** 1 on a trail bed, fading to 0 over its soft edge (the beds' ribbons): what lies under the plaza and the clearings. */
+const BED_SOFT = 0.4;
+function onBed(x: number, z: number): number {
+  let d = Infinity;
+  for (const line of TRAIL_LINES) {
+    for (let i = 1; i < line.length; i++) {
+      const a = line[i - 1];
+      const b = line[i];
+      const abx = b.x - a.x;
+      const abz = b.z - a.z;
+      const t = THREE.MathUtils.clamp(((x - a.x) * abx + (z - a.z) * abz) / (abx * abx + abz * abz || 1), 0, 1);
+      d = Math.min(d, Math.hypot(x - a.x - abx * t, z - a.z - abz * t));
+    }
+  }
+  return 1 - THREE.MathUtils.smoothstep(d, CUT.bed, CUT.bed + BED_SOFT);
+}
+
 export function signpostGeometry(): Geo[] {
   const parts: Geo[] = [];
   const { x, z } = RIDE.post;
@@ -79,7 +96,7 @@ function entryAngle(i: 0 | 1 | 2): number {
 /** A bare clearing: trodden ground round its slot and a few grey stones on its rim, clear of the way in and the kit. */
 export function clearingGeometry(i: 0 | 1 | 2): Geo[] {
   const c = CLEARINGS[i];
-  const parts: Geo[] = [patch(ellipse(c.center, c.radius, c.radius, 28), c.center, 0.45, Y.clearing, EARTH)];
+  const parts: Geo[] = [patch(ellipse(c.center, c.radius, c.radius, 28), c.center, 0.45, Y.clearing, EARTH, onBed)];
   const entry = entryAngle(i);
   const north = -Math.PI / 2;
   const off = (a: number, b: number): number => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
@@ -143,9 +160,9 @@ export interface TrailWorld {
 export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
   const paddock = buildPaddock(scenery);
   // The bed from the gate to the fork, then the roads with the fork's plaza over their starts.
-  scenery.add(ribbon(TRAIL_LINES[0], CUT.bed, 0.4, Y.gate, EARTH), 'trail-gate');
-  for (const line of TRAIL_LINES.slice(1)) scenery.add(ribbon(line, CUT.bed, 0.4, Y.road, EARTH), 'roads');
-  scenery.add(patch(ellipse(RIDE.fork, CUT.plaza, CUT.plaza, 28), RIDE.fork, 0.4, Y.plaza, EARTH), 'roads');
+  scenery.add(ribbon(TRAIL_LINES[0], CUT.bed, BED_SOFT, Y.gate, EARTH), 'trail-gate');
+  for (const line of TRAIL_LINES.slice(1)) scenery.add(ribbon(line, CUT.bed, BED_SOFT, Y.road, EARTH), 'roads');
+  scenery.add(patch(ellipse(RIDE.fork, CUT.plaza, CUT.plaza, 28), RIDE.fork, 0.4, Y.plaza, EARTH, onBed), 'roads');
   for (const g of signpostGeometry()) scenery.add(g, 'fork');
   ([0, 1, 2] as const).forEach((i) => {
     for (const g of clearingGeometry(i)) scenery.add(g, SLOT_REGIONS[i]);

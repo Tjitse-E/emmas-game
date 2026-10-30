@@ -77,9 +77,10 @@ export function ribbon(points: readonly Vec2[], half: number, soft: number, y: n
 
 /**
  * A patch of bed inside a closed outline (around `centre`) at height `y`, with inner rings for the grain to live on
- * and a soft rim of `rim` metres pushed out from the outline into the grass.
+ * and a soft rim of `rim` metres pushed out from the outline into the grass. `under` is the bed already lying there
+ * (1 on it, 0 on grass): over it the rim keeps the bed's colour, so a patch laid over a road shows no grass ring.
  */
-export function patch(outline: readonly Vec2[], centre: Vec2, rim: number, y: number, tones: Tones): Geo {
+export function patch(outline: readonly Vec2[], centre: Vec2, rim: number, y: number, tones: Tones, under?: (x: number, z: number) => number): Geo {
   const rings = [0, 0.4, 0.75, 1];
   const p: number[] = [];
   const c: number[] = [];
@@ -96,7 +97,7 @@ export function patch(outline: readonly Vec2[], centre: Vec2, rim: number, y: nu
         z = o.z + ((o.z - centre.z) / dl) * rim;
       }
       p.push(x, y, z);
-      bedColour(x, z, k < 0 ? 0 : 1, tones, col);
+      bedColour(x, z, k < 0 ? (under?.(x, z) ?? 0) : 1, tones, col);
       c.push(col.r, col.g, col.b);
     }
   }

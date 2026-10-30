@@ -589,20 +589,29 @@ export interface HedgeFlowers {
 }
 
 /**
- * The trail's opening in the north hedge (2.4.0): wide enough for the 3 m bed with room to spare. The hedge sinks
- * into the ground over its last metre on each side, a round end, and lies flat across the opening, so it keeps every
- * triangle it had (its region is drawn in the stable views) and the random flowers on the rest stay where they were.
+ * The trail's opening in the north hedge (2.4.0): 4.2 m, the 3 m bed with room to spare. The hedge's rings that fall
+ * in the opening fold into a round end of `cap` metres on each side of it, and the rest lie flat on the ground across
+ * the opening, so the hedge keeps every triangle it had (its region is drawn in the stable views) and the random
+ * flowers on the rest stay where they were.
  */
-export const HEDGE_GAP = { minX: RIDE.gate.x - 2.1, maxX: RIDE.gate.x + 2.1, z: BOUNDS.minZ - FENCE_OUT - HEDGE_OUT, taper: 1.0 } as const;
+export const HEDGE_GAP = { minX: RIDE.gate.x - 2.1, maxX: RIDE.gate.x + 2.1, z: BOUNDS.minZ - FENCE_OUT - HEDGE_OUT, cap: 0.65, flat: 0.75 } as const;
 
-/** How much of the hedge stands at (x, z): 1, falling to 0 in a quarter circle over the taper and in the opening. */
-function hedgeStands(x: number, z: number): number {
-  if (Math.abs(z - HEDGE_GAP.z) > 0.01) return 1;
-  const d = Math.max(HEDGE_GAP.minX - x, x - HEDGE_GAP.maxX);
-  if (d <= 0) return 0;
-  if (d >= HEDGE_GAP.taper) return 1;
-  const k = 1 - d / HEDGE_GAP.taper;
-  return Math.sqrt(1 - k * k);
+/**
+ * Where a hedge ring at (x, z) goes, and how much of the hedge stands there (1 full, 0 flat): the rings from a cap's
+ * start to `flat` short of the opening's middle fold into the cap, standing in a quarter circle down to the opening's
+ * edge; the rings nearer the middle lie flat at the edge (rings are at most 0.7 m apart, so each side has one).
+ */
+function hedgeRing(x: number, z: number): { x: number; stands: number } {
+  if (Math.abs(z - HEDGE_GAP.z) > 0.01) return { x, stands: 1 };
+  const { minX, maxX, cap, flat } = HEDGE_GAP;
+  const mid = (minX + maxX) / 2;
+  const west = x <= mid;
+  const from = west ? minX - cap : maxX + cap;
+  const to = west ? mid - flat : mid + flat;
+  const u = (x - from) / (to - from);
+  if (u <= 0) return { x, stands: 1 };
+  if (u >= 1) return { x: west ? minX : maxX, stands: 0 };
+  return { x: from + (west ? cap : -cap) * u, stands: Math.sqrt(1 - u * u) };
 }
 
 export function buildHedges(scenery: Scenery, flowers: HedgeFlowers): void {
@@ -625,10 +634,11 @@ export function buildHedges(scenery: Scenery, flowers: HedgeFlowers): void {
     const col = new THREE.Color();
     for (let i = 0; i <= steps; i++) {
       const s = -0.6 + (i / steps) * len;
-      const wx = a.x + ux * s;
+      const fold = hedgeRing(a.x + ux * s, a.z + uz * s);
+      const wx = fold.x;
       const wz = a.z + uz * s;
       const g = wx * 0.9 + wz * 1.1;
-      const stands = hedgeStands(wx, wz);
+      const stands = fold.stands;
       const height = (0.82 + 0.14 * Math.sin(g * 1.7) + 0.08 * Math.sin(g * 4.1 + 1)) * stands;
       const half = (0.62 + 0.08 * Math.sin(g * 2.3 + 0.5)) * stands;
       for (let k = 0; k <= ring; k++) {
