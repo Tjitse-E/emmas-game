@@ -538,6 +538,12 @@ export async function hub(g: Game): Promise<void> {
   talkToken++;
   popToken++;
   for (const p of [...displayed]) hideBubble(p);
+  // A place that ran across 29:00 ends at bedtime: "Soon it is bedtime!" after it, once, when nobody speaks (5.6).
+  if (!soonSaid && h.playMs >= cutoffs(h.bedMs).all) {
+    soonSaid = true;
+    await g.run.until(() => !audio.speaking, 4000);
+    await say(g, CLIPS.soonBed);
+  }
   if (g.waiting) {
     withdrawWish(g, g.waiting);
     g.waiting = null;

@@ -758,3 +758,37 @@ describe("the play's shape and the start options", () => {
     }
   });
 });
+
+describe('bedtime arriving mid-place', () => {
+  it('runs a place asked before 29:00 to its end, then says the soon line once before bedtime', async () => {
+    // Review Focus 1, in the hub part: nothing starts bedtime while a place runs.
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', () => Promise.resolve());
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    try {
+      t.said.length = 0;
+      const f = fakeHub();
+      let release!: () => void;
+      const picnic = vi.spyOn(await import('../src/game/quests'), 'picnicQuest');
+      picnic.mockImplementation(() => new Promise((ok) => (release = () => ok(() => {}))));
+      let ended = false;
+      void hub(f.g).then(() => (ended = true), () => {});
+      await f.pump(2000);
+      f.g.hub.playMs = 28.9 * 60_000;
+      await f.tap('picnic');
+      f.g.hub.playMs = 31 * 60_000;
+      await f.pump(2000);
+      expect([ended, f.g.hub.running]).toEqual([false, 'picnic']);
+      expect(t.said).not.toContain('g4-soon-bed');
+      release();
+      await f.pump(6000);
+      expect(ended).toBe(true);
+      expect(t.said.filter((id) => id === 'g4-soon-bed')).toHaveLength(1);
+      expect(f.g.hub.done).toEqual(['picnic']);
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    }
+  });
+});
