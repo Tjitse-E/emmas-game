@@ -9,7 +9,7 @@ show the newest version, bottom right. `scripts/deploy.sh` refuses to deploy a v
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [2.3.2] - 2026-10-29
+## [2.3.2] - 2026-10-30
 
 A patch after two test plays of 2.3.1, in which the eggs felt slow.
 
