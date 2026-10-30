@@ -88,12 +88,21 @@ const bothNamed = (g: Game): boolean => !!g.babies[0]?.member && !!g.babies[1]?.
 /** The Dressing Corner opens after her first finished quest (once its gift is picked), or at once with ?quest=corner. */
 const cornerOpen = (g: Game): boolean => g.options.quest === 'corner' || [...g.quests.done].some((id) => id !== 'corner');
 
+/**
+ * The quests this play's free play offers: the royal picnic, this play's maths quest (the hay rack or the bead tree)
+ * and the Dressing Corner. Only these can start (canQuest), and wish2's kind follows the picnic (moments.ts
+ * secondWishKind).
+ */
+export function playQuests(g: Game): QuestId[] {
+  return QUEST_IDS.filter((id) => id === 'picnic' || id === 'corner' || id === g.quests.maths);
+}
+
 /** May this quest start now? */
 export function canQuest(g: Game, id: QuestId): boolean {
   const q = g.quests;
   if (g.part !== 'free' || g.bedtime || q.over || !bothNamed(g) || q.done.has(id) || q.running) return false;
+  if (!playQuests(g).includes(id)) return false;
   if (id === 'corner') return cornerOpen(g);
-  if (id !== 'picnic' && id !== q.maths) return false;
   return !pastCutoff(g);
 }
 

@@ -8,8 +8,9 @@ import { DATA, type KindData, type WordData } from './data.ts';
 import { type Rand, pick, shuffle } from './rand.ts';
 
 /**
- * dress (wish 1 at the nest), bath (the pond wish), picnic (wish 2 and the royal picnic), food (picnic foods only),
- * phrase (2.3: the Dressing Corner gate, planned in phrases.ts).
+ * dress (wish 1 at the nest), bath (the pond wish, and wish 2 by the wild egg since 2.3.2), picnic (the royal picnic,
+ * and wish 2 in a play without it), food (picnic foods only), phrase (2.3: the Dressing Corner gate, planned in
+ * phrases.ts).
  */
 export type WishKind = WishSpec['kind'];
 /** The kinds whose wish is one word from a pool (all but the phrase). */
@@ -23,6 +24,11 @@ export interface WishOpts {
   exclude?: readonly string[];
   /** false brings back v3's miss rule (?contrast=0): no clips.again, so one miss gives the focused hint at once. */
   contrast?: boolean;
+  /**
+   * The words of this play's earlier wish of the same kind (its target and basket): none of them in this wish while
+   * others are left (2.3.2: wish2 is a second pond wish after the pond wish when free play offers the picnic).
+   */
+  avoid?: readonly string[];
 }
 
 /** After a miss's contrast tag: "Look at the letters again." */
@@ -194,16 +200,31 @@ const isList = (x: readonly string[] | WishOpts): x is readonly string[] => Arra
  * A wish and its basket at a reading level (default 2). The target is a strong word not in `exclude` (while one is
  * left); level 3 asks only targets with a twin or a frame word, and with none left it plays and logs as level 2.
  * `exclude` can be passed as the third argument (a list of words, as the demo did) or inside the options.
+ *
+ * With `avoid` (2.3.2) no avoided word is the target or in the basket while others are left: the basket comes from
+ * the pool without them, and the target is one whose basket can still meet 3.1 there (basketFits; at level 3 with a
+ * twin or a frame word). Level 3 with no such fresh target, and level 1 with every level 1 target avoided, play and
+ * log as level 2. Without `avoid` the wish is planned exactly as before (the same draws).
  */
 export function wishSpec(kind: WordKind, rand: Rand, exclude: readonly string[] | WishOpts = [], opts: WishOpts = {}): WishSpec {
   const o: WishOpts = isList(exclude) ? { ...opts, exclude: [...exclude, ...(opts.exclude ?? [])] } : { ...exclude, ...opts };
-  const out = new Set(o.exclude ?? []);
+  const avoid = new Set(o.avoid ?? []);
+  const out = new Set([...(o.exclude ?? []), ...avoid]);
   const fresh = (ws: WordData[]) => ws.filter((w) => !out.has(w.word));
+  const unseen = (ws: WordData[]) => ws.filter((w) => !avoid.has(w.word));
+  const all = wishWords(kind);
+  const left = unseen(all);
+  const pool = left.length >= BASKET_SIZE[3] ? left : all;
+  /** With words to avoid: can the pool still give `t` a basket of level `l` (at level 3 with a twin or a frame word)? */
+  const fits = (t: WordData, l: ReadingLevel) => !avoid.size || (basketFits(t, pool, l) && (l !== 3 || hasNear(t, pool)));
   let level: ReadingLevel = o.level ?? 2;
-  if (level === 3 && !fresh(wishTargets(kind, 3)).length) level = 2;
+  if (level === 3 && !fresh(wishTargets(kind, 3)).filter((t) => fits(t, 3)).length) level = 2;
+  if (level === 1 && !unseen(wishTargets(kind, 1)).length) level = 2;
   const targets = wishTargets(kind, level);
-  const target = pick(rand, fresh(targets).length ? fresh(targets) : targets);
-  const plan = planBasket(target, wishWords(kind), level, rand);
+  const ok = (t: WordData) => fits(t, level);
+  const choices = [fresh(targets).filter(ok), fresh(targets), unseen(targets).filter(ok), unseen(targets)];
+  const target = pick(rand, choices.find((c) => c.length) ?? targets);
+  const plan = planBasket(target, pool, level, rand);
   const { again, ...v3Rule } = WISH_CLIPS[kind];
   return {
     kind,
@@ -241,6 +262,24 @@ export function gateWords(): WordData[] {
 /** A twin, or a frame word (the same first and last letter), that can share the target's basket. */
 function hasNear(t: WordData, pool: readonly WordData[]): boolean {
   return pool.some((w) => !alike(w, t) && (!!t.twins?.includes(w.word) || (firstLetter(w) === firstLetter(t) && lastLetter(w) === lastLetter(t))));
+}
+
+/**
+ * Can `pool` still give `t` a basket that meets the counts of 3.1 (planBasket)? Level 1: another word with its first
+ * letter, and a rhyme or a word with its last letter but another first letter. Levels 2 and 3: two more with its first
+ * letter, one more with its last letter and one more of its length. Words that look like the target, or like a word
+ * already counted (ship and sail), do not count.
+ */
+function basketFits(t: WordData, pool: readonly WordData[], level: ReadingLevel): boolean {
+  const others = pool.filter((w) => !alike(w, t));
+  const count = (test: (w: WordData) => boolean) => {
+    const apart: WordData[] = [];
+    for (const w of others) if (test(w) && !apart.some((a) => alike(a, w))) apart.push(w);
+    return apart.length;
+  };
+  const sameFirst = (w: WordData) => firstLetter(w) === firstLetter(t);
+  if (level === 1) return count(sameFirst) >= 1 && count((w) => !sameFirst(w) && (rime(w) === rime(t) || lastLetter(w) === lastLetter(t))) >= 1;
+  return count(sameFirst) >= 2 && count((w) => lastLetter(w) === lastLetter(t)) >= 1 && count((w) => w.word.length === t.word.length) >= 1;
 }
 
 /**

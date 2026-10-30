@@ -44,7 +44,8 @@ import {
   giveGift, mathsQuestFor, pastCutoff, tickFree,
 } from '../src/game/quest-kit';
 import { type Game, startClock, startQuests } from '../src/game/game';
-import { askQuest, badgeOf, canQuest, placeAt, runQuest } from '../src/game/quests';
+import { askQuest, badgeOf, canQuest, placeAt, playQuests, runQuest } from '../src/game/quests';
+import { secondWishKind } from '../src/game/moments';
 import { cornerQuest, trunkTap } from '../src/game/corner';
 import { MIRROR_MS, dressClips, wardrobe } from '../src/game/wardrobe-part';
 import { gateKind as phraseGateKind } from '../src/content/phrases';
@@ -338,6 +339,16 @@ describe('the maths quest', () => {
     expect(['picnic', 'rack', 'beads', 'corner'].filter((id) => canQuest(g, id as QuestId))).toEqual(['picnic', 'beads']);
     g.quests.maths = 'rack';
     expect(['picnic', 'rack', 'beads', 'corner'].filter((id) => canQuest(g, id as QuestId))).toEqual(['picnic', 'rack']);
+  });
+
+  it('offers the picnic on every play, so wish2 by the wild egg is a pond wish; without the picnic it would be a picnic wish (2.3.2)', () => {
+    for (const maths of ['beads', 'rack'] as const) {
+      const { g } = fakeGame();
+      g.quests.maths = maths;
+      expect(playQuests(g)).toEqual(['picnic', maths, 'corner']);
+      expect(secondWishKind(playQuests(g))).toBe('bath');
+    }
+    expect(secondWishKind(['beads', 'corner'])).toBe('picnic');
   });
 });
 

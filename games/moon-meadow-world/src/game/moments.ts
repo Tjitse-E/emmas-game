@@ -171,20 +171,33 @@ export function gateKind(g: Game): 'phrase' | 'word' {
 }
 
 /**
- * The words of this play's dress-up reads so far (targets and baskets: the nest's wish and the gate's word wishes),
- * per play: level.ts gives every play a new `g.today`.
+ * The words of this play's reads so far (targets and baskets) of the kinds whose later wishes must not repeat them:
+ * the dress-up reads (the nest's wish and the gate's word wishes) and the pond reads (the pond wish and, 2.3.2, wish2).
+ * Per play: level.ts gives every play a new `g.today`.
  */
-const dressWords = new WeakMap<Game['today'], Set<string>>();
-function dressWordsOf(g: Game): Set<string> {
-  let s = dressWords.get(g.today);
-  if (!s) dressWords.set(g.today, (s = new Set()));
-  return s;
+type FreshKind = 'dress' | 'bath';
+const playWords = new WeakMap<Game['today'], Record<FreshKind, Set<string>>>();
+function wordsOf(g: Game, kind: FreshKind): Set<string> {
+  let s = playWords.get(g.today);
+  if (!s) playWords.set(g.today, (s = { dress: new Set(), bath: new Set() }));
+  return s[kind];
+}
+
+/**
+ * wish2's kind (2.3.2, the level's last wish, by the wild egg). When this play's free play offers the royal picnic,
+ * whose two guests read picnic words, wish2 is a second pond word wish ('bath'), so a child who takes the picnic first
+ * does not meet three picnic baskets in about 100 s. Without the picnic it stays a picnic wish. `offered` is
+ * quests.ts playQuests(); every play in 2.3 offers the picnic.
+ */
+export function secondWishKind(offered: readonly string[]): 'bath' | 'picnic' {
+  return offered.includes('picnic') ? 'bath' : 'picnic';
 }
 
 /**
  * A wish of `kind` from the stream `label`. The three wishes count for the warm-up (the play's first one is a level
  * lower); the picnic guests and the Corner's phrase reads do not. Targets leave out the last play's and the ones asked
- * earlier today.
+ * earlier today. A second pond wish (wish2 in 2.3.2) has no target or basket word of the play's pond wish while
+ * others are left (wishes.ts wishSpec `avoid`).
  * `?contrast=0` drops the miss contrast (a spec without clips.again keeps v3's miss rule).
  *
  * 'phrase' (the Corner's gate, 2.3 section 18) plans at the phrase level (`save.phrases`; `?rl=` forces it too).
@@ -204,12 +217,15 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   const opts = { level, contrast: g.options.contrast };
   let spec: WishSpec;
   if (gateWords) {
-    spec = gateWordSpec(rand, { ...opts, exclude, avoid: [...dressWordsOf(g)] });
+    spec = gateWordSpec(rand, { ...opts, exclude, avoid: [...wordsOf(g, 'dress')] });
     spec.clips = { ...spec.clips, intro: [...CLIPS.dressUp, ...spec.clips.intro] };
+  } else if (kind === 'phrase') {
+    spec = phraseSpec(rand, { ...opts, exclude, rule: g.options.phraseRule });
   } else {
-    spec = kind === 'phrase' ? phraseSpec(rand, { ...opts, exclude, rule: g.options.phraseRule }) : wishSpec(kind, rand, exclude, opts);
+    // A pond wish after the play's first one (wish2, 2.3.2) leaves out every word of the earlier one.
+    spec = wishSpec(kind, rand, exclude, kind === 'bath' ? { ...opts, avoid: [...wordsOf(g, 'bath')] } : opts);
   }
-  if (spec.kind === 'dress') for (const w of [spec.target, ...spec.basket]) dressWordsOf(g).add(w.word);
+  if (spec.kind === 'dress' || spec.kind === 'bath') for (const w of [spec.target, ...spec.basket]) wordsOf(g, spec.kind).add(w.word);
   g.today.words.push(spec.target.word);
   return spec;
 }
