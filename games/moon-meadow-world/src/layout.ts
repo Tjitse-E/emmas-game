@@ -191,15 +191,11 @@ export const BEAD_TREE = {
 } as const;
 
 /**
- * The moon mist in the north-east corner, with a saddle sign in front of it: what opens in 2.4 (2.3.md section 17.1). The mist
- * bank lies behind the stables' back line (z below -16.7), where nobody walks, so it needs no obstacle and the routes
- * do not change; the sign stands on the grass in front of it. Its post is a small obstacle (`signRadius`); `signStand`
- * is the grass in front of it, where she reads it.
+ * The saddle sign in the north-east corner (2.3.0), now by the paddock's west side (2.4.0). Its post is a small
+ * obstacle (`signRadius`); `signStand` is the grass in front of it, where she reads it. The moon mist that stood behind
+ * it (2.3.md section 17.1) went in 2.4.0: the paddock's gate stands where it was.
  */
 export const MIST = {
-  center: v2(21.5, -19.8),
-  rx: 4.5,
-  rz: 2.8,
   sign: v2(19.4, -15.6),
   signRadius: 0.25,
   signStand: v2(19.4, -14.2),
@@ -211,13 +207,14 @@ export const MIST = {
  * towards her stand), the back rail with its gap for the ride path, the trough and the tub at the back, the gate in
  * the north fence where the moon mist was, the fork with its signpost, the three clearing slots (west, north, east),
  * the trail speed, the followers' gaps behind the mount, the ride camera's clamp and its look-ahead. The trough and the
- * tub become obstacles with the trail lane.
+ * tub are round obstacles (OBSTACLES); the back rail is not one, as nothing north of the stables' back line is walkable
+ * and the rail stands 0.2 m south of it.
  */
 export const RIDE = {
   paddock: { minX: 21, maxX: 25.5, minZ: -16.3, maxZ: -10 },
   stand: v2(22.0, -11.2),
   mounts: { bella: v2(22.9, -13.6), hazel: v2(24.7, -12.6) },
-  rail: { z: -16.5, minX: 21, maxX: 26, gapX: 22.5 },
+  rail: { z: -16.5, minX: 21, maxX: 26, gapX: 22.5, gapWidth: 1.6 },
   trough: { center: v2(24.0, -15.7), radius: 0.5 },
   tub: { center: v2(25.2, -15.0), radius: 0.5 },
   gate: v2(21.5, -22.7),
@@ -278,7 +275,7 @@ export const TREES: { center: Vec2; radius: number }[] = [
 
 /**
  * Round obstacles for walking (the gazebo, the nest, the trees, the hay rack, the Corner's trunk and mirror, the bead
- * tree, the saddle sign's post). The pond is handled by inPond.
+ * tree, the saddle sign's post, the paddock's trough and tub). The pond is handled by inPond.
  */
 export const OBSTACLES: { center: Vec2; radius: number }[] = [
   { center: GAZEBO.center, radius: GAZEBO.radius },
@@ -289,6 +286,8 @@ export const OBSTACLES: { center: Vec2; radius: number }[] = [
   { center: CORNER.mirror, radius: CORNER.radius },
   { center: BEAD_TREE.center, radius: BEAD_TREE.radius },
   { center: MIST.sign, radius: MIST.signRadius },
+  { center: RIDE.trough.center, radius: RIDE.trough.radius },
+  { center: RIDE.tub.center, radius: RIDE.tub.radius },
 ];
 
 /** Stable buildings as rectangles (obstacles): x from centerX - 3.9 to + 3.9, z from frontZ - depth to frontZ. */

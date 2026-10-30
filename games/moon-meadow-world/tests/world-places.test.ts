@@ -4,8 +4,6 @@ import { BEAD_TREE, CORNER, HAY_RACK, MIST, PICNIC, START } from '../src/layout'
 import { Scenery, type Geo } from '../src/world/geo';
 import { CRIB, hayDepth, hayGeometry, rackGeometry } from '../src/world/hayrack';
 import { BEAD_TREE_SHAPE, beadTreeGeometry, buildBeadTree } from '../src/world/beadtree';
-import { meadowMist } from '../src/world/sky';
-import { BEHIND_Z } from '../src/world/route';
 import { FOV } from '../src/world/camera';
 import { panelLeftOf, portraitFrame } from '../src/game/portrait';
 import { wardrobeLayout } from '../src/ui/geometry';
@@ -223,18 +221,7 @@ describe('the bead tree (2.3.0)', () => {
   });
 });
 
-describe('the moon mist and the saddle sign (2.3.0)', () => {
-  it('lays the mist behind the stables\' back line, over its ellipse, low', () => {
-    const quads = meadowMist();
-    expect(quads.length).toBeGreaterThan(2);
-    for (const q of quads) {
-      expect(q.z).toBeLessThan(BEHIND_Z);
-      expect(Math.abs(q.x - MIST.center.x)).toBeLessThanOrEqual(MIST.rx);
-      expect(Math.abs(q.z - MIST.center.z)).toBeLessThanOrEqual(MIST.rz);
-      expect(q.y + q.h / 2).toBeLessThan(2.5);
-    }
-  });
-
+describe('the saddle sign (2.3.0; the moon mist behind it went in 2.4.0 for the paddock\'s gate)', () => {
   it('builds a small sign post and board, inside its obstacle circle at walking height', () => {
     const parts = signGeometry();
     expect(parts.reduce((s, g) => s + triangles(g), 0)).toBeLessThan(80);

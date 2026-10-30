@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { BEAD_TREE, CORNER, GAZEBO, HAY_RACK, MIST, PICNIC, STABLE, START, doorCenter, v2, type Vec2 } from '../src/layout';
+import { BEAD_TREE, CORNER, GAZEBO, HAY_RACK, MIST, PICNIC, RIDE, STABLE, START, doorCenter, v2, type Vec2 } from '../src/layout';
 import { CameraRig, FOV } from '../src/world/camera';
 import { buildPicker } from '../src/world/pick';
 
@@ -156,5 +156,29 @@ describe('pick: the Dressing Corner, the bead tree and the saddle sign (2.3.0)',
       seen += expectDoors();
     }
     expect(seen).toBeGreaterThan(10);
+  });
+});
+
+describe('pick: the paddock (2.4.0)', () => {
+  const at = (p: Vec2, y = 0): THREE.Vector3 => new THREE.Vector3(p.x, y, p.z);
+
+  it('picks the paddock ground at her stand, the mounts\' spots and the back rail, from where she comes', () => {
+    for (const from of [RIDE.stand, v2(16, -9), BEAD_TREE.stand]) {
+      follow(from);
+      for (const p of [RIDE.stand, RIDE.mounts.bella, RIDE.mounts.hazel, v2(24, -11), v2(RIDE.rail.minX + 0.2, RIDE.rail.z)]) {
+        const hit = tapAt(at(p));
+        if (hit === undefined) continue;
+        expect(hit, `${p.x},${p.z} from ${from.x},${from.z}`).toEqual({ kind: 'paddock' });
+      }
+    }
+    follow(RIDE.stand);
+    expect(tapAt(at(RIDE.stand))).toEqual({ kind: 'paddock' });
+  });
+
+  it('leaves the grass round it to walking and the saddle sign its own', () => {
+    follow(RIDE.stand);
+    for (const p of [v2(RIDE.paddock.minX - 0.8, -12), v2(23, RIDE.paddock.maxZ + 0.8), v2(18, -10)]) expect(tapAt(at(p))?.kind, `${p.x},${p.z}`).toBe('ground');
+    follow(MIST.signStand);
+    expect(tapAt(at(MIST.sign, 1.3))).toEqual({ kind: 'sign' });
   });
 });

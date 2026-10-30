@@ -1,10 +1,10 @@
 // What a tap hits in the world: doors (by where the ray meets the stable fronts, so every door gets its full width),
 // the slide, the nest, the hay rack, the picnic, the Dressing Corner (the trunk, the mirror and the gazebo's south
-// step), the bead tree, the saddle sign and the gazebo (generous invisible shapes), the rest of the stable buildings
+// step), the bead tree, the saddle sign, the paddock (2.4.0) and the gazebo (generous invisible shapes), the rest of the stable buildings
 // (their roofs and walls count as the nearest door, so a tap there never walks her behind them), then the pond and the
 // ground.
 import * as THREE from 'three';
-import { BEAD_TREE, CORNER, GAZEBO, HAY_RACK, MIST, NEST, PICNIC, SLIDE, SLIDE_CURVE, STABLE, inPond, type Vec2 } from '../layout';
+import { BEAD_TREE, CORNER, GAZEBO, HAY_RACK, MIST, NEST, PICNIC, RIDE, SLIDE, SLIDE_CURVE, STABLE, inPond, type Vec2 } from '../layout';
 import type { WorldPick } from '../contracts';
 
 /** A tap this far in front of a lower door (on the ground) still counts as the door. */
@@ -25,6 +25,8 @@ const CORNER_PICK = { trunk: { r: 0.55, y: 1.0 }, mirror: { r: 0.48, y: 1.9 }, s
 /** The bead tree's crown and strings, and the saddle sign's post and board. */
 const TREE_PICK = { r: 1.0, y: 2.7 } as const;
 const SIGN_BOX = { x: 1.25, y: 2.0, z: 0.6 } as const;
+/** The paddock's tap box (2.4.0): its sand with the trough, the tub and the back rail, as high as the rail. */
+const PADDOCK_BOX = { y: 0.9, back: RIDE.rail.z - 0.15, east: RIDE.rail.maxX } as const;
 
 export interface Picker {
   pick(ray: THREE.Ray): WorldPick | null;
@@ -73,7 +75,10 @@ export function buildPicker(): Picker {
   const tree = cyl(BEAD_TREE.center, TREE_PICK.r, TREE_PICK.y);
   const sign = new THREE.Mesh(new THREE.BoxGeometry(SIGN_BOX.x, SIGN_BOX.y, SIGN_BOX.z), hidden);
   sign.position.set(MIST.sign.x, SIGN_BOX.y / 2, MIST.sign.z);
-  group.add(slide, slideTop, nest, gazebo, rack, picnic, trunk, mirror, stepBox, tree, sign, ...buildings);
+  const pd = RIDE.paddock;
+  const paddock = new THREE.Mesh(new THREE.BoxGeometry(PADDOCK_BOX.east - pd.minX, PADDOCK_BOX.y, pd.maxZ - PADDOCK_BOX.back), hidden);
+  paddock.position.set((pd.minX + PADDOCK_BOX.east) / 2, PADDOCK_BOX.y / 2, (pd.maxZ + PADDOCK_BOX.back) / 2);
+  group.add(slide, slideTop, nest, gazebo, rack, picnic, trunk, mirror, stepBox, tree, sign, paddock, ...buildings);
   group.updateMatrixWorld(true);
   const raycaster = new THREE.Raycaster();
   const hit = new THREE.Vector3();
@@ -128,6 +133,8 @@ export function buildPicker(): Picker {
       if (hits(ray, trunk, mirror, stepBox)) return { kind: 'corner' };
       if (hits(ray, tree)) return { kind: 'beads' };
       if (hits(ray, sign)) return { kind: 'sign' };
+      // The paddock's sand (2.4.0): the mounts are picked before the world, so a tap on one still reaches it.
+      if (hits(ray, paddock)) return { kind: 'paddock' };
       if (hits(ray, gazebo)) return { kind: 'gazebo' };
       const b = building(ray);
       if (b !== null) return { kind: 'door', door: b };

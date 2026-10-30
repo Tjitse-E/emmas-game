@@ -1,7 +1,7 @@
 // The ground: a flat meadow inside the fence (soft greens), sandy paths and the stable yard, the pond basin, the
 // white fence with flower hedges, trees, rolling hills beyond and the castle hill far to the north.
 import * as THREE from 'three';
-import { BOUNDS, GAZEBO, NEST, POND, SLIDE, STABLE, TREES, type Vec2 } from '../layout';
+import { BOUNDS, GAZEBO, NEST, POND, RIDE, SLIDE, STABLE, TREES, type Vec2 } from '../layout';
 import { Scenery, eachFaceUp, faceUp, fillSouth, merge, paint, paintBy, paintY, place, rng, type Geo } from './geo';
 
 const smooth = (e0: number, e1: number, x: number): number => {
@@ -436,6 +436,13 @@ function sides(r: { minX: number; maxX: number; minZ: number; maxZ: number }, ma
   return out;
 }
 
+/**
+ * The gate's opening in the north fence (2.4.0, docs/v4/2.4.md 5.5): the gate and its posts (world/paddock.ts) fill
+ * it. The fence's own posts keep a metre clear of it, so the fence there has no more triangles than 2.3's (its
+ * region, `ne`, is drawn in the stable views).
+ */
+export const FENCE_GAP = { minX: RIDE.gate.x - 1.62, maxX: RIDE.gate.x + 1.62, z: BOUNDS.minZ - FENCE_OUT, postClear: 1.0 } as const;
+
 export function buildFence(scenery: Scenery): void {
   const white = '#fffdf7';
   for (const [a, b] of sides(FENCE, 13.5)) {
@@ -443,15 +450,29 @@ export function buildFence(scenery: Scenery): void {
     const ry = -Math.atan2(b.z - a.z, b.x - a.x);
     const parts: Geo[] = [];
     const posts = Math.max(1, Math.round(len / 2.6));
+    // The north side's piece that holds the gate: its posts keep clear and its rails stop at the gate's posts.
+    const north = Math.abs(a.z - FENCE_GAP.z) < 1e-6 && Math.abs(b.z - FENCE_GAP.z) < 1e-6;
+    const lo = Math.min(a.x, b.x);
+    const hi = Math.max(a.x, b.x);
+    const gated = north && lo < FENCE_GAP.minX && hi > FENCE_GAP.maxX;
     for (let i = 0; i < posts; i++) {
       const t = i / posts;
       const x = a.x + (b.x - a.x) * t;
       const z = a.z + (b.z - a.z) * t;
+      if (gated && x > FENCE_GAP.minX - FENCE_GAP.postClear && x < FENCE_GAP.maxX + FENCE_GAP.postClear) continue;
       parts.push(place(paint(new THREE.BoxGeometry(0.15, 0.95, 0.15), white), { x, y: 0.475, z, ry }));
       parts.push(place(paint(new THREE.ConeGeometry(0.12, 0.16, 4), white), { x, y: 1.03, z, ry: ry + Math.PI / 4 }));
     }
+    // Rails along the piece, or on both sides of the gate.
+    const spans: [number, number][] = gated
+      ? [[hi + 0.05, FENCE_GAP.maxX + 0.02], [FENCE_GAP.minX - 0.02, lo - 0.05]]
+      : [[(a.x + b.x) / 2 + (len + 0.1) / 2, (a.x + b.x) / 2 - (len + 0.1) / 2]];
     for (const y of [0.42, 0.76]) {
-      parts.push(place(paint(new THREE.BoxGeometry(len + 0.1, 0.1, 0.06), '#fbf5ee'), { x: (a.x + b.x) / 2, y, z: (a.z + b.z) / 2, ry }));
+      if (!gated) {
+        parts.push(place(paint(new THREE.BoxGeometry(len + 0.1, 0.1, 0.06), '#fbf5ee'), { x: (a.x + b.x) / 2, y, z: (a.z + b.z) / 2, ry }));
+        continue;
+      }
+      for (const [x0, x1] of spans) parts.push(place(paint(new THREE.BoxGeometry(x0 - x1, 0.1, 0.06), '#fbf5ee'), { x: (x0 + x1) / 2, y, z: a.z, ry }));
     }
     for (const g of parts) scenery.add(g, Scenery.regionOf((a.x + b.x) / 2, (a.z + b.z) / 2));
   }
@@ -460,6 +481,23 @@ export function buildFence(scenery: Scenery): void {
 /** Places on the hedge tops for flowers, filled by buildHedges. */
 export interface HedgeFlowers {
   at: THREE.Vector3[];
+}
+
+/**
+ * The trail's opening in the north hedge (2.4.0): wide enough for the 3 m bed with room to spare. The hedge sinks
+ * into the ground over its last metre on each side, a round end, and lies flat across the opening, so it keeps every
+ * triangle it had (its region is drawn in the stable views) and the random flowers on the rest stay where they were.
+ */
+export const HEDGE_GAP = { minX: RIDE.gate.x - 2.1, maxX: RIDE.gate.x + 2.1, z: BOUNDS.minZ - FENCE_OUT - HEDGE_OUT, taper: 1.0 } as const;
+
+/** How much of the hedge stands at (x, z): 1, falling to 0 in a quarter circle over the taper and in the opening. */
+function hedgeStands(x: number, z: number): number {
+  if (Math.abs(z - HEDGE_GAP.z) > 0.01) return 1;
+  const d = Math.max(HEDGE_GAP.minX - x, x - HEDGE_GAP.maxX);
+  if (d <= 0) return 0;
+  if (d >= HEDGE_GAP.taper) return 1;
+  const k = 1 - d / HEDGE_GAP.taper;
+  return Math.sqrt(1 - k * k);
 }
 
 export function buildHedges(scenery: Scenery, flowers: HedgeFlowers): void {
@@ -485,8 +523,9 @@ export function buildHedges(scenery: Scenery, flowers: HedgeFlowers): void {
       const wx = a.x + ux * s;
       const wz = a.z + uz * s;
       const g = wx * 0.9 + wz * 1.1;
-      const height = 0.82 + 0.14 * Math.sin(g * 1.7) + 0.08 * Math.sin(g * 4.1 + 1);
-      const half = 0.62 + 0.08 * Math.sin(g * 2.3 + 0.5);
+      const stands = hedgeStands(wx, wz);
+      const height = (0.82 + 0.14 * Math.sin(g * 1.7) + 0.08 * Math.sin(g * 4.1 + 1)) * stands;
+      const half = (0.62 + 0.08 * Math.sin(g * 2.3 + 0.5)) * stands;
       for (let k = 0; k <= ring; k++) {
         const ang = (k / ring) * Math.PI;
         const across = Math.cos(ang) * half;
@@ -497,7 +536,7 @@ export function buildHedges(scenery: Scenery, flowers: HedgeFlowers): void {
       }
       if (i % 2 === 0 && r() < 0.7) {
         const ang = Math.PI * (0.25 + r() * 0.5);
-        flowers.at.push(new THREE.Vector3(wx + ox * Math.cos(ang) * half, Math.sin(ang) * height - 0.02, wz + oz * Math.cos(ang) * half));
+        if (stands > 0.95) flowers.at.push(new THREE.Vector3(wx + ox * Math.cos(ang) * half, Math.sin(ang) * height - 0.02, wz + oz * Math.cos(ang) * half));
       }
     }
     for (let i = 0; i < steps; i++) {
@@ -680,6 +719,17 @@ export function buildTrees(material: THREE.Material): THREE.InstancedMesh[] {
 // Grass tufts and flowers
 // ---------------------------------------------------------------------------------------------------------------
 
+/**
+ * The paddock's sand and the bed from its rail to the gate (2.4.0, world/paddock.ts): no tuft or flower shows there.
+ * The growth loop still counts and draws its random numbers for them as before, so everywhere else every tuft and
+ * flower stays where 2.3 put it.
+ */
+function onPaddockSand(x: number, z: number): boolean {
+  const p = RIDE.paddock;
+  if (x > p.minX - 0.45 && x < p.maxX + 0.45 && z > p.minZ - 0.45 && z < p.maxZ + 0.45) return true;
+  return z < p.minZ && z > RIDE.gate.z - 0.3 && x > RIDE.gate.x - 1.6 && x < RIDE.rail.gapX + 1.6;
+}
+
 /** True where grass and flowers may grow: on the meadow, off paths and clear of every place. */
 function growsHere(x: number, z: number): boolean {
   if (x < BOUNDS.minX - 0.2 || x > BOUNDS.maxX + 0.2 || z < BOUNDS.minZ - 0.2 || z > BOUNDS.maxZ + 0.2) return false;
@@ -808,7 +858,8 @@ export function buildGrowth(scenery: Scenery, hedge: HedgeFlowers, extra: THREE.
       if (!growsHere(x, z)) continue;
       e.set(0, (r() - 0.5) * 1.1, 0);
       const s = 0.9 + r() * 0.8;
-      tufts.add(m.compose(pos.set(x, 0, z), q.setFromEuler(e), sc.set(s, s * (0.8 + r() * 0.5), s)), null, x, z);
+      const at = m.compose(pos.set(x, 0, z), q.setFromEuler(e), sc.set(s, s * (0.8 + r() * 0.5), s));
+      if (!onPaddockSand(x, z)) tufts.add(at, null, x, z);
       count++;
     }
   }
@@ -819,6 +870,7 @@ export function buildGrowth(scenery: Scenery, hedge: HedgeFlowers, extra: THREE.
   const add = (x: number, y: number, z: number, s: number, colour: string, tilt: number): void => {
     // Spin each head, then tilt it a little towards the camera (south) so it reads as a flower from above.
     e.set(tilt * (0.6 + r() * 0.4), r() * Math.PI * 2, 0, 'XYZ');
+    if (onPaddockSand(x, z)) return;
     flowers.add(m.compose(pos.set(x, y, z), q.setFromEuler(e), sc.set(s, s, s)), tint.set(colour), x, z);
   };
   // Flower patches on the meadow, one colour each with a few white ones among them.

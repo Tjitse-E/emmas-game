@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import {
-  BEAD_TREE, BOUNDS, CORNER, GAZEBO, GRAZE_HOMES, HAY_RACK, MIST, NEST, OBSTACLES, PICNIC, PLACES, POND, SLIDE, STABLE, START,
-  WILD_EGG, doorFront, inPond, inStableBuilding, v2, type Vec2,
+  BEAD_TREE, BOUNDS, CORNER, GAZEBO, GRAZE_HOMES, HAY_RACK, MIST, NEST, OBSTACLES, PICNIC, PLACES, POND, RIDE, SLIDE, STABLE,
+  START, WILD_EGG, doorFront, inPond, inStableBuilding, v2, type Vec2,
 } from '../src/layout';
-import { BEHIND_Z, SLIDE_BLOCK, STABLE_BLOCK, isWalkable, lineOfSight, nearestWalkable, route } from '../src/world/route';
+import {
+  BEHIND_Z, CELL, OBSTACLE_MARGIN, SLIDE_BLOCK, STABLE_BLOCK, isWalkable, lineOfSight, nearestWalkable, route,
+} from '../src/world/route';
 
 const len = (r: Vec2[]): number => r.slice(1).reduce((s, p, i) => s + Math.hypot(p.x - r[i].x, p.z - r[i].z), 0);
 const near = (a: Vec2, b: Vec2, eps = 1e-6): boolean => Math.hypot(a.x - b.x, a.z - b.z) <= eps;
@@ -276,9 +280,9 @@ describe('the 2.3.0 places: the Dressing Corner, the bead tree and the saddle si
   it('lets her, the babies, the followers and the herd stand at every new spot; the trunk, mirror, tree and post are solid', () => {
     for (const p of [...spots, ...herdAside]) expect(isWalkable(p), `${p.x},${p.z}`).toBe(true);
     for (const p of [CORNER.trunk, CORNER.mirror, BEAD_TREE.center, MIST.sign]) expect(isWalkable(p), `${p.x},${p.z}`).toBe(false);
-    // The mist lies behind the stables' back line, where nobody walks.
-    expect(isWalkable(MIST.center)).toBe(false);
-    expect(MIST.center.z + MIST.rz * 0.5).toBeLessThan(BEHIND_Z + 1);
+    // The gate in the north fence (2.4.0, where the moon mist was) lies behind the stables' back line, where nobody walks.
+    expect(isWalkable(RIDE.gate)).toBe(false);
+    expect(RIDE.gate.z).toBeLessThan(BEHIND_Z);
   });
 
   it('lets the babies watch her dress clear of her parked followers, the cushions and her spot', () => {
@@ -323,5 +327,52 @@ describe('the 2.3.0 places: the Dressing Corner, the bead tree and the saddle si
     expect(len(route(CORNER.stand, PICNIC.stand))).toBeLessThan(straight(CORNER.stand, PICNIC.stand) + 0.5);
     // The mirror stands close to the straight line: a small step round it.
     expect(len(route(CORNER.stand, START))).toBeLessThan(straight(CORNER.stand, START) + 1);
+  });
+});
+
+describe('the paddock (2.4.0)', () => {
+  it('routes from START to her paddock stand, and the mounts\' spots are walkable', () => {
+    const r = route(START, RIDE.stand);
+    expectClear(r);
+    expect(r.at(-1)).toEqual(RIDE.stand);
+    for (const p of Object.values(RIDE.mounts)) expect(isWalkable(p), `${p.x},${p.z}`).toBe(true);
+    // She walks there from the hub's places too, round the grand tree.
+    for (const a of [STABLE.emmaStand, BEAD_TREE.stand, SLIDE.ladderBase, WILD_EGG.stand, CORNER.stand]) {
+      const ra = route(a, RIDE.stand);
+      expectClear(ra);
+      expect(near(ra.at(-1)!, RIDE.stand), `${a.x},${a.z}`).toBe(true);
+    }
+  });
+
+  it('makes the trough and the tub solid, round obstacles of 0.5 m', () => {
+    for (const o of [RIDE.trough, RIDE.tub]) {
+      expect(o.radius).toBe(0.5);
+      expect(OBSTACLES).toContainEqual({ center: o.center, radius: o.radius });
+      expect(isWalkable(o.center)).toBe(false);
+    }
+  });
+
+  it('keeps the walk grid outside the paddock as it was', () => {
+    // isWalkable at every 0.5 m cell centre, as 2.3.3 had it (tests/fixtures/walk-2.3.3.json). Only cells inside the
+    // trough's and the tub's circles change, and those lie inside the paddock grown by 1 m.
+    const snap = JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures/walk-2.3.3.json'), 'utf8')) as { cell: number; minX: number; minZ: number; cols: number; rows: number; hex: string };
+    expect([snap.cell, snap.minX, snap.minZ]).toEqual([CELL, BOUNDS.minX, BOUNDS.minZ]);
+    const bit = (k: number): boolean => ((parseInt(snap.hex[k >> 2], 16) >> (3 - (k & 3))) & 1) === 1;
+    const pad = RIDE.paddock;
+    let changed = 0;
+    for (let j = 0; j < snap.rows; j++) {
+      for (let i = 0; i < snap.cols; i++) {
+        const p = v2(snap.minX + (i + 0.5) * snap.cell, snap.minZ + (j + 0.5) * snap.cell);
+        const was = bit(j * snap.cols + i);
+        if (isWalkable(p) === was) continue;
+        changed++;
+        const inside = p.x > pad.minX - 1 && p.x < pad.maxX + 1 && p.z > pad.minZ - 1 && p.z < pad.maxZ + 1;
+        expect(inside, `cell ${p.x},${p.z} changed outside the paddock`).toBe(true);
+        expect(was, `cell ${p.x},${p.z} opened`).toBe(true);
+        const inObstacle = [RIDE.trough, RIDE.tub].some((o) => Math.hypot(p.x - o.center.x, p.z - o.center.z) < o.radius + OBSTACLE_MARGIN);
+        expect(inObstacle, `cell ${p.x},${p.z}`).toBe(true);
+      }
+    }
+    expect(changed).toBeGreaterThan(10);
   });
 });

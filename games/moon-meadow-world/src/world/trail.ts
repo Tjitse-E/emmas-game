@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import type { SignWord } from '../contracts';
 import { RIDE } from '../layout';
 import type { Scenery } from './geo';
+import { buildPaddock } from './paddock';
 
 export interface TrailApi {
   /** Dress the three slots (west, north, east) with these words' kit, or bare them with null. */
@@ -39,7 +40,8 @@ export interface TrailWorld {
   update(dt: number, t: number): void;
 }
 
-export function buildTrail(_scene: THREE.Scene, _scenery: Scenery): TrailWorld {
+export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
+  const paddock = buildPaddock(scenery);
   let words: (SignWord | null)[] = [null, null, null];
   let shown = false;
   const trail: TrailApi = {
@@ -48,7 +50,7 @@ export function buildTrail(_scene: THREE.Scene, _scenery: Scenery): TrailWorld {
     },
     slots: () => words.map((word) => ({ word, onScreen: false })),
     arm: () => new THREE.Vector3(RIDE.fork.x, 1.3, RIDE.fork.z),
-    gate: () => Promise.resolve(),
+    gate: (open, ms) => paddock.gate(open, ms),
     show(on) {
       shown = on;
     },
@@ -61,6 +63,8 @@ export function buildTrail(_scene: THREE.Scene, _scenery: Scenery): TrailWorld {
     ducks: { set() {}, bob() {} },
     occluded: (points) => points.map(() => false),
     cameraClamp() {},
-    update() {},
+    update(dt) {
+      paddock.update(dt);
+    },
   };
 }
