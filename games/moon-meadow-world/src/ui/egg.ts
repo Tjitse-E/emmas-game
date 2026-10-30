@@ -23,7 +23,7 @@
 //
 // 2.4.0 (docs/v4/2.4.md section 5.5): the star egg on the trail has its own panel (src/ui/stars.ts): the moon's stars
 // and the egg's, loose, and a stone of the difference. Its goal says both numbers, then the question ("How many more
-// has the moon?" or "How many fewer has the egg?"), which plays as the snow egg's ask does, with the stones awake.
+// has the moon?" or "How many fewer has the egg?"), and the stones wake after the question (2.4-plan Task 16).
 import type { EggSpec, MomentHooks, MomentResult } from '../contracts';
 import { audio } from '../audio';
 import { FX_WAIT_MS } from '../audio/sound';

@@ -578,6 +578,12 @@ const PLAN_HEARD_CAP: Record<4 | 5, number> = { 4: 0.21, 5: 0.15 };
  */
 const PLAN_LIVE_CAP: Record<4 | 5, number> = { 4: 0.29, 5: 0.24 };
 const PLAN_SUM_SPREAD = 1.4;
+/**
+ * How far a place of a missed refit may drift from its share (2.4.0: 1/n for the hard sum, the full grade's for easy
+ * and middle): a second egg's grade left with a few sums cannot keep its places exactly even and its guesses under
+ * their caps at once (notes/maths.md); the tests' room is 7 points.
+ */
+const PLAN_PLACE_SLACK = 0.06;
 /** The fitting stops when every place and bound is within this, or after this many rounds. */
 const FIT_TOLERANCE = 1e-5;
 const FIT_ROUNDS = 3000;
@@ -634,11 +640,12 @@ function eggPlan(kind: EggKind, band: Band, out: readonly (readonly string[])[] 
   const cached = eggPlanCache.get(key);
   if (cached) return cached;
   const grades = SUM_GRADES.map((grade, i) => gradePlan(kind, grade, band, out[i]));
+  const boundOf = (g: GradePlan, part: (c: Cell) => number, cap: number): Bound => {
+    const cells = g.cells.filter((c) => part(c) > 0);
+    return { cells, part: cells.map(part), cap };
+  };
   const bounds = grades.map((g, i): Bound[] => {
-    const bound = (part: (c: Cell) => number, cap: number): Bound => {
-      const cells = g.cells.filter((c) => part(c) > 0);
-      return { cells, part: cells.map(part), cap };
-    };
+    const bound = (part: (c: Cell) => number, cap: number): Bound => boundOf(g, part, cap);
     return [
       bound((c) => c.five, PLAN_FIVE_CAP[g.n]),
       ...(SUM_GRADES[i] === 'hard' ? [bound((c) => c.low, PLAN_LIVE_CAP[g.n]), bound((c) => c.high, PLAN_LIVE_CAP[g.n])] : []),
@@ -646,9 +653,27 @@ function eggPlan(kind: EggKind, band: Band, out: readonly (readonly string[])[] 
       ...g.combos.map((x) => ({ ...bound((c) => Number(c.combo === x), PLAN_SUM_SPREAD / g.combos.length), spread: true })),
     ];
   });
+  /**
+   * A missed refit's places (2.4.0): each place its sums still reach within PLAN_PLACE_SLACK of the full grade's share
+   * (1/n for the hard sum, the 19.1 rule), as two caps (on the place and on the other places), so the guess rounds
+   * below keep the places near even instead of letting them go.
+   */
+  const placeBounds = grades.map((g, i): Bound[] => {
+    const full = gradePlaces(kind, SUM_GRADES[i], band);
+    return g.places.flatMap((t, p) => {
+      if (t <= 0) return [];
+      const at = SUM_GRADES[i] === 'hard' ? 1 / g.n : full[p];
+      return [boundOf(g, (c) => Number(c.place === p), at + PLAN_PLACE_SLACK), boundOf(g, (c) => Number(c.place !== p), 1 - at + PLAN_PLACE_SLACK)];
+    });
+  });
   const w = grades.map(answerWeights);
-  /** One round over the three grades: each grade's places (unless `bounds only`), then its bounds; each grade's miss. */
-  const round = (places: boolean): number[] => grades.map((g, i) => {
+  /**
+   * One round over the three grades: each grade's places, then its bounds; each grade's miss. A missed refit's rounds
+   * ('near') keep its places near even by caps and let go of the spread of its few sums; 'guesses' keeps the guess caps
+   * alone.
+   */
+  const round = (mode: 'even' | 'near' | 'guesses'): number[] => grades.map((g, i) => {
+    const places = mode === 'even';
     let off = 0;
     const others = othersFor(w, i);
     const mass = (c: Cell) => c.f * others[answerAt(c)];
@@ -660,7 +685,7 @@ function eggPlan(kind: EggKind, band: Band, out: readonly (readonly string[])[] 
       for (const c of g.cells) c.f *= g.places[c.place] / at[c.place];
       off = Math.max(off, ...at.map((v, p) => Math.abs(v - g.places[p])));
     }
-    for (const b of bounds[i]) {
+    for (const b of [...(mode === 'near' ? placeBounds[i] : []), ...bounds[i]]) {
       if (!places && b.spread) continue;
       z = total();
       const share = b.cells.reduce((t, c, j) => t + b.part[j] * mass(c), 0) / z;
@@ -685,7 +710,7 @@ function eggPlan(kind: EggKind, band: Band, out: readonly (readonly string[])[] 
   const refit = out.some((o) => o.length);
   while (fit.rounds < FIT_ROUNDS && fit.off > FIT_TOLERANCE) {
     fit.rounds++;
-    const offs = round(true);
+    const offs = round('even');
     if (!usable()) {
       restore();
       fit.offs = fit.offs.map((o) => (o > FIT_TOLERANCE ? Math.max(o, 1) : o));
@@ -696,17 +721,26 @@ function eggPlan(kind: EggKind, band: Band, out: readonly (readonly string[])[] 
     fit.offs = offs;
     fit.off = Math.max(...fit.offs);
   }
-  // A refit that missed lets the caps on the guesses win over even places and over the spread of its few sums: rounds
-  // of the guess bounds alone (2.4.0). The miss stays in `fit`, so the fallback of plannedFor still sees it.
+  // A refit that missed lets the caps on the guesses win over exactly even places and over the spread of its few sums
+  // (2.4.0): rounds of the guess caps with each place kept within PLAN_PLACE_SLACK of its share, and where those cannot
+  // all hold, rounds of the guess caps alone, so the guesses come before the places. The miss stays in `fit`, so the
+  // fallback of plannedFor still sees it.
   if (fit.off > FIT_TOLERANCE && refit) {
-    for (let r = 0; r < 600; r++) {
-      const offs = round(false);
-      if (!usable()) {
-        restore();
-        break;
+    for (const mode of ['near', 'guesses'] as const) {
+      let met = false;
+      for (let r = 0; r < 600; r++) {
+        const offs = round(mode);
+        if (!usable()) {
+          restore();
+          break;
+        }
+        kept = grades.map((g) => g.cells.map((c) => c.f));
+        if (Math.max(...offs) <= FIT_TOLERANCE) {
+          met = true;
+          break;
+        }
       }
-      kept = grades.map((g) => g.cells.map((c) => c.f));
-      if (Math.max(...offs) <= FIT_TOLERANCE) break;
+      if (met) break;
     }
   }
   const plan = { grades, fit };
@@ -925,11 +959,12 @@ export function count(n: number): string[] {
 function eggClips(kind: EggKind, c: EggCombo, first: boolean, compare?: 'more' | 'fewer'): EggSpec['clips'] {
   const { need, have, answer } = c;
   if (kind === 'star') {
-    // 2.4.0: the moon's stars and the egg's, then the question; neither group changes, she drags the difference.
+    // 2.4.0: the moon's stars and the egg's, then the question; neither group changes, she drags the difference. The
+    // question ends the goal, so the stones wake after it (2.4-plan Task 16): a stone grabbed on the wake chime never
+    // cuts "How many more has the moon?", the point of this form.
     return {
       intro: first ? ['g4-star-egg'] : [],
-      goal: [`num-moon-${have}`, `num-eggstar-${need}`],
-      ask: [compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon'],
+      goal: [`num-moon-${have}`, `num-eggstar-${need}`, compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon'],
       right: ['fb-yes', factClip('star', c)],
       tooBig: (k) => [`num-over-${clampK(k, MISS_MAX.over)}`],
       tooSmall: (k) => [`num-more-${clampK(k, MISS_MAX.more)}`],

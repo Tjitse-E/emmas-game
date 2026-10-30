@@ -160,7 +160,8 @@ describe('eggs', () => {
       expect(a.clips.intro).toEqual(['g4-star-egg', 'g4-hearts']);
       for (const e of [b, c]) expect(e.clips.intro).toEqual([]);
       for (const e of [a, b, c]) {
-        expect(e.clips.goal).toEqual([`num-moon-${e.have}`, `num-eggstar-${e.need}`]);
+        expect(e.clips.goal).toEqual([`num-moon-${e.have}`, `num-eggstar-${e.need}`, e.compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon']);
+        expect(e.clips.ask).toBeUndefined();
         expect(e.clips.hint).toEqual(['h4-line-up']);
         expect(e.clips.tooBig(2)).toEqual(['num-over-2']);
         expect(e.clips.tooSmall(2)).toEqual(['num-more-2']);

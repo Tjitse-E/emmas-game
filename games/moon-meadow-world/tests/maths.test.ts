@@ -376,7 +376,12 @@ function plays(band: Band, n = 10_000): { kind: EggKind; sums: EggSpec[] }[] {
   return out;
 }
 const PLAYS: Record<Band, { kind: EggKind; sums: EggSpec[] }[]> = { a: plays('a'), b: plays('b') };
-const eggsOf = (kind: EggKind, band: Band) => PLAYS[band].filter((p) => p.kind === kind).map((p) => p.sums);
+/** 2.4.0: 10,000 first star eggs per band (a ride before any other egg), each from its own stream. */
+const STARS: Record<Band, EggSpec[][]> = Object.fromEntries(BANDS.map((band) => [band, Array.from({ length: 10_000 }, (_, i) =>
+  eggSums('star', stream(i + 1, 'egg-trail-1'), { band, first: true }))])) as Record<Band, EggSpec[][]>;
+const eggsOf = (kind: EggKind, band: Band) => (kind === 'star' ? STARS[band] : PLAYS[band].filter((p) => p.kind === kind).map((p) => p.sums));
+/** The kinds the 19.1 guess rules run on: 2.3's two eggs and 2.4.0's star egg, which takes the snow egg's bounds. */
+const EGG_KINDS = ['warm', 'snow', 'star'] as const;
 
 describe('three sums per egg: the grade table (2.3 section 19.1)', () => {
   it('has the sums of the table, each inside the floor: no total under 7, nothing adds or takes away 1 or 2', () => {
@@ -559,7 +564,7 @@ describe('three sums per egg: the trays and the guess rules (2.3 section 19.1)',
 
   it('shows different stones from 2 to 9, ascending, with the answer, a slip and the number she heard when it can', () => {
     for (const band of BANDS) {
-      for (const kind of KINDS) {
+      for (const kind of EGG_KINDS) {
         for (const sums of eggsOf(kind, band).slice(0, 3000)) {
           for (const e of sums) {
             expect(new Set(e.stones).size).toBe(e.stones.length);
@@ -605,7 +610,7 @@ describe('three sums per egg: the trays and the guess rules (2.3 section 19.1)',
 
   it('lets no simple guess win above 35% with 4 stones or 30% with 5, per kind, grade and band', () => {
     for (const band of BANDS) {
-      for (const kind of KINDS) {
+      for (const kind of EGG_KINDS) {
         for (const grade of SUM_GRADES) {
           if (grade !== 'hard' && band === 'b') continue;
           check(eggsOf(kind, band).map((sums) => sums.find((s) => s.grade === grade) as EggSpec), `${kind} ${grade} ${band}`);
@@ -616,7 +621,7 @@ describe('three sums per egg: the trays and the guess rules (2.3 section 19.1)',
 
   it('lets no simple guess win above 35% with 4 stones or 30% with 5 at any place in the egg (first, second, third)', () => {
     for (const band of BANDS) {
-      for (const kind of KINDS) {
+      for (const kind of EGG_KINDS) {
         const eggs = eggsOf(kind, band);
         for (const i of [0, 1, 2]) {
           for (const n of [4, 5]) {
@@ -634,7 +639,7 @@ describe('three sums per egg: the trays and the guess rules (2.3 section 19.1)',
     // this open: with three answers there, a cap pushes "the 4" over half (docs/v4/2.3.md section 19.1).
     expect(LIVE).toEqual({ min: 3, max: 7 });
     for (const band of BANDS) {
-      for (const kind of KINDS) {
+      for (const kind of EGG_KINDS) {
         const hard = eggsOf(kind, band).map((sums) => sums.find((s) => s.grade === 'hard') as EggSpec);
         const limit = TRAY[band] === 5 ? 0.3 : 0.35;
         for (const end of ['low', 'high'] as const) {
@@ -650,7 +655,7 @@ describe('three sums per egg: the trays and the guess rules (2.3 section 19.1)',
 
   it('lets "the number she just heard" win no more than a blind guess, per kind, grade and band and at every place in the egg', () => {
     for (const band of BANDS) {
-      for (const kind of KINDS) {
+      for (const kind of EGG_KINDS) {
         const eggs = eggsOf(kind, band);
         for (const grade of SUM_GRADES) {
           if (grade !== 'hard' && band === 'b') continue;
@@ -675,7 +680,7 @@ describe('three sums per egg: the trays and the guess rules (2.3 section 19.1)',
 
   it('puts the hard sum\'s answer evenly on every place it can show: 1/n ± 7 points', () => {
     for (const band of BANDS) {
-      for (const kind of KINDS) {
+      for (const kind of EGG_KINDS) {
         const n = TRAY[band];
         const hard = eggsOf(kind, band).map((sums) => sums.find((s) => s.grade === 'hard') as EggSpec);
         const counts = new Array<number>(n).fill(0);
@@ -751,8 +756,9 @@ describe('the star egg: more and fewer within 10 (2.4 section 5.5)', () => {
       expect(new Set(e.map((x) => x.compare)).size).toBe(2);
       for (const x of e) {
         expect(x.clips.right.at(-1)).toBe(`num-take-${x.have}-${x.need}`);
-        expect(x.clips.goal).toEqual([`num-moon-${x.have}`, `num-eggstar-${x.need}`]);
-        expect(x.clips.ask).toEqual([x.compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon']);
+        // The question ends the goal, so the stones wake after it and a stone touch on the wake chime never cuts it.
+        expect(x.clips.goal).toEqual([`num-moon-${x.have}`, `num-eggstar-${x.need}`, x.compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon']);
+        expect(x.clips.ask).toBeUndefined();
       }
     }
   });
@@ -853,8 +859,11 @@ describe('no sum twice: the guess rules on a second egg (2.4 section 5.3, 2.3 se
     'upper middle': (s, a) => Number(s[Math.ceil((s.length - 1) / 2)] === a),
     'nearest five': nearFiveShare,
   };
-  /** The 19.1 bounds per grade: every simple guess, the number she heard, the hard sum's live ends and its places. */
-  function bounds(eggs: EggSpec[][], label: string): void {
+  /**
+   * The 19.1 bounds per grade: every simple guess, the number she heard, the hard sum's live ends, and the hard sum's
+   * places within 1/n ± `room` (19.1's 7 points, or the wider room a second egg with few hard sums left can keep).
+   */
+  function bounds(eggs: EggSpec[][], label: string, room = 0.07): void {
     for (const grade of SUM_GRADES) {
       const sums = eggs.map((e) => e.find((x) => x.grade === grade) as EggSpec);
       for (const n of [4, 5]) {
@@ -869,27 +878,36 @@ describe('no sum twice: the guess rules on a second egg (2.4 section 5.3, 2.3 se
         for (const end of ['low', 'high'] as const) {
           expect(part.filter((x) => liveEnd(x.stones, x.answer, end)).length / part.length, `${label} ${n}: live ${end}`).toBeLessThanOrEqual(limit);
         }
-        // A second egg's hard grade often has three sums left, so some places can be reached by one sum only and its
-        // places cannot all be within 7 points of even (notes/maths.md); no place wins more than a guess may.
+        // A second egg's hard grade can be left with three or four sums, some places then reached by one sum only, so
+        // after two take-away eggs its places keep only a wider room (notes/maths.md); no place wins more than a guess.
         const counts = new Array<number>(n).fill(0);
         for (const x of part) counts[x.stones.indexOf(x.answer)]++;
-        for (const k of counts) expect(k / part.length, `${label} ${n}: places ${counts}`).toBeLessThanOrEqual(limit);
+        for (const k of counts) {
+          expect(k / part.length, `${label} ${n}: places ${counts}`).toBeLessThanOrEqual(limit);
+          expect(Math.abs(k / part.length - 1 / n), `${label} ${n}: places ${counts}`).toBeLessThanOrEqual(room);
+        }
       }
     }
   }
   /** 10,000 eggs of the last step's kind, each after the steps before it in its own play. */
   const second = (steps: readonly Step[], band: Band): EggSpec[][] =>
     Array.from({ length: 10_000 }, (_, i) => playOf(i + 1, steps, band).asked.at(-1)!.sums);
-  const CASES: [string, readonly Step[]][] = [
-    ['a second star egg after a snow egg and a star egg', ['snow', 'star', 'star']],
-    ['a nest egg after the hay rack', ['rack', 'warm']],
-    ['a shore egg after one star egg', ['star', 'snow']],
-    ['a shore egg after two star eggs', ['star', 'star', 'snow']],
+  /**
+   * Each case with the room its hard sum's places keep per band: 19.1's 7 points where the left-out sums allow it, 10
+   * where two take-away eggs (or a snow egg in band B) leave the hard grade three or four sums (measured: at most 7.5
+   * points over in band A, 9.6 under in band B, notes/maths.md).
+   */
+  const CASES: [string, readonly Step[], Record<Band, number>][] = [
+    ['a second star egg after a snow egg and a star egg', ['snow', 'star', 'star'], { a: 0.1, b: 0.1 }],
+    ['a star egg after a snow egg', ['snow', 'star'], { a: 0.07, b: 0.1 }],
+    ['a nest egg after the hay rack', ['rack', 'warm'], { a: 0.07, b: 0.07 }],
+    ['a shore egg after one star egg', ['star', 'snow'], { a: 0.07, b: 0.07 }],
+    ['a shore egg after two star eggs', ['star', 'star', 'snow'], { a: 0.07, b: 0.1 }],
   ];
 
   it('meets the 19.1 guess bounds on the second egg of each kind', () => {
-    for (const band of BANDS) for (const [label, steps] of CASES) bounds(second(steps, band), `${label} (${band})`);
-    // The star egg's own plan, a first egg.
+    for (const band of BANDS) for (const [label, steps, room] of CASES) bounds(second(steps, band), `${label} (${band})`, room[band]);
+    // The star egg's own plan, a first egg: 19.1's 7 points.
     for (const band of BANDS) bounds(Array.from({ length: 10_000 }, (_, i) => eggSums('star', stream(i + 1, 'egg-trail-1'), { band })), `the first star egg (${band})`);
   }, 120_000);
 

@@ -40,22 +40,46 @@ const EGG_OF: Partial<Record<HubPlace, EggKind>> = { egg: 'warm', shore: 'snow',
 
 /** In a browser the fitting waits until the bubbles have popped in (4 bubbles 0.4 s apart), so it never stalls a pop. */
 const PREPARE_DELAY_MS = 1800;
+/** While she walks or a place runs, the next fit waits this long and looks again. */
+const PREPARE_RETRY_MS = 700;
+/** The latest refill's fits: a newer refill drops the older one's queue. */
+let prepareToken = 0;
+
+/** A task when the page is idle (Safari without requestIdleCallback: a short timeout). */
+function whenIdle(fn: () => void): void {
+  const idle = (window as { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+  if (idle) idle.call(window, fn, { timeout: 1000 });
+  else setTimeout(fn, 50);
+}
 
 /**
  * Fit the egg plans the shown bubbles can start, with what this play has asked left out (2.4.0: the hub calls it at
- * each refill, never during a walk), in the band now: a band moves only inside a place, so it is the band the egg
- * opens with. A plan fitted once is cached, so a later refill costs nothing; an egg that starts first fits its own.
+ * each refill, and the fitting never runs during a walk, docs/v4/2.4.md section 5.3). In a browser: one kind per idle
+ * task, the first after the bubbles have popped in, each only while she stands and no place runs (else it looks again
+ * a little later), with what the play has asked and the band at that time. A plan fitted once is cached, so a later
+ * refill costs nothing; an egg that starts before its plan was fitted fits its own as it opens, after the walk.
  */
 export function prepareEggPlans(g: Game): void {
   // A test's small game may have no maths state or no hub; there is then nothing to prepare.
   if (!g.maths) return;
   const kinds = [...new Set((g.hub?.shown ?? []).map((p) => EGG_OF[p]).filter((k) => k !== undefined))];
   if (!kinds.length) return;
-  const band = g.maths.band;
-  const asked = g.maths.asked ? structuredClone(g.maths.asked) : undefined;
-  const fit = () => kinds.forEach((kind) => prepareEggPlan(kind, band, asked));
-  if (typeof window === 'undefined') fit();
-  else setTimeout(fit, PREPARE_DELAY_MS);
+  const fit = (kind: EggKind) => prepareEggPlan(kind, g.maths.band, g.maths.asked ? structuredClone(g.maths.asked) : undefined);
+  if (typeof window === 'undefined') {
+    kinds.forEach(fit);
+    return;
+  }
+  const token = ++prepareToken;
+  const next = () => {
+    if (token !== prepareToken || !kinds.length) return;
+    if (g.actors?.princess?.moving || g.hub?.running) {
+      setTimeout(() => whenIdle(next), PREPARE_RETRY_MS);
+      return;
+    }
+    fit(kinds.shift()!);
+    if (kinds.length) whenIdle(next);
+  };
+  setTimeout(() => whenIdle(next), PREPARE_DELAY_MS);
 }
 
 /**
