@@ -315,9 +315,14 @@ describe('names', () => {
       const r = C.seeded(s);
       const warm: UnicornLook = C.babyLook('warm', r);
       const snow: UnicornLook = C.babyLook('snow', r, [warm]);
+      // 2.4.0: a star egg on the trail brings a moon baby; two in a play never look alike, nor like the others.
+      const star: UnicornLook = C.babyLook('star', r, [warm, snow]);
+      const star2: UnicornLook = C.babyLook('star', r, [warm, snow, star]);
       expect(['nestling', 'berry', 'moon']).toContain(warm.breed);
       expect(snow.breed).toBe('snow');
-      for (const l of [warm, snow]) {
+      expect([star.breed, star2.breed]).toEqual(['moon', 'moon']);
+      expect(new Set([warm, snow, star, star2].map((l) => `${l.body}${l.mane}${l.mane2}`)).size).toBe(4);
+      for (const l of [warm, snow, star, star2]) {
         expect(l.stage).toBe('baby');
         expect(l.mane).not.toBe(l.mane2);
         expect(herdKeys.has(`${l.body}${l.mane}${l.mane2}`)).toBe(false);
