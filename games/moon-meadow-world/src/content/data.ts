@@ -1,4 +1,6 @@
 // The checked content from tools/build-content.ts. Rebuild it with `node tools/build-content.ts`; never edit data.json.
+import type { SignGroup, SignItem, SignWord } from '../contracts.ts';
+import { wordPic } from '../assets.ts';
 import raw from './data.json' with { type: 'json' };
 
 export interface NameData {
@@ -72,6 +74,16 @@ export interface ContentData {
   phraseThings: PhraseThingData[];
   /** Every pair ("green sock") that passed the tinted picture check, and who checked it: 'claude' or 'emma'. */
   phrasePairs: Record<string, string>;
+  /**
+   * The signposts' place words (2.4.0, docs/v4/2.4.md section 5.5) that passed their own picture check (`sign:<word>`),
+   * in the order s, sh, b, p. `pic` is the picture's URL; pines has v3's pine picture and ends in the letter sound z.
+   */
+  signWords: SignItem[];
 }
 
-export const DATA: ContentData = raw;
+export const DATA: ContentData = {
+  ...raw,
+  signWords: raw.signWords.map((w) => ({
+    ...w, word: w.word as SignWord, group: w.group as SignGroup, tier: w.tier as 1 | 2 | 3, pic: wordPic(w.pic),
+  })),
+};

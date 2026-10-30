@@ -154,6 +154,40 @@ describe('eggs', () => {
   });
 });
 
+// The signposts' place words (2.4.0, docs/v4/2.4.md section 5.5); the planner is in tests/signs.test.ts.
+describe('signs', () => {
+  it('has the 13 sign words from v3\'s packs with their tiers, pictures, clips and graphemes', () => {
+    expect(DATA.signWords.map((w) => `${w.word}:${w.tier}:${w.group}`)).toEqual([
+      'sand:2:s', 'stump:2:s', 'swing:1:s', 'stone:3:s', 'shed:1:sh', 'ship:1:sh', 'shell:2:sh', 'barn:2:b', 'bench:2:b', 'beach:3:b', 'pond:2:p', 'pool:2:p', 'pines:3:p']);
+    expect(DATA.signWords.find((w) => w.word === 'pines')).toMatchObject({ gpcs: ['p', 'i-e', 'n', 's'], sounds: ['p', 'i-e', 'n', 'z'], clip: 'word-pines', pic: expect.stringContaining('words/pine.webp') });
+    for (const w of DATA.signWords) {
+      expect(clipExists(w.clip), w.word).toBe(true); expect(w.word.length).toBeLessThanOrEqual(5);
+      expect((w.sounds ?? w.gpcs).every((g) => phonics.has(g)), w.word).toBe(true);
+      expect(spell(w.gpcs), w.word).toBe(w.word);
+      expect(w.gpcs.filter(isVowel), w.word).toHaveLength(1);
+    }
+  });
+
+  it('keeps the sign words\' picture checks apart from the wish words\'', () => {
+    const checks = JSON.parse(readFileSync(join(repo, 'games/moon-meadow-world/tools/picture-check.json'), 'utf8'));
+    for (const w of DATA.signWords) expect(checks[`sign:${w.word}`]?.verdict, w.word).toBe('ok');
+    for (const w of ['sand', 'ship', 'shell', 'pool']) expect(checks[w]?.verdict, w).toBe('ok');   // the wish words keep their own entries
+    for (const [k, c] of Object.entries(checks) as [string, { by: string; why: string }][]) if (k.startsWith('sign:')) expect(c.by && c.why, k).toBeTruthy();
+  });
+
+  it('every sign clip is in allClipIds and exists or has a line, and every sign letter sound is in allGraphemes', () => {
+    const all = new Set(C.allClipIds());
+    const sounds = new Set(C.allGraphemes());
+    for (const w of DATA.signWords) {
+      for (const id of [w.clip, C.goalClip('bella', w.word), C.goalClip('hazel', w.word)]) {
+        expect(all.has(id), id).toBe(true);
+        expect(clipExists(id) || !!lineFor(id), id).toBe(true);
+      }
+      for (const g of w.sounds ?? w.gpcs) expect(sounds.has(g), `${w.word} ${g}`).toBe(true);
+    }
+  });
+});
+
 describe('wishes', () => {
   const KINDS = ['dress', 'bath', 'picnic', 'food'] as const;
   const poolWords = [...new Set(KINDS.flatMap((k) => W.wishWords(k)))];

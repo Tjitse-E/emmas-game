@@ -80,5 +80,18 @@
   "fork": { "verdict": "ok", "by": "claude", "why": "A fork. Clear." },
   "flask": { "verdict": "decoy", "by": "claude", "why": "A drinks flask. A child says bottle." },
   "rug": { "verdict": "ok", "by": "claude", "why": "A round braided rug. The mat never shares its basket." },
-  "tray": { "verdict": "ok", "by": "claude", "why": "A wooden tray with handles. Clear." }
+  "tray": { "verdict": "ok", "by": "claude", "why": "A wooden tray with handles. Clear." },
+  "sign:sand": { "verdict": "ok", "by": "claude", "why": "A pile of sand. Clear, and the same picture as the wish word sand." },
+  "sign:stump": { "verdict": "ok", "by": "claude", "why": "A tree stump with two leaves. Clear." },
+  "sign:swing": { "verdict": "ok", "by": "claude", "why": "A wooden garden swing on a frame. Clear." },
+  "sign:stone": { "verdict": "ok", "by": "claude", "why": "A smooth grey stone. A child may say rock, but the sign is read from print, so the name she gives it does not decide the answer." },
+  "sign:shed": { "verdict": "ok", "by": "claude", "why": "A wooden garden shed with a door. Clear." },
+  "sign:ship": { "verdict": "ok", "by": "claude", "why": "A big white and blue ship with funnels. Clear, and the same picture as the wish word ship." },
+  "sign:shell": { "verdict": "ok", "by": "claude", "why": "A peach scallop shell. Clear, and the same picture as the wish word shell." },
+  "sign:barn": { "verdict": "ok", "by": "claude", "why": "A red barn with white doors. Clear." },
+  "sign:bench": { "verdict": "ok", "by": "claude", "why": "A wooden garden bench. Clear." },
+  "sign:beach": { "verdict": "ok", "by": "claude", "why": "Sand and sea with a bucket and a shell. A child may name the bucket first; Tjitse checks that Emma calls it a beach." },
+  "sign:pond": { "verdict": "ok", "by": "claude", "why": "A small pond with grass and stones round it. Clear." },
+  "sign:pool": { "verdict": "ok", "by": "claude", "why": "A blue paddling pool. Clear, and the same picture as the wish word pool." },
+  "sign:pines": { "verdict": "ok", "by": "claude", "why": "v3's pine tree: one tree for a plural word. Clear as a pine; Tjitse checks that Emma knows the word pines." }
 }

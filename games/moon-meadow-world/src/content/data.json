@@ -179,5 +179,20 @@
     "pink bow": "claude",
     "pink sock": "claude",
     "pink shirt": "claude"
-  }
+  },
+  "signWords": [
+    {"word":"sand","gpcs":["s","a","n","d"],"clip":"word-sand","pic":"sand","tier":2,"group":"s"},
+    {"word":"stump","gpcs":["s","t","u","m","p"],"clip":"word-stump","pic":"stump","tier":2,"group":"s"},
+    {"word":"swing","gpcs":["s","w","i","ng"],"clip":"word-swing","pic":"swing","tier":1,"group":"s"},
+    {"word":"stone","gpcs":["s","t","o-e","n"],"clip":"word-stone","pic":"stone","tier":3,"group":"s"},
+    {"word":"shed","gpcs":["sh","e","d"],"clip":"word-shed","pic":"shed","tier":1,"group":"sh"},
+    {"word":"ship","gpcs":["sh","i","p"],"clip":"word-ship","pic":"ship","tier":1,"group":"sh"},
+    {"word":"shell","gpcs":["sh","e","ll"],"clip":"word-shell","pic":"shell","tier":2,"group":"sh"},
+    {"word":"barn","gpcs":["b","ar","n"],"clip":"word-barn","pic":"barn","tier":2,"group":"b"},
+    {"word":"bench","gpcs":["b","e","n","ch"],"clip":"word-bench","pic":"bench","tier":2,"group":"b"},
+    {"word":"beach","gpcs":["b","ea","ch"],"clip":"word-beach","pic":"beach","tier":3,"group":"b"},
+    {"word":"pond","gpcs":["p","o","n","d"],"clip":"word-pond","pic":"pond","tier":2,"group":"p"},
+    {"word":"pool","gpcs":["p","oo","l"],"clip":"word-pool","pic":"pool","tier":2,"group":"p"},
+    {"word":"pines","gpcs":["p","i-e","n","s"],"sounds":["p","i-e","n","z"],"clip":"word-pines","pic":"pine","tier":3,"group":"p"}
+  ]
 }
