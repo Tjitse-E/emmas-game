@@ -1134,6 +1134,15 @@ export class UnicornActor implements Unicorn {
     this.setTask({ kind: 'track', lead, gap: gapM });
   }
 
+  /** Stand still and turn to face a point (2.4.0: the mounts turn to her at the paddock, and to the signpost). */
+  faceTo(p: Vec2): void {
+    this.followSlot = null;
+    this.setTask({ kind: 'idle' });
+    const dx = p.x - this.position.x;
+    const dz = p.z - this.position.z;
+    if (dx * dx + dz * dz > 1e-6) this.desiredYaw = headingOf(dx, dz);
+  }
+
   /** Start its track along these points (the ride's lead-in from her stand), or clear it with an empty list. */
   seedTrack(points: readonly Vec2[]): void {
     if (points.length) this.track.seed(points);
