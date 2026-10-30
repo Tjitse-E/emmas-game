@@ -96,3 +96,14 @@ The level script (`src/game/level.ts`), the customiser part (`wardrobe-part.ts`,
 - A picture shown by a baby (`showToy` in `moments.ts`) is taken away after its time only if no other picture replaced it meanwhile. A greyscale picture shows in its tint (`WishItem.tint`).
 - World touches (`input.ts`) run on `press()`: a release only the window hears still taps; a cancel, a lost capture or the next touch ends the touch without a tap, and a carried unicorn lands where the finger last was. One lost release never blocks later world taps.
 - During a side quest a Lumi tap replays an open moment's goal; between the quest's moments she stays quiet (the basket is hidden).
+
+## Morning notes (2.4.0, the hub lane)
+
+Two history targets miss under 5.7's model, and their tests are skipped (`tests/hub-history.test.ts`, plan Task 3). The rules match 5.2 and 5.6; the design's play B table is about 1.2 minutes short in its early rows.
+
+| History | Target | Reached |
+|---|---|---|
+| Play B, nearest first | no done early, bedtime at 30:00 | done early at 26:43 (the shore egg ends after ride 2's cutoff); bedtime at 30:00 |
+| Pond-lover | done early, then bedtime from 29:00 and before 30:00 | done early at 27:38; the last visit runs to the 30:00 cutoff, bedtime at 30:00 |
+
+Play C, the pond-lover's counts, the child who skips the Corner and the slide-only child meet their targets. Details in `notes/requests-hub.md`.

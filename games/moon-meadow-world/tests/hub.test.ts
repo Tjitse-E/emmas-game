@@ -8,6 +8,7 @@ import {
   placeEnded, refill, startHub, tickPlay,
 } from '../src/game/hub';
 import { Run } from '../src/game/run';
+import { randomHistory } from './hub-sim';
 
 describe('the play clock', () => {
   it('cuts off rides at 26:00, eggs at 27:00 and everything at 29:00, checks done early last at 28:00 with a 2-minute wait, and scales a short ?bed=', () => {
@@ -262,5 +263,21 @@ describe('the refill', () => {
     h.playMs = 26.5 * 60_000; // ride 2 is past its cutoff
     placeEnded(h, 'picnic', c());
     expect(h.early).toBe(26.5 * 60_000);
+  });
+
+  it('keeps at most three learning bubbles, one of each kind, never two wishes, a learning bubble while one can start, and a reading and a maths place whenever both are left', () => {
+    for (let seed = 1; seed <= 3000; seed++) {
+      for (const step of randomHistory(seed)) {
+        const learning = step.shown.filter((p) => LEARNING.includes(p));
+        expect(learning.length).toBeLessThanOrEqual(3);
+        expect(new Set(step.shown.map((p) => KIND[p])).size).toBe(step.shown.length);
+        if (step.left.some((p) => LEARNING.includes(p))) expect(learning.length).toBeGreaterThan(0);
+        const has = (s: 'r' | 'm') => step.shown.some((p) => STRANDS[p].includes(s));
+        const left = (s: 'r' | 'm') => step.left.some((p) => STRANDS[p].includes(s));
+        if (left('r') && left('m') && !step.afterSameKind) expect([has('r'), has('m')], `seed ${seed}`).toEqual([true, true]);
+        // Shown learning bubbles never swap while they are left.
+        expect(step.stayed.every((p) => step.shown.includes(p)), `seed ${seed}`).toBe(true);
+      }
+    }
   });
 });
