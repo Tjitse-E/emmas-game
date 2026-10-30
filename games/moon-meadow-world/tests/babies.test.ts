@@ -20,7 +20,8 @@ vi.hoisted(() => {
 
 import { START } from '../src/layout';
 import { herd as startHerd } from '../src/content';
-import { newborn } from '../src/content/doors';
+import { bedtimeDoors, newborn } from '../src/content/doors';
+import { seeded } from '../src/content/rand';
 import { type Baby, type Game, startClock, startQuests } from '../src/game/game';
 import { type EggSpot, firstOfKind, namingRules, newbornAt, snapBabies } from '../src/game/eggs-part';
 import { guests } from '../src/game/guests';
@@ -33,6 +34,7 @@ import { Results } from '../src/game/results';
 import { Run } from '../src/game/run';
 import { startMaths } from '../src/game/band';
 import { startHub } from '../src/game/hub';
+import { bedtimeLines, toTheYard, waitSpot } from '../src/game/bedtime';
 
 // ---- a fake game ---------------------------------------------------------------------------------------------------
 
@@ -350,5 +352,64 @@ describe('a herd baby\'s wish', () => {
     const v = offerWish(g)!;
     (await wishPlace(g, v))();
     expect(g.results.lines.map((l) => `${l.part}:${l.detail.kind}`)).toEqual(['wish-herd-1:dress', 'wish-herd-2:bath']);
+  });
+});
+
+// ---- Task 10: bedtime with 0 to 4 babies ---------------------------------------------------------------------------
+
+describe('bedtime with no baby up to four', () => {
+  const herdDoors = Array.from({ length: 12 }, (_, i) => i + 1);
+  const newborns = (n: number): HerdMember[] =>
+    ['Pip', 'Meg', 'Bud', 'Tam'].slice(0, n).map((name, i) => fakeBaby({ door: 13 + i, name }).member!);
+
+  it('asks 3 roll call doors and no visit with no babies, 2 and a visit with one or more', () => {
+    for (let s = 1; s <= 300; s++) {
+      const none = bedtimeDoors(0, herdDoors, seeded(s));
+      expect(none.calls).toHaveLength(3);
+      expect(new Set(none.calls.map((c) => c.door)).size).toBe(3);
+      expect(none.calls.every((c) => c.door >= 7 && c.door <= 12)).toBe(true);
+      expect(none.visit).toBeNull();
+    }
+    for (let n = 1; n <= 4; n++) {
+      const seen = new Set<number>();
+      for (let s = 1; s <= 300; s++) {
+        const babies = newborns(n);
+        const d = bedtimeDoors(n, herdDoors, seeded(s), babies);
+        expect(d.calls).toHaveLength(2);
+        expect(d.calls.every((c) => c.door >= 7 && c.door <= 12)).toBe(true);
+        const v = d.visit!;
+        expect(v.door).toBeGreaterThanOrEqual(11);
+        expect(v.door).toBeLessThanOrEqual(12 + n);
+        const visitor = babies.find((b) => b.clip === v.goal[0])!;
+        expect(visitor).toBeDefined();
+        expect(v.door).not.toBe(visitor.door);
+        expect(v.goal).toEqual([visitor.clip, `num-visit-${v.door}`]);
+        seen.add(v.door);
+      }
+      // Every teen door that holds a unicorn comes up, doors 15 and 16 too once their babies live there (one baby never
+      // visits its own door 13).
+      expect([...seen].sort((a, b) => a - b)).toEqual(Array.from({ length: n === 1 ? 2 : n + 2 }, (_, i) => 11 + i));
+    }
+  });
+
+  it('says "The stable is this way." with no babies and counts 12 + n at goodnight', () => {
+    expect(bedtimeLines(0)).toEqual({ walk: ['g4-way-stable'], count: ['num-herd-12'], herd: 12 });
+    for (let n = 1; n <= 4; n++) expect(bedtimeLines(n)).toEqual({ walk: ['g4-to-stable'], count: [`num-herd-${12 + n}`], herd: 12 + n });
+  });
+
+  it('keeps the babies that follow her with her, and sends the others to the yard as the herd', () => {
+    const g = fakeGame([], 3);
+    snapBabies(g, ['nest', 'shore', 'trail', 'trail'], START, true);
+    const [b13, b14, b15, b16] = g.babies.map((b) => b.unicorn);
+    // Two babies and a herd foal follow her (three is the most); babies 14 and 16 graze.
+    const foal = g.herd.find((h) => h.look.stage === 'foal')!;
+    g.followers.set([b13, b15, unicorn(g, foal.id) as unknown as Baby['unicorn']]);
+    toTheYard(g);
+    expect(g.followers.list).toEqual([b13, b15]);
+    // The herd and the babies not following walk to their doors' waiting spots.
+    expect(b14.position.x).toBeCloseTo(waitSpot(14).x);
+    expect(b16.position.z).toBeCloseTo(waitSpot(16).z);
+    expect(unicorn(g, foal.id).position.x).toBeCloseTo(waitSpot(foal.door).x);
+    expect(b13.followSlot).toBe(0);
   });
 });
