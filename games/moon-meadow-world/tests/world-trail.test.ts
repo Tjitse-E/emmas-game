@@ -494,6 +494,32 @@ describe('the ride camera, occlusion and the ducks (Task 20)', () => {
     }
   });
 
+  it('frames the fork with the mount, the signpost\'s three cards and the road starts, and no kit in view', () => {
+    for (const [w, h] of [[1080, 810], [1080, 740]]) {
+      const { t, rig, cam } = meadowForTest(w, h);
+      t.trail.dress(['sand', 'barn', 'pond']);
+      void rig.frame(RIDE.forkFrame.center, RIDE.forkFrame.width, { ms: 0 });
+      rig.update(0);
+      cam.updateMatrixWorld();
+      const screen = (p: THREE.Vector3): { x: number; y: number } => {
+        const n = p.clone().project(cam);
+        return { x: ((n.x + 1) / 2) * w, y: ((1 - n.y) / 2) * h };
+      };
+      const inside = (p: { x: number; y: number }, m: number): boolean => p.x > m && p.x < w - m && p.y > m && p.y < h - m;
+      // The cards (at least 64 px high, about 200 px wide) sit on the arms' ends, clear of the edges and of each other.
+      const cards = ([0, 1, 2] as const).map((i) => screen(t.trail.arm(i)));
+      for (const [i, c] of cards.entries()) expect(inside(c, 110), `card ${i} at ${w}x${h}: ${c.x.toFixed(0)},${c.y.toFixed(0)}`).toBe(true);
+      expect(cards[2].x - cards[0].x, `${w}x${h}`).toBeGreaterThan(220);
+      expect(Math.min(cards[0].y, cards[2].y) - cards[1].y, `${w}x${h}`).toBeGreaterThan(70);
+      // The mount at the fork, its rider's head (seated about 1.7 m up) and the starts of the three roads.
+      for (const p of [new THREE.Vector3(RIDE.fork.x, 0, RIDE.fork.z), new THREE.Vector3(RIDE.fork.x, 1.7, RIDE.fork.z)]) expect(inside(screen(p), 40), `${w}x${h}`).toBe(true);
+      for (const r of RIDE_PATHS.roads) expect(inside(screen(r.getPointAt(2.5 / r.getLength())), 20), `${w}x${h}`).toBe(true);
+      // The rider's head stays below the west and east cards.
+      expect(screen(new THREE.Vector3(RIDE.fork.x, 1.7, RIDE.fork.z)).y - Math.max(cards[0].y, cards[2].y), `${w}x${h}`).toBeGreaterThan(60);
+      expect(t.trail.slots().map((s) => s.onScreen), `${w}x${h}`).toEqual([false, false, false]);
+    }
+  });
+
   it('swims the three ducks under the chute or at the far shore, inside the pond\'s one batch', () => {
     const d = createDucks(material);
     expect(d.mesh).toBeInstanceOf(THREE.InstancedMesh);

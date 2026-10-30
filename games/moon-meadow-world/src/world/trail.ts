@@ -38,7 +38,7 @@ const Y = { gate: 0.035, road: 0.04, plaza: 0.045, clearing: 0.05 } as const;
  * leaves the fork. The cards (ui/sign.ts) sit on the boards' outer ends (arm(i)); the north board sits higher, so on
  * screen its card shows above the other two.
  */
-export const SIGNPOST = { height: 2.25, arms: [{ y: 1.45, len: 1.15 }, { y: 1.9, len: 1.0 }, { y: 1.45, len: 1.15 }] } as const;
+export const SIGNPOST = { height: 2.0, arms: [{ y: 1.35, len: 1.1 }, { y: 1.7, len: 0.85 }, { y: 1.35, len: 1.1 }] } as const;
 
 /** The way road i leaves the fork: towards its point 4 m along. */
 function armDir(i: 0 | 1 | 2): Vec2 {

@@ -84,8 +84,8 @@ const button = (label: string, fn: () => void): void => {
   panel.append(b);
 };
 const STABLE_FRAME: Vec2 = { x: 0, z: -11.8 };
-/** About the ride's fork frame (2.4.0): 8 m, the signpost and the three road starts; the ride lane sets its own. */
-const FORK_FRAME = { center: { x: 21.9, z: -30.4 }, width: 8 } as const;
+/** The ride's fork frame (2.4.0, RIDE.forkFrame): 8 m, the mount at the fork, the signpost and the three road starts. */
+const FORK_FRAME = RIDE.forkFrame;
 
 /**
  * The game's frameAt (src/game/game.ts): frame `center` at `width` metres so that `point` shows at `frac` of the

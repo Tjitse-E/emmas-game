@@ -220,7 +220,12 @@ export const RIDE = {
   gate: v2(21.5, -22.7),
   fork: v2(21.5, -29),
   /** The signpost at the fork, in the wedge between the north and the east roads (world/trail.ts builds its arms). */
-  post: v2(22.8, -31.9),
+  post: v2(23.0, -30.8),
+  /**
+   * A fork frame (8 m) that holds the mount at the fork, the signpost with its three cards and the three road starts
+   * at 1080 x 810 and 1080 x 740, with no slot's kit in view (tests/world-trail.test.ts).
+   */
+  forkFrame: { center: v2(22.0, -31.0), width: 8 },
   slots: [v2(11.5, -31), v2(21.5, -40), v2(31.5, -31)],
   speed: 4.2,
   gaps: [1.6, 3.0, 4.4],
@@ -256,7 +261,7 @@ export const RIDE_PATHS: {
   },
   roads: [
     groundPath([RIDE.fork, v2(18.0, -28.75), v2(14.8, -29.7), RIDE.slots[0]]),
-    groundPath([RIDE.fork, v2(20.6, -31.9), v2(20.45, -35.6), RIDE.slots[1]]),
+    groundPath([RIDE.fork, v2(20.45, -31.85), v2(20.4, -35.6), RIDE.slots[1]]),
     groundPath([RIDE.fork, v2(25.0, -28.75), v2(28.2, -29.7), RIDE.slots[2]]),
   ],
   home: groundPath([...RIDE_WAY.slice().reverse(), v2(22.1, -15.2), v2(21.65, -13.9), RIDE.stand]),
