@@ -37,7 +37,7 @@ import {
 } from '../src/game/hub';
 import { Run } from '../src/game/run';
 import { randomHistory } from './hub-sim';
-import { askPlace, firstLearning, hub, nudgeDue, walkEndStart, walkEnded } from '../src/game/hub-part';
+import { askPlace, firstLearning, hub, nudgeDue, visitOver, walkEndStart, walkEnded } from '../src/game/hub-part';
 import { type Game, startClock, startQuests } from '../src/game/game';
 import { Followers } from '../src/game/followers';
 import { Results } from '../src/game/results';
@@ -337,7 +337,7 @@ function fakeHub(search = '?seed=3'): Fake {
   const streams = createStreams(options.seed);
   const her = {
     position: new THREE.Vector3(-9, 0, 3), mode: 'idle' as PrincessMode, look: { ...DEFAULT_LOOK }, point: (_p: string, out = new THREE.Vector3()) => out.set(-9, 1, 3),
-    walkTo: async () => true,
+    walkTo: async (route: { x: number; z: number }[]) => (her.position.set(route.at(-1)!.x, 0, route.at(-1)!.z), true),
   };
   const egg = { visible: false, position: new THREE.Vector3(), place: vi.fn((at: THREE.Vector3) => ((egg.visible = true), egg.position.copy(at))), hide: () => void (egg.visible = false) };
   const g = {
@@ -356,7 +356,7 @@ function fakeHub(search = '?seed=3'): Fake {
       egg,
       fx: { sparkle: () => {}, moonbeam: async () => {}, starfall: async () => {}, hearts: () => {} },
       herd: { all: () => [], get: () => undefined },
-      placePrincess: () => {},
+      placePrincess: (at: { x: number; z: number }) => void her.position.set(at.x, 0, at.z),
     },
     layer: {
       offer: (id: string, o: { onTap(): void } | null) => (o ? offers.set(id, o) : offers.delete(id)),
@@ -579,5 +579,75 @@ describe('the hub part', () => {
     await f.pump(200);
     expect(ended).toBe(true);
     expect(f.g.hub.bedtimeAt).toBeGreaterThanOrEqual(30 * 60_000);
+  });
+
+  it('ends a visit at once on a learning bubble tap, and the picnic runs next', async () => {
+    const f = fakeHub();
+    void hub(f.g).catch(() => {});
+    await f.pump(2000);
+    await f.tap('egg');
+    await f.pump(2000);
+    await f.tap('picnic');
+    await f.pump(3000);
+    expect(f.g.hub.play).toEqual(['pond']);
+    await f.tap('pond');
+    await f.pump(2000);
+    expect(f.g.hub.visit).not.toBeNull();
+    expect(f.g.world.ducks.set).toHaveBeenLastCalledWith('far');
+    // During a visit the learning bubbles stay on screen, and only they.
+    expect([...f.offers.keys()].sort()).toEqual(['ride', 'shore', 'beads'].sort());
+    await f.tap('beads');
+    await f.pump(2000);
+    expect(f.g.hub.visit).toBeNull();
+    expect(f.g.world.ducks.set).toHaveBeenLastCalledWith('chute');
+    expect(f.g.hub.done).toEqual(['egg', 'picnic', 'pond', 'beads']);
+    expect(f.g.hub.pondMs).toBeGreaterThan(0);
+    f.stop();
+  });
+
+  it('ends a visit by itself at 3 minutes of play time, and the first learning bubble grows with its line', async () => {
+    const f = fakeHub();
+    void hub(f.g).catch(() => {});
+    await f.pump(2000);
+    await f.tap('egg');
+    await f.pump(2000);
+    await f.tap('picnic');
+    await f.pump(3000);
+    await f.tap('pond');
+    await f.pump(2000);
+    t.said.length = 0;
+    vi.mocked(f.g.layer.offerBob).mockClear();
+    f.g.hub.playMs = f.g.hub.visit!.fromMs + 180_000;
+    await f.pump(1000);
+    expect(f.g.hub.visit).toBeNull();
+    expect(f.g.hub.done.at(-1)).toBe('pond');
+    expect(vi.mocked(f.g.layer.offerBob).mock.calls.some(([, grow]) => grow)).toBe(true);
+    expect(t.said.some((id) => id.startsWith('g4-way-'))).toBe(true);
+    f.stop();
+  });
+});
+
+describe('the pond visit', () => {
+  it('ends a visit at 3 minutes of play time, at 6 slides and at 30:00', () => {
+    const h = startHub();
+    h.visit = { fromMs: 0, slides: 5 };
+    h.playMs = 179_000;
+    expect(visitOver(h, { sliding: false })).toBe(false);
+    h.visit.slides = 6;
+    expect(visitOver(h, { sliding: false })).toBe(true);
+    h.visit = { fromMs: 0, slides: 0 };
+    h.playMs = 180_000;
+    expect(visitOver(h, { sliding: false })).toBe(true);
+    h.visit = { fromMs: 29.5 * 60_000, slides: 0 };
+    h.playMs = 30 * 60_000;
+    expect(visitOver(h, { sliding: false })).toBe(true);
+  });
+
+  it('lets a slide under way finish first', () => {
+    const h = startHub();
+    h.visit = { fromMs: 0, slides: 2 };
+    h.playMs = 181_000;
+    expect(visitOver(h, { sliding: true })).toBe(false);
+    expect(visitOver(h, { sliding: false })).toBe(true);
   });
 });
