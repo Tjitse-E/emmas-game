@@ -833,6 +833,720 @@
     "how": "exact"
    }
   },
+  "g4-pick": {
+   "hash": "c7e15b30cb63e29af41515029442f6b23dc0402949211ba6d42ad36b58c2dd46",
+   "speaker": "narrator",
+   "text": "Where do you want to go? Tap a bubble!",
+   "file": "g4-pick.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2395,
+   "generated": "2026-10-30T20:24:55",
+   "ok": true,
+   "stt": {
+    "hash": "c7e15b30cb63e29af41515029442f6b23dc0402949211ba6d42ad36b58c2dd46",
+    "text": "Where do you want to go? Tap a bubble",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-soon-bed": {
+   "hash": "8b200f6f30593382f6ec0c61adc7244cb53fd6282c2e3456b3da2982fef09b8c",
+   "speaker": "narrator",
+   "text": "Soon it is bedtime!",
+   "file": "g4-soon-bed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1707,
+   "generated": "2026-10-30T20:24:53",
+   "ok": true,
+   "stt": {
+    "hash": "8b200f6f30593382f6ec0c61adc7244cb53fd6282c2e3456b3da2982fef09b8c",
+    "text": "Soon it is bedtime",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-picnic": {
+   "hash": "dbea9ae972eb3aad1c83ca1bc14222cb6414840b7eea03f31df1332da286ea7f",
+   "speaker": "narrator",
+   "text": "The picnic is this way.",
+   "file": "g4-way-picnic.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1496,
+   "generated": "2026-10-30T20:24:53",
+   "ok": true,
+   "stt": {
+    "hash": "dbea9ae972eb3aad1c83ca1bc14222cb6414840b7eea03f31df1332da286ea7f",
+    "text": "The picnic is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-beads": {
+   "hash": "f3f7d4442906d3ba6067b433f80d10313d1e603321fef14e6c8a1abb8317d4ae",
+   "speaker": "narrator",
+   "text": "The bead tree is this way.",
+   "file": "g4-way-beads.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1751,
+   "generated": "2026-10-30T20:24:53",
+   "ok": true,
+   "stt": {
+    "hash": "f3f7d4442906d3ba6067b433f80d10313d1e603321fef14e6c8a1abb8317d4ae",
+    "text": "The bead tree is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-rack": {
+   "hash": "320a106280c34b793e702a7c7395bc33f11935ef8864bec0f7c0e588f5a0903c",
+   "speaker": "narrator",
+   "text": "The hay rack is this way.",
+   "file": "g4-way-rack.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1577,
+   "generated": "2026-10-30T20:24:54",
+   "ok": true,
+   "stt": {
+    "hash": "320a106280c34b793e702a7c7395bc33f11935ef8864bec0f7c0e588f5a0903c",
+    "text": "The hay rack is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-wish": {
+   "hash": "8cf604c5c4b9934ca73c3a53410e203c6769a2139967d02e6da5930bf3a26d50",
+   "speaker": "narrator",
+   "text": "The baby with a wish is this way.",
+   "file": "g4-way-wish.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2035,
+   "generated": "2026-10-30T20:24:54",
+   "ok": true,
+   "stt": {
+    "hash": "8cf604c5c4b9934ca73c3a53410e203c6769a2139967d02e6da5930bf3a26d50",
+    "text": "The baby with a wish is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-ducks": {
+   "hash": "40e08204a9ac8c5d418f23f0bc1f6cd56bccff6d0672a524a7982167d15e32c2",
+   "speaker": "queen",
+   "text": "The ducks are having their swim!",
+   "file": "lumi4-ducks.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 1753,
+   "generated": "2026-10-30T20:24:54",
+   "ok": true,
+   "stt": {
+    "hash": "40e08204a9ac8c5d418f23f0bc1f6cd56bccff6d0672a524a7982167d15e32c2",
+    "text": "The ducks are having their swim",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-way-saddle": {
+   "hash": "f5b4da098681915ecd60ca2af766eb2e0c4a051c6052fd61feee8869348049de",
+   "speaker": "narrator",
+   "text": "The saddle is this way.",
+   "file": "g4-way-saddle.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1568,
+   "generated": "2026-10-30T20:24:55",
+   "ok": true,
+   "stt": {
+    "hash": "f5b4da098681915ecd60ca2af766eb2e0c4a051c6052fd61feee8869348049de",
+    "text": "The saddle is this way",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "lumi4-saddle": {
+   "hash": "a0eae7b83b9a512d481c369a4ffa1622e96673247970ae1ae6e301ce0fb4e538",
+   "speaker": "queen",
+   "text": "The saddle is ready! Now you can ride.",
+   "file": "lumi4-saddle.mp3",
+   "model": "eleven_multilingual_v2",
+   "seed": 11,
+   "duration_ms": 2290,
+   "generated": "2026-10-30T20:24:55",
+   "ok": true,
+   "stt": {
+    "hash": "a0eae7b83b9a512d481c369a4ffa1622e96673247970ae1ae6e301ce0fb4e538",
+    "text": "The saddle is ready. Now you can ride",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-saddle": {
+   "hash": "4e193205656a71326754f93b127594397bbc4500bb4d2fb59df2931759359740",
+   "speaker": "narrator",
+   "text": "Tap the saddle, and ride!",
+   "file": "g4-saddle.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2066,
+   "generated": "2026-10-30T20:24:56",
+   "ok": true,
+   "stt": {
+    "hash": "4e193205656a71326754f93b127594397bbc4500bb4d2fb59df2931759359740",
+    "text": "Tap the saddle and ride",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-signs": {
+   "hash": "9d2ebbeac413099dfee183cbdb6a30406e53391617b2c26f41f9164d4536425d",
+   "speaker": "narrator",
+   "text": "Read the signs. Then tap the right one.",
+   "file": "g4-signs.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3061,
+   "generated": "2026-10-30T20:24:58",
+   "ok": true,
+   "stt": {
+    "hash": "9d2ebbeac413099dfee183cbdb6a30406e53391617b2c26f41f9164d4536425d",
+    "text": "Read the signs, then tap the right one",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-ride-home": {
+   "hash": "f839e789c022f034edea80653909c3586f976dc814519f519cbf520d3baf363b",
+   "speaker": "narrator",
+   "text": "Time to ride home!",
+   "file": "g4-ride-home.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1351,
+   "generated": "2026-10-30T20:24:56",
+   "ok": true,
+   "stt": {
+    "hash": "f839e789c022f034edea80653909c3586f976dc814519f519cbf520d3baf363b",
+    "text": "Time to ride home",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-star-egg": {
+   "hash": "4265a2b0ec1c175a31e70eff9c6fd1f6db7e32a5524a84093b5e71ab6d03c937",
+   "speaker": "narrator",
+   "text": "A star egg! The moon has stars for it.",
+   "file": "g4-star-egg.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 3167,
+   "generated": "2026-10-30T20:24:57",
+   "ok": true,
+   "stt": {
+    "hash": "4265a2b0ec1c175a31e70eff9c6fd1f6db7e32a5524a84093b5e71ab6d03c937",
+    "text": "A star egg. The moon has stars for it",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-more-moon": {
+   "hash": "e92f1a2c8c386adc5c547b5bf7b03cb1c4675610c98fdd3d1360b0cd74bdec4e",
+   "speaker": "narrator",
+   "text": "How many more has the moon?",
+   "file": "g4-more-moon.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1791,
+   "generated": "2026-10-30T20:24:57",
+   "ok": true,
+   "stt": {
+    "hash": "e92f1a2c8c386adc5c547b5bf7b03cb1c4675610c98fdd3d1360b0cd74bdec4e",
+    "text": "How many more has the moon?",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-fewer-egg": {
+   "hash": "35e68c0e18975a9daba5a4b10cc5eee06e31f2fe2888dc71f2cfc24d41fe317f",
+   "speaker": "narrator",
+   "text": "How many fewer has the egg?",
+   "file": "g4-fewer-egg.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1986,
+   "generated": "2026-10-30T20:24:57",
+   "ok": true,
+   "stt": {
+    "hash": "35e68c0e18975a9daba5a4b10cc5eee06e31f2fe2888dc71f2cfc24d41fe317f",
+    "text": "How many fewer has the egg?",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "h4-line-up": {
+   "hash": "5b9f915a7ef5013c2da27ba7acdf40ea32233b9c37b17dbdfaa53f9abb942de5",
+   "speaker": "narrator",
+   "text": "Let's line up the stars.",
+   "file": "h4-line-up.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1760,
+   "generated": "2026-10-30T20:24:58",
+   "ok": true,
+   "stt": {
+    "hash": "5b9f915a7ef5013c2da27ba7acdf40ea32233b9c37b17dbdfaa53f9abb942de5",
+    "text": "Let's line up the stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-barn": {
+   "hash": "5b260f5d6f6920a4c14cca0b654766e1d3677ef1ec66f528242993d9f2395e7a",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the barn.",
+   "file": "g4-go-bella-barn.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1739,
+   "generated": "2026-10-30T20:25:04",
+   "ok": true,
+   "stt": {
+    "hash": "5b260f5d6f6920a4c14cca0b654766e1d3677ef1ec66f528242993d9f2395e7a",
+    "text": "Bella wants to go to the barn",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-beach": {
+   "hash": "5d183fdfb8119f75720ffb6dac422b0f6c7dd61f43c235ed28ce8ee65f034fad",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the beach.",
+   "file": "g4-go-bella-beach.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1781,
+   "generated": "2026-10-30T20:24:59",
+   "ok": true,
+   "stt": {
+    "hash": "5d183fdfb8119f75720ffb6dac422b0f6c7dd61f43c235ed28ce8ee65f034fad",
+    "text": "Bella wants to go to the beach",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-bench": {
+   "hash": "0ba89fec39d456e91ef8ac7d83521ac6a04469593ff1d72ad14796be6adbbc89",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the bench.",
+   "file": "g4-go-bella-bench.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1775,
+   "generated": "2026-10-30T20:24:59",
+   "ok": true,
+   "stt": {
+    "hash": "0ba89fec39d456e91ef8ac7d83521ac6a04469593ff1d72ad14796be6adbbc89",
+    "text": "Bella wants to go to the bench",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-pines": {
+   "hash": "0f96182eef45781f7746290b57fef014f1d764692d9dcd171589720df69ba1f3",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the pines.",
+   "file": "g4-go-bella-pines.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1798,
+   "generated": "2026-10-30T20:25:00",
+   "ok": true,
+   "stt": {
+    "hash": "0f96182eef45781f7746290b57fef014f1d764692d9dcd171589720df69ba1f3",
+    "text": "Bella wants to go to The Pines",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-pond": {
+   "hash": "c6e8b4db1d04a8fe536f36e4396122ee59f433ea85b62e4df9a9816b3e4b63c1",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the pond.",
+   "file": "g4-go-bella-pond.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1804,
+   "generated": "2026-10-30T20:25:00",
+   "ok": true,
+   "stt": {
+    "hash": "c6e8b4db1d04a8fe536f36e4396122ee59f433ea85b62e4df9a9816b3e4b63c1",
+    "text": "Bella wants to go to the pond",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-pool": {
+   "hash": "2cabe56bd37a60ee2ddad9c5da2a3cb36fd9c996843495948e5b4b075d26bbb0",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the pool.",
+   "file": "g4-go-bella-pool.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1707,
+   "generated": "2026-10-30T20:25:00",
+   "ok": true,
+   "stt": {
+    "hash": "2cabe56bd37a60ee2ddad9c5da2a3cb36fd9c996843495948e5b4b075d26bbb0",
+    "text": "Bella wants to go to the pool",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-sand": {
+   "hash": "49d564be7705cdd0e771deb3bf87899034f528fbdb9e197e22862826c93f5eef",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the sand.",
+   "file": "g4-go-bella-sand.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1776,
+   "generated": "2026-10-30T20:25:01",
+   "ok": true,
+   "stt": {
+    "hash": "49d564be7705cdd0e771deb3bf87899034f528fbdb9e197e22862826c93f5eef",
+    "text": "Bella wants to go to the sand",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-shed": {
+   "hash": "ed8837b74bdfdb082e3a5fdd8fc7da231e678fbba984b86a4d88c24779d5062f",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the shed.",
+   "file": "g4-go-bella-shed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1723,
+   "generated": "2026-10-30T20:25:01",
+   "ok": true,
+   "stt": {
+    "hash": "ed8837b74bdfdb082e3a5fdd8fc7da231e678fbba984b86a4d88c24779d5062f",
+    "text": "Bella wants to go to the shed",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-shell": {
+   "hash": "fac7eadc9e60e074a8dfb81c86fb9f25ba98c7dbe4d7c3813ba566f14657a41d",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the shell.",
+   "file": "g4-go-bella-shell.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1840,
+   "generated": "2026-10-30T20:25:01",
+   "ok": true,
+   "stt": {
+    "hash": "fac7eadc9e60e074a8dfb81c86fb9f25ba98c7dbe4d7c3813ba566f14657a41d",
+    "text": "Bella wants to go to the shell",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-ship": {
+   "hash": "61255502d56cd9cf45e0de24e028bd8913d1a88729b75e34192edabd742bee7d",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the ship.",
+   "file": "g4-go-bella-ship.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1840,
+   "generated": "2026-10-30T20:25:02",
+   "ok": true,
+   "stt": {
+    "hash": "61255502d56cd9cf45e0de24e028bd8913d1a88729b75e34192edabd742bee7d",
+    "text": "Bella wants to go to the ship",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-stone": {
+   "hash": "55e0b0dc37162f7a4b11cb14dfe03b4ec8007c44384842bac5ed9f36dff46c2a",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the stone.",
+   "file": "g4-go-bella-stone.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1798,
+   "generated": "2026-10-30T20:25:02",
+   "ok": true,
+   "stt": {
+    "hash": "55e0b0dc37162f7a4b11cb14dfe03b4ec8007c44384842bac5ed9f36dff46c2a",
+    "text": "Bella wants to go to the stone",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-stump": {
+   "hash": "a100e10958fd316703c60f7d9e089d1cf159fdfdb74363e615bf6a0818db3394",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the stump.",
+   "file": "g4-go-bella-stump.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1840,
+   "generated": "2026-10-30T20:25:02",
+   "ok": true,
+   "stt": {
+    "hash": "a100e10958fd316703c60f7d9e089d1cf159fdfdb74363e615bf6a0818db3394",
+    "text": "Bella wants to go to the stump",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-bella-swing": {
+   "hash": "278046f68a1a81fdc150ddba8b49e371a5832d43216872cf3397f362d761f35d",
+   "speaker": "narrator",
+   "text": "Bella wants to go to the swing.",
+   "file": "g4-go-bella-swing.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1920,
+   "generated": "2026-10-30T20:25:03",
+   "ok": true,
+   "stt": {
+    "hash": "278046f68a1a81fdc150ddba8b49e371a5832d43216872cf3397f362d761f35d",
+    "text": "Bella wants to go to the swing",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-barn": {
+   "hash": "85d9f07aec948ad36e0b017065d09ac8e8ee3e6e28550c5e3dacb8e69420128a",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the barn.",
+   "file": "g4-go-hazel-barn.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1773,
+   "generated": "2026-10-30T20:25:03",
+   "ok": true,
+   "stt": {
+    "hash": "85d9f07aec948ad36e0b017065d09ac8e8ee3e6e28550c5e3dacb8e69420128a",
+    "text": "Hazel wants to go to the barn",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-beach": {
+   "hash": "27530b6196a4bdf484394cd6278d6f1343fc3d8dd25b8b34b0d213c0c645a46b",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the beach.",
+   "file": "g4-go-hazel-beach.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1895,
+   "generated": "2026-10-30T20:25:04",
+   "ok": true,
+   "stt": {
+    "hash": "27530b6196a4bdf484394cd6278d6f1343fc3d8dd25b8b34b0d213c0c645a46b",
+    "text": "Hazel wants to go to the beach",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-bench": {
+   "hash": "38ec447350ef52d37df3ad58b88524147f2de1e08053872afd5de92393e1b379",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the bench.",
+   "file": "g4-go-hazel-bench.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1834,
+   "generated": "2026-10-30T20:25:04",
+   "ok": true,
+   "stt": {
+    "hash": "38ec447350ef52d37df3ad58b88524147f2de1e08053872afd5de92393e1b379",
+    "text": "Hazel wants to go to the bench",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-pines": {
+   "hash": "0dbf5da0ce4bffb07f167ec7328377461916c3ebd176f8d209d70872e3b7d8f7",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the pines.",
+   "file": "g4-go-hazel-pines.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1931,
+   "generated": "2026-10-30T20:25:05",
+   "ok": true,
+   "stt": {
+    "hash": "0dbf5da0ce4bffb07f167ec7328377461916c3ebd176f8d209d70872e3b7d8f7",
+    "text": "Hazel wants to go to The Pines",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-pond": {
+   "hash": "4cdf4b6df93fa32a433195ce84114ac874e323ed26d9029fcf86c910ef25dcad",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the pond.",
+   "file": "g4-go-hazel-pond.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1840,
+   "generated": "2026-10-30T20:25:07",
+   "ok": true,
+   "stt": {
+    "hash": "4cdf4b6df93fa32a433195ce84114ac874e323ed26d9029fcf86c910ef25dcad",
+    "text": "Hazel wants to go to the pond",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-pool": {
+   "hash": "6644c5a08e532c2cebdc8bdc7055a2700245d606d2fe5d0db7c04d8a4d1f284e",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the pool.",
+   "file": "g4-go-hazel-pool.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1750,
+   "generated": "2026-10-30T20:25:06",
+   "ok": true,
+   "stt": {
+    "hash": "6644c5a08e532c2cebdc8bdc7055a2700245d606d2fe5d0db7c04d8a4d1f284e",
+    "text": "Hazel wants to go to the pool",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-sand": {
+   "hash": "4120676839002304f737289b52b1a55579123417ab1543a793e67e8fcc16c701",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the sand.",
+   "file": "g4-go-hazel-sand.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1867,
+   "generated": "2026-10-30T20:25:06",
+   "ok": true,
+   "stt": {
+    "hash": "4120676839002304f737289b52b1a55579123417ab1543a793e67e8fcc16c701",
+    "text": "Hazel wants to go to the sand",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-shed": {
+   "hash": "89b0259f22c007cb5ad2a0d99e9f6a1b4479c2420a2ed08c51292289a6888252",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the shed.",
+   "file": "g4-go-hazel-shed.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1832,
+   "generated": "2026-10-30T20:25:06",
+   "ok": true,
+   "stt": {
+    "hash": "89b0259f22c007cb5ad2a0d99e9f6a1b4479c2420a2ed08c51292289a6888252",
+    "text": "Hazel wants to go to the shed",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-shell": {
+   "hash": "5adc2bbf85dded9fe8265ddf3e02831a256fa103f34ff4fe218d407b71a7f6ba",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the shell.",
+   "file": "g4-go-hazel-shell.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1920,
+   "generated": "2026-10-30T20:25:07",
+   "ok": true,
+   "stt": {
+    "hash": "5adc2bbf85dded9fe8265ddf3e02831a256fa103f34ff4fe218d407b71a7f6ba",
+    "text": "Hazel wants to go to the shell",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-ship": {
+   "hash": "3b24836c7b3c2b3dc3c183951abf9aa0e893c6824a26785af520281c77f0c405",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the ship.",
+   "file": "g4-go-hazel-ship.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1840,
+   "generated": "2026-10-30T20:25:07",
+   "ok": true,
+   "stt": {
+    "hash": "3b24836c7b3c2b3dc3c183951abf9aa0e893c6824a26785af520281c77f0c405",
+    "text": "Hazel wants to go to the ship",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-stone": {
+   "hash": "f63176e2152deac3cdba50dfa52c87bf3d927970b43f9adf69228fa0cc186942",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the stone.",
+   "file": "g4-go-hazel-stone.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1917,
+   "generated": "2026-10-30T20:25:10",
+   "ok": true,
+   "stt": {
+    "hash": "f63176e2152deac3cdba50dfa52c87bf3d927970b43f9adf69228fa0cc186942",
+    "text": "Hazel wants to go to the stone",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-stump": {
+   "hash": "1ad415eab388dd9a4f71986ec71e3289421bd9bd21e949ac456f4ef499694f47",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the stump.",
+   "file": "g4-go-hazel-stump.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1931,
+   "generated": "2026-10-30T20:25:08",
+   "ok": true,
+   "stt": {
+    "hash": "1ad415eab388dd9a4f71986ec71e3289421bd9bd21e949ac456f4ef499694f47",
+    "text": "Hazel wants to go to the stump",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "g4-go-hazel-swing": {
+   "hash": "e244c46541e30ed50dc4d923a8ad6abbf8abaa3a1eeea1ef5ed1764deae37127",
+   "speaker": "narrator",
+   "text": "Hazel wants to go to the swing.",
+   "file": "g4-go-hazel-swing.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2000,
+   "generated": "2026-10-30T20:25:08",
+   "ok": true,
+   "stt": {
+    "hash": "e244c46541e30ed50dc4d923a8ad6abbf8abaa3a1eeea1ef5ed1764deae37127",
+    "text": "Hazel wants to go to the swing",
+    "match": true,
+    "how": "exact"
+   }
+  },
   "num-egg-3": {
    "hash": "6d369aa35cbde65de85af8c9be9cbdc6dc3720f67f3fa2176afe9c9ed4ab8b63",
    "speaker": "narrator",
@@ -880,6 +1594,159 @@
    "stt": {
     "hash": "fa74a2bb6da39626a7ecfbfe8b79930d44645c0f0313a839146929f900592e7d",
     "text": "This egg needs five warm cups",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-eggstar-3": {
+   "hash": "d7e363815a1f32f453d3b4712c2753b20f2f75630abf4d38820aa755bbbf1425",
+   "speaker": "narrator",
+   "text": "The egg has three stars.",
+   "file": "num-eggstar-3.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1984,
+   "generated": "2026-10-30T20:25:08",
+   "ok": true,
+   "stt": {
+    "hash": "d7e363815a1f32f453d3b4712c2753b20f2f75630abf4d38820aa755bbbf1425",
+    "text": "The egg has three stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-eggstar-4": {
+   "hash": "c2dec1639f133ee38c8fb4d0fadf41a7f725fada6814486449e059e4f107c3f2",
+   "speaker": "narrator",
+   "text": "The egg has four stars.",
+   "file": "num-eggstar-4.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1995,
+   "generated": "2026-10-30T20:25:09",
+   "ok": true,
+   "stt": {
+    "hash": "c2dec1639f133ee38c8fb4d0fadf41a7f725fada6814486449e059e4f107c3f2",
+    "text": "The egg has four stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-eggstar-5": {
+   "hash": "5f81a25ca2561457dc9b17c12f58dee310d01b96a4c451440b89e47ae1681dbe",
+   "speaker": "narrator",
+   "text": "The egg has five stars.",
+   "file": "num-eggstar-5.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2075,
+   "generated": "2026-10-30T20:25:09",
+   "ok": true,
+   "stt": {
+    "hash": "5f81a25ca2561457dc9b17c12f58dee310d01b96a4c451440b89e47ae1681dbe",
+    "text": "The egg has five stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-eggstar-6": {
+   "hash": "202726d805ba0fee6b868b6b86e6f07bd3a137e29822eebab7020e21edc4defa",
+   "speaker": "narrator",
+   "text": "The egg has six stars.",
+   "file": "num-eggstar-6.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1990,
+   "generated": "2026-10-30T20:25:12",
+   "ok": true,
+   "stt": {
+    "hash": "202726d805ba0fee6b868b6b86e6f07bd3a137e29822eebab7020e21edc4defa",
+    "text": "The egg has six stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-eggstar-7": {
+   "hash": "881b01aded495c2ab17bf0764e37a347d4331fdeed7be35ad3b5d24758e17085",
+   "speaker": "narrator",
+   "text": "The egg has seven stars.",
+   "file": "num-eggstar-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2140,
+   "generated": "2026-10-30T20:25:11",
+   "ok": true,
+   "stt": {
+    "hash": "881b01aded495c2ab17bf0764e37a347d4331fdeed7be35ad3b5d24758e17085",
+    "text": "The egg has seven stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-moon-7": {
+   "hash": "38113b16baa295976bac4016b95f0b8d292427de73323e41105b1cc406affa22",
+   "speaker": "narrator",
+   "text": "The moon has seven stars.",
+   "file": "num-moon-7.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2085,
+   "generated": "2026-10-30T20:25:10",
+   "ok": true,
+   "stt": {
+    "hash": "38113b16baa295976bac4016b95f0b8d292427de73323e41105b1cc406affa22",
+    "text": "The moon has seven stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-moon-8": {
+   "hash": "17ce5056335b75eae8a044f659ee67008872a142a7ceceaf009ef3e3e113f4bb",
+   "speaker": "narrator",
+   "text": "The moon has eight stars.",
+   "file": "num-moon-8.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 1993,
+   "generated": "2026-10-30T20:25:11",
+   "ok": true,
+   "stt": {
+    "hash": "17ce5056335b75eae8a044f659ee67008872a142a7ceceaf009ef3e3e113f4bb",
+    "text": "The moon has eight stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-moon-9": {
+   "hash": "da8dc7a736ec4eedd811b0ad382cca7bcfb1cf1db05371fd043c4e5724a07373",
+   "speaker": "narrator",
+   "text": "The moon has nine stars.",
+   "file": "num-moon-9.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2074,
+   "generated": "2026-10-30T20:25:12",
+   "ok": true,
+   "stt": {
+    "hash": "da8dc7a736ec4eedd811b0ad382cca7bcfb1cf1db05371fd043c4e5724a07373",
+    "text": "The moon has nine stars",
+    "match": true,
+    "how": "exact"
+   }
+  },
+  "num-moon-10": {
+   "hash": "22e0e996a76c7b7ec174bb9000938bc121bee919585b8bfa1fba20adc65c4118",
+   "speaker": "narrator",
+   "text": "The moon has ten stars.",
+   "file": "num-moon-10.mp3",
+   "model": "eleven_v4",
+   "seed": 11,
+   "duration_ms": 2072,
+   "generated": "2026-10-30T20:25:12",
+   "ok": true,
+   "stt": {
+    "hash": "22e0e996a76c7b7ec174bb9000938bc121bee919585b8bfa1fba20adc65c4118",
+    "text": "The moon has 10 stars",
     "match": true,
     "how": "exact"
    }
@@ -2647,5 +3514,5 @@
    }
   }
  },
- "updated": "2026-10-29T14:20:26"
+ "updated": "2026-10-30T20:25:21"
 }
