@@ -1,11 +1,10 @@
 // The 2D layer's pure helpers (src/ui/geometry.ts, ladder.ts). 2.3.0 splits this file by describe block, as
 // content.test.ts is split (docs/v4/2.3.md section 22.2): eggs owns 'stones', 'moon cups' and 'the blanket'; reading
 // owns 'gems and slots', 'print', 'hint ladder', 'hint runner', 'hint runner timing' and 'colour'; wardrobe-ui owns
-// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own. 2.4.0: the
-// hub lane adds the edge bubbles' tests at the end of 'placement'.
+// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own.
 import { describe, expect, it, vi } from 'vitest';
 import {
-  CUP_GRID, apart, blanketPatches, bubbleBox, edgeBubbles, stackOnEdge, capitalOf, clearOf, eggOpening, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
+  CUP_GRID, apart, blanketPatches, bubbleBox, capitalOf, clearOf, eggOpening, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
   menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, tintedPicStyle,
   unitFor,
 } from '../src/ui/geometry';
@@ -291,8 +290,10 @@ describe('placement', () => {
     expect(behind.y).toBeCloseTo(820 - 76);
   });
 
-  // 2.4.0, the hub lane (docs/v4/2.4.md section 5.2): four small bubbles on one edge.
-  it('fits four small edge bubbles on the right edge at 1080 x 740 and 1080 x 810, apart and clear of the home button and the basket', () => {
+  // 2.4.0, the hub lane (docs/v4/2.4.md section 5.2): four small bubbles on one edge. Imported here, so the file's
+  // shared import lines stay as they are for the other lanes.
+  it('fits four small edge bubbles on the right edge at 1080 x 740 and 1080 x 810, apart and clear of the home button and the basket', async () => {
+    const { edgeBubbles } = await import('../src/ui/geometry');
     for (const [w, h] of [[1080, 740], [1080, 810]]) {
       const boxes = edgeBubbles(4, { w, h });
       expect(boxes).toHaveLength(4);
@@ -304,7 +305,8 @@ describe('placement', () => {
     }
   });
 
-  it('keeps an edge bubble in its band when the bubbles before it fill the middle', () => {
+  it('keeps an edge bubble in its band when the bubbles before it fill the middle', async () => {
+    const { stackOnEdge } = await import('../src/ui/geometry');
     const band = { top: 100, bottom: 600 };
     const placed = [{ x: 900, y: 250, w: 90, h: 90 }, { x: 900, y: 350, w: 90, h: 90 }];
     const b = stackOnEdge({ x: 900, y: 300, w: 90, h: 90 }, placed, band, 10);
