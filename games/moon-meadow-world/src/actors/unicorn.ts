@@ -14,7 +14,7 @@ import {
 } from './motion';
 import { CLIMB_SPEED, CURVE_LEN, SEAT_U, SLIDE_V0, slideAt, slideDir, slideStep } from './ride';
 import { BUILDS, type Build, type Coat, type Pose, coatOf, drawUnicorn, headMatrix, restPose, saddlePoint } from './unicornBody';
-import { Track } from './mount';
+import { ASIDE, Track, type TrackTurn } from './mount';
 
 export interface HerdCtx {
   deps: ActorDepsPlus;
@@ -59,7 +59,9 @@ type Task =
       kind: 'path'; path: THREE.Curve<THREE.Vector3>; len: number; s: number; to: number; speed: number; face: 1 | -1;
       backwards: boolean; done: (ok: boolean) => void;
     }
-  | { kind: 'track'; lead: UnicornActor; gap: number };
+  // `turn` is the lead's last turn this follower has seen; `hold` where it waits beside the track while the lead turns
+  // round and passes it.
+  | { kind: 'track'; lead: UnicornActor; gap: number; turn: number; hold: Vec2 | null };
 
 interface Landing {
   t: number;
@@ -1131,7 +1133,41 @@ export class UnicornActor implements Unicorn {
       if (this.task.kind === 'track') this.setTask({ kind: 'idle' });
       return;
     }
-    this.setTask({ kind: 'track', lead, gap: gapM });
+    this.setTask({ kind: 'track', lead, gap: gapM, turn: 0, hold: null });
+  }
+
+  /**
+   * It turns round where it stands (a clearing), so its track folds back on itself there: each follower whose place is
+   * still on the way in steps ASIDE m out to `side` (a unit vector: the mount's free side once it has turned) and waits
+   * there until the mount has passed it, then falls in behind. With no track yet (a jump to the clearing) it starts one
+   * from the way it came.
+   */
+  turnRound(side: Vec2): void {
+    if (this.track.empty) {
+      const f = { x: Math.sin(this.yaw), z: Math.cos(this.yaw) };
+      this.track.seed([{ x: this.position.x - f.x * 5, z: this.position.z - f.z * 5 }, { x: this.position.x, z: this.position.z }]);
+    }
+    this.track.turn(this.position.x, this.position.z, side);
+  }
+
+  /** Its last turn on the track (turnRound), while the track still reaches past it. */
+  trackTurn(): Readonly<TrackTurn> | null {
+    return this.track.turned;
+  }
+
+  /** Metres along its travelled track, from its start to where it stands. */
+  get trackLength(): number {
+    return this.track.length;
+  }
+
+  /** Riding a set path (2.4.0): the others step aside for it. */
+  get onPath(): boolean {
+    return this.task.kind === 'path';
+  }
+
+  /** On its way somewhere (a path or a walk): another mount standing by gives way to it. */
+  get underWay(): boolean {
+    return this.task.kind === 'path' || this.task.kind === 'walk';
   }
 
   /** Stand still and turn to face a point (2.4.0: the mounts turn to her at the paddock, and to the signpost). */
@@ -1184,7 +1220,23 @@ export class UnicornActor implements Unicorn {
   }
 
   private updateTrack(t: Extract<Task, { kind: 'track' }>, dt: number): void {
+    const turn = t.lead.trackTurn();
+    if (turn && turn.id !== t.turn) {
+      t.turn = turn.id;
+      // Its place is still on the way in: step out to the side, so the mount coming back passes beside it.
+      if (t.lead.trackLength - t.gap < turn.at) {
+        const out = Math.max(0, ASIDE - ((this.position.x - turn.x) * turn.sx + (this.position.z - turn.z) * turn.sz));
+        t.hold = { x: this.position.x + turn.sx * out, z: this.position.z + turn.sz * out };
+      }
+    }
     const q = t.lead.trackPoint(t.gap, _tq);
+    if (t.hold) {
+      // It waits until its place has come round the turn and back level with it, then falls in behind.
+      const past = !!turn && t.lead.trackLength - t.gap >= turn.at;
+      const ahead = (this.position.x - q.x) * Math.sin(q.heading) + (this.position.z - q.z) * Math.cos(q.heading) > 0;
+      if (!turn || (past && !ahead)) t.hold = null;
+      else return this.waitAside(t.hold, t.lead, dt);
+    }
     const dx = q.x - this.position.x;
     const dz = q.z - this.position.z;
     const d = Math.hypot(dx, dz);
@@ -1203,6 +1255,25 @@ export class UnicornActor implements Unicorn {
     this.position.x += (dx / d) * s;
     this.position.z += (dz / d) * s;
     this.desiredYaw = d > 0.25 ? headingOf(dx, dz) : q.heading;
+  }
+
+  /** Trot to its spot beside the track and stand there, watching the mount go by. */
+  private waitAside(at: Vec2, lead: UnicornActor, dt: number): void {
+    const dx = at.x - this.position.x;
+    const dz = at.z - this.position.z;
+    const d = Math.hypot(dx, dz);
+    if (d > 0.04) {
+      this.speed = damp(this.speed, Math.min(this.speeds.trot, d * 3 + 0.3), 8, dt);
+      const s = Math.min(d, Math.max(this.speed, 0.3) * dt);
+      this.position.x += (dx / d) * s;
+      this.position.z += (dz / d) * s;
+      this.desiredYaw = headingOf(dx, dz);
+      return;
+    }
+    this.speed = damp(this.speed, 0, 8, dt);
+    const lx = lead.position.x - this.position.x;
+    const lz = lead.position.z - this.position.z;
+    if (lx * lx + lz * lz > 0.01) this.desiredYaw = headingOf(lx, lz);
   }
 
   /** Write this frame's parts (the herd decides who is drawn and in how much detail). */

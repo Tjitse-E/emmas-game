@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import type { Princess, PrincessEmote, PrincessLook, PrincessMode, Vec2 } from '../contracts';
 import { POND, SLIDE } from '../layout';
-import { DEFAULT_LOOK, EYE_HEX, HAIR_HEX, PALETTE, crownOutline, normaliseLook, thingShade } from '../wardrobe';
+import { DEFAULT_LOOK, EYE_HEX, HAIR_HEX, OPTIONS, PALETTE, crownOutline, normaliseLook, thingShade } from '../wardrobe';
 import { B, CAPACITY, PartList, Xf, col, rimLambert, shapeTriangles, type BatchId } from './parts';
 import * as S from './shapes';
 import { Hair, crownForward, hairExtra } from './hair';
@@ -113,7 +113,7 @@ export class PrincessActor implements Princess {
   private gown: Gown3D = gownOf(DEFAULT_LOOK.gown, DEFAULT_LOOK.gownColour);
   /** Each dress shape's geometry, built the first time a gown needs it, and its radius table for the hair. */
   private readonly dresses = new Map<S.DressShape, { g: THREE.BufferGeometry; skirt: Float32Array }>();
-  /** Each dress shape's side-saddle skirt (2.4.0), built the first time she rides in it. */
+  /** Each dress shape's side-saddle skirt (2.4.0), built at start-up with every dress shape (warmables). */
   private readonly drapes = new Map<S.DressShape, THREE.BufferGeometry>();
   /** Sitting on a mount (2.4.0): hopping up, on its back, or hopping down to `to`. */
   private seat: { u: UnicornActor; stage: 'up' | 'on' | 'down'; t: number; from: THREE.Vector3; to: THREE.Vector3; resolve: () => void } | null = null;
@@ -532,6 +532,24 @@ export class PrincessActor implements Princess {
     }
     this.position.copy(_seat);
     this.heading = heading;
+  }
+
+  /**
+   * Every dress shape, its side-saddle skirt and every crown with their materials, built now (2.4.0). The actors draw
+   * them once in the first frame, so three.js counts their geometry before the first place and not at her first ride,
+   * her first gown of a new shape or her first new crown (the long play checks that the counts stay level from place
+   * to place).
+   */
+  warmables(): { geometry: THREE.BufferGeometry; material: THREE.Material }[] {
+    const material = this.dress.material as THREE.Material;
+    const crown = this.crownMesh.material as THREE.Material;
+    return [
+      ...(Object.keys(S.DRESS_ROWS) as S.DressShape[]).flatMap((shape) => [
+        { geometry: this.dressFor(shape).g, material },
+        { geometry: this.drapeFor(shape), material },
+      ]),
+      ...(OPTIONS.crown as readonly S.CrownShapeId[]).map((c) => ({ geometry: this.crownFor(c).geometry, material: crown })),
+    ];
   }
 
   /** The side-saddle skirt for a dress shape (cached; painted as the dress is). */

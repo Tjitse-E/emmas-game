@@ -20,6 +20,7 @@ import { momentLog } from './moments';
 import { foldSigns } from './reading';
 import { newbornAt, runEggSums } from './eggs-part';
 import type { StartStep } from './options';
+import { saddleCentre } from '../ui/saddle';
 
 /** The two mounts: their herd ids, names and the Elizabeth clips of their names (v3's name-bella and name-hazel). */
 export const MOUNTS: Record<MountId, { id: string; name: string; clip: string }> = {
@@ -57,14 +58,25 @@ const BEAT_MS = 5000;
 /** A wrong road: two steps onto it at 1 m/s, a shake of the head, and back. */
 const WRONG_STEP_M = 1.2;
 const WRONG_SPEED = 1;
-/** The slots wait this long at most to be off screen before they are dressed. */
-const DRESS_WAIT_MS = 4000;
+/** The slots wait this long at most to be off screen before they are dressed (the fork frame has settled by then). */
+export const DRESS_WAIT_MS = 4000;
 /** After the trip the mount walks back to its spot, or is put there with a sparkle after 3 s. */
 const BACK_MS = 3000;
 /** The clearings where the happy beat splashes. */
 const WET: readonly SignWord[] = ['pond', 'pool', 'beach'];
 /** Her stand beside a mount: out to its left, where she sits. */
 const BESIDE = 0.95;
+/** A rider further than this from its place on the track walks there by the paths first; one not there in time is put there with a sparkle. */
+export const JOIN_M = 2.5;
+export const JOIN_WAIT_MS = 3000;
+/** The mount turns round on the spot at a clearing while its riders step aside. */
+const TURN_MS = 700;
+
+/**
+ * The trail lane's fork frame and signpost, once the layout has them (the pose its test proves keeps every slot out of
+ * view and the cards clear of her head); until then step 0's frame between the mount and the fork.
+ */
+const TRAIL_RIDE = RIDE as typeof RIDE & { forkFrame?: { center: Vec2; width: number; pitch?: number; shiftY?: number }; post?: Vec2 };
 
 /** The trip's own working state, kept off the game (the snapshot shows g.ride). */
 interface Trip {
@@ -78,10 +90,17 @@ interface Trip {
   /** Of the riders: those that followed her before (they follow her again), and the herd babies called for the ride. */
   following: UnicornActor[];
   called: UnicornActor[];
+  /** The riders (and the wild baby) in their order behind the mount: 1.6, 3.0 and 4.4 m. A turn round reverses it. */
+  order: UnicornActor[];
   outcomes: Outcome[];
+  /** The sign level is folded (once, after home). */
+  folded: boolean;
   /** The road each sign sent the mount down (the target's card). */
   roads: number[];
-  sitAt: number | null;
+  /** She sits on the mount (from getting on, or a snapped trip, to getting off). */
+  seated: boolean;
+  /** Stops counting her mounted time (visible frames only). */
+  clockOff: (() => void) | null;
   /** Takes the run's cleanup off again at getting off. */
   undo: (() => void) | null;
 }
@@ -208,6 +227,8 @@ export async function ridePlace(g: Game, trip: 1 | 2): Promise<() => void> {
   if (from('clearing2')) await toClearing(g, t, 2);
   if (from('naming')) await starEgg(g, t, !from('egg'));
   await rideHome(g, t, from('home') && at === 'home');
+  // Home: the sign level folds and is saved now, so a jump while she gets off keeps it.
+  keepSigns(g, t);
   await getOff(g, t);
   return () => {
     g.world.releaseFrame();
@@ -220,7 +241,10 @@ const TRIP_STEPS: readonly StartStep[] = ['sign2', 'egg', 'naming', 'wish', 'hom
 const isTripStep = (s: StartStep | null): s is StartStep => !!s && TRIP_STEPS.includes(s);
 
 function newTrip(trip: 1 | 2): Trip {
-  return { trip, id: null, mount: null, plan: null, riders: [], wild: null, following: [], called: [], outcomes: [], roads: [], sitAt: null, undo: null };
+  return {
+    trip, id: null, mount: null, plan: null, riders: [], wild: null, following: [], called: [], order: [], outcomes: [], folded: false, roads: [],
+    seated: false, clockOff: null, undo: null,
+  };
 }
 
 function setStep(g: Game, s: RideStep): void {
@@ -283,10 +307,11 @@ async function paddock(g: Game, t: Trip): Promise<void> {
   setStep(g, 'paddock');
   const first = !g.save.data.seen.ride;
   warm([...CLIPS.saddle, ...(first ? CLIPS.saddleReady : []), ...MOUNT_IDS.map((m) => MOUNTS[m].clip)]);
-  // With no newborn and no follower, the two herd babies nearest the paddock come running.
+  // Those who ride along and do not follow her (a newborn left grazing, or with no newborn and no follower the two herd
+  // babies nearest the paddock) come trotting by the paths.
   const pick = rideFollowers(g);
   for (const u of pick.ride) {
-    if (g.followers.list.includes(u) || g.babies.some((b) => b.unicorn === u)) continue;
+    if (g.followers.list.includes(u)) continue;
     void u.goTo(world.route(flat(u.position), world.nearestWalkable({ x: RIDE.stand.x + 0.8, z: RIDE.stand.z + 1.2 })), { trot: true });
   }
   await walkToStand(g, RIDE.stand);
@@ -305,14 +330,15 @@ async function paddock(g: Game, t: Trip): Promise<void> {
     if (first) {
       await lumiSay(g, CLIPS.saddleReady);
       if (!chosen) await say(g, CLIPS.saddle);
-      if (!chosen) await g.run.w(layer.ghost.tap(at.bella));
+      // The ghost taps the middle of the icon, which floats over the saddle point.
+      if (!chosen) await g.run.w(layer.ghost.tap(() => saddleCentre(at.bella())));
     } else await say(g, CLIPS.saddle);
     // 20 s without a tap: the line again; 45 s: the ghost taps the nearer icon, and she gets on.
     if (!(await waitFor(g, () => chosen !== null, SADDLE_AGAIN_MS))) {
       await say(g, CLIPS.saddle);
       if (!(await waitFor(g, () => chosen !== null, SADDLE_GHOST_MS - SADDLE_AGAIN_MS))) {
         const m: MountId = dist2(princessAt(g), RIDE.mounts.bella) <= dist2(princessAt(g), RIDE.mounts.hazel) ? 'bella' : 'hazel';
-        await g.run.w(layer.ghost.tap(at[m]));
+        await g.run.w(layer.ghost.tap(() => saddleCentre(at[m]())));
         chosen ??= m;
       }
     }
@@ -345,20 +371,82 @@ async function getOn(g: Game, t: Trip, id: MountId): Promise<void> {
   mount.faceTo({ x: mount.position.x + Math.sin(yaw), z: mount.position.z + Math.cos(yaw) });
   await g.run.w(actors.princess.mount(mount));
   sfx('nicker-1');
-  t.sitAt = performance.now();
+  seat(g, t);
   g.save.write((s) => void (s.seen.ride = true));
   world.trail.show(true);
+  // The mount she did not choose grazes again by its spot.
+  const otherId: MountId = id === 'bella' ? 'hazel' : 'bella';
+  mountOf(g, otherId)?.graze(RIDE.mounts[otherId], { radius: 0.6 });
   // The riders' lead-in runs from behind her stand to the mount, so they line up there before it sets off.
   const back = { x: RIDE.stand.x - mount.position.x, z: RIDE.stand.z - mount.position.z };
   const k = 3 / Math.max(0.1, Math.hypot(back.x, back.z));
   mount.seedTrack([{ x: RIDE.stand.x + back.x * k, z: RIDE.stand.z + back.z * k }, RIDE.stand, flat(mount.position)]);
-  t.riders.forEach((u, i) => u.trackBehind(mount, RIDE.gaps[i]));
+  t.order = t.riders.slice();
+  await joinTrack(g, t);
+  t.order.forEach((u, i) => u.trackBehind(mount, RIDE.gaps[i]));
   if (g.ride) g.ride.followers = t.riders.map((u) => u.id);
   focus(g, t);
   world.cameraClamp('ride');
   world.follow(() => ahead(mount));
   sfx('stable-door');
   void world.trail.gate(true);
+}
+
+/** She sits: her mounted time counts from now, in visible frames only (a hidden page draws none). */
+function seat(g: Game, t: Trip): void {
+  t.seated = true;
+  t.clockOff?.();
+  t.clockOff = g.world.onFrame((dt) => {
+    if (g.actors.princess.mountedOn) g.clock.rideMs += Math.min(dt, 1) * 1000;
+  });
+}
+
+/**
+ * Each rider walks to its place on the mount's track by the paths when it is more than JOIN_M from it (the track
+ * itself runs outside the routes); one that is not there after JOIN_WAIT_MS is put there with a sparkle.
+ */
+async function joinTrack(g: Game, t: Trip): Promise<void> {
+  const { actors, world } = g;
+  const mount = t.mount!;
+  const place = (i: number) => mount.trackPoint(RIDE.gaps[i]);
+  const far = (u: UnicornActor, i: number) => {
+    const q = place(i);
+    return Math.hypot(u.position.x - q.x, u.position.z - q.z) > JOIN_M;
+  };
+  const walking = t.order.filter((u, i) => far(u, i));
+  for (const u of walking) {
+    const q = place(t.order.indexOf(u));
+    void u.goTo(world.route(flat(u.position), world.nearestWalkable(q)), { trot: true });
+  }
+  if (!walking.length) return;
+  await waitFor(g, () => t.order.every((u, i) => !far(u, i)), JOIN_WAIT_MS);
+  t.order.forEach((u, i) => {
+    if (!far(u, i)) return;
+    const q = place(i);
+    actors.fx.sparkle(new THREE.Vector3(u.position.x, 0.5, u.position.z), { count: 12 });
+    u.place({ x: q.x, z: q.z }, q.heading);
+    actors.fx.sparkle(new THREE.Vector3(q.x, 0.5, q.z), { count: 16 });
+  });
+}
+
+/**
+ * The mount turns round on the spot (a clearing), so its track folds back: the riders step out to its free side (her
+ * side now, its right once it has turned), it passes them, and they fall in behind it in the opposite order, the wild
+ * baby last. Ends facing `toward`.
+ */
+async function turnRound(g: Game, t: Trip, toward: Vec2): Promise<void> {
+  const mount = t.mount!;
+  mount.turnRound({ x: Math.cos(mount.yaw), z: -Math.sin(mount.yaw) });
+  t.order = t.order.filter((u) => u !== t.wild).reverse();
+  if (t.wild) t.order.push(t.wild);
+  t.order.forEach((u, i) => u.trackBehind(mount, RIDE.gaps[i]));
+  mount.faceTo(toward);
+  await g.run.sleep(TURN_MS);
+}
+
+/** A point 1 m behind the mount: where it faces once it has turned round. */
+function behind(u: UnicornActor): Vec2 {
+  return { x: u.position.x - Math.sin(u.yaw), z: u.position.z - Math.cos(u.yaw) };
 }
 
 /** The camera's target while riding: 1 m ahead of the mount. */
@@ -407,20 +495,39 @@ async function rideOut(g: Game, t: Trip): Promise<void> {
   await forkFrame(g, t);
 }
 
-/** The fork frame (about 8 m), on the signpost, once the mount stands. */
+/** The fork frame (about 8 m), on the signpost, once the mount stands facing it. */
 async function forkFrame(g: Game, t: Trip): Promise<void> {
-  t.mount!.faceTo(RIDE.fork);
+  t.mount!.faceTo(TRAIL_RIDE.post ?? RIDE.fork);
+  const f = TRAIL_RIDE.forkFrame;
+  if (f && Number.isFinite(f.center?.x) && Number.isFinite(f.center?.z) && Number.isFinite(f.width)) {
+    await g.run.w(g.world.frame(f.center, f.width, { shiftY: f.shiftY, pitch: f.pitch }));
+    return;
+  }
   const arm = g.world.trail.arm(1);
   await frameAt(g, { x: (RIDE.fork.x + t.mount!.position.x) / 2, z: (RIDE.fork.z + t.mount!.position.z) / 2 }, FORK_WIDTH, arm, 0.36);
 }
 
-/** Dress the three slots with a sign's words, only once none of them is on screen (the fork frame holds). */
+/**
+ * Dress the three slots with a sign's words once none of them is on screen (the fork frame holds). A slot still in
+ * view after DRESS_WAIT_MS is dressed all the same, with a sparkle and a warning: a right card that led to a clearing
+ * of another word (or a bare one) would teach the wrong word, so every sign's slots always show its own words.
+ */
 async function dressHidden(g: Game, words: readonly [SignWord, SignWord, SignWord]): Promise<boolean> {
   const trail = g.world.trail;
   const hidden = () => trail.slots().every((s) => !s.onScreen);
-  const ok = await waitFor(g, hidden, DRESS_WAIT_MS);
-  if (ok && hidden()) trail.dress(words);
+  const ok = (await waitFor(g, hidden, DRESS_WAIT_MS)) && hidden();
+  if (!ok) {
+    const seen = trail.slots().flatMap((s, i) => (s.onScreen ? [i] : []));
+    console.warn(`[mmw] slot ${seen.join(', ')} still on screen at the fork: dressed in view`);
+    for (const i of seen) g.actors.fx.sparkle(new THREE.Vector3(RIDE.slots[i].x, 0.8, RIDE.slots[i].z), { count: 24 });
+  }
+  trail.dress(words);
   return ok;
+}
+
+/** The road of a sign's target: the arm of the card with its word. */
+function roadOf(spec: { cards: readonly { word: SignWord }[]; target: { word: SignWord } }): number {
+  return Math.max(0, spec.cards.findIndex((c) => c.word === spec.target.word));
 }
 
 /** A signpost (5.5): the slots dressed, the moment on the arms, its result line; the road the mount takes. */
@@ -432,6 +539,7 @@ async function signpost(g: Game, t: Trip, n: 1 | 2): Promise<void> {
   const log = momentLog();
   g.openSpec = spec;
   const mount = t.mount!;
+  let right: number | null = null;
   const r: MomentResult = await checked(
     g,
     layer.sign(spec, {
@@ -442,7 +550,10 @@ async function signpost(g: Game, t: Trip, n: 1 | 2): Promise<void> {
       },
       log: log.log,
       cardAt: (i) => world.toScreen(world.trail.arm(i)),
-      road: (i, right) => (right ? rightRoad(mount) : wrongRoad(g, t, i)),
+      road: (i, ok) => {
+        if (ok) right = i;
+        return ok ? rightRoad(mount) : wrongRoad(g, t, i);
+      },
     }),
   );
   g.openSpec = null;
@@ -450,7 +561,7 @@ async function signpost(g: Game, t: Trip, n: 1 | 2): Promise<void> {
     kind: 'sign', word: spec.target.word, words: spec.cards.map((c) => c.word), level: spec.level, tried: log.tried, trip: t.trip, read: n,
   });
   t.outcomes.push(r.outcome);
-  t.roads[n - 1] = Math.max(0, spec.cards.indexOf(spec.target));
+  t.roads[n - 1] = right ?? roadOf(spec);
 }
 
 /** A right card: the mount nickers and is happy. */
@@ -497,6 +608,7 @@ async function clearing1(g: Game, t: Trip): Promise<void> {
   setStep(g, 'back');
   const road = RIDE_PATHS.roads[t.roads[0] ?? 0];
   const out = outOf(t.id!);
+  await turnRound(g, t, behind(mount));
   await g.run.w(mount.ridePath(road, Math.max(0, lenOf(road) - CLEARING_STOP), 0, { speed: RIDE.speed }));
   await g.run.w(mount.ridePath(out, lenOf(out), Math.max(0, lenOf(out) - FORK_STOP), { speed: 1.4, backwards: true }));
   await forkFrame(g, t);
@@ -526,10 +638,11 @@ async function starEgg(g: Game, t: Trip, hatchOnly: boolean): Promise<void> {
     await runEggSums(g, 'trail');
   }
   setStep(g, 'naming');
-  // The hatch, the naming and the baby's first wish (its 'wish' step is only a place a jump starts from).
+  // The hatch, the naming and the baby's first wish (its 'wish' step is only a place a jump starts from: see
+  // notes/ride.md). The newborn stays at its hatch spot beside her until the mount turns for home (turnRound).
   const baby: Baby = await newbornAt(g, 'trail');
   t.wild = baby.unicorn;
-  t.wild.trackBehind(mount, RIDE.gaps[2]);
+  if (g.followers.list.includes(t.wild)) g.followers.remove(t.wild);
   if (g.ride) g.ride.followers = [...t.riders, t.wild].map((u) => u.id);
   focus(g, t);
   g.world.releaseFrame();
@@ -540,12 +653,14 @@ async function rideHome(g: Game, t: Trip, fromGate: boolean): Promise<void> {
   setStep(g, 'home');
   const mount = t.mount!;
   g.world.releaseFrame();
-  await say(g, CLIPS.rideHome);
   const home = RIDE_PATHS.home;
   if (fromGate) {
+    await say(g, CLIPS.rideHome);
     await g.run.w(mount.ridePath(home, gateAlong(), lenOf(home), { speed: RIDE.speed }));
     return;
   }
+  // It turns round for home while the line plays, the riders and the newborn stepping aside.
+  await Promise.all([say(g, CLIPS.rideHome), turnRound(g, t, behind(mount))]);
   const road = RIDE_PATHS.roads[t.roads[1] ?? 0];
   await g.run.w(mount.ridePath(joined(new Stretch(road, Math.max(0, lenOf(road) - CLEARING_STOP), 0), home), 0, lenOf(road) - CLEARING_STOP + lenOf(home), { speed: RIDE.speed }));
 }
@@ -586,7 +701,12 @@ async function getOff(g: Game, t: Trip): Promise<void> {
   }
   mount.faceTo(RIDE.stand);
   mount.graze(spot, { radius: 0.6 });
-  // The signs fold and are saved only now, after home (?sign= is not stored).
+}
+
+/** The signs fold and are saved once a trip is home, never before (?sign= is not stored). */
+function keepSigns(g: Game, t: Trip): void {
+  if (t.folded) return;
+  t.folded = true;
   if (g.options.signLevel === null && t.outcomes.length) g.save.write((s) => void (s.signs = foldSigns(s.signs, t.outcomes)));
 }
 
@@ -599,8 +719,9 @@ function finish(g: Game, t: Trip): void {
   world.cameraClamp('meadow');
   world.follow(() => princessAt(g));
   actors.herd.setFocus([]);
-  if (t.sitAt !== null) g.clock.rideMs += performance.now() - t.sitAt;
-  t.sitAt = null;
+  t.clockOff?.();
+  t.clockOff = null;
+  t.seated = false;
   for (const u of [...t.riders, ...(t.wild ? [t.wild] : [])]) u.trackBehind(null, 0);
   // Her babies and followers follow her again (the wild baby first), the called herd babies graze at home.
   const after = [...(t.wild ? [t.wild] : []), ...t.following];
@@ -619,7 +740,7 @@ function abort(g: Game, t: Trip): void {
   choosing.delete(g);
   const her = g.actors.princess;
   if (her.mountedOn) g.actors.placePrincess(RIDE.stand, 0);
-  if (g.ride || t.sitAt !== null) finish(g, t);
+  if (g.ride || t.seated) finish(g, t);
   for (const m of MOUNT_IDS) {
     const u = mountOf(g, m);
     if (!u || dist2(flat(u.position), RIDE.mounts[m]) < 0.7) continue;
@@ -694,7 +815,7 @@ export function snapTrip(g: Game, step: StartStep): void {
   t.id = id;
   t.mount = mount;
   t.plan = plan(g, 1, id);
-  t.roads = t.plan.signs.map((s) => Math.max(0, s.cards.indexOf(s.target)));
+  t.roads = t.plan.signs.map(roadOf);
   // The signs it skips were never read: only the ones she answers fold into her level.
   t.outcomes = [];
   const ride: RideState = { trip: 1, mount: id, step: 'sign2', followers: [] };
@@ -721,7 +842,7 @@ export function snapTrip(g: Game, step: StartStep): void {
   mount.seedTrack([]);
   g.actors.placePrincess({ x: at.x + Math.cos(yaw) * BESIDE, z: at.z - Math.sin(yaw) * BESIDE }, yaw);
   void g.actors.princess.mount(mount);
-  t.sitAt = performance.now();
+  seat(g, t);
   g.world.trail.show(true);
   g.world.cameraClamp('ride');
   g.world.follow(() => ahead(mount));

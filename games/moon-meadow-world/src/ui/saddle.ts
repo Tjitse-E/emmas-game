@@ -21,6 +21,11 @@ export const SADDLE_ICON = 120;
 const GAP = 8;
 const MOUNTS: readonly MountId[] = ['bella', 'hazel'];
 
+/** The middle of the icon over the saddle point `p` (the icon floats wholly above it): where the ghost taps. */
+export function saddleCentre(p: ScreenPoint): ScreenPoint {
+  return { ...p, y: p.y - u(SADDLE_ICON) / 2 - u(GAP) };
+}
+
 export function createSaddles(parent: HTMLElement): Saddles {
   let live: { boxes: Map<MountId, HTMLElement>; stop: () => void; dispose: (() => void)[] } | null = null;
 

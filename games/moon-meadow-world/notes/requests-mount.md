@@ -29,7 +29,7 @@ if (start.place === 'ride' && start.step) snapTrip(g, start.step);
 ## 4. The ride's flow at merge (integrator, Task 26)
 
 - File: `flows/ride.flow.sh` (this lane's).
-- Change: none. After the mount merge run `MMW_RIDE_PART=all`: it then also checks the sign cards (`sign <word>` targets and the `sign` moment of the signs-star lane), one wrong card with its `tried`, sign 2, each clearing, the star egg's three sums, the naming on the trail and the reload during sign 2. It needs the signs-star lane's `runSign` (a moment of kind `sign` with `phase` `open` and `answer` `sign <word>`), the babies lane's `newbornAt` (naming and wish), and the trail lane's `cameraClamp('ride')` (without it the follow camera stops at the meadow's clamp and she rides out of view, which the flow does not check).
+- Change: none. After the mount merge run `MMW_RIDE_PART=all`: it then also checks the sign cards (`sign <word>` targets and the `sign` moment of the signs-star lane), that the slots show each open sign's words (`state().ride.slots` against `spec().cards`), one wrong card with its `tried` and a line spoken after it, sign 2, a budget at each clearing (`slot 1`, `slot 2`), the star egg's three sums, the naming on the trail, and the reload during sign 2 with the next play reaching the hub (`state().part === 'hub'`). Both parts check that she crosses the fence line twice, each time in the gate. The `all` part has never run in this lane: if it fails, check its new lines first. It needs the signs-star lane's `runSign` (a moment of kind `sign` with `phase` `open` and `answer` `sign <word>`), the babies lane's `newbornAt` (naming and wish), and the trail lane's `cameraClamp('ride')` (without it the follow camera stops at the meadow's clamp and she rides out of view, which the flow does not check).
 - Why: in this lane the other lanes' stubs answer every sign at once, so only the paddock part can run.
 
 ## 5. A jump while a snapped trip waits (hub lane)
@@ -37,3 +37,40 @@ if (start.place === 'ride' && start.step) snapTrip(g, start.step);
 - File: `src/game/level.ts`, `snapTo`.
 - Change: none required. A trip snapped by `snapTrip` registers its cleanup when its `ridePlace` starts on the new run. Should a second jump come before the hub calls `ridePlace` (the same frame), the roads stay shown until the next ride ends; `snapTo` could call `g.world.trail.show(false)` near its top to rule that out.
 - Why: `snapTrip` runs while the old run has stopped and before the new one exists, so it cannot defer on either.
+
+## 6. `?step=wish` in a trip (babies lane, `src/game/eggs-part.ts`)
+
+- File: `src/game/eggs-part.ts` (`newbornAt` runs the hatch, the naming and the wish as one call).
+- Change: export the trail newborn's first wish on its own, for example:
+
+```ts
+/** A named newborn's first wish beside her (the last part of newbornAt), for a jump to its wish. */
+export async function newbornWish(g: Game, baby: Baby): Promise<void>;
+```
+
+  Then in `src/game/ride.ts` (this lane's file): `snapTrip(g, 'wish')` calls `snapBabies(g, ['trail'], <egg spot>, true)`
+  and `starEgg` runs `newbornWish(g, baby)` for that baby instead of `newbornAt`.
+- Why: the design (8) says `step=wish` jumps into the baby's wish; today it starts at the naming (notes/ride.md). No
+  flow uses it.
+
+## 7. The fork frame and the signpost (trail lane, `src/layout.ts`)
+
+- File: `src/layout.ts` (`RIDE`).
+- Change: none needed to compile. `ride.ts` reads `RIDE.forkFrame` (`{ center, width, pitch?, shiftY? }`, framed with
+  `world.frame`) and `RIDE.post` (a ground point the mount faces) when the layout has them, and else uses step 0's
+  frame between the mount and the fork. If the trail lane named or shaped them otherwise, change the `TRAIL_RIDE` cast
+  near the top of `src/game/ride.ts` to match. The trail lane's proof had the mount at the fork; this lane's mount
+  stands 2.2 m before it (`FORK_STOP`), facing the post. A slot still in view after 4 s is now dressed with a warning
+  (`[mmw] slot ... still on screen`) instead of being left as it was; `MMW_RIDE_PART=all` fails on it.
+- Why: the trail lane proved "no kit in view, cards clear of her head" only for its own pose.
+
+## 8. The long play's texture count and the toys (hub lane, `flows/long.flow.sh`)
+
+- Files: `flows/long.flow.sh`; for a fix in code, `src/actors/herd.ts` (this lane's).
+- Change: none from this lane yet. The actors now draw everything they show later at start-up (notes/actors.md, "The
+  start-up draw"), so a ride, a new gown shape, a new crown, a moonbeam or the star egg adds no geometry or texture.
+  No call in `main.ts` is needed. Two things still add one: each new toy picture on a unicorn's head is a texture of
+  its own (`toyTexture`, cached per picture), and the first toy draws the sprite's shared geometry once. A wish with a
+  new picture after the first place therefore adds one texture. Either let `check_level` allow one more texture per
+  new toy picture, or ask this lane to release a toy's texture when no unicorn shows it.
+- Why: check 6 of the long play would fail on the first new toy otherwise.

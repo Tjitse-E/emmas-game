@@ -14,11 +14,17 @@ SEED="${SEED:-5}"
 PART="${MMW_RIDE_PART:-all}"
 [ -n "$PART" ] || PART=all
 
-# Watch the trip in the page, every frame: the steps it passes, the frame budget 1.5 s into the gallop out, and every
-# frame where a signpost is up and a slot with a word is on screen (5.5: dressed only out of view). The flow reads
-# window.__trip at the end.
+# Watch the trip in the page, every frame: the steps it passes, the frame budget 1.5 s into the gallop out, every
+# frame where a signpost is up and a slot with a word is on screen (5.5: dressed only out of view), and where she
+# crosses the line of the north fence on the way out and home (the gate is at x 21.5, z -22.7: docs/v4/2.4.md 5.4).
+# The flow reads window.__trip at the end.
 watch_trip() {
-  val "() => { if (window.__trip) return 'ok'; const w = window.__trip = { steps: [], frames: 0, bad: [], gallop: null, outAt: 0 }; const f = () => { const r = window.__game.state().ride; const step = r ? r.step : null; if (step && w.steps[w.steps.length - 1] !== step) { w.steps.push(step); if (step === 'out') w.outAt = performance.now(); } if (step === 'out' && !w.gallop && performance.now() - w.outAt > 1500) w.gallop = window.__game.perf(); if (step === 'sign1' || step === 'sign2') { w.frames++; r.slots.forEach((s, i) => { if (s.word && s.onScreen && w.bad.length < 5) w.bad.push(step + ' slot ' + i + ' ' + s.word); }); } requestAnimationFrame(f); }; requestAnimationFrame(f); return 'ok'; }" >/dev/null
+  val "() => { if (window.__trip) return 'ok'; const w = window.__trip = { steps: [], frames: 0, bad: [], gallop: null, outAt: 0, gate: [], lastZ: null }; const f = () => { const s = window.__game.state(); const r = s.ride; const step = r ? r.step : null; if (step && w.steps[w.steps.length - 1] !== step) { w.steps.push(step); if (step === 'out') w.outAt = performance.now(); } if (step === 'out' && !w.gallop && performance.now() - w.outAt > 1500) w.gallop = window.__game.perf(); if (step === 'sign1' || step === 'sign2') { w.frames++; r.slots.forEach((x, i) => { if (x.word && x.onScreen && w.bad.length < 5) w.bad.push(step + ' slot ' + i + ' ' + x.word); }); } const z = s.princess.z; if (r && w.lastZ !== null && (w.lastZ - -22.7) * (z - -22.7) <= 0 && w.lastZ !== z) w.gate.push(Math.round(s.princess.x * 100) / 100); w.lastZ = r ? z : null; requestAnimationFrame(f); }; requestAnimationFrame(f); return 'ok'; }" >/dev/null
+}
+
+# The slots show the open sign's words, in arm order (5.5: a right card leads to the clearing of its word).
+slots_match() {
+  expect_eq "$(val "() => JSON.stringify(window.__game.state().ride.slots.map((s) => s.word))")" "$(val "() => JSON.stringify(window.__game.spec().cards)")" "the slots show sign $1's words"
 }
 
 # The frame budget sampled in the page (watch_trip's gallop), logged as budget() logs its views.
@@ -107,12 +113,17 @@ else
   budget 'fork'
   cards="$(val "() => JSON.stringify(window.__game.spec().cards.map((w) => 'sign ' + w))")"
   check_targets "$cards"
+  slots_match 1
   stale_touches
   wrong="$(wrong_of 'sign ')"
   [ -n "$wrong" ] || fail 'no wrong card at sign 1'
   say "sign 1 wrong card: $wrong"
+  trace_speech
   tap "$wrong"
   wait_for "() => { const m = window.__game.state().moment; return m && m.kind === 'sign' && m.misses === 1 && m.phase !== 'busy'; }" 30
+  # The miss is spoken (Elizabeth's line after a wrong card), never in silence.
+  say "lines after the wrong card: $(val "() => JSON.stringify((window.__speech || []).filter((e) => e.kind === 'say').map((e) => e.ids.join('+')))")"
+  expect_eq "$(val "() => (window.__speech || []).some((e) => e.kind === 'say')")" true 'a line after the wrong card'
   shot fork-miss
   tap "$(hook 'answer()')"
   wait_for "() => window.__game.state().results.some((l) => l.part === 'sign-1' && l.detail.read === 1)" 20
@@ -121,10 +132,16 @@ else
   wait_for "() => window.__game.state().ride.step === 'clearing1'" 20
   sleep 3
   shot clearing-1
-  budget 'slot'
+  budget 'slot 1'
   wait_for "() => window.__game.state().moment?.kind === 'sign' && window.__game.spec().sign === 2" 60
+  wait_open
+  slots_match 2
   answer_moment
-  # Clearing 2: the star egg's three sums on the trail.
+  # Clearing 2: its slot with the kit, then the star egg's three sums on the trail.
+  wait_for "() => ['egg', 'naming', 'home'].includes(window.__game.state().ride?.step)" 30
+  sleep 1.2
+  shot clearing-2
+  budget 'slot 2'
   wait_for "() => window.__game.state().moment?.kind === 'egg'" 60
   wait_phase open 40
   sleep 0.6
@@ -149,6 +166,10 @@ expect_eq "$(val "() => window.__game.state().results.filter((l) => l.part === '
 say "trip steps and frames at a signpost: $(val "() => window.__trip.steps.join(' ') + ', ' + window.__trip.frames")"
 expect_eq "$(val "() => window.__trip.steps.join(',')")" 'paddock,out,sign1,clearing1,back,sign2,clearing2,egg,naming,home' 'the steps of a trip'
 expect_eq "$(val "() => window.__trip.bad.join('; ')")" '' 'no dressed slot on screen at a signpost'
+# Out through the gate and home through it: she crossed the fence line twice, each time in the gate (x 21.5).
+say "fence line crossed at x $(val "() => window.__trip.gate.join(', ')")"
+expect_eq "$(val "() => window.__trip.gate.length")" 2 'out and home across the fence line once each'
+expect_eq "$(val "() => window.__trip.gate.every((x) => Math.abs(x - 21.5) < 1)")" true 'both times through the gate'
 shot off
 no_missing_clips
 
@@ -170,6 +191,10 @@ if [ "$PART" != paddock ]; then
   expect_eq "$(val "() => window.__game.save().seen.ride")" true 'seen.ride after the reload'
   press_play
   expect_eq "$(val "() => window.__game.state().ride === null")" true 'the next play starts afresh, not on a mount'
+  # It starts as every play does (the customiser, Lumi's welcome) and goes on to the hub, not back into the trip.
+  [ "$(field part)" != wardrobe ] || dress_done
+  wait_for "() => window.__game.state().part === 'hub'" 90
+  expect_eq "$(val "() => window.__game.state().ride === null && window.__game.state().princess.mode !== 'mounted'")" true 'the play starts at the hub'
   hook 'clearSave()' >/dev/null
 fi
 

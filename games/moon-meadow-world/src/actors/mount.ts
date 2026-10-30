@@ -77,15 +77,34 @@ export function drapeDress(src: THREE.BufferGeometry, shape: MountShape): THREE.
 export const HOP_S = 0.55;
 export const HOP_UP = 0.35;
 
+/** How far out to the side the followers step while their mount turns round and passes them. */
+export const ASIDE = 1.1;
+
+/**
+ * Where a mount turned round on its track (a clearing): the track's length there, the point, the unit side its
+ * followers step out to (the mount's free side once it has turned), and a number that is new for every turn.
+ */
+export interface TrackTurn {
+  at: number;
+  x: number;
+  z: number;
+  sx: number;
+  sz: number;
+  id: number;
+}
+
 /**
  * The ground track a mount has travelled on a ride: points every few centimetres with their running distance. Going
  * forward adds to it; backing up takes it back, so a follower steps back with the mount. A point `gap` metres back
- * along it is where a follower stands.
+ * along it is where a follower stands. Where the mount turns round, the track folds back on itself, so it notes the
+ * turn: a follower whose place is still on the way in steps aside and waits until the mount has passed it.
  */
 export class Track {
   private xs: number[] = [];
   private zs: number[] = [];
   private ds: number[] = [];
+  private turnNow: TrackTurn | null = null;
+  private turns = 0;
 
   /** Metres from the start of the track to its end (the mount). */
   get length(): number {
@@ -96,8 +115,20 @@ export class Track {
     return this.ds.length === 0;
   }
 
+  /** The last turn, while the track still reaches past it. */
+  get turned(): Readonly<TrackTurn> | null {
+    return this.turnNow;
+  }
+
   clear(): void {
     this.xs.length = this.zs.length = this.ds.length = 0;
+    this.turnNow = null;
+  }
+
+  /** The mount turns round at (x, z), the end of the track; its followers step out to `side` (a unit vector). */
+  turn(x: number, z: number, side: Vec2): void {
+    const n = Math.hypot(side.x, side.z) || 1;
+    this.turnNow = { at: this.length, x, z, sx: side.x / n, sz: side.z / n, id: ++this.turns };
   }
 
   /** Start a track along these points (the lead-in a follower walks onto before the mount sets off). */
@@ -141,6 +172,8 @@ export class Track {
       this.ds.pop();
     }
     const n = this.ds.length;
+    // Backed up past its last turn: there is no fold on the track any more.
+    if (this.turnNow && keep < this.turnNow.at) this.turnNow = null;
     if (!n) return this.add(x, z, 0);
     const d = Math.hypot(x - this.xs[n - 1], z - this.zs[n - 1]);
     this.xs.push(x);

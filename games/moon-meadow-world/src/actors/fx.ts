@@ -195,6 +195,8 @@ export interface FxImpl extends Fx {
   /** A moonbeam its owner moves and fades (a carried unicorn, an upper-door lift). */
   beam(at: THREE.Vector3, radius?: number): Beam;
   update(dt: number, t: number): void;
+  /** Its particles' points with their material (and the sprite atlas), for the actors' start-up draw (2.4.0). */
+  warmables(): { geometry: THREE.BufferGeometry; material: THREE.Material; points: true }[];
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -470,5 +472,6 @@ export function createFx(scene: THREE.Scene): FxImpl {
     }
   }
 
-  return { sparkle, hearts, splash, starfall, moonbeam, steam, frost, spray, ripple, beam, parts, update };
+  const warmables = () => [{ geometry: geo, material: mat, points: true as const }];
+  return { sparkle, hearts, splash, starfall, moonbeam, steam, frost, spray, ripple, beam, parts, update, warmables };
 }

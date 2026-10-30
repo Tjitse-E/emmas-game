@@ -168,6 +168,8 @@ function paint(g: CanvasRenderingContext2D, kind: EggKind, cracks: number): void
 export interface EggImpl extends Egg3D {
   readonly parts: PartList;
   update(dt: number, t: number): void;
+  /** Its two shell pieces with their material (and the shell's texture), for the actors' start-up draw (2.4.0). */
+  warmables(): { geometry: THREE.BufferGeometry; material: THREE.Material }[];
 }
 
 /**
@@ -255,6 +257,7 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
   const egg: EggImpl = {
     parts,
     position,
+    warmables: () => [bottom, top].map((m) => ({ geometry: m.geometry, material: mat })),
     get visible() {
       return shown;
     },

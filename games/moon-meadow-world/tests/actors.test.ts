@@ -23,6 +23,7 @@ import { createHerd } from '../src/actors/herd';
 import { createHerdSounds } from '../src/actors/sounds';
 import { MOUNT_LOOKS } from '../src/actors/mount';
 import { BUILDS, bodyEllipsoids } from '../src/actors/unicornBody';
+import { createActors } from '../src/actors';
 import { fxStub, makePrincess, scenario, snapParts } from './princess-scenario';
 
 // The actors play their own whoosh, splashes and nickers; the audio module needs a browser. The fake records each
@@ -1490,5 +1491,151 @@ describe('riding a path', () => {
     expect(fs.every((f) => !f.onLand && f.mode !== 'follow')).toBe(true);
     fs[0].trackBehind(null, 0);
     expect(fs[0].mode).toBe('idle');
+  });
+
+  it('turns round at a clearing: the followers step aside, the mount passes them on its free side and they fall in behind', () => {
+    const ctx = unicornCtx();
+    const lead = new UnicornActor({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } }, ctx);
+    lead.seedTrack([{ x: 0, z: 6 }, { x: 0, z: 0 }]);
+    const [a, b] = [1.6, 3.0].map((gap, i) => {
+      const f = new UnicornActor({ id: 'b' + i, name: 'B', look: BABY, at: { x: 0, z: 1.6 + i * 1.4 } }, ctx);
+      f.trackBehind(lead, gap);
+      return f;
+    });
+    const road = line({ x: 0, z: 0 }, { x: 0, z: -12 });
+    const all = [lead, a, b];
+    let k = 0;
+    const run = (s: number, each?: () => void) => {
+      for (let i = 0; i < Math.round(s * 60); i++, k++) {
+        for (const u of all) u.update(1 / 60, k / 60);
+        each?.();
+      }
+    };
+    void lead.ridePath(road, 0, 12, { speed: 4.2 });
+    run(5);
+    // A newborn hatched on her side, a little ahead (she sits on the mount's left).
+    const left = { x: Math.cos(lead.yaw), z: -Math.sin(lead.yaw) };
+    const fwd = { x: Math.sin(lead.yaw), z: Math.cos(lead.yaw) };
+    const wild = new UnicornActor({ id: 'wild', name: 'W', look: BABY, at: { x: lead.position.x + fwd.x * 1.3 + left.x * 0.9, z: lead.position.z + fwd.z * 1.3 + left.z * 0.9 } }, ctx);
+    all.push(wild);
+    // The turn: the order reverses and the newborn goes last; the mount turns on the spot and rides back.
+    lead.turnRound(left);
+    b.trackBehind(lead, 1.6);
+    a.trackBehind(lead, 3.0);
+    wild.trackBehind(lead, 4.4);
+    lead.faceTo({ x: lead.position.x - fwd.x, z: lead.position.z - fwd.z });
+    let closest = Infinity;
+    let wrongSide = 0;
+    const watch = () => {
+      for (const f of [a, b, wild]) {
+        const dx = f.position.x - lead.position.x;
+        const dz = f.position.z - lead.position.z;
+        closest = Math.min(closest, Math.hypot(dx, dz));
+        // Level with the mount, a follower is out on the free side (the left it had at the clearing).
+        if (Math.abs(dx * fwd.x + dz * fwd.z) < 0.8 && dx * left.x + dz * left.z < 0.6) wrongSide++;
+      }
+    };
+    run(0.7, watch);
+    void lead.ridePath(road, 12, 0, { speed: 4.2 });
+    run(7, watch);
+    expect(closest).toBeGreaterThan(0.9);
+    expect(wrongSide).toBe(0);
+    const q = { x: 0, z: 0, heading: 0 };
+    for (const [f, gap] of [[b, 1.6], [a, 3.0], [wild, 4.4]] as const) {
+      lead.trackPoint(gap, q);
+      expect(Math.hypot(f.position.x - q.x, f.position.z - q.z), `${f.id} at ${gap}`).toBeLessThan(0.3);
+    }
+    // Backed up past the turn (13 m, a metre further than it came back), the track has no fold any more.
+    expect(lead.trackTurn()).not.toBeNull();
+    void lead.ridePath(line({ x: 0, z: -13 }, { x: 0, z: 0 }), 13, 0, { speed: 2, backwards: true });
+    run(9);
+    expect(lead.trackTurn()).toBeNull();
+  });
+
+  it('lets a mount standing by give way to the other mount on its path, and the herd step aside for it', () => {
+    const p = makePrincess({ x: 0, z: 8 });
+    const herd = createHerd({
+      deps: { route: (_a, b) => [b], isWalkable: () => true, nearestWalkable: (q) => q }, fx: fxStub, queue: new SlideQueue<object>(),
+      leader: p, scene: new THREE.Scene(), sounds: () => false,
+    });
+    const hazel = herd.add({ id: 'mount-hazel', name: 'Hazel', look: MOUNT_LOOKS.hazel, at: { x: 0.35, z: -3 } });
+    const baby = herd.add({ id: 'luna', name: 'Luna', look: BABY, at: { x: -0.3, z: -6 } });
+    const bella = herd.add({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } });
+    hazel.faceTo({ x: 5, z: -3 });
+    baby.faceTo({ x: 5, z: -6 });
+    void bella.ridePath(line({ x: 0, z: 0 }, { x: 0, z: -10 }), 0, 10, { speed: 2 });
+    let hazelNear = Infinity;
+    let babyNear = Infinity;
+    for (let k = 0; k < 6 * 30; k++) {
+      herd.update(1 / 30, k / 30, null);
+      hazelNear = Math.min(hazelNear, Math.hypot(hazel.position.x - bella.position.x, hazel.position.z - bella.position.z));
+      babyNear = Math.min(babyNear, Math.hypot(baby.position.x - bella.position.x, baby.position.z - bella.position.z));
+    }
+    // Bella keeps to her path; Hazel and the baby moved out of her way.
+    expect(Math.abs(bella.position.x)).toBeLessThan(1e-6);
+    expect(hazelNear).toBeGreaterThan(0.6);
+    expect(babyNear).toBeGreaterThan(0.45);
+  });
+});
+
+describe('the start-up draw', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('builds every side-saddle skirt and crown at start-up and draws them with both egg shells once, so a ride or a new crown adds no geometry', async () => {
+    const ctx2d = new Proxy({}, { get: (_t, k) => (k === 'createLinearGradient' || k === 'createRadialGradient' ? () => ({ addColorStop() {} }) : k === 'canvas' ? { width: 512, height: 256 } : k === 'measureText' ? () => ({ width: 10 }) : () => {}), set: () => true });
+    vi.stubGlobal('document', { createElement: () => ({ width: 0, height: 0, getContext: () => ctx2d }) });
+    const scene = new THREE.Scene();
+    const actors = createActors(scene, { route: (_a, b) => [b], isWalkable: () => true, nearestWalkable: (q) => q });
+    const warm = () => scene.children.filter((o) => o.name === 'actors-warm') as THREE.Mesh[];
+    const meshes = warm();
+    const drawn = new Set(meshes.map((m) => m.geometry));
+    const shapes = Object.keys(DRESS_ROWS).length;
+    // Every dress shape and its skirt, every crown, the two pieces of each egg's shell (with the shell's texture) and
+    // the effects' points (with their sprite atlas), which show only once something sparkles.
+    expect(meshes).toHaveLength(2 * shapes + OPTIONS.crown.length + 4 + 1);
+    const fxPoints = scene.getObjectByName('actors-fx') as THREE.Points;
+    expect(meshes.filter((m) => (m as unknown as THREE.Points).isPoints).map((m) => m.geometry)).toEqual([fxPoints.geometry]);
+    expect(new Set(meshes.map((m) => (m.material as THREE.MeshLambertMaterial).map).values()).size).toBeGreaterThanOrEqual(2);
+    // They stay until the world has drawn a frame with them (nothing is drawn behind the start screen), then go.
+    // Until then every batch of parts draws, an empty one with one instance shrunk to nothing (the moonbeam's, the
+    // closed eyes' arcs), so its geometry counts from the start too.
+    actors.update(1 / 60, 0);
+    expect(warm()).toHaveLength(meshes.length);
+    const batches = (scene.getObjectByName('actors-parts') as THREE.Group).children as THREE.InstancedMesh[];
+    expect(batches.length).toBeGreaterThan(10);
+    expect(batches.filter((b) => !b.visible || b.count < 1).map((b) => b.name)).toEqual([]);
+    const beam = scene.getObjectByName('actors-Beam') as THREE.InstancedMesh;
+    expect(Array.from(beam.instanceMatrix.array.subarray(0, 16)).every((v) => v === 0)).toBe(true);
+    for (const m of meshes) m.onAfterRender(null as never, scene, null as never, m.geometry, m.material as THREE.Material, null as never);
+    actors.update(1 / 60, 1 / 60);
+    expect(warm()).toHaveLength(0);
+    expect(beam.visible).toBe(false);
+    // Riding in each gown uses a skirt drawn at start-up.
+    const dress = scene.getObjectByName('actors-dress') as THREE.Mesh;
+    const u = actors.herd.add({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } });
+    for (const gown of ['party', 'ball', 'gala', 'tutu'] as const) {
+      actors.princess.setLook({ gown });
+      let seated = false;
+      void actors.princess.mount(u).then(() => (seated = true));
+      for (let k = 0; k < 120; k++) {
+        actors.update(1 / 60, k / 60);
+        await Promise.resolve();
+      }
+      expect(seated, gown).toBe(true);
+      expect(drawn.has(dress.geometry), gown).toBe(true);
+      let down = false;
+      void actors.princess.dismount({ x: 1, z: 0 }).then(() => (down = true));
+      for (let k = 0; k < 90 && !down; k++) {
+        actors.update(1 / 60, k / 60);
+        await Promise.resolve();
+      }
+      expect(drawn.has(dress.geometry), gown).toBe(true);
+    }
+    // And every crown she can wear.
+    const crownMesh = scene.getObjectByName('actors-crown') as THREE.Mesh;
+    for (const crown of OPTIONS.crown) {
+      actors.princess.setLook({ crown });
+      expect(drawn.has(crownMesh.geometry), crown).toBe(true);
+    }
   });
 });

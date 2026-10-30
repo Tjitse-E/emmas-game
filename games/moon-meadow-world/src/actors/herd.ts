@@ -154,29 +154,30 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
 
   /**
    * Keep unicorns on the grass a little apart from each other and from Princess Emma. A grown mount (2.4.0) stands its
-   * ground: the other one steps aside for both. Nobody is pushed off her while she sits on a mount.
+   * ground, also on its ride path: the others step aside for it, and a mount standing by gives way only to the other
+   * mount on its way (riding out, home or back to its spot). Nobody is pushed off her while she sits on a mount.
    */
   function separate(): void {
     const L = ctx.leader;
     for (let i = 0; i < list.length; i++) {
       const a = list[i];
-      if (!a.onLand) continue;
+      if (!a.onLand && !a.onPath) continue;
       const ra = a.build.body[2] + 0.18;
       for (let j = i + 1; j < list.length; j++) {
         const b = list[j];
-        if (!b.onLand) continue;
+        if (!b.onLand && !b.onPath) continue;
         const min = ra + b.build.body[2] + 0.18;
         const dx = b.position.x - a.position.x;
         const dz = b.position.z - a.position.z;
         const d = Math.hypot(dx, dz);
         if (d >= min || d < 1e-4) continue;
         const push = (min - d) * 0.25;
-        const ka = a.isMount ? 0 : b.isMount ? 2 : 1;
-        const kb = b.isMount ? 0 : a.isMount ? 2 : 1;
+        const ka = giveWay(a, b);
+        const kb = giveWay(b, a);
         if (ka) nudge(a, (-dx / d) * push * ka, (-dz / d) * push * ka);
         if (kb) nudge(b, (dx / d) * push * kb, (dz / d) * push * kb);
       }
-      if (!L.riding && !L.seated && !a.isMount) {
+      if (!L.riding && !L.seated && !a.isMount && a.onLand) {
         const dx = a.position.x - L.position.x;
         const dz = a.position.z - L.position.z;
         const d = Math.hypot(dx, dz);
@@ -184,6 +185,13 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
         if (d < min && d > 1e-4) nudge(a, (dx / d) * (min - d) * 0.5, (dz / d) * (min - d) * 0.5);
       }
     }
+  }
+
+  /** How much `u` steps aside for `other`: 0 not at all, 1 half each, 2 all of it. */
+  function giveWay(u: UnicornActor, other: UnicornActor): number {
+    if (u.onPath) return 0;
+    if (u.isMount) return other.isMount && other.underWay && !u.underWay ? 2 : 0;
+    return other.isMount ? 2 : 1;
   }
 
   function nudge(u: UnicornActor, dx: number, dz: number): void {

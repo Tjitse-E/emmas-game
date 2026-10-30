@@ -29,7 +29,8 @@ vi.hoisted(() => {
   (globalThis as { location?: unknown }).location ??= { pathname: '/games/moon-meadow-world/index.html' };
 });
 
-import { MOUNTS, ridePlace, rideFollowers } from '../src/game/ride';
+import { DRESS_WAIT_MS, JOIN_M, MOUNTS, ridePlace, rideFollowers } from '../src/game/ride';
+import { SADDLE_ICON } from '../src/ui/saddle';
 import { type Game, startClock, startQuests } from '../src/game/game';
 import { createSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
@@ -47,8 +48,11 @@ import { GRAZE_HOMES, RIDE } from '../src/layout';
 interface Fake {
   id: string;
   look: object;
+  mode: string;
   position: THREE.Vector3;
   tracking: { lead: string; gap: number } | null;
+  /** What it was told, in order: 'goTo', 'track <gap>', 'place', 'turn'. */
+  did: string[];
   [k: string]: unknown;
 }
 function fakeUnicorn(id: string, at: Vec2, look: object = { stage: 'baby', breed: 'moon', body: '#fff', mane: '#f9c', mane2: '#fcf' }): Fake {
@@ -56,7 +60,9 @@ function fakeUnicorn(id: string, at: Vec2, look: object = { stage: 'baby', breed
     id, name: id, look, mode: 'graze', followSlot: null as number | null, yaw: 0, speed: 0, position: new THREE.Vector3(at.x, 0, at.z),
     speeds: { graze: 0.4, walk: 1.2, trot: 2.3, gallop: 5 },
     tracking: null as { lead: string; gap: number } | null,
+    did: [] as string[],
     goTo: async (route: Vec2[]) => {
+      u.did.push('goTo');
       const end = route[route.length - 1];
       u.position.set(end.x, 0, end.z);
       return true;
@@ -68,12 +74,21 @@ function fakeUnicorn(id: string, at: Vec2, look: object = { stage: 'baby', breed
       return true;
     },
     trackBehind: (lead: Fake | null, gap: number) => {
+      if (lead) u.did.push(`track ${gap}`);
       u.tracking = lead ? { lead: lead.id, gap } : null;
       u.mode = lead ? 'walk' : 'idle';
       u.followSlot = null;
     },
-    seedTrack: () => {}, trackPoint: () => ({ x: u.position.x, z: u.position.z, heading: 0 }), faceTo: () => {},
-    place: (p: Vec2) => void u.position.set(p.x, 0, p.z),
+    seedTrack: () => {}, trackPoint: () => ({ x: u.position.x, z: u.position.z, heading: 0 }),
+    turnRound: () => void u.did.push('turn'),
+    faceTo: () => {
+      u.mode = 'idle';
+      u.followSlot = null;
+    },
+    place: (p: Vec2) => {
+      u.did.push('place');
+      u.position.set(p.x, 0, p.z);
+    },
     graze: () => {
       u.mode = 'graze';
       u.followSlot = null;
@@ -101,7 +116,10 @@ function fakeGame(o: Opts = {}) {
   const log: string[] = [];
   let frameT = 0;
   const frames = new Set<(dt: number, t: number) => void>();
+  // While `hidden` the page draws no frame (Safari has it in the background); the timers still run.
+  const page = { hidden: false };
   const tick = setInterval(() => {
+    if (page.hidden) return;
     frameT += 0.05;
     for (const f of [...frames]) f(0.05, frameT);
   }, 50);
@@ -173,7 +191,7 @@ function fakeGame(o: Opts = {}) {
     actors: {
       princess: her,
       herd: { get: (id: string) => all.find((u) => u.id === id), all: () => all.slice(), pick: () => null, setFocus: vi.fn() },
-      fx: { sparkle: () => {}, hearts: () => {}, moonbeam: async () => {} },
+      fx: { sparkle: vi.fn(), hearts: () => {}, moonbeam: async () => {} },
       trailEgg: { visible: false, position: new THREE.Vector3(), place: vi.fn(), hide: vi.fn(), wobble: async () => {} },
       placePrincess: (at: Vec2) => void her.position.set(at.x, 0, at.z),
     },
@@ -226,6 +244,7 @@ function fakeGame(o: Opts = {}) {
     her,
     mounts: { bella, hazel },
     herdBabies,
+    page,
     tapSaddle: (m: 'bella' | 'hazel') => saddles?.onTap(m),
     get saddlesUp() {
       return !!saddles;
@@ -374,9 +393,11 @@ describe('the ride place', () => {
         return i === 0 && Date.now() - at < 3000;
       },
     });
-    const first = vi.fn();
+    const specs: SignSpec[] = [];
+    const slotsAtSign: (string | null)[][] = [];
     f.g.layer.sign = vi.fn(async (spec: SignSpec) => {
-      first(spec.sign);
+      specs.push(spec);
+      slotsAtSign.push(f.trail.slots().map((x) => x.word));
       at = null;
       return { outcome: 'first' as Outcome, misses: 0, ms: 900 };
     }) as never;
@@ -387,11 +408,168 @@ describe('the ride place', () => {
       expect(['sign1', 'sign2']).toContain(d.step);
       expect(d.onScreen).toEqual([false, false, false]);
     }
-    // Each sign's cards are its slots' words, and the slots are bared only once the trail is hidden.
-    expect(first.mock.calls.map((c) => c[0])).toEqual([1, 2]);
+    // Each sign's cards are its slots' words (sign 2 never keeps sign 1's), and the slots are bared only once the
+    // trail is hidden.
+    expect(specs.map((x) => x.sign)).toEqual([1, 2]);
+    specs.forEach((spec, i) => {
+      expect(dressed[i].words).toEqual(spec.cards.map((c) => c.word));
+      expect(slotsAtSign[i]).toEqual(spec.cards.map((c) => c.word));
+    });
     const bare = f.trail.dresses.filter((d) => !d.words);
     expect(bare.length).toBeGreaterThan(0);
     expect(bare.every((d) => !d.shown)).toBe(true);
+    f.stop();
+  });
+  it('still dresses a slot that stays on screen past the wait, with a sparkle and a warning, so each sign shows its own words', async () => {
+    // The north slot never leaves the screen at the fork (a fork frame that shows it).
+    const f = fakeGame({ onScreen: (i) => i === 1 });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const specs: SignSpec[] = [];
+    const dressedAt: number[] = [];
+    let forkAt = 0;
+    f.g.layer.sign = vi.fn(async (spec: SignSpec) => {
+      specs.push(spec);
+      dressedAt.push(Date.now() - forkAt);
+      return { outcome: 'first' as Outcome, misses: 0, ms: 900 };
+    }) as never;
+    const steps = setInterval(() => {
+      if ((f.g.ride?.step === 'sign1' || f.g.ride?.step === 'sign2') && !forkAt) forkAt = Date.now();
+      if (f.g.ride?.step !== 'sign1' && f.g.ride?.step !== 'sign2') forkAt = 0;
+    }, 10);
+    await wholeTrip(f);
+    clearInterval(steps);
+    const dressed = f.trail.dresses.filter((d) => d.words);
+    expect(dressed.map((d) => d.words)).toEqual(specs.map((spec) => spec.cards.map((c) => c.word)));
+    // It waited the whole DRESS_WAIT_MS first, then said so and sparkled the slot in view.
+    // (to the fake's frame of 50 ms)
+    expect(dressedAt.every((ms) => ms >= DRESS_WAIT_MS - 100)).toBe(true);
+    expect(warn.mock.calls.filter((c) => String(c[0]).includes('still on screen'))).toHaveLength(2);
+    const sparkles = (f.g.actors.fx.sparkle as unknown as { mock: { calls: [THREE.Vector3][] } }).mock.calls.map((c) => c[0]);
+    expect(sparkles.filter((p) => Math.hypot(p.x - RIDE.slots[1].x, p.z - RIDE.slots[1].z) < 0.1)).toHaveLength(2);
+    f.stop();
+  });
+
+  it("sends the mount down the road of the target's card, whichever object the target is", async () => {
+    const f = fakeGame();
+    const ends: Vec2[] = [];
+    const ride = f.mounts.bella.ridePath as (p: THREE.Curve<THREE.Vector3>, a: number, b: number) => Promise<boolean>;
+    f.mounts.bella.ridePath = async (p: THREE.Curve<THREE.Vector3>, a: number, b: number) => {
+      const r = await ride(p, a, b);
+      ends.push({ x: f.mounts.bella.position.x, z: f.mounts.bella.position.z });
+      return r;
+    };
+    const specs: SignSpec[] = [];
+    f.g.layer.sign = vi.fn(async (spec: SignSpec) => {
+      specs.push(spec);
+      return { outcome: 'first' as Outcome, misses: 0, ms: 900 };
+    }) as never;
+    await wholeTrip(f);
+    // Each clearing it stops at is the target card's slot, 3 m before its middle, and no other slot.
+    const near = (i: number) => ends.some((e) => Math.hypot(e.x - RIDE.slots[i].x, e.z - RIDE.slots[i].z) < 3.5);
+    for (const spec of specs) {
+      const i = spec.cards.findIndex((c) => c.word === spec.target.word);
+      expect(near(i), `sign ${spec.sign} ${spec.target.word}`).toBe(true);
+    }
+    const targets = specs.map((spec) => spec.cards.findIndex((c) => c.word === spec.target.word));
+    for (const i of [0, 1, 2].filter((k) => !targets.includes(k))) expect(near(i)).toBe(false);
+    f.stop();
+  });
+
+  it('walks a far rider to its place by the paths before it trots on the track, and sparkles one that never comes', async () => {
+    const f = fakeGame();
+    // A newborn left grazing by the pond rides along (newborns first), and a second one whose walk never arrives.
+    const pond = fakeUnicorn('baby-13', { x: -12, z: 6 });
+    const stuck = fakeUnicorn('baby-14', { x: -14, z: 8 });
+    stuck.goTo = async () => {
+      stuck.did.push('goTo');
+      return new Promise<boolean>(() => {});
+    };
+    f.g.babies.push({ door: 13, spot: 'nest', look: pond.look, unicorn: pond, member: null } as never);
+    f.g.babies.push({ door: 14, spot: 'shore', look: stuck.look, unicorn: stuck, member: null } as never);
+    let release: (() => void) | null = null;
+    void ridePlace(f.g, 1).then((r) => (release = r));
+    await until(() => f.saddlesUp);
+    f.tapSaddle('bella');
+    await until(() => release !== null, 600_000);
+    // Neither went straight onto the track from across the meadow: each walked by the paths first.
+    for (const u of [pond, stuck]) expect(u.did.indexOf('goTo'), u.id).toBeGreaterThanOrEqual(0);
+    expect(pond.did.indexOf('goTo')).toBeLessThan(pond.did.indexOf('track 3'));
+    expect(pond.did).not.toContain('place');
+    // The one that never came was put at its place with a sparkle, then joined the track.
+    expect(stuck.did.indexOf('place')).toBeGreaterThan(stuck.did.indexOf('goTo'));
+    expect(stuck.did.indexOf('place')).toBeLessThan(stuck.did.indexOf('track 1.6'));
+    f.stop();
+  });
+
+  it("turns round at each clearing with the riders aside and in the opposite order, the newborn last on the way home", async () => {
+    const f = fakeGame();
+    const [a, b] = f.herdBabies;
+    for (const u of [a, b]) {
+      u.position.set(RIDE.stand.x + 1, 0, RIDE.stand.z + 1);
+      f.g.followers.add(u as never);
+    }
+    const steps: string[] = [];
+    let hazelWhileOut: string | null = null;
+    const watch = setInterval(() => {
+      const st = f.g.ride?.step;
+      if (st && steps.at(-1) !== st) steps.push(st);
+      if (st === 'sign1') hazelWhileOut ??= f.mounts.hazel.mode;
+    }, 10);
+    await wholeTrip(f);
+    clearInterval(watch);
+    const baby = f.g.babies[0].unicorn as unknown as Fake;
+    // Out: a then b; after clearing 1 the order is reversed, and home it reverses again with the newborn last.
+    const gapsOf = (u: Fake) => u.did.filter((d) => d.startsWith('track ')).map((d) => Number(d.slice(6)));
+    expect(f.mounts.bella.did.filter((d) => d === 'turn')).toHaveLength(2);
+    expect(gapsOf(a)).toEqual([1.6, 3, 1.6]);
+    expect(gapsOf(b)).toEqual([3, 1.6, 3]);
+    // The newborn stays at its hatch spot until the mount turns for home (never walked past her on the mount).
+    expect(gapsOf(baby)).toEqual([4.4]);
+    // The mount she did not choose grazed by its spot all the while.
+    expect(hazelWhileOut).toBe('graze');
+    f.stop();
+  });
+
+  it("lets the ghost tap the middle of the saddle icon, which floats over the saddle point", async () => {
+    const f = fakeGame();
+    await wholeTrip(f);
+    const tap = f.g.layer.ghost.tap as unknown as { mock: { calls: [() => { x: number; y: number }][] } };
+    expect(tap.mock.calls.length).toBeGreaterThan(0);
+    // toScreen gives (500, 300) for the saddle point; the 120 px icon stands 8 px over it.
+    expect(tap.mock.calls[0][0]()).toMatchObject({ x: 500, y: 300 - SADDLE_ICON / 2 - 8 });
+    f.stop();
+  });
+
+  it('keeps the sign level of a trip that reached home when the run stops while the mount walks back', async () => {
+    const f = fakeGame();
+    // The walk back to its spot takes its full 3 s.
+    f.mounts.bella.goTo = async () => new Promise<boolean>(() => {});
+    void ridePlace(f.g, 1).catch(() => {});
+    await until(() => f.saddlesUp);
+    f.tapSaddle('bella');
+    await until(() => f.log.includes('dismount'), 600_000);
+    await vi.advanceTimersByTimeAsync(500);
+    f.g.run.stop();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(f.g.save.data.signs).toEqual({ level: 1, recent: ['first', 'first'] });
+    f.stop();
+  });
+
+  it('counts her mounted time in visible frames only', async () => {
+    const f = fakeGame({ sign: () => new Promise<MomentResult>(() => {}) });
+    void ridePlace(f.g, 1).catch(() => {});
+    await until(() => f.saddlesUp);
+    f.tapSaddle('bella');
+    await until(() => f.g.ride?.step === 'sign1');
+    const before = f.g.clock.rideMs;
+    // A minute with the page in the background, then two seconds on screen.
+    f.page.hidden = true;
+    await vi.advanceTimersByTimeAsync(60_000);
+    f.page.hidden = false;
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(f.g.clock.rideMs - before).toBeGreaterThan(1500);
+    expect(f.g.clock.rideMs - before).toBeLessThan(2500);
+    f.g.run.stop();
     f.stop();
   });
 });
