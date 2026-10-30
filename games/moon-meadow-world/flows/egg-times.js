@@ -5,6 +5,8 @@
 //   goalToAwake   the first goal clip (num-egg-) starts to those stones awake
 //   dropToAwake   the right drop of sums 1 and 2 to the next sum's stones awake
 //   between       the clips and effects that started in those gaps
+//   numbersToWake per sum, the end of the goal's second number (num-warm- or num-toowarm-: its start plus its length)
+//                 to the stones awake; below 0 they woke while it still played
 //   total         the panel opens to the panel gone, and wait: the part of it the flow spent before each first drop
 (() => {
   const now = () => Math.round(performance.now());
@@ -39,7 +41,7 @@
     const id = this.buffer && this.buffer.__clip;
     // The panel opens in the same task as its first line, so it is looked for first.
     look();
-    if (id) ev.push({ t: now(), k: 'clip', id });
+    if (id) ev.push({ t: now(), k: 'clip', id, dur: Math.round(this.buffer.duration * 1000) });
     return start.apply(this, a);
   };
   addEventListener('pointerup', () => panel && ev.push({ t: now(), k: 'up' }), true);
@@ -74,6 +76,10 @@
         dropToAwake.push(up < 0 || next < 0 ? null : es[next].t - es[up].t);
         between.push(es.slice(up, next < 0 ? es.length : next).filter((x) => x.k === 'clip').map((x) => `${x.id}@${x.t - es[up].t}`));
       }
+      const numbersToWake = awakes.map((i) => {
+        for (let j = i; j >= 0; j--) if (es[j].k === 'clip' && /^num-(warm|toowarm)-/.test(es[j].id)) return es[i].t - (es[j].t + es[j].dur);
+        return null;
+      });
       const gone = at('gone');
       const wait = awakes.reduce((n, i) => {
         const up = at('up', i);
@@ -85,6 +91,7 @@
         opening: es.slice(0, awakes[0] ?? es.length).filter((x) => x.k === 'clip').map((x) => `${x.id}@${x.t - es[p].t}`),
         dropToAwake,
         between,
+        numbersToWake,
         total: gone < 0 ? null : t(gone) - es[p].t,
         wait,
       };

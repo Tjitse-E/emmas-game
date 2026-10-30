@@ -88,6 +88,9 @@ egg_times() {
   say "$1 times: $(val "() => JSON.stringify($e)")"
   expect_eq "$(val "() => $e.goalToAwake !== null && $e.goalToAwake <= 8000")" true "$1: stones awake within 8 s of the goal"
   expect_eq "$(val "() => $e.between.flat().filter((c) => /^(fb|fb4)-|^g4-heart@|^heart-glow@/.test(c)).join(' ')")" '' "$1: only the fact and the goal between sums"
+  expect_eq "$(val "() => $e.between.length === 2 && $e.between.every((g) => g.some((c) => /^num-(bond|add|take)-/.test(c)))")" true "$1: the fact between sums"
+  # Each sum's stones wake once its second number has ended (the clip's start plus its length; 150 ms for the timer).
+  expect_eq "$(val "() => $e.numbersToWake.length === 3 && $e.numbersToWake.every((d) => d !== null && d >= -150)")" true "$1: stones wake after both numbers"
   expect_eq "$(val "() => $e.opening.some((c) => c.startsWith('g4-hearts@'))")" "$([ "$1" = egg1 ] && echo true || echo false)" "$1: the hearts line"
 }
 
