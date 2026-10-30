@@ -4,7 +4,9 @@ import * as THREE from 'three';
 import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, PLACES, POND, SLIDE, STABLE, START, type Place, type Vec2 } from '../layout';
 import { createWorld } from './index';
 import { createActors, type ActorsImpl } from '../actors';
-import type { UnicornLook } from '../contracts';
+import type { SignWord, UnicornLook } from '../contracts';
+import { EARTH, ellipse, patch } from './beds';
+import { KIT, KIT_RADIUS } from './kit';
 
 const world = createWorld(document.getElementById('world')!);
 
@@ -331,3 +333,65 @@ function place(x: number, z: number): void {
 
 Object.assign(window, { __world: world, __dev: { marker, walkTo, measure, numerals, place, stalled, frameAt, picnicFrame, rackFrame, cornerFrame, beadFrame, portrait, THREE } });
 world.start();
+
+/**
+ * ?view=clearings: the contact sheet of the 13 clearing kinds (2.4.0, docs/v4/2.4.md 5.5 and 9 step 4), each on a bare
+ * clearing in a grid with its word under it, in the world's light and from the follow camera's angle, for Tjitse's
+ * look. The world stops drawing; the sheet draws with its renderer.
+ */
+function clearingsSheet(): void {
+  world.setPaused(true);
+  document.body.classList.add('clean');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#d6f0ff');
+  const sun = new THREE.DirectionalLight('#fff3df', 1.7);
+  sun.position.set(-8, 14, 6);
+  scene.add(new THREE.HemisphereLight('#eaf6ff', '#a8d48f', 1.6), sun, sun.target);
+  const material = new THREE.MeshLambertMaterial({ vertexColors: true });
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 60), new THREE.MeshLambertMaterial({ color: '#a3d97b' }));
+  ground.rotation.x = -Math.PI / 2;
+  scene.add(ground);
+  const words = Object.keys(KIT) as SignWord[];
+  const cols = 5;
+  const gap = 4.6;
+  const rowGap = 6;
+  const labels: { el: HTMLElement; at: THREE.Vector3 }[] = [];
+  words.forEach((w, i) => {
+    const x = ((i % cols) - (cols - 1) / 2) * gap;
+    const z = (Math.floor(i / cols) - 1) * rowGap;
+    scene.add(new THREE.Mesh(patch(ellipse({ x, z }, KIT_RADIUS + 0.3, KIT_RADIUS + 0.3, 28), { x, z }, 0.3, 0.01, EARTH), material));
+    const m = new THREE.Mesh(KIT[w](), material);
+    m.position.set(x, 0, z);
+    scene.add(m);
+    const el = document.createElement('div');
+    el.textContent = w;
+    el.style.cssText = 'position:fixed;transform:translate(-50%,0);font:600 18px system-ui,sans-serif;color:#3a2a4a;background:rgba(255,255,255,0.8);padding:1px 8px;border-radius:8px;pointer-events:none';
+    document.body.append(el);
+    labels.push({ el, at: new THREE.Vector3(x, 0, z + KIT_RADIUS + 0.2) });
+  });
+  const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.5, 200);
+  const place = (): void => {
+    camera.aspect = innerWidth / innerHeight;
+    // About the follow camera's pitch, far enough back for the whole grid.
+    const pitch = THREE.MathUtils.degToRad(42);
+    const dist = 26 / (2 * Math.tan(THREE.MathUtils.degToRad(19)) * Math.min(camera.aspect, 4 / 3));
+    camera.position.set(0, Math.sin(pitch) * dist, 0.6 + Math.cos(pitch) * dist);
+    camera.lookAt(0, 0.6, 0.6);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
+  };
+  const v = new THREE.Vector3();
+  const draw = (): void => {
+    place();
+    world.renderer.setSize(innerWidth, innerHeight, false);
+    world.renderer.render(scene, camera);
+    for (const l of labels) {
+      v.copy(l.at).project(camera);
+      l.el.style.left = `${((v.x + 1) / 2) * innerWidth}px`;
+      l.el.style.top = `${((1 - v.y) / 2) * innerHeight}px`;
+    }
+    requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+}
+if (new URLSearchParams(location.search).get('view') === 'clearings') clearingsSheet();

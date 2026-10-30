@@ -1,6 +1,6 @@
 // The paddock, the gate, the trail beyond it, the fork, the slots, the clearing kit, the ride camera, the occlusion
 // check and the ducks (2.4.0, docs/v4/2.4.md sections 5.4 and 5.5; docs/v4/2.4-plan.md Tasks 17 to 20).
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import { NIGHT_SKY, RIDE, RIDE_PATHS, STABLE_FRAME, dist2, type Vec2 } from '../src/layout';
 import { CameraRig, FOV } from '../src/world/camera';
@@ -8,6 +8,11 @@ import { Scenery, type Geo } from '../src/world/geo';
 import { GATE, GATE_REGION, PADDOCK_REGION, buildPaddock } from '../src/world/paddock';
 import { FENCE_GAP, HEDGE_GAP, TRAIL_LINES, buildFence, buildGround, buildHedges, groundHeight, treeSpots } from '../src/world/terrain';
 import { CLEARINGS, TRAIL_REGIONS, buildTrail, type TrailWorld } from '../src/world/trail';
+import { KIT, KIT_AT, KIT_HEIGHT, KIT_RADIUS } from '../src/world/kit';
+
+// src/assets.ts (the sign words' pictures, through content/signs.ts) reads the page location when it loads.
+vi.stubGlobal('location', { pathname: '/' });
+const { SIGN_WORDS } = await import('../src/content/signs');
 
 const triangles = (g: Geo): number => (g.index ? g.index.count : g.attributes.position.count) / 3;
 
@@ -323,5 +328,98 @@ describe('the trail ground, the fork and the slots (Task 18)', () => {
     // West to east on screen: the west card left of the east one, the north card above both.
     expect(arms[0].x).toBeLessThan(arms[2].x - 1.5);
     expect(arms[1].z).toBeLessThan(Math.min(arms[0].z, arms[2].z));
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------
+// Task 19: the clearing kit
+// ---------------------------------------------------------------------------------------------------------------
+
+describe('the clearing kit (Task 19)', () => {
+  it('builds each of the 13 kinds under 600 triangles as one geometry', () => {
+    expect(Object.keys(KIT).sort()).toEqual(SIGN_WORDS.map((w) => w.word).sort());
+    for (const w of SIGN_WORDS) {
+      const g = KIT[w.word]();
+      expect(g, w.word).toBeInstanceOf(THREE.BufferGeometry);
+      expect(triangles(g), w.word).toBeGreaterThan(60);
+      expect(triangles(g), w.word).toBeLessThan(600);
+      expect(Object.keys(g.attributes).sort(), w.word).toEqual(['color', 'normal', 'position']);
+    }
+  });
+
+  it('keeps each kind on its clearing: inside its 1.6 m round its spot, on the ground, under 3 m high', () => {
+    expect([KIT_RADIUS, KIT_HEIGHT]).toEqual([1.6, 3]);
+    for (const w of SIGN_WORDS) {
+      const g = KIT[w.word]();
+      const box = new THREE.Box3().setFromBufferAttribute(g.attributes.position as THREE.BufferAttribute);
+      expect(box.min.y, w.word).toBeGreaterThan(-0.05);
+      expect(box.min.y, w.word).toBeLessThan(0.15);
+      expect(box.max.y, w.word).toBeLessThan(KIT_HEIGHT);
+      expect(box.max.y, w.word).toBeGreaterThan(0.25);
+      const pos = g.attributes.position;
+      for (let i = 0; i < pos.count; i++) expect(Math.hypot(pos.getX(i), pos.getZ(i)), w.word).toBeLessThan(KIT_RADIUS);
+    }
+    for (const [i, at] of KIT_AT.entries()) {
+      const c = CLEARINGS[i];
+      // The kit stands behind the slot (where the mount stops), inside its clearing, clear of the mount.
+      expect(Math.hypot(at.x - c.center.x, at.z - c.center.z) + KIT_RADIUS, `slot ${i}`).toBeLessThanOrEqual(c.radius + 0.01);
+      expect(dist2(at, RIDE.slots[i]) - KIT_RADIUS, `slot ${i}`).toBeGreaterThan(0.85);
+      for (let dx = -KIT_RADIUS; dx <= KIT_RADIUS; dx += 0.4) for (let dz = -KIT_RADIUS; dz <= KIT_RADIUS; dz += 0.4) {
+        if (Math.hypot(dx, dz) <= KIT_RADIUS) expect(groundHeight(at.x + dx, at.z + dz)).toBe(0);
+      }
+    }
+  });
+
+  it('dresses the three slots with one mesh per kind and bares them with null', () => {
+    const { t, scene } = buildTrailForTest();
+    const kit = (w: string): THREE.Mesh => scene.getObjectByName(`kit-${w}`) as THREE.Mesh;
+    const visible = (): string[] => SIGN_WORDS.map((w) => w.word).filter((w) => kit(w).visible);
+    for (const w of SIGN_WORDS) expect(kit(w.word), w.word).toBeDefined();
+    // Hidden while the trail is hidden, even dressed.
+    t.trail.dress(['sand', 'barn', 'pond']);
+    expect(visible()).toEqual([]);
+    expect(t.trail.slots().map((s) => s.word)).toEqual(['sand', 'barn', 'pond']);
+    t.trail.show(true);
+    expect(visible().sort()).toEqual(['barn', 'pond', 'sand']);
+    for (const [i, w] of (['sand', 'barn', 'pond'] as const).entries()) {
+      const m = kit(w);
+      m.updateMatrixWorld();
+      const p = new THREE.Vector3().setFromMatrixPosition(m.matrixWorld);
+      expect(dist2(flatOf(p), KIT_AT[i]), w).toBeLessThan(0.01);
+    }
+    t.trail.dress(['stump', 'bench', 'pool']);
+    expect(visible().sort()).toEqual(['bench', 'pool', 'stump']);
+    t.trail.dress(null);
+    expect(visible()).toEqual([]);
+    expect(t.trail.slots().map((s) => s.word)).toEqual([null, null, null]);
+    t.trail.dress(['pines', 'shell', 'swing']);
+    t.trail.show(false);
+    expect(visible()).toEqual([]);
+  });
+
+  it('says a slot is on screen when its kit\'s bounds are in the camera\'s view', () => {
+    const scene = new THREE.Scene();
+    const scenery = new Scenery();
+    const t = buildTrail(scene, scenery);
+    for (const m of scenery.build(material, 'scenery')) scene.add(m);
+    const cam = new THREE.PerspectiveCamera(FOV, 1080 / 740, 0.5, 700);
+    const rig = new CameraRig(cam);
+    rig.resize(1080, 740);
+    t.attach({ scene, material, camera: cam, rig });
+    t.trail.dress(['sand', 'barn', 'pond']);
+    const frameAt = (p: Vec2, width: number): void => {
+      void rig.frame(p, width, { ms: 0 });
+      rig.update(0);
+    };
+    // The fork's frame (about 8 m): no slot shows, so the ride dresses them there.
+    frameAt({ x: RIDE.fork.x, z: RIDE.fork.z - 1.5 }, 8);
+    expect(t.trail.slots().map((s) => s.onScreen)).toEqual([false, false, false]);
+    // Riding up to a clearing it shows; the paddock sees none.
+    frameAt(RIDE.slots[1], 13.5);
+    expect(t.trail.slots()[1].onScreen).toBe(true);
+    frameAt(RIDE.slots[0], 13.5);
+    expect(t.trail.slots()[0].onScreen).toBe(true);
+    frameAt(RIDE.stand, 13.5);
+    expect(t.trail.slots().map((s) => s.onScreen)).toEqual([false, false, false]);
   });
 });

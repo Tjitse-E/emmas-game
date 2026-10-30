@@ -12,6 +12,7 @@ import { RIDE, RIDE_PATHS, type Vec2 } from '../layout';
 import { EARTH, ellipse, patch, ribbon } from './beds';
 import type { CameraRig } from './camera';
 import { Scenery, blob, paint, paintY, place, type Geo } from './geo';
+import { KIT, KIT_AT, KIT_HEIGHT, KIT_RADIUS } from './kit';
 import { buildPaddock } from './paddock';
 import { CLEARINGS, CUT, TRAIL_LINES } from './terrain';
 
@@ -21,6 +22,13 @@ export const TRAIL_REGIONS = ['paddock', 'trail-gate', 'fork', 'roads', 'slot-w'
 /** The regions drawn only during a ride. */
 export const RIDE_ONLY = ['roads', 'slot-w', 'slot-n', 'slot-e'] as const;
 const SLOT_REGIONS = ['slot-w', 'slot-n', 'slot-e'] as const;
+
+/**
+ * A slot counts as on screen while its kit's bounds (a sphere round the kit's spot, holding any of the 13 kinds)
+ * reach into the view: what would pop in if it were dressed now. A sphere centred on the ground would reach under it
+ * and call a slot on screen when nothing above the ground there is.
+ */
+const ON_SCREEN = { y: KIT_HEIGHT / 2, r: Math.hypot(KIT_RADIUS, KIT_HEIGHT / 2) } as const;
 
 /** Bed heights over the flat ground: the trail-gate bed under the roads, the roads under the plaza and the clearings. */
 const Y = { gate: 0.035, road: 0.04, plaza: 0.045, clearing: 0.05 } as const;
@@ -155,6 +163,11 @@ export interface TrailWorld {
   attach(o: TrailAttach): void;
   /** Every mesh the trail draws (its regions and the kit), for the harness's budget check. */
   meshes(): THREE.Object3D[];
+  /**
+   * Upload the ride's meshes (the roads, the slots and every kind of kit) to the GPU once, at load: drawn hidden into
+   * a 1 x 1 target, so a ride adds no geometry to renderer.info.memory (the long play's level check).
+   */
+  warm(renderer: THREE.WebGLRenderer): void;
 }
 
 export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
@@ -172,14 +185,35 @@ export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
   let shown = false;
   let rideOnly: THREE.Object3D[] = [];
   let all: THREE.Object3D[] = [];
+  let camera: THREE.Camera | null = null;
+  const kit = new Map<SignWord, THREE.Mesh>();
   const apply = (): void => {
     for (const m of rideOnly) m.visible = shown;
+    for (const m of kit.values()) m.visible = false;
+    words.forEach((w, i) => {
+      const m = w ? kit.get(w) : undefined;
+      if (!m) return;
+      m.position.set(KIT_AT[i].x, 0, KIT_AT[i].z);
+      m.updateMatrix();
+      m.visible = shown;
+    });
+  };
+  const frustum = new THREE.Frustum();
+  const pv = new THREE.Matrix4();
+  const sphere = new THREE.Sphere();
+  const onScreen = (i: number): boolean => {
+    if (!camera) return false;
+    camera.updateMatrixWorld();
+    frustum.setFromProjectionMatrix(pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    const at = KIT_AT[i];
+    return frustum.intersectsSphere(sphere.set(new THREE.Vector3(at.x, ON_SCREEN.y, at.z), ON_SCREEN.r));
   };
   const trail: TrailApi = {
     dress(w) {
       words = w ? [...w] : [null, null, null];
+      apply();
     },
-    slots: () => words.map((word) => ({ word, onScreen: false })),
+    slots: () => words.map((word, i) => ({ word, onScreen: onScreen(i) })),
     arm: (i) => armEnd(i),
     gate: (open, ms) => paddock.gate(open, ms),
     show(on) {
@@ -201,9 +235,44 @@ export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
     attach(o) {
       const region = (r: string): THREE.Object3D | undefined => o.scene.getObjectByName(`scenery-${r}`);
       rideOnly = RIDE_ONLY.map(region).filter((m): m is THREE.Object3D => !!m);
-      all = TRAIL_REGIONS.map(region).filter((m): m is THREE.Object3D => !!m);
+      camera = o.camera ?? null;
+      if (kit.size === 0) {
+        for (const w of Object.keys(KIT) as SignWord[]) {
+          const m = new THREE.Mesh(KIT[w](), o.material);
+          m.name = `kit-${w}`;
+          m.matrixAutoUpdate = false;
+          m.visible = false;
+          o.scene.add(m);
+          kit.set(w, m);
+        }
+      }
+      all = [...TRAIL_REGIONS.map(region).filter((m): m is THREE.Object3D => !!m), ...kit.values()];
       apply();
     },
     meshes: () => all.slice(),
+    warm(renderer) {
+      const scene = rideOnly[0]?.parent;
+      if (!scene || !camera) return;
+      const ride = new Set<THREE.Object3D>([...rideOnly, ...kit.values()]);
+      const was = new Map<THREE.Object3D, { visible: boolean; culled: boolean }>();
+      // Only the ride's meshes draw; the lights and the fog stay, so the draw uses the scenery's own shader.
+      scene.traverse((ob) => {
+        if (!(ob as THREE.Mesh).isMesh && !(ob as THREE.Points).isPoints && !(ob as THREE.Line).isLine && !(ob as THREE.Sprite).isSprite) return;
+        was.set(ob, { visible: ob.visible, culled: ob.frustumCulled });
+        ob.visible = ride.has(ob);
+        ob.frustumCulled = false;
+      });
+      const target = new THREE.WebGLRenderTarget(1, 1);
+      const before = renderer.getRenderTarget();
+      renderer.setRenderTarget(target);
+      renderer.render(scene as THREE.Scene, camera);
+      renderer.setRenderTarget(before);
+      target.dispose();
+      for (const [ob, w] of was) {
+        ob.visible = w.visible;
+        ob.frustumCulled = w.culled;
+      }
+      apply();
+    },
   };
 }

@@ -59,8 +59,16 @@ export const TRAIL_LINES: Vec2[][] = [
   ...RIDE_PATHS.roads.map((r) => lineOf(r)),
 ];
 
-/** The three clearings, west, north, east: a little north of their slots, where the kit stands behind the mount. */
-export const CLEARINGS: { center: Vec2; radius: number }[] = RIDE.slots.map((s) => ({ center: { x: s.x, z: s.z - 0.8 }, radius: 2.8 }));
+/**
+ * The three clearings, west, north, east: round their slots and reaching north of them, where the kit stands behind
+ * the mount (world/kit.ts KIT_AT). The east one is a little smaller and further west, so it stays on the fine ground
+ * cells (the base grid's columns are 6 m wide east of x 34).
+ */
+export const CLEARINGS: { center: Vec2; radius: number }[] = [
+  { center: { x: RIDE.slots[0].x, z: RIDE.slots[0].z - 1.2 }, radius: 3.2 },
+  { center: { x: RIDE.slots[1].x, z: RIDE.slots[1].z - 1.2 }, radius: 3.2 },
+  { center: { x: RIDE.slots[2].x - 0.4, z: RIDE.slots[2].z - 1.3 }, radius: 2.9 },
+];
 
 /**
  * The cutting: the beds lie flat at y 0, 3 m wide, the clearings on flat pads and the fork on a flat plaza; the hills

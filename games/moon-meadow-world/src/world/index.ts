@@ -271,6 +271,8 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
       return () => void callbacks.delete(fn);
     },
     start() {
+      // The ride's roads, slots and kit go to the GPU now, hidden, so a ride adds no geometry later (2.4.0).
+      trail.warm(renderer);
       renderer.setAnimationLoop(frame);
     },
     follow(target) {
