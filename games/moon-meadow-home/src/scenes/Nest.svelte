@@ -67,11 +67,6 @@
     void sleep(2000).then(() => { flash = false; });
   }
 
-  async function drop(stoneId: string): Promise<void> {
-    const r = await ctrl.place(stoneId);
-    if (r === 'solved') await hatch();
-  }
-
   async function hatch(): Promise<void> {
     if (leaving || !ctrl.babyId) return;
     leaving = true;
@@ -80,6 +75,8 @@
     await deps.pause(700);
     await game.go('hatch', { baby: ctrl.babyId, kind: t.kind, skin });
   }
+  // Every stone that solves the egg leads here, the ghost answer after two misses too.
+  ctrl.onsolved = hatch;
 
   ctrl.onghost = async (ids) => {
     const from = ids[0] ? stoneEl(ids[0]) : null;
@@ -109,7 +106,7 @@
       }
     })();
     return registerSceneHook('nest', {
-      answer: async () => { for (const id of ctrl.answerIds()) await drop(id); return 'ok'; },
+      answer: async () => { for (const id of ctrl.answerIds()) await ctrl.place(id); return 'ok'; },
       wrong: async (kind?: string) => { let r = 'none'; for (const id of wrongMove(kind)) r = await ctrl.place(id); return r; },
       idle: () => { deps.hints.idle(); },
       target: () => { const id = ctrl.answerIds()[0]; const s = ctrl.stones.find((x) => x.id === id); return s ? `stone ${s.value}` : null; },
@@ -161,7 +158,7 @@
   {/if}
   <div class="tray" class:wide-nest={twoNests} bind:this={trayEl}>
     <StoneTray stones={free} scaffold={t.scaffold} targets={['nest']} disabled={view.solved}
-      ondrop={(value) => { const id = ctrl.stoneOf(value); if (id) void drop(id); }}
+      ondrop={(value) => { const id = ctrl.stoneOf(value); if (id) void ctrl.place(id); }}
       ontap={() => ctrl.touch()} size={stoneFace(t) === 'dots' ? 116 : 108} />
   </div>
 </section>

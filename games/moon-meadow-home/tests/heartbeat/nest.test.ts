@@ -12,6 +12,14 @@ function tray(c: NestCtrl, values: number[]): StoneSpec[] {
 const pair = (a: number, b: number, step = 'M12E') =>
   served({ step, moment: 'egg-two-stone', items: [`m:pair:${a}+${b}`], carrier: { kind: 'maths', task: { op: 'pair', a, b } } });
 
+/** The hint ladder as src/ui/moment.ts runs it: the second miss starts the ghost answer and does not wait for it. */
+function ladder(f: ReturnType<typeof fakeDeps>): void {
+  const miss = f.deps.hints.miss;
+  let n = 0;
+  f.deps.hints.miss = async () => { await miss(); if (++n === 2) void f.goal()!.answer(); };
+}
+const settle = () => new Promise((r) => setTimeout(r, 0));
+
 const opts = { golden: false, speckled: false, firstEver: false };
 const m09 = () => served({ step: 'M09', moment: 'egg-moon', items: ['m:miss:10-3'] });
 const m10 = () => served({ step: 'M10', moment: 'egg-two-stone', items: ['m:pair:3+7'], carrier: { kind: 'maths', task: { op: 'pair', a: 3, b: 7 } } });
@@ -124,6 +132,71 @@ describe('NestCtrl', () => {
     expect(c.view().fill).toEqual([...Array(8).fill(1), ...Array(5).fill(2)]);
     expect(c.view().solved).toBe(true);
     expect(f.said).toContain('num-bond-8-5');
+  });
+  it('leaves for the hatch once, after the success lines, when her own stone solves the egg', async () => {
+    const f = fakeDeps();
+    const c = new NestCtrl(m09(), f.deps, opts);
+    const left: string[][] = [];
+    c.onsolved = async () => { left.push([...f.said]); };
+    await c.begin();
+    expect(await c.place(c.answerIds()[0])).toBe('solved');
+    expect(left).toHaveLength(1);
+    expect(left[0].slice(-2)).toEqual(['fb-warm', 'num-bond-3-7']);
+    await c.place(c.stones[0].id);
+    expect(left).toHaveLength(1);
+  });
+  it('leaves for the hatch when the ghost answer solves a two-stone egg after two misses', async () => {
+    const f = fakeDeps();
+    ladder(f);
+    const c = new NestCtrl(pair(7, 8), f.deps, opts);
+    const s = tray(c, [7, 8, 6, 9, 7, 8]);
+    const left: string[][] = [];
+    c.onsolved = async () => { left.push([...f.said]); };
+    await c.begin();
+    await c.place(s[0].id);
+    expect(await c.place(s[2].id)).toBe('miss');   // 7 + 6
+    expect(await c.place(s[3].id)).toBe('miss');   // 7 + 9: the ghost places the 8
+    await settle();
+    expect(c.view().solved).toBe(true);
+    expect(left).toHaveLength(1);
+    expect(left[0].slice(-2)).toEqual(['fb-warm', 'num-bond-7-8']);
+    expect(f.actions.filter((a) => a.type === 'hb.hatched')).toHaveLength(1);
+  });
+  it('leaves for the hatch when the ghost answer solves a one-stone egg of cups after two misses', async () => {
+    const f = fakeDeps();
+    ladder(f);
+    const c = new NestCtrl(m09(), f.deps, opts);
+    const left: string[][] = [];
+    c.onsolved = async () => { left.push([...f.said]); };
+    await c.begin();
+    const wrong = c.stones.filter((x) => x.value !== 7);
+    expect(await c.place(wrong[0].id)).toBe('miss');
+    expect(await c.place(wrong[1].id)).toBe('miss');
+    await settle();
+    expect(c.view().solved).toBe(true);
+    expect(left).toHaveLength(1);
+    expect(left[0].slice(-2)).toEqual(['fb-warm', 'num-bond-3-7']);
+  });
+  it('leaves for the hatch once when she drops the answer while the ghost hand moves', async () => {
+    const f = fakeDeps();
+    ladder(f);
+    const c = new NestCtrl(m09(), f.deps, opts);
+    let release = () => {};
+    let moving = false;
+    c.onghost = () => { moving = true; return new Promise((r) => { release = r; }); };
+    let left = 0;
+    c.onsolved = async () => { left++; };
+    await c.begin();
+    const wrong = c.stones.filter((x) => x.value !== 7);
+    await c.place(wrong[0].id);
+    await c.place(wrong[1].id);
+    await settle();
+    expect(moving).toBe(true);
+    expect(await c.place(c.answerIds()[0])).toBe('solved');
+    release();
+    await settle();
+    expect(left).toBe(1);
+    expect(f.actions.filter((a) => a.type === 'hb.hatched')).toHaveLength(1);
   });
   it('says the two-nest and two-stone goals only when not yet heard this visit', async () => {
     const f = fakeDeps();
