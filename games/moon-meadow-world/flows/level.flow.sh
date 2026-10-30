@@ -4,8 +4,9 @@
 # naming 1 (a near capital in slot 1), the dress-up wish (the light contrast), the first roll call (a door whose
 # unicorn waits in the yard) and the visit (an empty stall), the rest right; the slide, the bath wish at the pond, the
 # wild egg and its three sums, the picnic wish, free play (skipped with a hook call), bedtime and goodnight with its
-# ribbon gift. Checks each egg's three sums on one panel with its hearts and the band (2.3), the results log (with
-# what she tried), the basket and tray sizes, the save, missing clips and console errors. Screenshots of every part.
+# ribbon gift. Checks each egg's three sums on one panel with its hearts and the band (2.3), the eggs' timings and the
+# lines between their sums (2.3.2, flows/egg-times.js), the results log (with what she tried), the basket and tray
+# sizes, the save, missing clips and console errors. Screenshots of every part.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-7}"
 
@@ -72,9 +73,27 @@ egg_sums() {
   # The third heart, then the hatch.
   wait_for "() => window.__game.state().herd.some((h) => h.id === '$baby')" 30
   shot "egg-$part-hatch"
+  egg_times "$part"
+}
+
+# The egg's timings from flows/egg-times.js (2.3.2): the first sum's sleep, each right drop to the next awake stones,
+# the clips between, and the panel's time on screen. The stones wake within 8 s of the first goal clip; between sums
+# only the fact and the next goal play (no praise, no "A happy heart!", no heart-glow); the hearts line comes before
+# the first egg only.
+egg_times() {
+  local i e
+  i="$([ "$1" = egg1 ] && echo 0 || echo 1)"
+  e="window.__eggTimes()[$i]"
+  say "$1 times: $(val "() => JSON.stringify($e)")"
+  expect_eq "$(val "() => $e.goalToAwake !== null && $e.goalToAwake <= 8000")" true "$1: stones awake within 8 s of the goal"
+  expect_eq "$(val "() => $e.between.flat().filter((c) => /^(fb|fb4)-|^g4-heart@|^heart-glow@/.test(c)).join(' ')")" '' "$1: only the fact and the goal between sums"
+  expect_eq "$(val "() => $e.opening.some((c) => c.startsWith('g4-hearts@'))")" "$([ "$1" = egg1 ] && echo true || echo false)" "$1: the hearts line"
 }
 
 open_page "?seed=$SEED&fresh=1"
+# The egg timings (egg-times.js) need their script before the game's own, so the page loads again with it.
+run_code "async page => { await page.addInitScript({ path: '$REPO/games/moon-meadow-world/flows/egg-times.js' }); await page.reload(); }" || fail "egg timings script"
+wait_for "() => window.__game && window.__eggTimes" 20
 shot 00-start
 press_play
 sleep 2.5

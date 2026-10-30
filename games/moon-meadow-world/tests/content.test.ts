@@ -76,12 +76,15 @@ describe('eggs', () => {
     const [w] = eggs('warm').filter((e) => e.clips.intro.length);
     expect(w.clips.intro).toEqual(['g-egg']);
     expect(w.clips.goal).toEqual([`num-egg-${w.need}`, `num-warm-${w.have}`]);
+    expect(w.clips.ask).toBeUndefined();
     expect(w.clips.right[0]).toBe('fb-warm');
     expect(w.clips.tooBig(2)).toEqual(['fb-hot', 'num-over-2']);
     expect(w.clips.tooSmall(1)).toEqual(['fb-brr', 'num-cold-1']);
     expect(w.clips.hint).toEqual(['h-peek']);
     const [s] = eggs('snow').filter((e) => e.clips.intro.length);
-    expect(s.clips.goal).toEqual([`num-egg-${s.need}`, `num-toowarm-${s.have}`, 'g4-snow']);
+    // 2.3.2: the stones wake after the two numbers; "Drag the snow stone that cools the extra cups." follows them.
+    expect(s.clips.goal).toEqual([`num-egg-${s.need}`, `num-toowarm-${s.have}`]);
+    expect(s.clips.ask).toEqual(['g4-snow']);
     expect(s.clips.right).toEqual(['fb4-just-right', `num-take-${s.have}-${s.answer}`]);
     expect(s.clips.tooBig(1)).toEqual(['fb-brr', 'num-over-1']);
     expect(s.clips.tooSmall(2)).toEqual(['fb-hot', 'num-still-warm-2']);
@@ -114,16 +117,21 @@ describe('eggs', () => {
     expect(C.CLIPS.hearts).toEqual([HEARTS_CLIP]);
   });
 
-  it('an egg\'s sums say their own goal and fact, the snow egg\'s easy one within 10 too', () => {
+  // 2.3.2: after the right stone of the first and the second sum one line, the fact; the third keeps the praise.
+  it('an egg\'s sums say their own goal and fact, the snow egg\'s easy one within 10 too, the praise only after the third', () => {
     for (const s of seeds) {
       for (const e of eggSums('snow', C.seeded(s))) {
-        expect(e.clips.goal).toEqual([`num-egg-${e.need}`, `num-toowarm-${e.have}`, 'g4-snow']);
-        expect(e.clips.right).toEqual(['fb4-just-right', `num-take-${e.have}-${e.answer}`]);
+        const fact = `num-take-${e.have}-${e.answer}`;
+        expect(e.clips.goal).toEqual([`num-egg-${e.need}`, `num-toowarm-${e.have}`]);
+        expect(e.clips.ask).toEqual(['g4-snow']);
+        expect(e.clips.right).toEqual(e.round?.index === 2 ? ['fb4-just-right', fact] : [fact]);
         expect(e.clips.count).toEqual(Array.from({ length: e.answer }, (_, i) => `num-${i + 1}`));
       }
       for (const e of eggSums('warm', C.seeded(s))) {
+        const fact = `num-bond-${e.have}-${e.answer}`;
         expect(e.clips.goal).toEqual([`num-egg-${e.need}`, `num-warm-${e.have}`]);
-        expect(e.clips.right).toEqual(['fb-warm', `num-bond-${e.have}-${e.answer}`]);
+        expect(e.clips.ask).toBeUndefined();
+        expect(e.clips.right).toEqual(e.round?.index === 2 ? ['fb-warm', fact] : [fact]);
       }
     }
   });
@@ -140,7 +148,9 @@ describe('eggs', () => {
         }
       }
     }
-    expect(all.has('g4-heart')).toBe(true);
+    // "A happy heart!" is said no more (2.3.2); tools/build-lines.ts keeps its clip in the pack.
+    expect(all.has('g4-heart')).toBe(false);
+    expect(all.has('g4-snow')).toBe(true);
   });
 });
 

@@ -10,7 +10,7 @@ The eggs and the hay rack. 2.3.0 gives each egg three sums (docs/v4/2.3.md secti
 | `src/content/rack.ts` | The hay rack: `rackSpec` (a warm 2.2 sum with skin `hay` and v3's hay lines). |
 | `src/game/maths.ts` | `eggAsk`, `planEggs` (an egg's three sums from its stream, each used for the play), `noteMaths` (the result line, and the band move for the hard sum and the rack only), `movesBand`. |
 | `src/game/band.ts` | The band (A or B), `?maths=`, and the play's used totals and answers. |
-| `src/game/eggs-part.ts` | The egg part: walk, frame, the three sums with the background held silent, "A happy heart!", the hatch with `egg-crack`. |
+| `src/game/eggs-part.ts` | The egg part: walk, frame, the three sums with the background held silent, the hatch with `egg-crack`. |
 | `src/ui/egg.ts` | The egg panel: the cups, the stones, the ladder, the hearts, and the panel kept between sums. |
 | `src/ui/hay.ts` | The hay rack's skin, with `hay-rustle` as the bundles land. |
 | `tests/maths.test.ts` | The grade table, the egg, the trays and the guess rules, the band, the clips. |
@@ -55,12 +55,13 @@ Measured over 10,000 plays per band, one after another (`tests/maths.test.ts` ch
 
 ## Clips
 
-- The first sum's intro is the kind's intro on the first egg of a kind, then `g4-hearts` "Fill all three hearts, and the egg will hatch.". Sums 2 and 3 have no intro; "Drag one stone to the nest." comes only on the first warm egg's first sum.
-- After the first and the second sum: the heart lights, `heart-glow` plays (awaited, at most 1 s), and the game says `g4-heart` "A happy heart!".
+- The first sum's intro is the kind's intro on the first egg of a kind, then `g4-hearts` "Fill all three hearts, and the egg will hatch.". The ui says the hearts line before the play's first egg only (2.3.2, `eggOpening`). Sums 2 and 3 have no intro; "Drag one stone to the nest." comes only on the first warm egg's first sum.
+- The stones wake when the goal's two numbers are said (2.3.2). The snow egg's "Drag the snow stone that cools the extra cups." (`clips.ask`) follows with the stones awake.
+- After the first and the second sum: one line, the fact, while the heart lights (2.3.2). No effect and no praise. After the third: the praise, the fact, the heart with `heart-glow`, the hatch. `g4-heart` "A happy heart!" is said no more; build-lines.ts keeps its clip.
 - Every clip of every reachable sum is v3's or the demo's. The sums within 10 added `num-egg-3`, `num-take-7-4`, `num-take-8-5` and `num-take-10-7` (29 October 2026), and 2.3.1 added `num-take-9-6`. The snow egg's goals and facts past ten stay in lines.json as a reserve (`PAST_TEN` in tools/build-lines.ts).
 
 ## Sounds
 
-- `heart-glow`: a heart lights (ui/egg.ts); every heart, the third too, before the panel leaves. No fallback, so it is silent until its file is made.
+- `heart-glow`: the third heart lights (ui/egg.ts), before the panel leaves (2.3.2: not between sums). No fallback, so it is silent until its file is made.
 - `egg-crack`: the hatch, ducked under Lumi's "It's hatching!", fallback the synthesised `hatch`.
 - `hay-rustle`: the first hay bundle lands (ui/hay.ts); the praise or miss line after the pile awaits it.

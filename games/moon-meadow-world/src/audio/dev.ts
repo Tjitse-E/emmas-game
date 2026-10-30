@@ -27,7 +27,7 @@ const USE: Record<SfxFile, { where: string; fallback?: Sfx }> = {
   'slide-whoosh': { where: 'the slide start', fallback: 'whoosh' },
   'bedtime-bell': { where: 'bedtime, before "the sun is going down"' },
   owl: { where: 'goodnight, before Lumi\'s ribbons line' },
-  'heart-glow': { where: 'an egg heart lights, before "A happy heart!"' },
+  'heart-glow': { where: "an egg's third heart lights, before the hatch" },
 };
 
 const ELIZABETH = 'g4-ready'; // "Let's get you ready, Princess Emma!"

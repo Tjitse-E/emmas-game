@@ -56,8 +56,6 @@ export const CLIPS = {
   // 2.3.0: the eggs' three hearts, the gifts, the Dressing Corner and the moon mist (docs/v4/2.3.md sections 16 to 19)
   /** Before an egg's first sum. */
   hearts: ['g4-hearts'],
-  /** After an egg's first and second sum, while a heart lights. */
-  heart: ['g4-heart'],
   /** The gift picker, after a quest. */
   gift: ['g4-gift'],
   /** Lumi, when a gift set is full. */

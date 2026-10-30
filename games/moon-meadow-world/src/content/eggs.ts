@@ -660,8 +660,8 @@ export function fitEggPlans(): void {
  * total was asked earlier this play gives way to one just like it for the guess rules (freshCell), while there is
  * one. Then the tray. No total and no answer comes twice in one egg. The hard sum takes the band; easy and middle
  * have none and show 4 stones. `lastTotals` is not used (freshCell says why). `first` adds the kind's intro (and the
- * warm egg's spoken gesture) to the first sum; every egg's first sum says "Fill all three hearts, and the egg will
- * hatch."
+ * warm egg's spoken gesture) to the first sum; every egg's first sum carries "Fill all three hearts, and the egg will
+ * hatch.", which ui/egg.ts says before the play's first egg only.
  */
 export function eggSums(kind: EggKind, rand: Rand, o: MathsPick & { first?: boolean } = {}): EggSpec[] {
   const band = o.band ?? 'a';
@@ -723,7 +723,9 @@ function eggClips(kind: EggKind, c: EggCombo, first: boolean): EggSpec['clips'] 
   }
   return {
     intro: first ? ['g4-snow-egg'] : [],
-    goal: [`num-egg-${need}`, `num-toowarm-${have}`, 'g4-snow'],
+    // The stones wake when the two numbers are said; how to cool the egg follows with them awake (2.3.2).
+    goal: [`num-egg-${need}`, `num-toowarm-${have}`],
+    ask: ['g4-snow'],
     right: ['fb4-just-right', takeClip(have, answer)],
     // The snow stone cooled too many cups, so the egg shivers; too few, and it is still too hot.
     tooBig: (k) => ['fb-brr', `num-over-${clampK(k, MISS_MAX.over)}`],
@@ -748,7 +750,7 @@ export function eggClipIds(spec: EggSpec): string[] {
   const misses = spec.stones
     .filter((s) => s !== spec.answer)
     .flatMap((s) => (s > spec.answer ? c.tooBig(s - spec.answer) : c.tooSmall(spec.answer - s)));
-  return [...new Set([...c.intro, ...c.goal, ...(c.afterGoal ?? []), ...c.right, ...misses, ...c.hint, ...c.count])];
+  return [...new Set([...c.intro, ...c.goal, ...(c.ask ?? []), ...(c.afterGoal ?? []), ...c.right, ...misses, ...c.hint, ...c.count])];
 }
 
 /**
@@ -775,12 +777,15 @@ export const HEARTS_CLIP = 'g4-hearts';
 /**
  * The clips of one of an egg's three sums. The first sum adds "Fill all three hearts" after the kind's intro (the first
  * egg of a kind) and, on the first warm egg, the spoken gesture. The hearts line is always the last clip of the first
- * sum's intro: ui/egg.ts says the kind's intro once per layer, and this line for every egg. The second and third skip
- * the intro: the panel and the hearts stay on screen, so only the goal is new.
+ * sum's intro: ui/egg.ts says the kind's intro once per layer, and this line once per layer too, before the play's
+ * first egg (2.3.2). The second and third skip the intro: the panel and the hearts stay on screen, so only the goal is
+ * new. After the right stone of the first and the second sum she hears one line, the fact; the third keeps the praise
+ * before it (2.3.2).
  */
 function sumClips(kind: EggKind, c: EggCombo, first: boolean, index: number): EggSpec['clips'] {
   const clips = eggClips(kind, c, first && index === 0);
-  return { ...clips, intro: index === 0 ? [...clips.intro, HEARTS_CLIP] : [] };
+  const fact = kind === 'warm' ? addClip(c.have, c.answer) : takeClip(c.have, c.answer);
+  return { ...clips, intro: index === 0 ? [...clips.intro, HEARTS_CLIP] : [], right: index < 2 ? [fact] : clips.right };
 }
 
 /** Every clip of every graded sum, in every band, at every place in an egg, with every wrong stone its tray can show. */
@@ -791,7 +796,7 @@ function everyGradedClipIds(kind: EggKind): string[] {
       const n = gradeTray(grade, band);
       for (const c of gradeCombos(kind, grade, band)) {
         const stones = [c.answer, ...reachableStones(kind, c, n)].sort((a, b) => a - b);
-        for (const [first, index] of [[true, 0], [false, 0], [false, 1]] as const) {
+        for (const [first, index] of [[true, 0], [false, 0], [false, 1], [false, 2]] as const) {
           eggClipIds({ kind, ...c, stones, clips: sumClips(kind, c, first, index) }).forEach((id) => out.add(id));
         }
       }
