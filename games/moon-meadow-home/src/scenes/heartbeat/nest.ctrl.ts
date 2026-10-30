@@ -27,6 +27,11 @@ export class NestCtrl {
   onchange: () => void = () => {};
   /** The scene shows the ghost hand on these stones before the level 3 hint makes the moves. */
   onghost: (stoneIds: string[]) => Promise<void> = async () => {};
+  /**
+   * Called once when the egg is solved, after the success lines, whoever placed the last stone: her drop, the
+   * level 3 hint's ghost answer or the test hook. The scene leaves for the hatch here.
+   */
+  onsolved: () => Promise<void> = async () => {};
   private placed: StoneSpec[] = [];
   private misses = 0;
   private solved = false;
@@ -172,6 +177,7 @@ export class NestCtrl {
     });
     this.onchange();
     await this.d.audio.sayAll(successLines(this.task, values));
+    await this.onsolved();
     return 'solved';
   }
 }
