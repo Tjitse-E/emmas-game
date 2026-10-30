@@ -169,7 +169,9 @@ export function signCardBoxes(anchors: readonly Point[], words: readonly string[
   const fit = (b: Box): Box => ({ ...b, x: clamp(b.x, minX, maxX - b.w), y: clamp(b.y, minY, maxY - b.h) });
   const near = (a: Box, b: Box) => overlaps({ x: a.x - gap, y: a.y - gap, w: a.w + 2 * gap, h: a.h + 2 * gap }, b);
   const sizes = [0, 1, 2].map((i) => signCardSize(words[i] ?? '', unit));
-  const at = [0, 1, 2].map((i) => anchors[i] ?? anchors[0] ?? { x: screen.w / 2, y: screen.h / 2 });
+  // An arm behind the camera can come back without a usable point: the card then starts at the screen's middle.
+  const usable = (p: Point | undefined): p is Point => !!p && Number.isFinite(p.x) && Number.isFinite(p.y);
+  const at = [0, 1, 2].map((i) => (usable(anchors[i]) ? anchors[i] : usable(anchors[0]) ? anchors[0] : { x: screen.w / 2, y: screen.h / 2 }));
   let [w, n, e] = sizes.map((s, i) => fit({ x: at[i].x - s.w / 2, y: at[i].y - s.h / 2, ...s }));
   // Side by side around the middle of the two, at their own heights.
   const pairUp = () => {

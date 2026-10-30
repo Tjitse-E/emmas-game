@@ -28,6 +28,10 @@ const BUSY_RETRY_MS = 1500;
 const GLOW_MS = 3600;
 /** The pause after the tapped word before "Look at the letters again.". */
 const AFTER_WORD_MS = 350;
+/** A line that never ends (a clip that fails to play) holds the cards no longer than this; the opening at most WAKE_CAP_MS. */
+const LINE_CAP_MS = 8000;
+const WAKE_CAP_MS = 20_000;
+const said = (ids: readonly string[], cap = LINE_CAP_MS): Promise<void> => Promise.race([audio.sayAll([...ids]), sleep(cap)]);
 const ARMS = ['west', 'north', 'east'] as const;
 
 /** The letter sounds the focused hint plays for a word: its sounds where a grapheme says another (pines: z), else its graphemes. */
@@ -165,7 +169,7 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
         await letterSounds(still);
         if (still()) armIdle();
       },
-      contrast: () => audio.sayAll(spec.clips.again),
+      contrast: () => said(spec.clips.again),
       ghost: ghostTap,
     }, { missStep: 'contrast', items: 3 });
     ladder.ghostNow = () => void ghostTap();
@@ -185,7 +189,7 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
         hooks.log?.('sign', { word: spec.target.word, level: spec.level, quick: r.outcome === 'first' && at - openedAt < QUICK_MS });
         hooks.react('right');
         x.card.classList.add('right');
-        await audio.sayAll(spec.clips.right);
+        await said(spec.clips.right);
         if (!life.alive) return;
         // The cards fade while the mount nickers and sets off down that road.
         const [left] = await Promise.all([leave(root, life, setOpen), hooks.road(i as 0 | 1 | 2, true)]);
@@ -196,7 +200,7 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
       const step = hooks.road(i as 0 | 1 | 2, false);
       x.card.classList.add('wrong');
       x.card.classList.remove('resting');
-      await audio.sayAll([x.c.clip]);
+      await said([x.c.clip]);
       if (!life.alive) return;
       glowDiff(i);
       await sleep(AFTER_WORD_MS);
@@ -249,7 +253,7 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
     setOpen(handle);
 
     void (async () => {
-      await audio.sayAll([...spec.clips.intro, ...spec.clips.goal]);
+      await said([...spec.clips.intro, ...spec.clips.goal], WAKE_CAP_MS);
       if (!life.alive || finished) return;
       openedAt = performance.now();
       wake(true);

@@ -283,6 +283,7 @@ describe('sign cards', () => {
     [{ x: 30, y: h - 20 }, { x: 60, y: h - 60 }, { x: 120, y: h - 10 }],           // the fork low on the left, into the palm bands
     [{ x: w - 40, y: 40 }, { x: w - 10, y: 10 }, { x: w + 200, y: 60 }],          // high on the right, one off screen
     [{ x: -300, y: h / 2 }, { x: w / 2, y: -200 }, { x: w + 300, y: h + 300 }],   // all off screen
+    [{ x: NaN, y: NaN }, { x: Infinity, y: 10 }, { x: w / 2, y: h / 2 }],           // arms behind the camera
   ]]));
   const SETS = [['stump', 'stone', 'swing'], ['shed', 'barn', 'pines'], ['bench', 'beach', 'barn']];
 
