@@ -6,8 +6,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   CUP_GRID, apart, blanketPatches, bubbleBox, capitalOf, clearOf, eggOpening, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
-  menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, signCardBoxes, skyWash, stoneEffect,
-  tintedPicStyle, unitFor,
+  menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, pairsAfter, planTray, printUnits, safeTint, seeded, shuffle, signCardBoxes, skyWash,
+  STAR_PANEL, starGroups, starLines, starSpots, stoneEffect, tintedPicStyle, unitFor,
 } from '../src/ui/geometry';
 import { HintRunner, bellIdleDelay, onIdle, onMiss, onTouch, openLadder, outcomeOf, idleDelay, remindDelay } from '../src/ui/ladder';
 
@@ -124,6 +124,56 @@ describe('the egg opening', () => {
   it('keeps the hay rack\'s whole intro, which has no hearts line', () => {
     const seen = new Set<string>(['egg-hearts']);
     expect(eggOpening({ intro: ['g-hay-rack-intro'], goal: ['num-rack-9'] }, 'egg-intro:hay', false, seen)).toEqual(['g-hay-rack-intro', 'num-rack-9']);
+  });
+});
+
+// 2.4.0 (docs/v4/2.4.md section 5.5): the star egg's panel, the moon's stars and the egg's, loose until they pair up.
+describe('stars', () => {
+  type P = { x: number; y: number };
+  /** Rows of a group: stars whose heights are within 6 of the one before share a row. */
+  const rowsOf = (ps: readonly P[]): number => {
+    const ys = ps.map((p) => p.y).sort((a, b) => a - b);
+    return ys.reduce((rows, y, i) => rows + (i > 0 && y - ys[i - 1] > 6 ? 1 : 0), 1);
+  };
+  const minGap = (ps: readonly P[]): number => Math.min(...ps.flatMap((a, i) => ps.slice(i + 1).map((b) => Math.hypot(a.x - b.x, a.y - b.y))));
+  const inside = (p: P, z: { x: number; y: number; w: number; h: number }) => p.x >= z.x && p.x <= z.x + z.w && p.y >= z.y && p.y <= z.y + z.h;
+
+  it('scatters the two groups so they never line up or form a ten-frame', () => {
+    for (let s = 1; s <= 500; s++) for (const [m, e] of [[7, 3], [9, 5], [10, 7]]) {
+      const g = starGroups(m, e, s); expect([g.moon.length, g.egg.length]).toEqual([m, e]);
+      expect(rowsOf(g.moon)).toBeGreaterThan(2); expect(minGap([...g.moon])).toBeGreaterThanOrEqual(8);
+      expect(rowsOf(g.egg)).toBeGreaterThan(e >= 5 ? 2 : 1); expect(minGap([...g.egg])).toBeGreaterThanOrEqual(8);
+      for (const p of [...g.moon, ...g.egg]) expect(p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100).toBe(true);
+    }
+  });
+
+  it('puts every star on its own spot in its zone on the panel, a star apart, the same for the same seed', () => {
+    for (let s = 1; s <= 300; s++) for (const [m, e] of [[7, 3], [8, 4], [9, 6], [10, 3], [10, 7]]) {
+      const g = starSpots(m, e, s);
+      for (const p of g.moon) expect(inside(p, STAR_PANEL.moonZone)).toBe(true);
+      for (const p of g.egg) expect(inside(p, STAR_PANEL.eggZone)).toBe(true);
+      expect(minGap([...g.moon, ...g.egg])).toBeGreaterThanOrEqual(STAR_PANEL.star);
+      expect(starSpots(m, e, s)).toEqual(g);
+    }
+    expect(starSpots(9, 5, 1)).not.toEqual(starSpots(9, 5, 2));
+  });
+
+  it('pairs the stars and marks the extra moon stars after the right stone', () => {
+    expect(pairsAfter(9, 5)).toEqual({ pairs: [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]], extra: [5, 6, 7, 8] });
+    expect(pairsAfter(7, 3).extra).toHaveLength(4);
+    expect(pairsAfter(10, 7)).toMatchObject({ extra: [7, 8, 9] });
+  });
+
+  it('lines the stars up in two rows on the panel, each egg star under its moon star', () => {
+    for (const [m, e] of [[7, 3], [10, 7], [10, 3]]) {
+      const l = starLines(m, e);
+      expect(new Set(l.moon.map((p) => p.y)).size).toBe(1);
+      expect(new Set(l.egg.map((p) => p.y)).size).toBe(1);
+      expect(l.egg[0].y - l.moon[0].y).toBeGreaterThanOrEqual(STAR_PANEL.star);
+      l.egg.forEach((p, i) => expect(p.x).toBe(l.moon[i].x));
+      expect(minGap(l.moon)).toBeGreaterThanOrEqual(STAR_PANEL.star);
+      for (const p of [...l.moon, ...l.egg]) expect(p.x - STAR_PANEL.star / 2 >= 0 && p.x + STAR_PANEL.star / 2 <= STAR_PANEL.w && p.y + STAR_PANEL.star / 2 <= STAR_PANEL.h).toBe(true);
+    }
   });
 });
 

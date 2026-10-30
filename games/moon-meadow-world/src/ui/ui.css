@@ -336,6 +336,51 @@ html.mmw-guarded body {
 .sign-card.wrong .sign-print { animation: mmw-hum 400ms ease-in-out 2; }
 .sign-moment.leaving .sign-card { transition: opacity 400ms ease, transform 400ms ease; opacity: 0; transform: translateY(calc(-14 * var(--u))); }
 
+/* ---------------------------------------------------------------------------------------------- the star panel */
+/* 2.4.0 (docs/v4/2.4.md section 5.5): the star egg's panel where the egg's cups panel sits (860 x 172 design px,
+   geometry.ts STAR_PANEL), the moon's stars on a night sky under Lumi's crescent, the egg's beside the star egg. stars.ts
+   places every picture with left and top; lined up, the stars glide into two rows of pairs. */
+.egg-moment .star-panel {
+  position: absolute; bottom: calc(18 * var(--u)); left: 0; right: calc(192 * var(--u)); margin: 0 auto;
+  width: calc(860 * var(--u)); height: calc(172 * var(--u)); box-sizing: content-box;
+  background: rgba(255, 250, 242, 0.92); border: calc(5 * var(--u)) solid var(--lilac); border-radius: calc(40 * var(--u));
+  box-shadow: 0 calc(7 * var(--u)) 0 rgba(172, 146, 214, 0.45), 0 calc(14 * var(--u)) calc(30 * var(--u)) rgba(90, 60, 130, 0.18);
+  animation: mmw-pop-in 500ms cubic-bezier(.3, 1.3, .5, 1) both;
+}
+.star-panel.next-in { animation: mmw-cups-next 380ms ease-out both; }
+.egg-moment.leaving .star-panel { transition: opacity 400ms ease, transform 400ms ease; opacity: 0; }
+.star-sky, .star-nest, .star-moon, .star-egg, .star, .star-links, .star-link { position: absolute; pointer-events: none; }
+.star-sky { border-radius: calc(28 * var(--u)); background: linear-gradient(180deg, #2f3478 0%, #4b3f92 100%); box-shadow: inset 0 calc(4 * var(--u)) calc(10 * var(--u)) rgba(10, 10, 40, 0.35); }
+.star-nest { border-radius: calc(28 * var(--u)); background: linear-gradient(180deg, #f3eaff 0%, #e6d8fb 100%); box-shadow: inset 0 0 0 calc(3 * var(--u)) #d6c4f2; }
+.star-moon, .star-egg { object-fit: contain; }
+.star-moon { filter: drop-shadow(0 0 calc(10 * var(--u)) rgba(255, 226, 140, 0.8)); }
+.star-links { left: 0; top: 0; width: 100%; height: 100%; }
+.star-link { border-radius: calc(3 * var(--u)); background: rgba(255, 226, 140, 0.75); animation: mmw-link-in 500ms 450ms ease-out both; }
+@keyframes mmw-link-in { from { opacity: 0; transform: scaleY(0.2); } }
+.star {
+  width: calc(40 * var(--u)); height: calc(40 * var(--u)); object-fit: contain;
+  transition: left 650ms cubic-bezier(.4, 0, .2, 1), top 650ms cubic-bezier(.4, 0, .2, 1), filter 300ms;
+  filter: drop-shadow(0 0 calc(4 * var(--u)) rgba(255, 230, 150, 0.7));
+}
+.star.egg-star { filter: drop-shadow(0 0 calc(3 * var(--u)) rgba(170, 120, 230, 0.7)); }
+/* Lined up, the moon's extra stars stand out; with a sparkle they glow; a short stone leaves the others shaking. */
+.star-panel.lined .star.extra { filter: drop-shadow(0 0 calc(8 * var(--u)) rgba(255, 214, 102, 0.95)); }
+.star.extra.marked { filter: drop-shadow(0 0 calc(12 * var(--u)) calc(2 * var(--u)) #ffd25e) brightness(1.12); }
+.star.extra.short { animation: mmw-hum 150ms linear 8; }
+.star.pulse { animation: mmw-pulse 520ms ease-out; }
+.star.counted { filter: drop-shadow(0 0 calc(6 * var(--u)) #ffd25e) drop-shadow(0 0 calc(12 * var(--u)) #ffffff); transform: scale(1.18); }
+.star.glad { animation: mmw-glad 900ms ease-in-out; }
+.star-panel.wrong { animation: mmw-hum 160ms linear 4; }
+.star-panel.done { border-color: #ffe08a; box-shadow: 0 0 0 calc(4 * var(--u)) rgba(255, 224, 138, 0.6), 0 calc(14 * var(--u)) calc(34 * var(--u)) rgba(255, 190, 120, 0.5); }
+.fly-dot.star-spark { width: calc(34 * var(--u)); height: calc(34 * var(--u)); }
+.fly-dot.star-spark img { width: 100%; height: 100%; }
+.fly-dot.star-spark.spare { filter: drop-shadow(0 0 calc(8 * var(--u)) rgba(255, 110, 140, 0.9)); animation: mmw-spare 500ms ease-in-out infinite alternate; }
+.kind-star .egg-heart.lit svg { filter: drop-shadow(0 0 calc(7 * var(--u)) rgba(255, 214, 102, 0.95)); }
+/* The star egg's stones: the snow stones in gold. */
+.stone-cell.star .stone { background: radial-gradient(circle at 35% 30%, #fffbe6, #ffe08a 55%, #f0b52e); border-color: #e0a12a; }
+.stone-cell.star .stone-dots i { background: radial-gradient(circle at 35% 30%, #8a63dc, #4b3f92); }
+.stone-cell.star .stone-num { border-color: #f0c35a; }
+
 /* ---------------------------------------------------------------------------------------------- the naming moment */
 .bells { position: absolute; bottom: calc(26 * var(--u)); left: 50%; transform: translateX(-50%); display: flex; gap: calc(54 * var(--u)); align-items: flex-end; }
 .bells.leaving { transition: opacity 380ms, transform 380ms; opacity: 0; transform: translate(-50%, calc(40 * var(--u))); }

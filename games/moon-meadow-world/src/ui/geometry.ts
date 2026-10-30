@@ -206,6 +206,91 @@ export function signCardBoxes(anchors: readonly Point[], words: readonly string[
   return boxes.map((b) => ({ x: Math.round(b.x), y: Math.round(b.y), w: b.w, h: b.h }));
 }
 
+// ------------------------------------------------------------------------------------------------ stars
+
+/**
+ * The star egg's panel (2.4.0, docs/v4/2.4.md section 5.5), in design px: the moon's stars on a night sky under Lumi's
+ * crescent on the left, the egg's stars beside the star egg on the right. A zone is where star centres may lie; the two
+ * zones are more than a star apart. `lines` is where the stars pair up: the moon's in a row, each egg star under one.
+ */
+export const STAR_PANEL = {
+  w: 860, h: 172, star: 40,
+  moonPic: { x: 10, y: 38, w: 96, h: 96 },
+  moonZone: { x: 134, y: 28, w: 372, h: 118 },
+  eggZone: { x: 554, y: 28, w: 178, h: 118 },
+  eggPic: { x: 750, y: 20, w: 100, h: 132 },
+  lines: { x0: 150, pitch: 58, moonY: 50, eggY: 124 },
+} as const;
+
+/** One group scattered in a zone, every centre a star apart, or null when the tries run out. */
+function scatter(rand: () => number, n: number, z: Box, gap: number): Point[] | null {
+  const out: Point[] = [];
+  for (let tries = 0; out.length < n && tries < 4000; tries++) {
+    const p = { x: Math.round(z.x + rand() * z.w), y: Math.round(z.y + rand() * z.h) };
+    if (out.every((q) => Math.hypot(p.x - q.x, p.y - q.y) >= gap)) out.push(p);
+  }
+  return out.length === n ? out : null;
+}
+
+/** Rows of a scatter in percent of its zone: heights within 6 of the one before share a row. */
+function rowsIn(ps: readonly Point[], z: Box): number {
+  const ys = ps.map((p) => ((p.y - z.y) / z.h) * 100).sort((a, b) => a - b);
+  return ys.reduce((rows, y, i) => rows + (i > 0 && y - ys[i - 1] > 6 ? 1 : 0), 1);
+}
+
+/** The last resort: three staggered rows (never a ten-frame's two rows of five). */
+function staggered(n: number, z: Box): Point[] {
+  const rows = [0, 1, 2].map((r) => Math.ceil((n - r) / 3));
+  return Array.from({ length: n }, (_, i) => {
+    const r = i % 3;
+    const k = Math.floor(i / 3);
+    const cols = rows[r];
+    const x = z.x + ((k + (r === 1 ? 0.5 : 0.15 * r)) / Math.max(1, cols)) * z.w;
+    return { x: Math.round(Math.min(z.x + z.w, x)), y: Math.round(z.y + (r / 2) * z.h) };
+  });
+}
+
+/**
+ * The moon's `moon` stars and the egg's `egg` stars, loose, on the panel in design px (2.4.0): scattered in their
+ * zones, a star apart, in more than two rows (three or more for five egg stars or more), so the difference never shows
+ * at a glance in rows or a ten-frame. The same seed gives the same stars. Pure.
+ */
+export function starSpots(moon: number, egg: number, seed: number): { moon: Point[]; egg: Point[] } {
+  const rand = seeded(seed * 7919 + moon * 31 + egg);
+  const { moonZone, eggZone, star } = STAR_PANEL;
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const m = scatter(rand, moon, moonZone, star);
+    const e = scatter(rand, egg, eggZone, star);
+    if (m && e && rowsIn(m, moonZone) > 2 && rowsIn(e, eggZone) > (egg >= 5 ? 2 : 1)) return { moon: m, egg: e };
+  }
+  return { moon: staggered(moon, moonZone), egg: staggered(egg, eggZone) };
+}
+
+/** starSpots in percent of each group's zone (0 to 100), for the tests of the scatter. Pure. */
+export function starGroups(moon: number, egg: number, seed: number): { moon: Point[]; egg: Point[] } {
+  const s = starSpots(moon, egg, seed);
+  const pct = (z: Box) => (p: Point): Point => ({ x: ((p.x - z.x) / z.w) * 100, y: ((p.y - z.y) / z.h) * 100 });
+  return { moon: s.moon.map(pct(STAR_PANEL.moonZone)), egg: s.egg.map(pct(STAR_PANEL.eggZone)) };
+}
+
+/** Where the stars pair up, in design px: the moon's in a row, each egg star under the moon star it pairs with. Pure. */
+export function starLines(moon: number, egg: number): { moon: Point[]; egg: Point[] } {
+  const { x0, pitch, moonY, eggY } = STAR_PANEL.lines;
+  return {
+    moon: Array.from({ length: moon }, (_, i) => ({ x: x0 + i * pitch, y: moonY })),
+    egg: Array.from({ length: egg }, (_, i) => ({ x: x0 + i * pitch, y: eggY })),
+  };
+}
+
+/** The pairs (moon star i with egg star i) and the moon's extra stars: the difference the stone must show. Pure. */
+export function pairsAfter(moon: number, egg: number): { pairs: [number, number][]; extra: number[] } {
+  const n = Math.min(moon, egg);
+  return {
+    pairs: Array.from({ length: n }, (_, i) => [i, i] as [number, number]),
+    extra: Array.from({ length: Math.max(0, moon - n) }, (_, i) => n + i),
+  };
+}
+
 // ------------------------------------------------------------------------------------------------ gems and slots
 
 /** A vowel gem is pink, a consonant gem blue, y both (v3's gem colours). */
