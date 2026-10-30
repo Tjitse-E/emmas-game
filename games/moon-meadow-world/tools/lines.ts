@@ -38,8 +38,8 @@ export const SENTENCES: Line[] = [
   // 2.3.0 (docs/v4/2.3.md section 21). The phrases come from the phrase pattern and the new egg sums from the
   // number patterns below.
   { id: 'g4-nearly', speaker: 'narrator', text: 'Nearly ready!', note: 'Wardrobe, 15 s before the music box ends.' },
-  { id: 'g4-hearts', speaker: 'narrator', text: 'Fill all three hearts, and the egg will hatch.', note: "Before an egg's first sum." },
-  { id: 'g4-heart', speaker: 'narrator', text: 'A happy heart!', note: "After an egg's first and second sum." },
+  { id: 'g4-hearts', speaker: 'narrator', text: 'Fill all three hearts, and the egg will hatch.', note: "Before the first sum of the play's first egg (2.3.2)." },
+  { id: 'g4-heart', speaker: 'narrator', text: 'A happy heart!', note: 'Not said since 2.3.2 (the fact is the one line between sums); kept in the pack as a reserve.' },
   { id: 'g4-gift', speaker: 'narrator', text: 'Pick one present!', note: 'The gift picker after a quest.' },
   { id: 'lumi4-corner', speaker: 'queen', text: 'Your babies want to dress up first!', note: 'Dressing Corner, before the two phrase reads.' },
   { id: 'lumi4-sticker', speaker: 'queen', text: 'You found them all! A sticker for your trunk.', note: 'A gift set is full.' },

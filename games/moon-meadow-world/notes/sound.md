@@ -37,14 +37,14 @@ The v4 sound channel lives in `src/audio/` (docs/v4/2.3.md sections 8, 20 and 21
 Every lane calls `audio.fx(id, opts)`. A line by Elizabeth that must follow an effect awaits it:
 
 ```ts
-await audio.fx('heart-glow');
-await say(g, CLIPS.heart); // "A happy heart!"
+await audio.fx('heart-glow'); // ui/egg.ts: the third heart lights
+// then the hatch, with Lumi's "It's hatching!"
 ```
 
 | Effect | Lane | Call |
 |---|---|---|
 | egg-crack | eggs | `audio.fx('egg-crack', { duck: true, fallback: 'hatch' })` with Lumi's "It's hatching!" |
-| heart-glow | eggs | `await audio.fx('heart-glow')`, then `g4-heart` |
+| heart-glow | eggs | `await audio.fx('heart-glow')` as the third heart lights, then the hatch. Not between sums (2.3.2): there the heart lights as Elizabeth says the fact, with no effect |
 | hay-rustle | eggs | `audio.fx('hay-rustle')` as the bundles land |
 | splash-1, splash-2 | actors | in turn, `{ fallback: 'splash' }`, through `ctx.sounds()` |
 | slide-whoosh | actors | `{ fallback: 'whoosh' }` |

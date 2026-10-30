@@ -769,7 +769,8 @@ export function everySumClipIds(kind: EggKind, clipsFor: (c: EggCombo, first: bo
 }
 
 /**
- * "Fill all three hearts, and the egg will hatch.", before an egg's first sum. The id is CLIPS.hearts's
+ * "Fill all three hearts, and the egg will hatch.", in every egg's first sum; ui/egg.ts says it before the play's first
+ * egg only (2.3.2). The id is CLIPS.hearts's
  * (tests/maths.test.ts checks it): clips.ts imports this file, so this file cannot import CLIPS.
  */
 export const HEARTS_CLIP = 'g4-hearts';
