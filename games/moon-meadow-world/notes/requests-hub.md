@@ -32,3 +32,21 @@ Changes this lane needs in files it does not own, the targets its histories miss
    ```
 
    Why: the parts are now wardrobe, welcome, hub, bedtime and goodnight (5.1), so `free` and `egg2` are no part any more.
+
+3. **`src/test-hook.ts`, the `skip()` comment.** It says "End the current timed wait (free play's two minutes, the pond's 45 s)". Change it to:
+
+   ```ts
+   /** End the current timed wait (2.4.0: a pond visit; the hub's own wait goes on, so skip() never ends the hub). */
+   ```
+
+   Why: free play and the old pond part are gone; in the hub `skip()` ends a pond visit (the smoke flow uses it) and never the hub.
+
+## Seams with other lanes
+
+4. **The index-based `naming` and `wish` of `eggs-part.ts` stay imported** by `hub-part.ts` for the step jumps `?step=naming|wish` into an egg place (`eggStep`: a snapped baby at the egg's hatch spot, then its naming and wish), with `snapBabies` and `HATCH_SPOT`. `egg` is no longer imported by this lane (level.ts lost its 2.3 parts). If the babies lane deletes `naming` and `wish`, give the hub a frozen `newbornWish(g, baby)` or a step on `eggPlace` first, and switch `eggStep` to it.
+
+5. **`quests.ts` keeps `playQuests`** (eggs-part.ts's 2.3.3 `wish` reads it through `secondWishKind`) and **`hideOffers`** (bedtime.ts); `hideOffers` now takes every hub bubble off the screen. `afternoon`, `canQuest`, `askQuest` and `placeAt` are gone; no file outside this lane imported them.
+
+6. **What the hub expects from the babies lane:** `offerWish(g)` sets or returns the waiting herd baby (the hub writes `g.waiting` from its return and takes it out of the followers); `withdrawWish(g, u)` lets it graze again (the hub clears `g.waiting`); `canOfferWish(g)` is read at every refill as `HubCtx.wishBaby`. `eggPlace` may walk her itself; the hub also starts a walk to the egg when its bubble was tapped and no goal is set. `afterPlace` gets `{ n, fromMs, checkedMs }`; `h.pondMs` holds the visits' play time and a visit counts in `hub.done` only when she arrived. `bedtime.ts` may write `hub.bedtimeAt`; the hub writes it as it ends when bedtime has not.
+
+7. **What the hub expects from the mount lane:** `ridePlace(g, n)` walks her to the paddock itself (the bubble tap only asks it), and `snapTrip(g, step)` runs from `snapTo` for `?at=hub&place=ride&step=...` before the hub starts the ride. The paddock tap asks the ride while its bubble shows (input.ts).
