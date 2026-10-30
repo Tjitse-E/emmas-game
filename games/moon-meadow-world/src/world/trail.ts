@@ -38,7 +38,7 @@ const Y = { gate: 0.035, road: 0.04, plaza: 0.045, clearing: 0.05 } as const;
  * leaves the fork. The cards (ui/sign.ts) sit on the boards' outer ends (arm(i)); the north board sits higher, so on
  * screen its card shows above the other two.
  */
-export const SIGNPOST = { height: 2.0, arms: [{ y: 1.35, len: 1.1 }, { y: 1.7, len: 0.85 }, { y: 1.35, len: 1.1 }] } as const;
+export const SIGNPOST = { height: 2.0, arms: [{ y: 1.3, len: 1.1 }, { y: 1.75, len: 0.85 }, { y: 1.3, len: 1.1 }] } as const;
 
 /** The way road i leaves the fork: towards its point 4 m along. */
 function armDir(i: 0 | 1 | 2): Vec2 {
@@ -125,9 +125,12 @@ export interface TrailApi {
   slots(): { word: SignWord | null; onScreen: boolean }[];
   /** The end of arm i of the signpost, at card height (where card i sits). */
   arm(i: 0 | 1 | 2): THREE.Vector3;
-  /** Swing the gate in the north fence open or shut. */
+  /** Swing the gate in the north fence open or shut. A later call resolves the move it replaces at once (world/paddock.ts). */
   gate(open: boolean, ms?: number): Promise<void>;
-  /** The roads, the slots and the kit: drawn only during a ride (shown at getting on, hidden at getting off). Hidden at load. */
+  /**
+   * The roads, the slots and the kit: drawn only during a ride (shown at getting on, hidden at getting off). Hidden at
+   * load. Hiding bares the slots, so each ride starts with bare clearings.
+   */
   show(on: boolean): void;
   readonly shown: boolean;
 }
@@ -226,6 +229,8 @@ export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
     gate: (open, ms) => paddock.gate(open, ms),
     show(on) {
       shown = on;
+      // Hidden, the slots are bare: the next ride starts with every clearing bare until the fork frame holds (5.5).
+      if (!on) words = [null, null, null];
       apply();
     },
     get shown() {

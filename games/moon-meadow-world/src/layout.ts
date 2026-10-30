@@ -207,8 +207,8 @@ export const MIST = {
  * towards her stand), the back rail with its gap for the ride path, the trough and the tub at the back, the gate in
  * the north fence where the moon mist was, the fork with its signpost, the three clearing slots (west, north, east),
  * the trail speed, the followers' gaps behind the mount, the ride camera's clamp and its look-ahead. The trough and the
- * tub are round obstacles (OBSTACLES); the back rail is not one, as nothing north of the stables' back line is walkable
- * and the rail stands 0.2 m south of it.
+ * tub are round obstacles (OBSTACLES); the back rail's two sections block walking too (world/route.ts RAIL_BLOCK), as
+ * the rail stands 0.2 m inside the walkable ground (the stables' back line is z -16.7).
  */
 export const RIDE = {
   paddock: { minX: 21, maxX: 25.5, minZ: -16.3, maxZ: -10 },
@@ -222,10 +222,16 @@ export const RIDE = {
   /** The signpost at the fork, in the wedge between the north and the east roads (world/trail.ts builds its arms). */
   post: v2(23.0, -30.8),
   /**
-   * A fork frame (8 m) that holds the mount at the fork, the signpost with its three cards and the three road starts
-   * at 1080 x 810 and 1080 x 740, with no slot's kit in view (tests/world-trail.test.ts).
+   * Where the mount stops at the fork for both signs, facing the signpost: 2.2 m short of RIDE.fork, on the last
+   * straight of both ways out and the first straight of the way home (x 21.5, z -25.5 to -29).
    */
-  forkFrame: { center: v2(22.0, -31.0), width: 8 },
+  forkStop: v2(21.5, -26.8),
+  /**
+   * The fork frame, `world.frame(center, width, { shiftY })`: it holds the mount and its rider at `forkStop`, the
+   * signpost with its three cards and the three road starts at 1080 x 810 and 1080 x 740, with no slot's kit in view
+   * (tests/world-trail.test.ts).
+   */
+  forkFrame: { center: v2(22.0, -29.25), width: 10, shiftY: 0.1 },
   slots: [v2(11.5, -31), v2(21.5, -40), v2(31.5, -31)],
   speed: 4.2,
   gaps: [1.6, 3.0, 4.4],

@@ -148,12 +148,16 @@ Design: docs/v4/2.4.md sections 5.4 and 5.5; plan: docs/v4/2.4-plan.md Tasks 17 
 
 - **The paddock** (`src/world/paddock.ts`, region `paddock`, 1,450 triangles): trodden sand over `RIDE.paddock` (an
   overlay like the yard), a low wooden rail along the back only with a 1.6 m gap at x 22.5 (`RIDE.rail.gapWidth`), a hay
-  trough and a water tub (round obstacles of 0.5 m in `OBSTACLES`; nothing else in the walk grid changed, tested against
-  `tests/fixtures/walk-2.3.3.json`), and the bed from the rail's gap to the gate. No tuft or flower grows on its sand
+  trough and a water tub (round obstacles of 0.5 m in `OBSTACLES`), and the bed from the rail's gap to the gate. The
+  rail stands at z -16.5, 0.2 m inside the walkable ground, so its two sections block walking (`RAIL_BLOCK` in
+  `route.ts`: 0.4 m round them, back to the stables' back line; the gap stays open). A tap on the gate or the trail
+  ends in front of the rail or in its gap, never behind it. Nothing else in the walk grid changed (tested against
+  `tests/fixtures/walk-2.3.3.json`). No tuft or flower grows on its sand
   (the growth loop still draws its random numbers there, so every other tuft stays where 2.3 put it).
 - **The gate** (region `trail-gate`): two white leaves of 1.5 m in the north fence at x 21.5, hinged on two posts,
-  swinging 92 degrees into the meadow (`world.trail.gate(open, ms = 1000)`). The leaves are movable parts of their
-  merged region (as the Corner's lid): no draw call. The fence's own posts keep a metre clear of the gate and its rails
+  swinging 92 degrees into the meadow (`world.trail.gate(open, ms = 1000)`; as with `world.frame`, a new move resolves
+  the one it replaces at once, so `await gate(true)` can return with the gate part open). The leaves are movable parts
+  of their merged region (as the Corner's lid): no draw call. The fence's own posts keep a metre clear of the gate and its rails
   stop at the gate's posts; the hedge folds its rings into two round ends of 0.65 m round a 4.2 m opening and lies flat
   across it. Both keep at most the triangles they had (their regions are drawn in the stable views).
 - **The trail** (`src/world/trail.ts`): beds 3 m wide at y 0 (`world/beds.ts` ribbons and patches, earthy sand), from
@@ -164,9 +168,9 @@ Design: docs/v4/2.4.md sections 5.4 and 5.5; plan: docs/v4/2.4-plan.md Tasks 17 
 - **The ground** (`terrain.ts`): `groundHeight` cuts the hills flat along `TRAIL_LINES`, round `CLEARINGS` and the fork
   (`CUT`): flat 2.9 m past each bed (so every 2 m cell a bed reaches has all its corners at 0 and a hidden road leaves
   plain ground), then banks over 2 m. The north slot (natural ground about 2.7 m up) sits on a flat pad in a cutting.
-  `FINE_PATCHES` gives 2 m cells round the north road and slot (the base rows are 6 m apart there): 48 triangles more in
-  `far-n`; the patch's edge vertices take the base cell edge's line, so no crack opens. The trees beyond the fence keep 3
-  m and their crown off every bed (`treeSpots`): a tree in the way moves to the nearest free spot and keeps its kind and
+  `FINE_PATCHES` gives 2 m cells round the north road and slot (the base rows are 6 m apart there): its 120 triangles
+  replace 40, so `far-n` gains 80 (1,872 in all); the patch's edge vertices take the base cell edge's line, so no crack
+  opens. The trees beyond the fence keep 3 m and their crown off every bed (`treeSpots`): a tree in the way moves to the nearest free spot and keeps its kind and
   size, so the woods cost what they did.
 - **Drawn only during a ride:** `roads`, the slots and the kit are built at load, hidden, and shown by
   `world.trail.show(on)` (the mount lane: true at getting on, false at getting off). `paddock`, `trail-gate` and `fork`
@@ -175,14 +179,18 @@ Design: docs/v4/2.4.md sections 5.4 and 5.5; plan: docs/v4/2.4-plan.md Tasks 17 
   into a 1 x 1 target (`trail.warm`), so their buffers are on the GPU from the load and a ride adds no geometry to
   `renderer.info.memory`.
 - **The signpost** at `RIDE.post` (23.0, -30.8), in the wedge between the north and the east roads: three finger boards
-  pointing the way their roads leave the fork, west and east at 1.35 m, north at 1.7 m. `world.trail.arm(i)` is the end
-  of board i (card i's anchor). `RIDE.forkFrame` (`world.frame({ x: 22.0, z: -31.0 }, 8)`) holds the mount at the fork,
-  the three cards apart (more than 220 px between west and east, the north card 70 px higher) and clear of the rider's
-  head, and the road starts, with no kit in view, at both of her sizes (tested).
+  pointing the way their roads leave the fork, west and east at 1.3 m, north at 1.75 m. `world.trail.arm(i)` is the end
+  of board i (card i's anchor). The mount stops at `RIDE.forkStop` (21.5, -26.8) for both signs, 2.2 m short of the
+  fork on the last straight of the ways out and the first straight of the way home. `RIDE.forkFrame`
+  (`world.frame({ x: 22.0, z: -29.25 }, 10, { shiftY: 0.1 })`) holds the mount and its rider there, the three cards
+  apart (more than 220 px between west and east, the north card 70 px higher, each 110 px inside the edges) and clear
+  of the rider's head, and the road starts, with no kit in view, at both of her sizes (tested, at least 25 px to spare
+  on every rule). An 8 m frame cannot hold the mount at its stop and the north card at once.
 - **The clearing kit** (`src/world/kit.ts`, `KIT`): 13 models after their v3 word pictures, 156 to 528 triangles each
   (shell 528, pool 496), one geometry and one mesh each (`kit-<word>`) in the shared scenery material, so no new shader.
   `world.trail.dress(words)` moves the three kinds to `KIT_AT` (2.5 m behind the west and east slots, 2.8 m behind the
-  north one, inside their clearings) and shows them while the trail is shown; `dress(null)` bares the slots. The world
+  north one, inside their clearings) and shows them while the trail is shown; `dress(null)` and `show(false)` bare the
+  slots, so each ride starts with bare clearings. The world
   does not check where the camera is: the ride dresses only while `slots()` says every slot is off screen.
   `slots()[i].onScreen` is the kit's bounding sphere (1.6 m round, 3 m high) against the camera frustum (a sphere on
   the ground would reach under it and call the north slot on screen from the fork frame). The contact sheet:
@@ -208,7 +216,7 @@ Budget (world only, `__dev.trailMeasure()` in the harness, day unless said; call
 | The same with every paddock and trail mesh off | 25 / 53,449 | 24 / 53,385 |
 | Ride: her paddock stand | 19 / 30,928 | 19 / 30,928 |
 | Ride: galloping at the gate | 23 / 27,621 | 23 / 27,621 |
-| Ride: the fork frame | 14 / 19,726 | 14 / 19,726 |
+| Ride: the fork frame (10 m, `RIDE.forkFrame`) | 15 / 20,050 | 15 / 20,050 |
 | Ride: the slots with pines, barn, shed (west, north, east) | 18 / 21,697, 15 / 19,858, 16 / 17,930 | 19 / 26,553, 15 / 19,858, 17 / 18,022 |
 
 - The paddock's region (bounding sphere about 7 m) is drawn in some day views of the east meadow where nothing of it
@@ -216,8 +224,9 @@ Budget (world only, `__dev.trailMeasure()` in the harness, day unless said; call
   27 / 51,939 with the three ducks). Splitting it does not help: its sand alone straddles that frustum's corner.
 - For the mount lane: the trail beyond the stables' back line is ridden, never walked (`isWalkable` is false north of
   z -16.7 and outside `BOUNDS`), so followers move along the mount's track by placement, not by `route`. Hazel's way out
-  passes 1.1 m from Bella's spot and the way home 1.2 m from it: the mount at home should graze close to its spot while
-  the other rides.
+  passes 1.2 m from Bella's spot, between it and the trough, and the way home 1.3 m from it: the mount at home must hold
+  its spot (no grazing), turned to her stand, while the other leaves or comes back (notes/requests-trail.md). Its body
+  then clears the riding mount and Emma's skirt by 0.08 m or more (tested); grazing 0.6 m round its spot it would not.
 - Harness (2.4.0): walk to `paddock stand`; `trail show` and `hide`, `gate open` and `shut`, two dressings and `bare`,
   `ride clamp` and `meadow clamp`, camera `fork` and `slot w`, `n`, `e`, `ducks far`, `chute` and `bob`;
   `__dev.trailMeasure()` (also in `__dev.measure().trail`). A dev server started inside the sandbox does not see file

@@ -50,7 +50,10 @@ export interface WorldExtras {
     slots(): { word: SignWord | null; onScreen: boolean }[];
     arm(i: 0 | 1 | 2): THREE.Vector3;
     gate(open: boolean, ms?: number): Promise<void>;
-    /** The roads, the slots and the kit: drawn only during a ride (shown at getting on, hidden at getting off). Hidden at load. */
+    /**
+     * The roads, the slots and the kit: drawn only during a ride (shown at getting on, hidden at getting off). Hidden at
+     * load. Hiding bares the slots, so each ride starts with bare clearings.
+     */
     show(on: boolean): void;
     readonly shown: boolean;
   };

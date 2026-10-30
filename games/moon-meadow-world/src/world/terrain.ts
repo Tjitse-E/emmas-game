@@ -259,7 +259,8 @@ function normalAt(x: number, z: number, out: THREE.Vector3): THREE.Vector3 {
 /**
  * Where the ground needs fine cells beyond the meadow's (2.4.0): round the north road's cutting and the north slot's
  * pad, where the base grid's rows are 6 m apart. The patch's cells are 2 m; on its edges its extra vertices take the
- * base cell edge's own straight line, so no crack opens where the two grids meet. It adds 48 triangles to `far-n`.
+ * base cell edge's own straight line, so no crack opens where the two grids meet. Its 120 triangles replace 40 of the
+ * base grid's, so `far-n` gains 80 (1,872 in all).
  */
 export const FINE_PATCHES = [{ minX: 12, maxX: 32, minZ: -48, maxZ: -36 }] as const;
 

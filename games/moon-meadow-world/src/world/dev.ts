@@ -84,7 +84,7 @@ const button = (label: string, fn: () => void): void => {
   panel.append(b);
 };
 const STABLE_FRAME: Vec2 = { x: 0, z: -11.8 };
-/** The ride's fork frame (2.4.0, RIDE.forkFrame): 8 m, the mount at the fork, the signpost and the three road starts. */
+/** The ride's fork frame (2.4.0, RIDE.forkFrame): 10 m, the mount at RIDE.forkStop, the signpost and the road starts. */
 const FORK_FRAME = RIDE.forkFrame;
 
 /**
@@ -172,7 +172,7 @@ button('dress stump bench pool', () => world.trail.dress(['stump', 'bench', 'poo
 button('bare', () => world.trail.dress(null));
 button('ride clamp', () => world.cameraClamp('ride'));
 button('meadow clamp', () => world.cameraClamp('meadow'));
-button('fork', () => void world.frame(FORK_FRAME.center, FORK_FRAME.width));
+button('fork', () => void world.frame(FORK_FRAME.center, FORK_FRAME.width, { shiftY: FORK_FRAME.shiftY }));
 for (const [i, n] of ['slot w', 'slot n', 'slot e'].entries()) button(n, () => (world.cameraClamp('ride'), place(RIDE.slots[i].x, RIDE.slots[i].z)));
 button('ducks far', () => world.ducks.set('far'));
 button('ducks chute', () => world.ducks.set('chute'));
@@ -361,7 +361,7 @@ function trailMeasure(): Record<string, unknown> {
   const ride: [string, () => void][] = [
     ['paddockStand', () => at(RIDE.stand.x, RIDE.stand.z)],
     ['gallopGate', () => at(RIDE.gate.x, RIDE.gate.z - 1)],
-    ['forkFrame', () => (void world.frame(FORK_FRAME.center, FORK_FRAME.width, { ms: 0 }), world.snapCamera())],
+    ['forkFrame', () => (void world.frame(FORK_FRAME.center, FORK_FRAME.width, { ms: 0, shiftY: FORK_FRAME.shiftY }), world.snapCamera())],
     ['slotW', () => at(RIDE.slots[0].x, RIDE.slots[0].z)],
     ['slotN', () => at(RIDE.slots[1].x, RIDE.slots[1].z)],
     ['slotE', () => at(RIDE.slots[2].x, RIDE.slots[2].z)],

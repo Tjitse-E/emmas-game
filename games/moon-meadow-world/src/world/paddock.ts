@@ -118,7 +118,10 @@ function gatePosts(): Geo[] {
 }
 
 export interface Paddock {
-  /** Swing the gate open (into the meadow) or shut over `ms` (1 s). Resolves when it is there. */
+  /**
+   * Swing the gate open (into the meadow) or shut over `ms` (1 s). Resolves when it is there, or at once when a later
+   * call replaces this move (as world.frame does), so `await gate(true)` can return with the gate part open.
+   */
   gate(open: boolean, ms?: number): Promise<void>;
   /** 0 shut to 1 open. */
   readonly open: number;

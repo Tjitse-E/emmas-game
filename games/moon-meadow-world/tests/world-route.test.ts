@@ -6,7 +6,7 @@ import {
   START, WILD_EGG, doorFront, inPond, inStableBuilding, v2, type Vec2,
 } from '../src/layout';
 import {
-  BEHIND_Z, CELL, OBSTACLE_MARGIN, SLIDE_BLOCK, STABLE_BLOCK, isWalkable, lineOfSight, nearestWalkable, route,
+  BEHIND_Z, CELL, OBSTACLE_MARGIN, RAIL_BLOCK, SLIDE_BLOCK, STABLE_BLOCK, isWalkable, lineOfSight, nearestWalkable, route,
 } from '../src/world/route';
 
 const len = (r: Vec2[]): number => r.slice(1).reduce((s, p, i) => s + Math.hypot(p.x - r[i].x, p.z - r[i].z), 0);
@@ -352,9 +352,39 @@ describe('the paddock (2.4.0)', () => {
     }
   });
 
+  it('blocks the back rail\'s two sections, so a tap on the gate or the trail never walks her through the rail', () => {
+    const { z, minX, maxX, gapX, gapWidth } = RIDE.rail;
+    const [g0, g1] = [gapX - gapWidth / 2, gapX + gapWidth / 2];
+    expect(RIDE.rail.z).toBeGreaterThan(BEHIND_Z);
+    // The rail itself and the 0.4 m round it are blocked; the middle of the gap and the sand in front stay open.
+    for (const x of [minX, (minX + g0) / 2, g0, g1, (g1 + maxX) / 2, Math.min(maxX, BOUNDS.maxX)]) {
+      expect(isWalkable(v2(x, z)), `rail at ${x}`).toBe(false);
+      expect(isWalkable(v2(x, z + 0.3)), `rail at ${x}`).toBe(false);
+    }
+    expect(isWalkable(v2(gapX, z))).toBe(true);
+    expect(isWalkable(v2(21.5, RAIL_BLOCK.maxZ + 0.05))).toBe(true);
+    expect(isWalkable(RIDE.stand)).toBe(true);
+    // A tap on the gate, the trail beyond it or the strip behind the rail: she ends in front of the rail or in its gap,
+    // and her route crosses the rail's line only inside the gap.
+    for (const tap of [RIDE.gate, v2(21.5, -19), v2(24.5, -18), v2(25.8, -17.5), v2(21.2, -16.6), v2(25, -16.6), RIDE.fork]) {
+      const end = nearestWalkable(tap);
+      expect(isWalkable(end), `${tap.x},${tap.z}`).toBe(true);
+      expect(end.z > z || (end.x > g0 && end.x < g1), `${tap.x},${tap.z} ends at ${end.x.toFixed(2)},${end.z.toFixed(2)}`).toBe(true);
+      const r = route(RIDE.stand, tap);
+      expectClear(r);
+      for (let i = 1; i < r.length; i++) {
+        const [a, b] = [r[i - 1], r[i]];
+        if ((a.z - z) * (b.z - z) > 0 || a.z === b.z) continue;
+        const x = a.x + ((b.x - a.x) * (z - a.z)) / (b.z - a.z);
+        expect(x > g0 && x < g1, `${tap.x},${tap.z} crosses the rail at ${x.toFixed(2)}`).toBe(true);
+      }
+    }
+  });
+
   it('keeps the walk grid outside the paddock as it was', () => {
     // isWalkable at every 0.5 m cell centre, as 2.3.3 had it (tests/fixtures/walk-2.3.3.json). Only cells inside the
-    // trough's and the tub's circles change, and those lie inside the paddock grown by 1 m.
+    // trough's and the tub's circles and the back rail's two sections change, and those lie inside the paddock grown
+    // by 1 m.
     const snap = JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures/walk-2.3.3.json'), 'utf8')) as { cell: number; minX: number; minZ: number; cols: number; rows: number; hex: string };
     expect([snap.cell, snap.minX, snap.minZ]).toEqual([CELL, BOUNDS.minX, BOUNDS.minZ]);
     const bit = (k: number): boolean => ((parseInt(snap.hex[k >> 2], 16) >> (3 - (k & 3))) & 1) === 1;
@@ -370,7 +400,8 @@ describe('the paddock (2.4.0)', () => {
         expect(inside, `cell ${p.x},${p.z} changed outside the paddock`).toBe(true);
         expect(was, `cell ${p.x},${p.z} opened`).toBe(true);
         const inObstacle = [RIDE.trough, RIDE.tub].some((o) => Math.hypot(p.x - o.center.x, p.z - o.center.z) < o.radius + OBSTACLE_MARGIN);
-        expect(inObstacle, `cell ${p.x},${p.z}`).toBe(true);
+        const onRail = p.z < RAIL_BLOCK.maxZ && RAIL_BLOCK.sections.some((r) => p.x > r.minX && p.x < r.maxX);
+        expect(inObstacle || onRail, `cell ${p.x},${p.z}`).toBe(true);
       }
     }
     expect(changed).toBeGreaterThan(10);

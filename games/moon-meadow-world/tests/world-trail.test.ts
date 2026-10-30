@@ -200,17 +200,27 @@ describe('the trail ground, the fork and the slots (Task 18)', () => {
   it('rides out through the rail\'s gap and the gate, clear of the trough, the tub and the other mount', () => {
     const sample = (c: THREE.CatmullRomCurve3): Vec2[] => pathLine(c, 400);
     const other = { bella: RIDE.mounts.hazel, hazel: RIDE.mounts.bella };
+    // The mount at home holds its spot (no grazing) while the other leaves or comes back (notes/requests-trail.md), turned
+    // to her stand. Its body is about 0.28 m round a line from 0.5 m behind its spot to 0.6 m ahead (BUILDS.grown); the
+    // riding mount's 0.28 m and Emma's side-saddle skirt (0.15 m) pass clear of it. Grazing 0.6 m round its spot it would
+    // not: Hazel's way out passes 1.2 m from Bella's spot, between it and the trough.
+    const body = (spot: Vec2): [Vec2, Vec2] => {
+      const l = dist2(RIDE.stand, spot);
+      const f = { x: (RIDE.stand.x - spot.x) / l, z: (RIDE.stand.z - spot.z) / l };
+      return [{ x: spot.x - f.x * 0.5, z: spot.z - f.z * 0.5 }, { x: spot.x + f.x * 0.6, z: spot.z + f.z * 0.6 }];
+    };
+    const clear = 0.28 + 0.28 + 0.15;
     for (const m of ['bella', 'hazel'] as const) {
       const pts = sample(RIDE_PATHS.out[m]);
       for (const p of pts) {
         for (const o of [RIDE.trough, RIDE.tub]) expect(dist2(p, o.center), `${m} at ${p.x.toFixed(2)},${p.z.toFixed(2)}`).toBeGreaterThan(o.radius + 0.35);
-        expect(dist2(p, other[m]), `${m} past the other mount`).toBeGreaterThan(1.1);
+        expect(lineDist(p, body(other[m])), `${m} past the other mount at ${p.x.toFixed(2)},${p.z.toFixed(2)}`).toBeGreaterThan(clear);
       }
     }
     // Home with either mount: the other one stands at its spot.
     for (const p of sample(RIDE_PATHS.home)) {
       for (const o of [RIDE.trough, RIDE.tub]) expect(dist2(p, o.center)).toBeGreaterThan(o.radius + 0.35);
-      if (p.z > RIDE.rail.z) for (const s of Object.values(RIDE.mounts)) expect(dist2(p, s), `home at ${p.x.toFixed(2)},${p.z.toFixed(2)}`).toBeGreaterThan(1.1);
+      for (const s of Object.values(RIDE.mounts)) expect(lineDist(p, body(s)), `home at ${p.x.toFixed(2)},${p.z.toFixed(2)}`).toBeGreaterThan(clear);
     }
     // Where a path crosses the rail and the fence, it is inside the gap and the gate, and runs about straight across.
     for (const c of allPaths().filter((c) => c !== RIDE_PATHS.roads[0] && c !== RIDE_PATHS.roads[1] && c !== RIDE_PATHS.roads[2])) {
@@ -399,6 +409,10 @@ describe('the clearing kit (Task 19)', () => {
     t.trail.dress(['pines', 'shell', 'swing']);
     t.trail.show(false);
     expect(visible()).toEqual([]);
+    // Hiding bares the slots: the next ride starts with bare clearings until the fork frame holds and it dresses them.
+    expect(t.trail.slots().map((s) => s.word)).toEqual([null, null, null]);
+    t.trail.show(true);
+    expect(visible()).toEqual([]);
   });
 
   it('says a slot is on screen when its kit\'s bounds are in the camera\'s view', () => {
@@ -494,11 +508,18 @@ describe('the ride camera, occlusion and the ducks (Task 20)', () => {
     }
   });
 
-  it('frames the fork with the mount, the signpost\'s three cards and the road starts, and no kit in view', () => {
+  it('stops the mount at the fork on the ways out and home, 2.2 m short of the fork', () => {
+    const along = (c: THREE.CatmullRomCurve3, m: number): Vec2 => flatOf(c.getPointAt(m / c.getLength()));
+    for (const c of Object.values(RIDE_PATHS.out)) expect(dist2(along(c, c.getLength() - 2.2), RIDE.forkStop)).toBeLessThan(0.01);
+    expect(dist2(along(RIDE_PATHS.home, 2.2), RIDE.forkStop)).toBeLessThan(0.01);
+    expect(dist2(RIDE.forkStop, RIDE.fork)).toBeCloseTo(2.2, 5);
+  });
+
+  it('frames the fork with the mount at its stop, the signpost\'s three cards and the road starts, and no kit in view', () => {
     for (const [w, h] of [[1080, 810], [1080, 740]]) {
       const { t, rig, cam } = meadowForTest(w, h);
       t.trail.dress(['sand', 'barn', 'pond']);
-      void rig.frame(RIDE.forkFrame.center, RIDE.forkFrame.width, { ms: 0 });
+      void rig.frame(RIDE.forkFrame.center, RIDE.forkFrame.width, { ms: 0, shiftY: RIDE.forkFrame.shiftY });
       rig.update(0);
       cam.updateMatrixWorld();
       const screen = (p: THREE.Vector3): { x: number; y: number } => {
@@ -511,11 +532,13 @@ describe('the ride camera, occlusion and the ducks (Task 20)', () => {
       for (const [i, c] of cards.entries()) expect(inside(c, 110), `card ${i} at ${w}x${h}: ${c.x.toFixed(0)},${c.y.toFixed(0)}`).toBe(true);
       expect(cards[2].x - cards[0].x, `${w}x${h}`).toBeGreaterThan(220);
       expect(Math.min(cards[0].y, cards[2].y) - cards[1].y, `${w}x${h}`).toBeGreaterThan(70);
-      // The mount at the fork, its rider's head (seated about 1.7 m up) and the starts of the three roads.
-      for (const p of [new THREE.Vector3(RIDE.fork.x, 0, RIDE.fork.z), new THREE.Vector3(RIDE.fork.x, 1.7, RIDE.fork.z)]) expect(inside(screen(p), 40), `${w}x${h}`).toBe(true);
+      // The mount where it stops, its rider's head (seated about 1.7 m up) and the starts of the three roads.
+      const stop = RIDE.forkStop;
+      const head = new THREE.Vector3(stop.x, 1.7, stop.z);
+      for (const p of [new THREE.Vector3(stop.x, 0, stop.z), head]) expect(inside(screen(p), 40), `${w}x${h}`).toBe(true);
       for (const r of RIDE_PATHS.roads) expect(inside(screen(r.getPointAt(2.5 / r.getLength())), 20), `${w}x${h}`).toBe(true);
       // The rider's head stays below the west and east cards.
-      expect(screen(new THREE.Vector3(RIDE.fork.x, 1.7, RIDE.fork.z)).y - Math.max(cards[0].y, cards[2].y), `${w}x${h}`).toBeGreaterThan(60);
+      expect(screen(head).y - Math.max(cards[0].y, cards[2].y), `${w}x${h}`).toBeGreaterThan(60);
       expect(t.trail.slots().map((s) => s.onScreen), `${w}x${h}`).toEqual([false, false, false]);
     }
   });
