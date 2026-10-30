@@ -21,8 +21,11 @@ import type { RideState } from './ride';
 import { type Streams, createStreams } from './streams';
 import { mathsQuestFor } from './quest-kit';
 
-/** The parts of the level, in order (docs/v4/demo.md section 1; the wardrobe is 2.2.0's customiser). */
-export const PARTS = ['wardrobe', 'welcome', 'egg1', 'naming1', 'wish1', 'pond', 'egg2', 'naming2', 'wish2', 'hub', 'bedtime', 'goodnight'] as const;
+/**
+ * The parts of the level, in order (docs/v4/demo.md section 1; the wardrobe is 2.2.0's customiser; 2.4.0: the hub took
+ * over the fixed script, docs/v4/2.4.md section 5.1).
+ */
+export const PARTS = ['wardrobe', 'welcome', 'hub', 'bedtime', 'goodnight'] as const;
 export type Part = (typeof PARTS)[number];
 export const isPart = (s: string | null): s is Part => !!s && (PARTS as readonly string[]).includes(s);
 

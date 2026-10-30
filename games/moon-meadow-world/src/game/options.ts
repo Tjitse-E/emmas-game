@@ -107,36 +107,26 @@ export function parseOptions(search: string, now = Date.now()): GameOptions {
   };
 }
 
-/** 2.3.3's parts, which step 0 keeps (the hub lane replaces them with wardrobe, welcome, hub, bedtime, goodnight). */
-const OLD_PARTS = ['wardrobe', 'welcome', 'egg1', 'naming1', 'wish1', 'pond', 'egg2', 'naming2', 'wish2', 'free', 'bedtime', 'goodnight'];
-
-/** The egg part of a 2.3.3 play for an egg place and its step: egg1, naming1, wish1 (the nest) or the shore's. */
-function eggPart(place: 'egg' | 'shore', step: StartStep | null): string {
-  const n = place === 'egg' ? 1 : 2;
-  return step === 'naming' ? `naming${n}` : step === 'wish' ? `wish${n}` : `egg${n}`;
-}
+/** The parts a start can name besides the hub (2.4.0: wardrobe, welcome, hub, bedtime, goodnight). */
+const PARTS_BY_NAME = ['wardrobe', 'welcome', 'bedtime', 'goodnight'];
 
 /**
  * Where a play starts from ?at=, ?place= and ?step=, or null for a play from the start (the sweep, then the wardrobe;
- * a ?place= or ?quest= without ?at= only forces the maths quest, as in 2.3.3). Step 0 keeps 2.3.3's parts: ?at=hub and ?at=free give free play; ?place=egg gives egg1 (with ?step=naming naming1,
- * with wish wish1), shore egg2 (naming2, wish2), pond the pond, any other place free play with that place; an old part
- * name gives itself. `done` is empty. A place given by ?place= (or ?quest=) is forced: it starts as the hub opens, even
- * without an earned bubble. The hub lane gives the final rules (docs/v4/2.4-plan.md Task 6).
+ * a ?place= or ?quest= without ?at= only forces the maths quest, as in 2.3.3). ?at=hub opens the hub, with ?place= that
+ * place asked as it opens (forced: it starts even without an earned bubble) and ?step= a step inside it. The old part
+ * names are aliases (docs/v4/2.4.md section 8): egg1 is the hub with the nest egg asked, naming1 and wish1 add their
+ * step, egg2, naming2 and wish2 the same with the shore egg (the nest egg counted as done), pond the pond, and free the
+ * hub with both home eggs done, as free play was.
  */
 export function resolveStart(o: Pick<GameOptions, 'at' | 'place' | 'step'>): StartAt | null {
   const { at, place, step } = o;
-  if (at === 'hub' || at === 'free') {
-    if (place === 'egg' || place === 'shore') return { part: eggPart(place, step), place, step, done: [] };
-    if (place === 'pond') return { part: 'pond', place, step: null, done: [] };
-    return { part: 'hub', place, step: place ? step : null, done: [] };
-  }
-  if (!at || !OLD_PARTS.includes(at)) return null;
-  // The old part names say which place and step they stand for.
+  if (!at) return null;
+  if (at === 'hub' || at === 'free') return { part: 'hub', place, step: place ? step : null, done: at === 'free' ? ['egg', 'shore'] : [] };
   const egg = /^(egg|naming|wish)([12])$/.exec(at);
   if (egg) {
     const p: HubPlace = egg[2] === '1' ? 'egg' : 'shore';
-    return { part: at, place: p, step: egg[1] === 'egg' ? null : (egg[1] as StartStep), done: [] };
+    return { part: 'hub', place: p, step: egg[1] === 'egg' ? null : (egg[1] as StartStep), done: p === 'shore' ? ['egg'] : [] };
   }
-  if (at === 'pond') return { part: at, place: 'pond', step: null, done: [] };
-  return { part: at, place: null, step: null, done: [] };
+  if (at === 'pond') return { part: 'hub', place: 'pond', step: null, done: [] };
+  return PARTS_BY_NAME.includes(at) ? { part: at, place: null, step: null, done: [] } : null;
 }

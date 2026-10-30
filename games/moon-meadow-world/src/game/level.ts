@@ -1,49 +1,36 @@
 // The level script: "Emma's first day in Moon Meadow" (docs/v4/demo.md section 1, docs/v4/2.2.md). Each part is an
-// async step on the current Run; jump(part) stops the run, snaps the world into that part's state and starts from
-// there. 2.2.0 adds the customiser before the welcome (wardrobe-part.ts), the dress-up, pond and picnic wishes, and
-// the afternoon's side quests (quests.ts); the shared moment code is in moments.ts. 2.3.0 adds the effects of the
-// welcome crown, the bedtime bell and the goodnight owl (each line waits for its effect, at most 1 s) and one kind=play
-// line per play before the end screen.
+// async step on the current Run; jump(start) stops the run, snaps the world into that start's state and plays on from
+// there. 2.2.0 adds the customiser before the welcome (wardrobe-part.ts); 2.3.0 the effects of the welcome crown, the
+// bedtime bell and the goodnight owl, and one kind=play line per play before the end screen.
 //
-// 2.4.0 step 0 (docs/v4/2.4-plan.md Task 0): the naming and the wishes moved to eggs-part.ts, bedtime and goodnight to
-// bedtime.ts and the play line to report.ts, unchanged; a play starts where resolveStart says (options.ts), and a jump
-// honours ?babies= and ?bed=. The parts stay 2.3.3's until the hub lane's wardrobe, welcome, hub, bedtime, goodnight.
+// 2.4.0 (docs/v4/2.4.md section 5.1): the parts are the wardrobe, the welcome, the hub, bedtime and goodnight. The hub
+// (hub-part.ts) took over the fixed script: the eggs, the wishes, the pond, the gift quests, the Corner and the ride are
+// its places. The first play ever (or a save without the crown) keeps the long welcome, which ends with the nest egg
+// waiting, and the hub starts with that egg asked; from the second play the short welcome goes straight to the hub's
+// bubbles. The old part names stay as aliases of hub starts (options.ts resolveStart).
 import type { Vec2 } from '../contracts';
-import { GRAZE_HOMES, NEST, SLIDE, STABLE, STABLE_FRAME, START, WILD_EGG, dist2 } from '../layout';
+import { CORNER, BEAD_TREE, GRAZE_HOMES, HAY_RACK, NEST, PICNIC, RIDE, STABLE, STABLE_FRAME, START, WILD_EGG } from '../layout';
 import { audio } from '../audio';
-import { CLIPS, allGraphemes, wishClipIds } from '../content';
+import { CLIPS, allGraphemes } from '../content';
 import {
-  type Game, type Part, GOALS, PARTS, faceBeside, flat, frameAt, isPart, lumiSay, preload, princessAt, say, sayWay, setGoal,
-  setTime, startClock, startQuests, v3, waitToReach, walkTo,
+  type Game, type Part, GOALS, PARTS, faceBeside, frameAt, isPart, lumiSay, princessAt, say, sayWay, setGoal, setTime, startClock,
+  startQuests, v3,
 } from './game';
 import { Run, Cancelled } from './run';
 import { startMaths } from './band';
-import { afterWish, parkFollowers, planWish, runWish } from './moments';
-import { type EggSpot, HATCH_SPOT, NEST_EGG, SIDE, WILD_EGG_AT, bathSwim, egg, naming, snapBabies, wish } from './eggs-part';
+import { type EggSpot, NEST_EGG, SIDE, WILD_EGG_AT, snapBabies } from './eggs-part';
 import { herdAside, wardrobe, wardrobePartClipIds } from './wardrobe-part';
 import { hideOffers } from './quests';
-import { hub } from './hub-part';
+import { askStep, hub } from './hub-part';
 import { bedtime, goodnight } from './bedtime';
-import { BEDTIME_MS, startHub } from './hub';
-import type { StartAt } from './options';
+import { BEDTIME_MS, type HubState, startHub } from './hub';
+import { snapTrip } from './ride';
+import type { HubPlace, StartAt } from './options';
+import { dist2 } from '../layout';
 
 /** Width of ground across the screen for each framing. */
 const CROWN_WIDTH = 6;
-const WILD_EGG_WIDTH = 9;
 const INTRO_MS = 3500;
-/** The pond: the tap line after 12 s without a slide, the slide line once more 20 s later, the egg comes at 45 s. */
-const POND_TAP_MS = 12_000;
-const POND_AGAIN_MS = 20_000;
-const POND_WAIT_MS = 45_000;
-/** Play after the first slide before the bath wish at the pond. */
-const POND_PLAY_MS = 8000;
-/** Where she and her baby stand for the bath wish at the pond: on the shore with the water behind them. */
-const POND_WISH: { her: Vec2; baby: Vec2 }[] = [
-  { her: { x: 3.4, z: 7.4 }, baby: { x: 5.1, z: 8.1 } },
-  { her: { x: 8.6, z: 9.6 }, baby: { x: 10.3, z: 10.0 } },
-];
-/** The longest walk to those spots. */
-const POND_WISH_MS = 12_000;
 
 /** The level's clips said at any time, preloaded at the start with the herd's names. */
 export function startClipIds(g: Game): string[] {
@@ -52,18 +39,63 @@ export function startClipIds(g: Game): string[] {
     if (Array.isArray(v)) ids.push(...v);
     else if (typeof v === 'object') ids.push(...Object.values(v).flat());
   }
-  ids.push(...CLIPS.herdCount(14), ...g.herd.map((h) => h.clip));
+  ids.push(...g.herd.map((h) => h.clip));
   return [...new Set(ids)];
 }
 
 /** Her feet are on the grass (not climbing, sliding or swimming). */
 const onLand = (g: Game): boolean => ['idle', 'walk', 'run'].includes(g.actors.princess.mode);
 
+// ---- the play's shape (plan Task 6, pure) ------------------------------------------------------------------------
+
+/**
+ * The place the play opens with: the nest egg on the first play ever and on a save without the crown (2.3's rule for
+ * the long welcome), else none, and the hub's bubbles come at once. `plays` already counts this play. Pure.
+ */
+export function opening(s: { plays: number; seen: { crown: boolean } }): HubPlace | null {
+  return s.plays >= 2 && s.seen.crown ? null : 'egg';
+}
+
+/**
+ * The hub a start opens with (pure): its places counted as done, its place asked, the shore egg landed when the shore
+ * egg is done or asked, and a forced Corner or pond counted as earned, so its bubble is the play bubble.
+ */
+export function hubAt(start: StartAt, bedMs: number): HubState {
+  const h = startHub(bedMs);
+  h.done = start.done.slice();
+  h.asked = start.place;
+  h.shoreLanded = h.done.includes('shore') || start.place === 'shore';
+  if (start.place === 'corner' || start.place === 'pond') h.play = [start.place];
+  return h;
+}
+
+/**
+ * The babies a start snaps, in hatch order (pure): the nest egg's, the shore egg's and a ride's, in the order they were
+ * done; ?babies=n gives the first n of the nest, the shore and two trail eggs instead.
+ */
+export function spotsOf(done: readonly HubPlace[], babies: number | null): EggSpot[] {
+  if (babies !== null) return (['nest', 'shore', 'trail', 'trail'] as EggSpot[]).slice(0, babies);
+  const spot: Partial<Record<HubPlace, EggSpot>> = { egg: 'nest', shore: 'shore', ride: 'trail' };
+  return done.flatMap((p) => (spot[p] ? [spot[p]!] : []));
+}
+
+/** Where she stands as a jump into the hub opens: beside the asked place (the eggs at their side spots), else START. */
+function hubSpot(start: StartAt): [Vec2, number] {
+  const at: Partial<Record<HubPlace, Vec2>> = {
+    egg: SIDE[0], shore: SIDE[1], picnic: PICNIC.stand, beads: BEAD_TREE.stand, rack: HAY_RACK.stand, corner: CORNER.stand, ride: RIDE.stand,
+    pond: GOALS.pond.stand,
+  };
+  const p = start.place ? at[start.place] : undefined;
+  return p ? [p, start.place === 'egg' || start.place === 'shore' ? Math.PI / 2 : 0] : [START, 0];
+}
+
 // ---- the parts -------------------------------------------------------------------------------------------------
 
 async function welcome(g: Game): Promise<void> {
   // The long welcome until Lumi has given the crown: a first play left before the crown would else never save it.
-  if (g.save.data.plays >= 2 && g.save.data.seen.crown) return welcomeBack(g);
+  // 2.4.0: it ends as in 2.3, with the nest egg, and the hub starts with the nest egg asked; the short welcome goes
+  // straight to the hub.
+  if (opening({ plays: g.save.data.plays, seen: g.save.data.seen }) === null) return welcomeBack(g);
   const { actors, layer, world } = g;
   // She may walk and call unicorns while Lumi talks; taps never cut Lumi (names wait their turn).
   g.free = true;
@@ -100,14 +132,15 @@ async function welcome(g: Game): Promise<void> {
   const grass = v3({ x: (q.x + NEST.stand.x) / 2, z: (q.z + NEST.stand.z) / 2 + 0.6 });
   void layer.ghost.tap(() => world.toScreen(grass));
   await say(g, CLIPS.walk);
+  g.hub.asked = 'egg';
 }
 
 /**
- * From the second play on the welcome is short: "Hello, Emma!", the crown appears at once with a sparkle, then "An
- * egg is waiting." (no crown close-up, ghost tap or walk line; about 35 s less).
+ * From the second play on the welcome is short: "Hello, Emma!", the crown appears at once with a sparkle (no crown
+ * close-up, ghost tap or walk line; about 35 s less). 2.4.0: no egg here; the hub's bubbles come straight after it.
  */
 async function welcomeBack(g: Game): Promise<void> {
-  const { actors, layer, world } = g;
+  const { actors, layer } = g;
   g.free = true;
   layer.lumi.show(true);
   await lumiSay(g, CLIPS.helloBack);
@@ -115,90 +148,6 @@ async function welcomeBack(g: Game): Promise<void> {
   actors.princess.crown(true);
   actors.fx.sparkle(head, { count: 16 });
   await g.run.w(audio.fx('crown-twinkle'));
-  actors.egg.place(NEST_EGG, 'warm');
-  actors.fx.sparkle(NEST_EGG.clone().setY(1), { count: 18 });
-  world.nestGlow(true);
-  setGoal(g, GOALS.nest);
-  await say(g, CLIPS.eggWaiting);
-}
-
-/** The first baby's bath wish at the pond, after the first slide: they stand on the shore, facing the camera. */
-async function pondWish(g: Game): Promise<void> {
-  const { actors, world } = g;
-  const baby = g.babies[0];
-  if (!baby?.member) return;
-  const u = baby.unicorn;
-  g.free = false;
-  // A slide ends with a swim to the shore: she climbs out, and the baby is off the slide, first.
-  await g.run.until(() => onLand(g) && u.mode !== 'slide', 15_000);
-  const spec = planWish(g, 'bath', 'pond', { wish: true });
-  await preload(g, [...wishClipIds(spec), ...afterWish(spec)]);
-  // The nearer shore spot; a swimming baby climbs out at once when it is called.
-  const here = princessAt(g);
-  const stand = POND_WISH.reduce((a, b) => (dist2(here, a.her) <= dist2(here, b.her) ? a : b));
-  g.followers.remove(u);
-  parkFollowers(g, stand.her);
-  const her = walkTo(g, stand.her);
-  const babyRoute = [...world.route(flat(u.position), stand.baby), { x: stand.baby.x, z: stand.baby.z + 0.25 }];
-  const walks = Promise.all([her, u.goTo(babyRoute)]);
-  await g.run.w(Promise.race([walks, new Promise((r) => setTimeout(r, POND_WISH_MS))]));
-  // Still on the way (a long swim to the shore): they appear at their spots, so the frame shows them.
-  if (dist2(princessAt(g), stand.her) > 0.6) actors.placePrincess(stand.her, 0);
-  if (dist2(flat(u.position), stand.baby) > 0.8) u.place({ x: stand.baby.x, z: stand.baby.z + 0.25 }, 0);
-  u.lookAt(stand.her);
-  actors.princess.face(flat(u.position));
-  await runWish(g, u, spec, 'pond');
-  bathSwim(u);
-  for (const p of g.parked.splice(0)) g.followers.add(p);
-  g.followers.add(u, true);
-}
-
-async function pond(g: Game): Promise<void> {
-  const { actors, layer, world } = g;
-  g.free = true;
-  g.slid = false;
-  setGoal(g, GOALS.pond);
-  await say(g, CLIPS.pond);
-  await say(g, CLIPS.follow);
-  await waitToReach(g, GOALS.pond);
-  setGoal(g, null);
-  // The ghost hand drags a follower to the top of the slide once.
-  const shown = g.followers.list[0] ?? g.babies[0]?.unicorn;
-  const demo = shown ? layer.ghost.drag(() => world.toScreen(shown.headTop()), () => world.toScreen(SLIDE.top)) : Promise.resolve();
-  await say(g, CLIPS.slideDrag);
-  await g.run.w(demo);
-  const riding = () => actors.princess.mode === 'slide' || actors.princess.mode === 'climb';
-  // Waiting for the first slide: the tap line, then the slide line once more, and the egg comes anyway at 45 s.
-  if (!(await g.run.until(() => g.slid, POND_TAP_MS))) {
-    if (!riding()) await say(g, CLIPS.slideTap);
-    if (!(await g.run.until(() => g.slid, POND_AGAIN_MS))) {
-      if (!riding()) await say(g, CLIPS.slideTap);
-      await g.run.until(() => g.slid, POND_WAIT_MS - POND_TAP_MS - POND_AGAIN_MS);
-    }
-  }
-  // A little more play (she may slide down too) before the bath wish.
-  await g.run.sleep(POND_PLAY_MS);
-  await pondWish(g);
-  await wildEggArrives(g);
-}
-
-async function wildEggArrives(g: Game): Promise<void> {
-  const { actors, world } = g;
-  g.free = false;
-  // The camera frames the egg's landing spot and stays until Lumi has spoken.
-  const beam = actors.fx.moonbeam(WILD_EGG_AT, 3600);
-  await frameAt(g, WILD_EGG.at, WILD_EGG_WIDTH, WILD_EGG_AT, 0.5, 1100);
-  const talk = g.layer.lumi.speak(CLIPS.anotherEgg);
-  await g.run.sleep(500);
-  actors.egg.place(WILD_EGG_AT, 'snow');
-  actors.fx.sparkle(WILD_EGG_AT.clone().setY(0.8), { count: 24, colour: '#cfe8ff' });
-  void actors.fx.starfall(WILD_EGG_AT.clone().setY(0.6));
-  await g.run.w(talk);
-  await g.run.w(beam);
-  await g.run.sleep(700);
-  world.releaseFrame();
-  setGoal(g, GOALS.wildEgg);
-  g.free = true;
 }
 
 /** Notice the first slide by anyone: a unicorn that goes from the slide into the water, or Princess Emma sliding. */
@@ -251,20 +200,7 @@ export function installWayHelper(g: Game): void {
 
 // ---- running and jumping -----------------------------------------------------------------------------------------
 
-const STEPS: Record<Part, (g: Game) => Promise<void>> = {
-  wardrobe,
-  welcome,
-  egg1: (g) => egg(g, 0),
-  naming1: (g) => naming(g, 0),
-  wish1: (g) => wish(g, 0),
-  pond,
-  egg2: (g) => egg(g, 1),
-  naming2: (g) => naming(g, 1),
-  wish2: (g) => wish(g, 1),
-  hub,
-  bedtime,
-  goodnight,
-};
+const STEPS: Record<Part, (g: Game) => Promise<void>> = { wardrobe, welcome, hub, bedtime, goodnight };
 
 /** Play the level from `from` to the end on a fresh run. */
 export function playFrom(g: Game, from: Part): void {
@@ -284,11 +220,10 @@ export function playFrom(g: Game, from: Part): void {
   })();
 }
 
-/** Put the world into the state of the start of `part`, at once. */
-export function snapTo(g: Game, part: Part): void {
+/** Put the world into the state of a start, at once: its part, and for the hub its done places, its babies and its place. */
+export function snapTo(g: Game, start: StartAt): void {
   const { actors, layer, world } = g;
-  const k = PARTS.indexOf(part);
-  const after = (p: Part) => k > PARTS.indexOf(p);
+  const part = start.part as Part;
   g.run.stop();
   layer.reset();
   audio.stop();
@@ -297,8 +232,8 @@ export function snapTo(g: Game, part: Part): void {
   g.today = { wishes: 0, words: [] };
   g.clock = startClock();
   g.quests = startQuests(g.quests.maths);
-  // 2.4.0: a new hub (with ?bed=, its bedtime), no trip, no waiting wish, no sign set used.
-  g.hub = startHub(g.options.bedMs ?? BEDTIME_MS);
+  // 2.4.0: the hub this start opens with (with ?bed=, its bedtime), no trip, no waiting wish, no sign set used.
+  g.hub = part === 'hub' ? hubAt(start, g.options.bedMs ?? BEDTIME_MS) : startHub(g.options.bedMs ?? BEDTIME_MS);
   g.ride = null;
   g.waiting = null;
   g.signUse = { sets: [], targets: [] };
@@ -330,31 +265,26 @@ export function snapTo(g: Game, part: Part): void {
   actors.princess.extra(null);
   actors.princess.crown(part !== 'welcome' && part !== 'wardrobe');
 
-  // The egg of this part.
+  // The home egg of an asked egg place, where it lies (the hub places the nest egg when its bubble shows).
   actors.egg.hide();
-  if (part === 'egg1') actors.egg.place(NEST_EGG, 'warm');
-  if (part === 'egg2') actors.egg.place(WILD_EGG_AT, 'snow');
-  if (part === 'egg1') world.nestGlow(true);
+  if (part === 'hub' && start.place === 'egg' && !start.step) {
+    actors.egg.place(NEST_EGG, 'warm');
+    world.nestGlow(true);
+  }
+  if (part === 'hub' && g.hub.shoreLanded && !g.hub.done.includes('shore') && !(start.place === 'shore' && start.step)) actors.egg.place(WILD_EGG_AT, 'snow');
 
   // Princess Emma.
   const where: Record<Part, [Vec2, number]> = {
     wardrobe: [START, 0],
     welcome: [START, 0],
-    egg1: [SIDE[0], Math.PI / 2],
-    naming1: [SIDE[0], Math.PI / 2],
-    wish1: [SIDE[0], Math.PI / 2],
-    pond: [NEST.stand, Math.PI / 2],
-    egg2: [SIDE[1], Math.PI / 2],
-    naming2: [SIDE[1], Math.PI / 2],
-    wish2: [SIDE[1], Math.PI / 2],
-    hub: [{ x: SLIDE.ladderBase.x - 1.5, z: SLIDE.ladderBase.z + 2.5 }, 0],
+    hub: hubSpot(start),
     bedtime: [{ x: 1, z: -2 }, Math.PI],
     goodnight: [STABLE.emmaStand, Math.PI],
   };
   const [at, heading] = where[part];
   actors.placePrincess(at, heading);
-  if (part === 'egg1' || part === 'naming1') faceBeside(g, NEST.center);
-  if (part === 'egg2' || part === 'naming2') faceBeside(g, WILD_EGG.at);
+  if (part === 'hub' && start.place === 'egg') faceBeside(g, NEST.center);
+  if (part === 'hub' && start.place === 'shore') faceBeside(g, WILD_EGG.at);
 
   // The herd grazes, or sleeps in its stalls at goodnight.
   g.herd.forEach((h, i) => {
@@ -373,25 +303,22 @@ export function snapTo(g: Game, part: Part): void {
   });
   if (part === 'wardrobe') herdAside(g, true);
 
-  // The newborns: those of the parts before this one, or with ?babies=n that many named ones (2.4.0: the nest's, the
-  // shore's and two of the trail's, in that hatch order).
+  // The newborns of the places counted as done, in hatch order, named and following her; or with ?babies=n that many
+  // (the nest's, the shore's and two of the trail's).
   for (let d = 13; d <= 16; d++) actors.herd.remove(`baby-${d}`);
   g.babies = [];
-  if (g.options.babies !== null) {
-    const spots: EggSpot[] = ['nest', 'shore', 'trail', 'trail'];
-    snapBabies(g, spots.slice(0, g.options.babies), { x: at.x + 1.7, z: at.z + 1.3 }, true);
-  } else {
-    if (after('egg1')) snapBabies(g, ['nest'], part === 'naming1' ? HATCH_SPOT[13] : { x: at.x + 1.7, z: at.z + 1.3 }, after('naming1'));
-    if (after('egg2')) snapBabies(g, ['shore'], part === 'naming2' ? HATCH_SPOT[14] : { x: at.x - 0.9, z: at.z + 1.4 }, after('naming2'));
-  }
+  snapBabies(g, spotsOf(part === 'hub' ? start.done : [], g.options.babies), { x: at.x + 1.7, z: at.z + 1.3 }, true);
   for (const b of g.babies) {
     if (part === 'goodnight') {
       b.unicorn.putInStall(b.door, true);
       g.stalls.set(b.door, b.unicorn);
     }
   }
-  const followNow = g.babies.filter((b, i) => b.member && part !== 'goodnight' && !(part === 'wish1' && i === 0) && !(part === 'wish2' && i === 1));
-  g.followers.set(followNow.map((b) => b.unicorn));
+  g.followers.set(part === 'goodnight' ? [] : g.babies.filter((b) => b.member).map((b) => b.unicorn));
+
+  // A step inside the asked place: an egg place's naming or its baby's wish (the hub runs it), or a trip's step.
+  askStep(g, part === 'hub' && (start.place === 'egg' || start.place === 'shore') ? start.step : null);
+  if (part === 'hub' && start.place === 'ride' && start.step) snapTrip(g, start.step);
 
   // The camera: on the part's spot at once.
   if (part === 'goodnight') void world.frame(STABLE_FRAME.center, STABLE_FRAME.width, { ms: 0 });
@@ -399,13 +326,12 @@ export function snapTo(g: Game, part: Part): void {
 }
 
 /**
- * Jump to where a start says (test hook, ?at=, ?place=, ?step=; options.ts resolveStart): snap the world into its part,
- * ask its place, then play on from there.
+ * Jump to where a start says (test hook, ?at=, ?place=, ?step=; options.ts resolveStart): snap the world into it,
+ * then play on from its part (the hub runs its asked place first).
  */
 export function jump(g: Game, start: StartAt): void {
   if (!isPart(start.part)) return;
-  snapTo(g, start.part);
-  if (start.part === 'hub') g.hub.asked = start.place;
+  snapTo(g, start);
   playFrom(g, start.part);
 }
 

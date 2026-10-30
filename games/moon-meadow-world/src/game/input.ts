@@ -218,9 +218,9 @@ export function installInput(g: Game): void {
   }
 
   /**
-   * The saddle sign at the moon mist (2.3.0): it shimmers with a sparkle and Lumi says "Soon you can ride here!" once
-   * a play (never over a line that plays). She does not walk there: a big tree stands between the follow camera and
-   * the sign, and the sign is only a look ahead.
+   * The saddle sign by the paddock (2.3.0): it shimmers with a sparkle and Lumi says "The saddle is ready! Now you can
+   * ride." once a play (2.4.0; it said "Soon you can ride here!"), never over a line that plays. She does not walk
+   * there: the sign only points at the paddock.
    */
   function signTap(): void {
     g.quests.signs++;
@@ -228,7 +228,7 @@ export function installInput(g: Game): void {
     actors.fx.sparkle(new THREE.Vector3(MIST.sign.x, 1.7, MIST.sign.z + 0.1), { count: 14, colour: '#e6dcff' });
     if (!g.quests.signSaid && !audio.speaking) {
       g.quests.signSaid = true;
-      void g.layer.lumi.speak(CLIPS.soon);
+      void g.layer.lumi.speak(CLIPS.saddleReady);
     }
   }
 

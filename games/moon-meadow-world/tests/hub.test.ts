@@ -45,6 +45,14 @@ import { createSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
 import { createStreams } from '../src/game/streams';
 import { startMaths } from '../src/game/band';
+import { hubAt, opening, spotsOf } from '../src/game/level';
+import { resolveStart } from '../src/game/options';
+import { mathsQuestFor } from '../src/game/quest-kit';
+import { parseSave } from '../src/game/save';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const here = import.meta.dirname;
 
 describe('the play clock', () => {
   it('cuts off rides at 26:00, eggs at 27:00 and everything at 29:00, checks done early last at 28:00 with a 2-minute wait, and scales a short ?bed=', () => {
@@ -649,5 +657,75 @@ describe('the pond visit', () => {
     h.playMs = 181_000;
     expect(visitOver(h, { sliding: true })).toBe(false);
     expect(visitOver(h, { sliding: false })).toBe(true);
+  });
+});
+
+describe("the play's shape and the start options", () => {
+  it('maps the old part names to the hub', () => {
+    const at = (s: string) => resolveStart(parseOptions(s));
+    expect(at('?at=egg1')).toEqual({ part: 'hub', place: 'egg', step: null, done: [] });
+    expect(at('?at=naming2')).toEqual({ part: 'hub', place: 'shore', step: 'naming', done: ['egg'] });
+    expect(at('?at=pond')).toEqual({ part: 'hub', place: 'pond', step: null, done: [] });
+    expect(at('?at=free')).toEqual({ part: 'hub', place: null, step: null, done: ['egg', 'shore'] });
+    expect(at('?at=free&quest=corner')).toEqual({ part: 'hub', place: 'corner', step: null, done: ['egg', 'shore'] });
+    expect(at('?at=hub&place=ride&step=sign2')).toEqual({ part: 'hub', place: 'ride', step: 'sign2', done: [] });
+    expect(at('?at=bedtime')?.part).toBe('bedtime');
+    expect(at('?at=wardrobe')?.part).toBe('wardrobe');
+    expect(at('?at=hub&step=naming')).toEqual({ part: 'hub', place: null, step: null, done: [] });
+    expect(at('?place=ride')).toBeNull();
+    expect(at('?at=nowhere')).toBeNull();
+  });
+
+  it('her 2.3 save opens the hub', () => {
+    // Review Focus 4
+    const save = parseSave(readFileSync(join(here, 'fixtures/save-2.3.3.json'), 'utf8'), true);
+    expect(opening({ plays: save.plays + 1, seen: save.seen })).toBeNull(); // no forced egg
+    expect(mathsQuestFor(save.afternoon)).toBe('rack');
+    expect(save.seen.hub).toBe(false); // explanation and glide
+    expect(save.seen.ride).toBe(false); // the long first-ride intro
+    expect(refill(startHub(), { maths: 'rack', wishBaby: true, moments: { r: 0, m: 0 } })).toEqual(['egg', 'ride', 'picnic']);
+  });
+
+  it('forces the nest egg on the first play ever, and on a save without the crown', () => {
+    expect(opening({ plays: 1, seen: { crown: false } })).toBe('egg');
+    expect(opening({ plays: 4, seen: { crown: false } })).toBe('egg');
+    expect(opening({ plays: 1, seen: { crown: true } })).toBe('egg');
+  });
+
+  it('forces the place ?place= names, the Corner and the pond too, without an earned bubble', () => {
+    // the flows' starts
+    for (const s of ['?at=hub&place=corner', '?at=free&quest=corner', '?at=pond', '?at=hub&place=pond']) {
+      const h = hubAt(resolveStart(parseOptions(s))!, BEDTIME_MS);
+      expect(h.asked, s).toBe(h.play[0]);
+      expect(['corner', 'pond']).toContain(h.asked);
+    }
+    expect(hubAt(resolveStart(parseOptions('?at=hub&place=shore'))!, BEDTIME_MS)).toMatchObject({ asked: 'shore', shoreLanded: true });
+    expect(hubAt(resolveStart(parseOptions('?at=free'))!, 90_000)).toMatchObject({ asked: null, shoreLanded: true, done: ['egg', 'shore'], bedMs: 90_000 });
+  });
+
+  it('snaps the done eggs as babies in hatch order, and ?babies= overrides the count', () => {
+    expect(spotsOf(['egg', 'picnic', 'ride', 'shore'], null)).toEqual(['nest', 'trail', 'shore']);
+    expect(spotsOf(['egg', 'shore'], 4)).toEqual(['nest', 'shore', 'trail', 'trail']);
+    expect(spotsOf(['egg', 'shore'], 0)).toEqual([]);
+  });
+
+  it('runs a forced place first as the hub opens, then the bubbles of what is left', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', () => Promise.resolve());
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    try {
+      const f = fakeHub();
+      f.g.hub = hubAt(resolveStart(parseOptions('?at=hub&place=corner'))!, BEDTIME_MS);
+      void hub(f.g).catch(() => {});
+      await f.pump(3000);
+      expect(f.g.hub.done).toEqual(['corner']);
+      expect(f.g.hub.play).toEqual([]);
+      expect([...f.offers.keys()]).toEqual(['egg', 'ride', 'picnic']);
+      f.stop();
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    }
   });
 });
