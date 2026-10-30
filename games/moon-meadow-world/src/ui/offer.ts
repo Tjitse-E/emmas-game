@@ -5,10 +5,14 @@
 // badge on its rim, the picture of a gift that quest can still give (swatches.ts giftSwatchUrl), so the prize shows
 // without reading (docs/v4/2.3.md section 17.2). 2.3.0's last pass: bubbles never cover each other (a later one moves
 // along the screen edge it waits at, or up), and never Princess Emma (layer.keepClear): one that would goes above her.
+// 2.4.0 (the hub, docs/v4/2.4.md section 5.2): a bubble at a screen edge is small, 100 design px (90 on a screen under
+// 760 CSS px high) without its tail, so four fit on one edge between the home button and the food basket
+// (geometry.ts edgeBubbles); `base` draws a picture under the bubble's own (the nest under the moon egg); bob() bobs a
+// bubble once, or grows it and bobs it for about 3 s (the hub's nudge).
 import './wardrobe.css';
 import type { ScreenPoint } from '../contracts';
 import { audio } from '../audio';
-import { apart, bubbleBox, clearOf, edgeArrow, type Box } from './geometry';
+import { EDGE_BUBBLE, apart, bubbleBox, clamp, clearOf, edgeArrow, edgeBand, edgeSize, stackOnEdge, type Box } from './geometry';
 import { el, img, onTick, play, u, wordPicEl } from './dom';
 import { press } from './press';
 import { PIC } from './parts';
@@ -66,6 +70,7 @@ export function createOffers(parent: HTMLElement, screen: () => { w: number; h: 
     let shown = false;
 
     let edge = false;
+    let edgePx = 0;
     const follow = (placed: readonly Box[], her: Box | null): Box => {
       const a = o.at();
       const scr = screen();
@@ -79,24 +84,47 @@ export function createOffers(parent: HTMLElement, screen: () => { w: number; h: 
         topLeft: { x: 0, y: 0, w: u(160), h: u(160) },
         topRight: { x: scr.w - u(112), y: 0, w: u(112), h: u(112) },
       };
-      // A place off screen keeps its bubble at the screen edge, in its direction and without the tail, so she can
-      // always see it is waiting (a tap walks her there). The head point is set so the ball centres on that edge point.
-      const out = edgeArrow(a, a.visible, scr, margin + s / 2, 0);
-      const head = out ? { x: out.x, y: out.y + s / 2 + u(TAIL) + gap } : a;
-      let b = bubbleBox(head, s, h, scr, corners);
-      // Never over her: above her head instead (after the Corner she stands beside the picnic rug).
-      if (!out) b = clearOf(b, head, s, h, her, scr, corners);
-      // Never over the food basket in the bottom right corner.
-      const basket = { x: scr.w - u(150), y: scr.h - u(150) };
-      const x = b.x + s > basket.x && b.y + s > basket.y ? Math.max(margin, basket.x - s) : b.x;
-      // Never over a bubble placed before it: along the edge it waits at, or up when it is on screen.
-      const side = !!out && (Math.abs(out.x - (margin + s / 2)) < 1 || Math.abs(out.x - (scr.w - margin - s / 2)) < 1);
-      const r = apart({ x, y: b.y, w: s, h }, placed, scr, { gap, margin, along: out ? (side ? 'y' : 'x') : 'up' });
+      // A place off screen keeps its bubble at the screen edge, in its direction, small and without the tail, so
+      // she can always see it is waiting (a tap walks her there). 2.4.0: 100 design px (90 under 760 CSS px high).
+      const es = edgeSize(scr);
+      const out = edgeArrow(a, a.visible, scr, margin + es / 2, 0);
+      let r: Box;
+      let tailX = s / 2;
+      if (out) {
+        const side = Math.abs(out.x - (margin + es / 2)) < 1 ? 'left' : Math.abs(out.x - (scr.w - margin - es / 2)) < 1 ? 'right' : null;
+        const want = { x: out.x - es / 2, y: out.y - es / 2, w: es, h: es };
+        if (side) {
+          // Along a side edge, between the top corner (Lumi or the home button) and, on the right, the food basket.
+          r = stackOnEdge(want, placed, edgeBand(side, scr), gap);
+        } else {
+          // Along the top or the bottom edge, clear of Lumi, the home button and the food basket.
+          const top = out.y < scr.h / 2;
+          const lo = top ? u(EDGE_BUBBLE.topLeft) : margin;
+          const hi = scr.w - (top ? u(EDGE_BUBBLE.topRight) : u(EDGE_BUBBLE.basket)) - es;
+          r = apart({ ...want, x: clamp(want.x, lo, hi) }, placed, scr, { gap, margin, along: 'x' });
+        }
+      } else {
+        let b = bubbleBox(a, s, h, scr, corners);
+        // Never over her: above her head instead (after the Corner she stands beside the picnic rug).
+        b = clearOf(b, a, s, h, her, scr, corners);
+        // Never over the food basket in the bottom right corner.
+        const basket = { x: scr.w - u(150), y: scr.h - u(150) };
+        const x = b.x + s > basket.x && b.y + s > basket.y ? Math.max(margin, basket.x - s) : b.x;
+        // Never over a bubble placed before it: up when it is on screen.
+        r = apart({ x, y: b.y, w: s, h }, placed, scr, { gap, margin, along: 'up' });
+        tailX = Math.max(s * 0.18, Math.min(s * 0.82, a.x - r.x));
+      }
       box.style.transform = `translate(${r.x}px, ${r.y}px)`;
-      box.style.setProperty('--tail-x', `${Math.max(s * 0.18, Math.min(s * 0.82, head.x - r.x))}px`);
-      if (!!out !== edge) {
+      box.style.setProperty('--tail-x', `${tailX}px`);
+      if (!!out !== edge || (out && edgePx !== es)) {
         edge = !!out;
+        edgePx = es;
         box.classList.toggle('edge', edge);
+        // The small edge size on the bubble and its ball; the CSS sizes come back on screen.
+        for (const e of [box, ball]) {
+          e.style.width = edge ? `${es}px` : '';
+          e.style.height = edge ? `${es}px` : '';
+        }
       }
       const on = !taken;
       if (on !== shown) {
@@ -141,10 +169,21 @@ export function createOffers(parent: HTMLElement, screen: () => { w: number; h: 
       if (o) add(id, o);
     },
     /**
-     * A bubble bobs once, or with `grow` grows and bobs for about 3 s (the hub's nudge, 2.4.0). Unknown ids do nothing.
-     * Step 0's stub: nothing yet (the hub lane fills it).
+     * A bubble bobs once (a Lumi tap in the hub), or with `grow` grows and bobs for about 3 s (the hub's nudge, 2.4.0).
+     * Unknown ids do nothing.
      */
-    bob(_id: string, _grow: boolean): void {},
+    bob(id: string, grow: boolean): void {
+      const b = live.get(id);
+      if (!b) return;
+      const frames: Keyframe[] = grow
+        ? [
+            { transform: 'scale(1)' }, { transform: 'scale(1.35)', offset: 0.12 }, { transform: 'scale(1.22)', offset: 0.3 },
+            { transform: 'scale(1.38)', offset: 0.48 }, { transform: 'scale(1.22)', offset: 0.66 }, { transform: 'scale(1.32)', offset: 0.84 },
+            { transform: 'scale(1)' },
+          ]
+        : [{ transform: 'scale(1)' }, { transform: 'scale(1.18)', offset: 0.4 }, { transform: 'scale(1)' }];
+      void play(b.ball, frames, { duration: grow ? 3000 : 520, easing: 'ease-in-out' });
+    },
     /** The bubbles on screen, as 'offer <id>'. */
     targets(): UiTarget[] {
       const out: UiTarget[] = [];

@@ -9,6 +9,8 @@ import { el, img, onTick, u } from './dom';
 /** The touch point of the hand picture (the soft circle under the fingertip), as a fraction of its size. */
 const HOT = { x: 0.36, y: 0.79 };
 const SIZE = 128;
+/** The first hub's glide: this long to each bubble (2.4.0). */
+const GLIDE_MS = 900;
 
 export interface Ghost {
   tap(at: () => ScreenPoint, times?: number): Promise<void>;
@@ -91,8 +93,23 @@ export function createGhost(layer: HTMLElement): Ghost {
       if (!(await run(380, mine, () => place(at(1), false)))) return;
       show(false);
     },
-    // Step 0's stub: it resolves at once (the hub lane fills it).
-    async glide(_points) {},
+    // 2.4.0, the first hub ever: the open hand glides from bubble to bubble, 900 ms each, without a press, so she
+    // sees there is more than one. Never under a finger; her touch ends it early, as every demonstration.
+    async glide(points) {
+      if (down.size || !points.length) return;
+      const mine = ++token;
+      const off = (p: Point): Point => ({ x: p.x + u(30), y: p.y + u(40) });
+      let from = off(points[0]());
+      place(from, false);
+      show(true);
+      for (const at of points) {
+        const start = from;
+        if (!(await run(GLIDE_MS, mine, (t) => { const e = off(at()); const k = easeInOut(t); place({ x: lerp(start.x, e.x, k), y: lerp(start.y, e.y, k) }, false); }))) return;
+        from = off(at());
+      }
+      if (!(await run(300, mine, () => place(from, false)))) return;
+      show(false);
+    },
     hide() {
       token++;
       show(false);

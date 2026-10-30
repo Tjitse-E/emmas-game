@@ -1,10 +1,11 @@
 // The 2D layer's pure helpers (src/ui/geometry.ts, ladder.ts). 2.3.0 splits this file by describe block, as
 // content.test.ts is split (docs/v4/2.3.md section 22.2): eggs owns 'stones', 'moon cups' and 'the blanket'; reading
 // owns 'gems and slots', 'print', 'hint ladder', 'hint runner', 'hint runner timing' and 'colour'; wardrobe-ui owns
-// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own.
+// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own. 2.4.0: the
+// hub lane adds the edge bubbles' tests at the end of 'placement'.
 import { describe, expect, it, vi } from 'vitest';
 import {
-  CUP_GRID, apart, blanketPatches, bubbleBox, capitalOf, clearOf, eggOpening, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
+  CUP_GRID, apart, blanketPatches, bubbleBox, edgeBubbles, stackOnEdge, capitalOf, clearOf, eggOpening, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
   menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, tintedPicStyle,
   unitFor,
 } from '../src/ui/geometry';
@@ -288,6 +289,29 @@ describe('placement', () => {
     // Behind the camera: projected inside the screen, but the way to it is the other way.
     const behind = edgeArrow({ x: 590, y: 200 }, false, screen, 76, 40)!;
     expect(behind.y).toBeCloseTo(820 - 76);
+  });
+
+  // 2.4.0, the hub lane (docs/v4/2.4.md section 5.2): four small bubbles on one edge.
+  it('fits four small edge bubbles on the right edge at 1080 x 740 and 1080 x 810, apart and clear of the home button and the basket', () => {
+    for (const [w, h] of [[1080, 740], [1080, 810]]) {
+      const boxes = edgeBubbles(4, { w, h });
+      expect(boxes).toHaveLength(4);
+      expect(boxes.every((b) => b.w === Math.round((h === 740 ? 90 : 100) * unitFor(w, h)))).toBe(true);
+      expect(boxes.every((b) => b.w >= 64 && b.h >= 64)).toBe(true);
+      expect(boxes.some((a, i) => boxes.some((b, j) => i !== j && overlaps(a, b)))).toBe(false);
+      expect(boxes.every((b) => b.y >= 112 * unitFor(w, h) && b.y + b.h <= h - 150 * unitFor(w, h))).toBe(true);
+      expect(boxes.every((b) => b.x + b.w <= w)).toBe(true);
+    }
+  });
+
+  it('keeps an edge bubble in its band when the bubbles before it fill the middle', () => {
+    const band = { top: 100, bottom: 600 };
+    const placed = [{ x: 900, y: 250, w: 90, h: 90 }, { x: 900, y: 350, w: 90, h: 90 }];
+    const b = stackOnEdge({ x: 900, y: 300, w: 90, h: 90 }, placed, band, 10);
+    expect(placed.some((p) => overlaps(b, p))).toBe(false);
+    expect(b.y).toBeGreaterThanOrEqual(100);
+    expect(b.y + b.h).toBeLessThanOrEqual(600);
+    expect(stackOnEdge({ x: 900, y: 700, w: 90, h: 90 }, [], band, 10).y).toBe(510);
   });
 });
 

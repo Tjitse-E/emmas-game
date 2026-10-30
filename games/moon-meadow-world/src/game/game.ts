@@ -22,7 +22,7 @@ import { type Streams, createStreams } from './streams';
 import { mathsQuestFor } from './quest-kit';
 
 /** The parts of the level, in order (docs/v4/demo.md section 1; the wardrobe is 2.2.0's customiser). */
-export const PARTS = ['wardrobe', 'welcome', 'egg1', 'naming1', 'wish1', 'pond', 'egg2', 'naming2', 'wish2', 'free', 'bedtime', 'goodnight'] as const;
+export const PARTS = ['wardrobe', 'welcome', 'egg1', 'naming1', 'wish1', 'pond', 'egg2', 'naming2', 'wish2', 'hub', 'bedtime', 'goodnight'] as const;
 export type Part = (typeof PARTS)[number];
 export const isPart = (s: string | null): s is Part => !!s && (PARTS as readonly string[]).includes(s);
 
@@ -191,7 +191,7 @@ export function createGame(o: {
   herd: HerdMember[];
 }): Game {
   const streams = createStreams(o.options.seed);
-  return {
+  const g: Game = {
     ...o,
     seed: o.options.seed,
     streams,
@@ -226,6 +226,9 @@ export function createGame(o: {
     hubRefresh: null,
     signUse: { sets: [], targets: [] },
   };
+  // 2.4.0: the herd baby whose wish waits never follows (5.2).
+  g.followers.refuse = (u) => u === g.waiting;
+  return g;
 }
 
 export function startClock(): PlayClock {

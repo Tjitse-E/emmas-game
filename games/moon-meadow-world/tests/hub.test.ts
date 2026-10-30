@@ -2,13 +2,49 @@
 // its cutoffs and bedtime at 30 minutes; the refill, the play bubbles and done early; walking near, the nudge and the
 // pond visit; the play's shape and the start options. The rules are pure (src/game/hub.ts, the pure parts of
 // hub-part.ts and level.ts), so most tests drive them without a world.
-import { describe, expect, it } from 'vitest';
+import * as THREE from 'three';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PrincessMode } from '../src/contracts';
+import { CORNER, NEST, PICNIC, SLIDE } from '../src/layout';
+import { DEFAULT_LOOK } from '../src/wardrobe';
+
+/** What Elizabeth (audio.sayAll) and Lumi (layer.lumi.speak) said, in order. */
+const t = vi.hoisted(() => ({ said: [] as string[], speaking: false }));
+vi.hoisted(() => {
+  (globalThis as { location?: unknown }).location ??= { pathname: '/games/moon-meadow-world/index.html' };
+});
+vi.mock('../src/audio', () => ({
+  audio: {
+    sfx: async () => {}, say: async () => {}, sayAll: async (ids: string[]) => void t.said.push(...ids), sayWhole: async (ids: string[]) => (t.said.push(...ids), true),
+    preload: async () => [], fx: async () => {}, checked: () => {}, stop: () => {}, ambience: () => {},
+    get speaking() {
+      return t.speaking;
+    },
+  },
+}));
+// The places themselves are the other lanes' and 2.3's (tests/world-quests.test.ts): here each resolves at once.
+vi.mock('../src/game/eggs-part', async (importOriginal) => ({ ...(await importOriginal<object>()), eggPlace: async () => () => {} }));
+vi.mock('../src/game/quests', async (importOriginal) => ({
+  ...(await importOriginal<object>()), picnicQuest: async () => () => {}, rackQuest: async () => () => {}, hungryHerd: () => {},
+}));
+vi.mock('../src/game/beads', () => ({ beadsQuest: async () => () => {} }));
+vi.mock('../src/game/corner', () => ({ cornerQuest: async () => () => {}, trunkTap: () => false }));
+vi.mock('../src/game/quest-kit', async (importOriginal) => ({ ...(await importOriginal<object>()), giveGift: async () => null }));
+
 import {
   BEDTIME_MS, type HubCtx, type HubPlace, type HubState, KIND, LEARNING, LETTER, PLACE_LIMIT, STRANDS, bedtimeDue, cutoffs, isLeft, isPast,
   placeEnded, refill, startHub, tickPlay,
 } from '../src/game/hub';
 import { Run } from '../src/game/run';
 import { randomHistory } from './hub-sim';
+import { askPlace, firstLearning, hub, nudgeDue, walkEndStart, walkEnded } from '../src/game/hub-part';
+import { type Game, startClock, startQuests } from '../src/game/game';
+import { Followers } from '../src/game/followers';
+import { Results } from '../src/game/results';
+import { createSave } from '../src/game/save';
+import { parseOptions } from '../src/game/options';
+import { createStreams } from '../src/game/streams';
+import { startMaths } from '../src/game/band';
 
 describe('the play clock', () => {
   it('cuts off rides at 26:00, eggs at 27:00 and everything at 29:00, checks done early last at 28:00 with a 2-minute wait, and scales a short ?bed=', () => {
@@ -279,5 +315,269 @@ describe('the refill', () => {
         expect(step.stayed.every((p) => step.shown.includes(p)), `seed ${seed}`).toBe(true);
       }
     }
+  });
+});
+
+// ---- a fake game the hub part runs on ------------------------------------------------------------------------------
+
+interface Fake {
+  g: Game;
+  /** The bubbles on the layer, with their tap. */
+  offers: Map<string, { onTap(): void }>;
+  /** Frames (dt s) and the timers, `ms` of them, with the play clock moving as a play's would. */
+  pump(ms: number): Promise<void>;
+  tap(id: string): Promise<void>;
+  stop(): void;
+}
+
+function fakeHub(search = '?seed=3'): Fake {
+  const frames = new Set<(dt: number, t: number) => void>();
+  const offers = new Map<string, { onTap(): void }>();
+  const options = parseOptions(search);
+  const streams = createStreams(options.seed);
+  const her = {
+    position: new THREE.Vector3(-9, 0, 3), mode: 'idle' as PrincessMode, look: { ...DEFAULT_LOOK }, point: (_p: string, out = new THREE.Vector3()) => out.set(-9, 1, 3),
+    walkTo: async () => true,
+  };
+  const egg = { visible: false, position: new THREE.Vector3(), place: vi.fn((at: THREE.Vector3) => ((egg.visible = true), egg.position.copy(at))), hide: () => void (egg.visible = false) };
+  const g = {
+    world: {
+      onFrame: (fn: (dt: number, t: number) => void) => (frames.add(fn), () => frames.delete(fn)),
+      toScreen: () => ({ x: 500, y: 300, visible: true }),
+      route: (a: { x: number; z: number }, b: { x: number; z: number }) => [a, b],
+      nearestWalkable: (p: { x: number; z: number }) => p,
+      markGoal: vi.fn(),
+      nestGlow: vi.fn(),
+      setTimeOfDay: async () => {},
+      ducks: { set: vi.fn(), bob: vi.fn() },
+    },
+    actors: {
+      princess: her,
+      egg,
+      fx: { sparkle: () => {}, moonbeam: async () => {}, starfall: async () => {}, hearts: () => {} },
+      herd: { all: () => [], get: () => undefined },
+      placePrincess: () => {},
+    },
+    layer: {
+      offer: (id: string, o: { onTap(): void } | null) => (o ? offers.set(id, o) : offers.delete(id)),
+      offerBob: vi.fn(),
+      keepClear: () => {},
+      foodBasket: () => {},
+      lumi: { show: () => {}, speak: async (ids: string[]) => void t.said.push(...ids) },
+      ghost: { glide: vi.fn(async () => {}), drag: async () => {} },
+      snapshot: () => ({ moment: null }),
+      sky: () => {},
+      root: { querySelector: () => null },
+    },
+    options,
+    save: createSave(() => null, true),
+    seed: options.seed,
+    streams,
+    randFor: (label: string) => streams.for(label),
+    maths: startMaths(null),
+    today: { wishes: 0, words: [] as string[] },
+    clock: startClock(),
+    quests: startQuests('beads'),
+    openSpec: null,
+    herd: [],
+    babies: [],
+    part: 'hub',
+    goal: null,
+    free: true,
+    bedtime: false,
+    door: null,
+    stalls: new Map(),
+    followers: new Followers(),
+    parked: [],
+    results: new Results(),
+    run: new Run((fn) => (frames.add(fn), () => frames.delete(fn))),
+    slid: false,
+    lastTouch: 0,
+    entering: new Set(),
+    hub: startHub(),
+    ride: null,
+    waiting: null,
+    start: { last: { words: [], totals: [] }, afternoon: { maths: null, done: [] } },
+    hubRefresh: null,
+    signUse: { sets: [], targets: [] },
+  } as unknown as Game;
+  g.save.write((s) => void (s.seen.hub = true));
+  const pump = async (ms: number) => {
+    for (let k = 0; k < ms; k += 50) {
+      for (const f of [...frames]) f(0.05, 0);
+      tickPlay(g.hub, 50, { paused: false, hub: true });
+      await vi.advanceTimersByTimeAsync(50);
+    }
+  };
+  return {
+    g, offers, pump,
+    async tap(id) {
+      const o = offers.get(id);
+      if (!o) throw new Error(`no bubble ${id}: ${[...offers.keys()].join(',')}`);
+      o.onTap();
+      await pump(1000);
+    },
+    stop: () => g.run.stop(),
+  };
+}
+
+describe('the hub part', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    t.said.length = 0;
+    t.speaking = false;
+    vi.stubGlobal('fetch', () => Promise.resolve());
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('starts a place only when a walk ends within 2.5 m after its bubble shows, never a wish', () => {
+    const at = (p: HubPlace) => (p === 'egg' ? NEST.center : p === 'pond' ? SLIDE.ladderBase : p === 'picnic' ? PICNIC.rug.center : null);
+    const shownAt = { egg: 1_000, pond: 1_000, picnic: 5_000, wish: 0 };
+    expect(walkEndStart({ at: { x: NEST.center.x + 2.4, z: NEST.center.z }, ms: 2_000 }, ['egg', 'pond', 'wish'], shownAt, at)).toBe('egg');
+    expect(walkEndStart({ at: { x: NEST.center.x + 2.6, z: NEST.center.z }, ms: 2_000 }, ['egg'], shownAt, at)).toBeNull();
+    expect(walkEndStart({ at: NEST.center, ms: 2_000 }, ['wish'], shownAt, () => NEST.center)).toBeNull();
+  });
+
+  it('never starts the picnic where the Corner left her, 1.9 m from the rug', () => {
+    // 5.2, final check 4
+    const at = (p: HubPlace) => (p === 'picnic' ? PICNIC.rug.center : null);
+    expect(walkEndStart({ at: CORNER.stand, ms: 4_000 }, ['picnic'], { picnic: 5_000 }, at)).toBeNull(); // her last walk ended before the bubble
+    expect(walkEndStart({ at: CORNER.stand, ms: 6_000 }, ['picnic'], { picnic: 5_000 }, at)).toBe('picnic'); // a new walk that ends there
+  });
+
+  it('ends a walk only when she stops, so a route past the nest to the ladder starts the pond', () => {
+    const modes = ['walk', 'walk', 'walk', 'idle'] as const;
+    const points = [CORNER.stand, NEST.center, { x: 1, z: 1 }, SLIDE.ladderBase];
+    const ends = modes.map((m, i) => walkEnded(i ? modes[i - 1] : 'idle', m, points[i], i * 500)).filter(Boolean);
+    expect(ends).toEqual([{ at: SLIDE.ladderBase, ms: 1_500 }]);
+  });
+
+  it('nudges 90 s after a place ends, not at once after a long ride, then every 90 s', () => {
+    const tick = (h: HubState, ms: number) => {
+      for (let k = 0; k < ms; k += 1000) tickPlay(h, 1000, { paused: false, hub: true });
+    };
+    const h = startHub();
+    h.playMs = 10 * 60_000;
+    h.nudgeIdleMs = 50_000;
+    h.running = 'ride';
+    tick(h, 300_000);
+    expect(nudgeDue(h)).toBe(false); // no count while a place runs (a pond visit too)
+    h.running = null;
+    placeEnded(h, 'ride', c());
+    expect(nudgeDue(h)).toBe(false);
+    tick(h, 89_000);
+    expect(nudgeDue(h)).toBe(false);
+    tick(h, 1_000);
+    expect(nudgeDue(h)).toBe(true);
+    h.nudgeIdleMs = 0;
+    tick(h, 90_000);
+    expect(nudgeDue(h)).toBe(true);
+  });
+
+  it('nudges the nearest learning bubble, a tie to the one shown longest, never a play bubble', () => {
+    const h = startHub();
+    h.shown = ['egg', 'picnic', 'pond'];
+    h.shownAt = { egg: 5, picnic: 1, pond: 0 };
+    const route = (m: Record<string, number>) => (p: HubPlace) => m[p];
+    expect(firstLearning(h, route({ egg: 20, picnic: 20, pond: 1 }))).toBe('picnic');
+    expect(firstLearning(h, route({ egg: 19, picnic: 20, pond: 1 }))).toBe('egg');
+  });
+
+  it('pops the opening bubbles 0.4 s apart and asks a place only while its bubble shows', async () => {
+    const f = fakeHub();
+    void hub(f.g).catch(() => {});
+    await f.pump(100);
+    expect([...f.offers.keys()]).toEqual(['egg']);
+    await f.pump(400);
+    expect([...f.offers.keys()]).toEqual(['egg', 'ride']);
+    await f.pump(400);
+    expect([...f.offers.keys()]).toEqual(['egg', 'ride', 'picnic']);
+    expect(t.said).toContain('g4-pick');
+    expect(askPlace(f.g, 'beads')).toBe(false);
+    f.g.hub.playMs = 26 * 60_000;
+    expect(askPlace(f.g, 'ride')).toBe(false);
+    f.g.hub.playMs = 0;
+    f.g.bedtime = true;
+    expect(askPlace(f.g, 'picnic')).toBe(false);
+    f.g.bedtime = false;
+    expect(askPlace(f.g, 'picnic')).toBe(true);
+    expect(askPlace(f.g, 'egg')).toBe(false); // one asked at a time
+    f.stop();
+  });
+
+  it("says lumi-dressing-open the first time the Corner's bubble shows and g4-pond the first time the pond's shows, once a play each", async () => {
+    const f = fakeHub();
+    void hub(f.g).catch(() => {});
+    await f.pump(2000);
+    await f.tap('picnic');
+    await f.pump(2000);
+    expect(f.g.hub.play).toEqual(['corner']);
+    expect(f.offers.has('corner')).toBe(true);
+    await f.tap('egg');
+    await f.pump(2000);
+    expect(f.offers.has('pond')).toBe(true);
+    await f.tap('ride');
+    await f.pump(2000);
+    expect(f.offers.has('corner')).toBe(true);
+    await f.tap('beads');
+    await f.pump(2000);
+    expect(f.offers.has('pond')).toBe(true);
+    const lines = t.said.filter((id) => id === 'lumi-dressing-open' || id === 'g4-pond');
+    expect(lines).toEqual(['lumi-dressing-open', 'g4-pond']);
+    expect(f.g.hub.done).toEqual(['picnic', 'egg', 'ride', 'beads']);
+    f.stop();
+  });
+
+  it('lands the shore egg between places with Lumi, and its bubble pops in', async () => {
+    const f = fakeHub();
+    void hub(f.g).catch(() => {});
+    await f.pump(2000);
+    await f.tap('egg');
+    await f.pump(2000);
+    expect(f.g.hub.shoreLanded).toBe(false);
+    await f.tap('picnic');
+    await f.pump(3000);
+    expect(f.g.hub.shoreLanded).toBe(true);
+    expect(t.said).toContain('lumi4-another-egg');
+    expect(f.offers.has('shore')).toBe(true);
+    expect(f.g.actors.egg.position.x).toBeGreaterThan(14);
+    f.stop();
+  });
+
+  it('nudges after 90 s of hub time with no place running, with the bubble growing and its way line, and touches do not reset it', async () => {
+    const f = fakeHub();
+    void hub(f.g).catch(() => {});
+    await f.pump(2000);
+    t.said.length = 0;
+    f.g.lastTouch = performance.now();
+    await f.pump(88_000);
+    expect(f.g.layer.offerBob).not.toHaveBeenCalledWith(expect.anything(), true);
+    f.g.lastTouch = performance.now();
+    await f.pump(2_000);
+    expect(f.g.layer.offerBob).toHaveBeenCalledWith('egg', true);
+    expect(t.said).toContain('g4-way-nest');
+    expect(f.g.world.markGoal).toHaveBeenCalledWith(NEST.center);
+    f.stop();
+  });
+
+  it('ends at bedtime once no place runs, and at 29:00 every bubble goes with the soon line once', async () => {
+    const f = fakeHub();
+    let ended = false;
+    void hub(f.g).then(() => (ended = true), () => {});
+    await f.pump(2000);
+    f.g.hub.playMs = 29 * 60_000;
+    await f.pump(500);
+    expect([...f.offers.keys()]).toEqual([]);
+    expect(t.said.filter((id) => id === 'g4-soon-bed')).toHaveLength(1);
+    expect(ended).toBe(false);
+    f.g.hub.playMs = 30 * 60_000;
+    await f.pump(200);
+    expect(ended).toBe(true);
+    expect(f.g.hub.bedtimeAt).toBeGreaterThanOrEqual(30 * 60_000);
   });
 });

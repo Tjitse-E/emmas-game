@@ -11,3 +11,24 @@ Changes this lane needs in files it does not own, the targets its histories miss
    - Why: 5.7's table for play B leaves out about 1.2 minutes of its own model in the early rows. The picnic ends at 2.0 there, but the welcome (0.3) and the picnic (1.9) already make 2.2, before the walk; the nest egg, the bead tree and the two wishes are each 0.1 to 0.3 short too. With every walk and every 0.2 min gap counted (none before the first place, which follows the welcome at once), B's places end at 2.2, 3.9, 7.3, 8.2, 11.5, 13.6, 14.5, 19.9, 23.3, 26.7 and 30.0.
    - Play C passes (no done early, bedtime at 30:00: ride 1 ends at 29:53), and the pond-lover's, the skips-the-Corner and the slide-only counts all pass.
    - For Tjitse: B's bedtime is at 30:00 either way, and the pond-lover's last visit is cut at 30:00 instead of ending at 29:50. If he accepts the numbers reached, the two targets change and the tests are unskipped. Until he decides they stay skipped: a lane may not change a target or the model.
+
+## Integrator-only files
+
+2. **`tests/contracts-24.test.ts`, the test "keeps 2.3.3's parts in step 0".** It pins step 0's stub of `resolveStart` (`?at=hub` gives `free`, `?at=egg2` gives `egg2`, and so on), which plan Task 6 replaces with the hub's final rules. This lane may not edit the file, so the test fails in the lane's worktree (the only failing test). Replace it with the final aliases, which `tests/hub.test.ts` "maps the old part names to the hub" also checks:
+
+   ```ts
+   it('maps the address options to the hub: the old part names are aliases', () => {
+     const at = (s: string) => resolveStart(parseOptions(s));
+     expect(at('')).toBeNull();
+     expect(at('?at=hub')).toEqual({ part: 'hub', place: null, step: null, done: [] });
+     expect(at('?at=hub&place=egg&step=naming')).toEqual({ part: 'hub', place: 'egg', step: 'naming', done: [] });
+     expect(at('?at=hub&place=shore&step=wish')).toEqual({ part: 'hub', place: 'shore', step: 'wish', done: [] });
+     expect(at('?at=hub&place=pond')).toEqual({ part: 'hub', place: 'pond', step: null, done: [] });
+     expect(at('?at=free&quest=corner')).toEqual({ part: 'hub', place: 'corner', step: null, done: ['egg', 'shore'] });
+     expect(at('?at=hub&place=ride')).toEqual({ part: 'hub', place: 'ride', step: null, done: [] });
+     expect(at('?at=egg2')).toEqual({ part: 'hub', place: 'shore', step: null, done: ['egg'] });
+     expect(at('?at=bedtime')?.part).toBe('bedtime');
+   });
+   ```
+
+   Why: the parts are now wardrobe, welcome, hub, bedtime and goodnight (5.1), so `free` and `egg2` are no part any more.

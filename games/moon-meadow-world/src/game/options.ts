@@ -128,7 +128,7 @@ export function resolveStart(o: Pick<GameOptions, 'at' | 'place' | 'step'>): Sta
   if (at === 'hub' || at === 'free') {
     if (place === 'egg' || place === 'shore') return { part: eggPart(place, step), place, step, done: [] };
     if (place === 'pond') return { part: 'pond', place, step: null, done: [] };
-    return { part: 'free', place, step: place ? step : null, done: [] };
+    return { part: 'hub', place, step: place ? step : null, done: [] };
   }
   if (!at || !OLD_PARTS.includes(at)) return null;
   // The old part names say which place and step they stand for.

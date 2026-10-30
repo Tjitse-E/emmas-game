@@ -41,7 +41,8 @@ import { DEFAULT_LOOK, GIFT_SETS, START_OWNED, copyOwned, owns, stillToEarn, wit
 import { BEAD_TREE, CORNER, PICNIC } from '../src/layout';
 import { fillsSet, giftOffer, giveGift, mathsQuestFor } from '../src/game/quest-kit';
 import { type Game, startClock, startQuests } from '../src/game/game';
-import { askQuest, badgeOf, canQuest, placeAt, playQuests, runQuest } from '../src/game/quests';
+import { badgeOf, playQuests, runQuest } from '../src/game/quests';
+import { hubCtx } from '../src/game/hub-part';
 import { secondWishKind } from '../src/game/moments';
 import { cornerQuest, trunkTap } from '../src/game/corner';
 import { MIRROR_MS, dressClips, wardrobe } from '../src/game/wardrobe-part';
@@ -53,7 +54,7 @@ import { Followers } from '../src/game/followers';
 import { Results } from '../src/game/results';
 import { Run } from '../src/game/run';
 import { startMaths } from '../src/game/band';
-import { startHub } from '../src/game/hub';
+import { placeEnded, refill, startHub } from '../src/game/hub';
 import type { QuestId } from '../src/game/options';
 
 // ---- a fake game ---------------------------------------------------------------------------------------------------
@@ -207,11 +208,13 @@ describe('the maths quest', () => {
     expect(mathsQuestFor({ maths: null, done: [] }, 'rack')).toBe('rack');
   });
 
-  it('is the one the game offers this play, from the save, with the picnic', () => {
+  it('is the one the hub offers this play, from the save, with the picnic (2.4.0: through the refill)', () => {
     const { g } = fakeGame();
-    expect(['picnic', 'rack', 'beads', 'corner'].filter((id) => canQuest(g, id as QuestId))).toEqual(['picnic', 'beads']);
+    const offered = () => refill(g.hub, hubCtx(g)).filter((id) => ['picnic', 'rack', 'beads', 'corner'].includes(id));
+    g.hub.done = ['egg'];
+    expect(offered()).toEqual(['picnic', 'beads']);
     g.quests.maths = 'rack';
-    expect(['picnic', 'rack', 'beads', 'corner'].filter((id) => canQuest(g, id as QuestId))).toEqual(['picnic', 'rack']);
+    expect(offered()).toEqual(['picnic', 'rack']);
   });
 
   it('offers the picnic on every play, so wish2 by the wild egg is a pond wish; without the picnic it would be a picnic wish (2.3.2)', () => {
@@ -226,32 +229,14 @@ describe('the maths quest', () => {
 });
 
 describe('the Dressing Corner and the bubbles', () => {
-  it('opens after her first finished quest, once a play, and at once with ?quest=corner', () => {
+  it('opens after her first finished learning place, once a play (2.4.0: the play bubble of the hub)', () => {
     const { g } = fakeGame();
-    expect(canQuest(g, 'corner')).toBe(false);
-    g.quests.done.add('beads');
-    expect(askQuest(g, 'corner')).toBe(true);
-    g.quests.asked = null;
-    g.quests.done.add('corner');
-    expect(canQuest(g, 'corner')).toBe(false);
-    expect(canQuest(fakeGame({ search: '?quest=corner' }).g, 'corner')).toBe(true);
-  });
-
-  it('needs both named babies, and nothing starts at bedtime or once free play is over', () => {
-    const { g } = fakeGame();
-    g.babies[1].member = null;
-    expect(canQuest(g, 'picnic')).toBe(false);
-    const b = fakeGame().g;
-    b.bedtime = true;
-    expect(canQuest(b, 'picnic')).toBe(false);
-  });
-
-  it('start by walking near the nearest place: her Corner spot is the Corner, not the picnic rug 1.9 m away', () => {
-    expect(placeAt(CORNER.stand)).toBe('corner');
-    expect(placeAt(PICNIC.stand)).toBe('picnic');
-    expect(placeAt(PICNIC.rug.center)).toBe('picnic');
-    expect(placeAt(BEAD_TREE.stand)).toBe('beads');
-    expect(placeAt({ x: -11, z: 1 })).toBeNull();
+    expect(refill(g.hub, hubCtx(g))).not.toContain('corner');
+    placeEnded(g.hub, 'beads', hubCtx(g));
+    expect(refill(g.hub, hubCtx(g))).toContain('corner');
+    placeEnded(g.hub, 'corner', hubCtx(g));
+    placeEnded(g.hub, 'picnic', hubCtx(g));
+    expect(refill(g.hub, hubCtx(g))).not.toContain('corner');
   });
 
   it('show a gift she can still earn on the quest bubbles, the trunk bubble too, and none once every set is full', () => {
@@ -531,7 +516,7 @@ describe('the trunk after her visit', () => {
     // A second tap while it shows: still no refusal, one board.
     expect(trunkTap(g)).toBe(true);
     expect(g.layer.board).toHaveBeenCalledTimes(1);
-    expect(canQuest(g, 'corner')).toBe(false);
+    expect([g.hub.asked, g.quests.asked]).toEqual([null, null]);
     expect(g.quests.boards).toBe(1);
     await vi.advanceTimersByTimeAsync(3000);
     expect(g.world.corner.lid).toHaveBeenLastCalledWith(true);

@@ -21,10 +21,10 @@ import { startMaths } from './band';
 import { afterWish, parkFollowers, planWish, runWish } from './moments';
 import { type EggSpot, HATCH_SPOT, NEST_EGG, SIDE, WILD_EGG_AT, bathSwim, egg, naming, snapBabies, wish } from './eggs-part';
 import { herdAside, wardrobe, wardrobePartClipIds } from './wardrobe-part';
-import { afternoon, hideOffers } from './quests';
+import { hideOffers } from './quests';
+import { hub } from './hub-part';
 import { bedtime, goodnight } from './bedtime';
 import { BEDTIME_MS, startHub } from './hub';
-import { ridePlace } from './ride';
 import type { StartAt } from './options';
 
 /** Width of ground across the screen for each framing. */
@@ -261,23 +261,10 @@ const STEPS: Record<Part, (g: Game) => Promise<void>> = {
   egg2: (g) => egg(g, 1),
   naming2: (g) => naming(g, 1),
   wish2: (g) => wish(g, 1),
-  free,
+  hub,
   bedtime,
   goodnight,
 };
-
-/**
- * Free play. 2.4.0 step 0: with ?place=ride (or a jump that asks the ride) the ride place runs first and lets go,
- * before the afternoon starts (the mount lane's ride; step 0's ridePlace ends at once).
- */
-async function free(g: Game): Promise<void> {
-  if (g.options.place === 'ride' || g.hub.asked === 'ride') {
-    g.hub.asked = null;
-    const release = await ridePlace(g, 1);
-    release();
-  }
-  await afternoon(g);
-}
 
 /** Play the level from `from` to the end on a fresh run. */
 export function playFrom(g: Game, from: Part): void {
@@ -360,7 +347,7 @@ export function snapTo(g: Game, part: Part): void {
     egg2: [SIDE[1], Math.PI / 2],
     naming2: [SIDE[1], Math.PI / 2],
     wish2: [SIDE[1], Math.PI / 2],
-    free: [{ x: SLIDE.ladderBase.x - 1.5, z: SLIDE.ladderBase.z + 2.5 }, 0],
+    hub: [{ x: SLIDE.ladderBase.x - 1.5, z: SLIDE.ladderBase.z + 2.5 }, 0],
     bedtime: [{ x: 1, z: -2 }, Math.PI],
     goodnight: [STABLE.emmaStand, Math.PI],
   };
@@ -418,7 +405,7 @@ export function snapTo(g: Game, part: Part): void {
 export function jump(g: Game, start: StartAt): void {
   if (!isPart(start.part)) return;
   snapTo(g, start.part);
-  g.hub.asked = start.place;
+  if (start.part === 'hub') g.hub.asked = start.place;
   playFrom(g, start.part);
 }
 
