@@ -212,7 +212,8 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   const own = kind === 'phrase' && !gateWords ? g.save.data.phrases : g.save.data.reading;
   const level = readingLevelFor(own, { warmUp: o.wish && g.today.wishes === 0, forced: g.options.readingLevel });
   if (o.wish) g.today.wishes++;
-  const exclude = [...new Set([...g.save.data.last.words, ...g.today.words])];
+  // The last play's words as this play read them at its start (2.4.0: the save's `last` is written after each place).
+  const exclude = [...new Set([...(g.start ?? g.save.data).last.words, ...g.today.words])];
   const rand = g.randFor(label);
   const opts = { level, contrast: g.options.contrast };
   let spec: WishSpec;
@@ -228,6 +229,27 @@ export function planWish(g: Game, kind: WishSpec['kind'], label: string, o: { wi
   if (spec.kind === 'dress' || spec.kind === 'bath') for (const w of [spec.target, ...spec.basket]) wordsOf(g, spec.kind).add(w.word);
   g.today.words.push(spec.target.word);
   return spec;
+}
+
+// ---- a herd baby's wish as a hub place (2.4.0, docs/v4/2.4.md section 5.2) -------------------------------------
+// The babies lane fills these (docs/v4/2.4-plan.md Task 9); step 0's stubs never offer a wish.
+
+/** May a herd baby offer a wish now (a grazing herd baby near her that is not a follower, a rack helper or aside)? */
+export function canOfferWish(_g: Game): boolean {
+  return false;
+}
+
+/** The herd baby nearest her stops, turns to her and waits with its wish (g.waiting); null when none can. */
+export function offerWish(_g: Game): UnicornActor | null {
+  return null;
+}
+
+/** The waiting baby goes back to grazing: its wish bubble has gone. */
+export function withdrawWish(_g: Game, _u: UnicornActor): void {}
+
+/** The herd baby's wish as a hub place: she walks to it and reads its wish; resolves framed with its release. */
+export async function wishPlace(_g: Game, _u: UnicornActor): Promise<() => void> {
+  return () => {};
 }
 
 /** The baby's line after it has its wish: "Pretty!", "Yum!" or "Yay!". */

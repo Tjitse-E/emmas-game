@@ -1,14 +1,22 @@
 // window.__game: the test hook for the flows and for Tjitse in the console. State, every touchable thing on screen
-// (ui targets and 3D targets), the answer of the open moment, jumps between parts, and the save.
+// (ui targets and 3D targets), the answer of the open moment, jumps between parts, and the save. 2.4.0 adds the hub,
+// the ride and the trail to state(), the trail egg and the paddock to targets(), jumps by place and step, setSave and
+// setHub for a flow's second play and the hub's bubbles, the occlusion check, the play clock, the play line and gather.
 import * as THREE from 'three';
-import type { Owned, PrincessLook, Ribbon } from './contracts';
+import type { MountId, Owned, PrincessLook, Ribbon } from './contracts';
 import type { UiTarget } from './ui';
-import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
+import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, RIDE, SLIDE, SLIDE_CURVE, WILD_EGG, dist2 } from './layout';
 import { audio } from './audio';
 import { parseOwned } from './wardrobe';
 import { nameGems } from './ui/geometry';
-import { type Game, type Part, doorPoint, flat, isPart } from './game/game';
+import { type Game, doorPoint, flat } from './game/game';
 import { jump } from './game/level';
+import { HUB_PLACES, type HubPlace, START_STEPS, type StartStep, resolveStart } from './game/options';
+import { type HubState, hubSnapshot } from './game/hub';
+import { MOUNTS, rideSnapshot } from './game/ride';
+import { playOf } from './game/report';
+import { diagQuery, playFields } from './game/results';
+import type { Save } from './game/save';
 
 const _v = new THREE.Vector3();
 const _w = new THREE.Vector3();
@@ -69,6 +77,9 @@ export function installHook(g: Game): void {
       const e = actors.egg.position.clone();
       out.push(target3d(g, dist2(flat(e), WILD_EGG.at) < 1 ? 'wild egg' : 'egg', e, 0.9));
     }
+    // 2.4.0: the trail's star egg, and the paddock's sand where she gets on.
+    if (actors.trailEgg.visible) out.push(target3d(g, 'egg trail', actors.trailEgg.position.clone(), 0.9));
+    out.push(target3d(g, 'paddock', new THREE.Vector3(RIDE.stand.x, 0.4, RIDE.stand.z), 2.4));
     out.push(target3d(g, 'slide', SLIDE_CURVE.getPointAt(0.62), 1.4));
     out.push(target3d(g, 'slide top', SLIDE.top.clone(), 1.2));
     out.push(target3d(g, 'rack', new THREE.Vector3(HAY_RACK.center.x, 0.9, HAY_RACK.center.z), 1.8));
@@ -103,12 +114,9 @@ export function installHook(g: Game): void {
           helpers: q.helpers.slice(),
           rose: q.rose,
           hay: q.hay,
-          freeMs: Math.round(q.freeMs),
           maths: q.maths,
           dressing: q.dressing,
           gifts: q.gifts.map((i) => `${i.field}:${i.id}`),
-          over: q.over,
-          cut: q.cut,
           gate: q.gate,
           boards: q.boards,
           signSaid: q.signSaid,
@@ -119,7 +127,7 @@ export function installHook(g: Game): void {
         /** The ground point the camera holds in a frame, or null while it follows. */
         framedAt: world.framedAt ? { x: +world.framedAt.x.toFixed(2), z: +world.framedAt.z.toFixed(2) } : null,
         owned: g.save.data.owned,
-        clock: { checkedMs: Math.round(g.clock.checkedMs), dressMs: { ...g.clock.dressMs } },
+        clock: { checkedMs: Math.round(g.clock.checkedMs), dressMs: { ...g.clock.dressMs }, playMs: Math.round(g.hub.playMs) },
         sound: audio.soundState(),
         princess: { x: +p.position.x.toFixed(2), z: +p.position.z.toFixed(2), mode: p.mode },
         herd: actors.herd.all().map((u) => {
@@ -132,6 +140,11 @@ export function installHook(g: Game): void {
         timeOfDay: +world.timeOfDay.toFixed(2),
         stalls: [...g.stalls.keys()].sort((a, b) => a - b),
         results: g.results.lines,
+        // 2.4.0: the hub (its bubbles, places, play clock and bedtime), the trip, the trail and the run's cleanups.
+        hub: hubSnapshot(g),
+        ride: rideSnapshot(g),
+        trail: { shown: world.trail.shown },
+        run: { deferred: g.run.deferred },
       };
     },
     targets,
@@ -169,9 +182,18 @@ export function installHook(g: Game): void {
       }
       return layer.idleNow();
     },
-    jump(part: string): boolean {
-      if (!isPart(part)) return false;
-      jump(g, part as Part);
+    /**
+     * Jump as the address options do (2.4.0): a part or the hub, with a place and a step (jump('hub', 'ride', 'sign2'));
+     * the old part names stay ('egg2').
+     */
+    jump(at: string, place?: string, step?: string): boolean {
+      const start = resolveStart({
+        at,
+        place: (HUB_PLACES as readonly string[]).includes(place ?? '') ? (place as HubPlace) : null,
+        step: (START_STEPS as readonly string[]).includes(step ?? '') ? (step as StartStep) : null,
+      });
+      if (!start) return false;
+      jump(g, start);
       return true;
     },
     /** End the current timed wait (free play's two minutes, the pond's 45 s). */
@@ -219,6 +241,63 @@ export function installHook(g: Game): void {
     clearSave(): boolean {
       g.save.clear();
       return true;
+    },
+    /** Write the stored save's plays and seen flags (2.4.0: a flow's second play on a real save; ?fresh=1 keeps it in memory). */
+    setSave(patch: { plays?: number; seen?: Partial<Save['seen']> }): void {
+      g.save.write((s) => {
+        if (patch.plays !== undefined) s.plays = patch.plays;
+        if (patch.seen) Object.assign(s.seen, patch.seen);
+      });
+    },
+    /** Set the hub's done places, play bubbles or the shore egg, then refill the bubbles (the smoke flow's four bubbles). */
+    setHub(patch: Partial<Pick<HubState, 'done' | 'play' | 'shoreLanded'>>): void {
+      if (patch.done) g.hub.done = patch.done.slice();
+      if (patch.play) g.hub.play = patch.play.slice();
+      if (patch.shoreLanded !== undefined) g.hub.shoreLanded = patch.shoreLanded;
+      g.hubRefresh?.();
+    },
+    /**
+     * What the trees and the scenery hide from the camera now: her head, each mount's saddle top and the point of its
+     * saddle icon 0.35 m above it (world.occluded). Mounts that are not there yet are left out.
+     */
+    occluded(): Record<string, boolean> {
+      const names: string[] = ['head'];
+      const points: THREE.Vector3[] = [actors.princess.point('head', new THREE.Vector3())];
+      for (const m of Object.keys(MOUNTS) as MountId[]) {
+        const u = actors.herd.get(MOUNTS[m].id);
+        if (!u) continue;
+        const top = u.saddleTop(new THREE.Vector3());
+        names.push(`saddle ${m}`, `icon ${m}`);
+        points.push(top, top.clone().setY(top.y + 0.35));
+      }
+      const hidden = world.occluded(points);
+      return Object.fromEntries(names.map((n, i) => [n, hidden[i]]));
+    },
+    /** Set the play clock (ms of play time, the hub's cutoffs and bedtime read it). Returns it. */
+    setPlayMs(ms: number): number {
+      g.hub.playMs = ms;
+      return g.hub.playMs;
+    },
+    /** This play's kind=play line as goodnight would send it now. */
+    playLine(): string {
+      return diagQuery(playFields(playOf(g)));
+    },
+    /**
+     * Every herd unicorn and baby not in a stall, placed within 6 m of a ground point and grazing there (the budget's
+     * meadow view with everyone near). Returns how many.
+     */
+    gather(x: number, z: number): number {
+      const us = [...g.herd.map((h) => actors.herd.get(h.id)), ...g.babies.map((b) => b.unicorn)].filter(
+        (u): u is NonNullable<typeof u> => !!u && u.mode !== 'stall',
+      );
+      us.forEach((u, k) => {
+        const r = 1.2 + 4.6 * Math.sqrt((k + 0.5) / us.length);
+        const a = k * 2.4;
+        const p = world.nearestWalkable({ x: x + Math.cos(a) * r, z: z + Math.sin(a) * r });
+        u.place(p);
+        u.graze(p);
+      });
+      return us.length;
     },
   };
   (window as unknown as { __game: typeof hook }).__game = hook;

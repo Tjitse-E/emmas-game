@@ -14,7 +14,10 @@ import { Results } from './results';
 import { Run } from './run';
 import { type MathsState, startMaths } from './band';
 import type { GameOptions, QuestId } from './options';
-import type { SaveStore } from './save';
+import type { Save, SaveStore } from './save';
+import type { EggSpot } from './eggs-part';
+import { type HubState, BEDTIME_MS, startHub } from './hub';
+import type { RideState } from './ride';
 import { type Streams, createStreams } from './streams';
 import { mathsQuestFor } from './quest-kit';
 
@@ -38,9 +41,13 @@ export const GOALS: Record<'nest' | 'pond' | 'wildEgg' | 'stable', Goal> = {
   stable: { place: 'stable', at: STABLE.emmaStand, stand: STABLE.emmaStand, near: 3 },
 };
 
-/** One of the two newborns: door 13 (warm egg) and door 14 (snow egg). */
+/**
+ * A newborn of this play, in hatch order (2.4.0: up to four, any order): door 13 + its index, the egg spot it hatched
+ * at (the nest, the shore or the trail).
+ */
 export interface Baby {
-  door: 13 | 14;
+  door: number;
+  spot: EggSpot;
   look: UnicornLook;
   unicorn: UnicornActor;
   /** Set once she has named it. */
@@ -119,6 +126,8 @@ export interface PlayClock {
   checkedMs: number;
   /** Time in the wardrobe: the start mirror and the Dressing Corner. */
   dressMs: { mirror: number; corner: number };
+  /** Time on a mount (2.4.0, the play line's ri). */
+  rideMs: number;
 }
 
 export interface Game {
@@ -128,7 +137,7 @@ export interface Game {
   readonly seed: number;
   readonly options: GameOptions;
   readonly save: SaveStore;
-  /** Each moment's own random stream ('egg1', 'wish1', 'picnic', ...); see streams.ts. */
+  /** Each moment's own random stream ('egg-nest', 'wish-1', 'picnic', ...); see streams.ts. */
   randFor(label: string): Rand;
   readonly streams: Streams;
   /** The maths band and this play's sums. */
@@ -163,6 +172,19 @@ export interface Game {
   lastTouch: number;
   /** Doors whose unicorn is walking in right now (not in g.stalls until it is inside). */
   readonly entering: Set<number>;
+  /** The choice hub (2.4.0, hub.ts): its bubbles, places, play clock and bedtime. */
+  hub: HubState;
+  /** The trip under way (ride.ts), or null. */
+  ride: RideState | null;
+  /** The herd baby whose wish waits (its bubble shows), or null. */
+  waiting: UnicornActor | null;
+  /**
+   * What this play read at its start, kept apart from the save: the last play's words and totals and its afternoon, so a
+   * write after a place never changes what this play leaves out or which maths quest it has (2.4 section 7).
+   */
+  readonly start: { last: Save['last']; afternoon: Save['afternoon'] };
+  /** Set by the hub part while it waits: a refill now (the test hook's setHub). */
+  hubRefresh: (() => void) | null;
 }
 
 export function createGame(o: {
@@ -199,11 +221,19 @@ export function createGame(o: {
     slid: false,
     lastTouch: performance.now(),
     entering: new Set(),
+    hub: startHub(o.options.bedMs ?? BEDTIME_MS),
+    ride: null,
+    waiting: null,
+    start: {
+      last: { words: [...o.save.data.last.words], totals: [...o.save.data.last.totals] },
+      afternoon: { maths: o.save.data.afternoon.maths, done: [...o.save.data.afternoon.done] },
+    },
+    hubRefresh: null,
   };
 }
 
 export function startClock(): PlayClock {
-  return { startedAt: performance.now(), checkedMs: 0, dressMs: { mirror: 0, corner: 0 } };
+  return { startedAt: performance.now(), checkedMs: 0, dressMs: { mirror: 0, corner: 0 }, rideMs: 0 };
 }
 
 // ---- small helpers ---------------------------------------------------------------------------------------------

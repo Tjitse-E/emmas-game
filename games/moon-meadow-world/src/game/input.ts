@@ -11,7 +11,7 @@
 // next touch. On her iPad the release does not always reach the canvas, and a touch waiting for it blocked every later
 // world tap. Only a real release taps; the other ends set a carried unicorn down where the finger last was.
 import * as THREE from 'three';
-import type { Vec2 } from '../contracts';
+import type { Egg3D, Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
 import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, SLIDE, STABLE, WILD_EGG, dist2 } from '../layout';
 import { audio } from '../audio';
@@ -22,6 +22,7 @@ import { askQuest } from './quests';
 import { trunkTap } from './corner';
 import { CLIPS } from '../content';
 import type { QuestId } from './options';
+import { isMount, mountTap, rideTap } from './ride';
 
 /** Where a tap on a quest's place walks her when the quest cannot start now. */
 const QUEST_STAND: Record<QuestId, Vec2> = { rack: HAY_RACK.stand, picnic: PICNIC.stand, beads: BEAD_TREE.stand, corner: CORNER.stand };
@@ -55,7 +56,7 @@ export function installInput(g: Game): void {
 
   /** May she pick this unicorn up now? Not during a moment, a door moment, bedtime or a cut scene. */
   const canCarry = (u: UnicornActor): boolean =>
-    g.free && !g.bedtime && !g.door && !momentOpen() && !['stall', 'hatching', 'slide'].includes(u.mode);
+    g.free && !g.bedtime && !g.door && !momentOpen() && !['stall', 'hatching', 'slide'].includes(u.mode) && !isMount(u) && !g.ride;
 
   /** The point under the finger at carrying height (falls back to the ground). */
   const carryPoint = (x: number, y: number): Vec2 | null => {
@@ -139,14 +140,19 @@ export function installInput(g: Game): void {
       if (u && u.mode !== 'stall') waitingHop(u);
       return;
     }
+    // 2.4.0: while riding, the mount, its followers and the trail egg take the taps (ride.ts); the ground none.
+    if (g.ride) return rideTap(g, x, y);
     if (!g.free) return;
     const u = actors.herd.pick(world.ray(x, y));
     if (u) return tapUnicorn(u);
-    if (eggUnder(x, y)) {
+    const tapped = eggUnder(x, y);
+    if (tapped === actors.egg) {
       const egg = flat(actors.egg.position);
       void walkTo(g, dist2(egg, NEST.center) < 2 ? NEST.stand : WILD_EGG.stand);
       return;
     }
+    // The trail egg shows only on a ride, which takes its taps above.
+    if (tapped) return;
     const p = world.pick(x, y);
     if (!p) return;
     switch (p.kind) {
@@ -210,14 +216,18 @@ export function installInput(g: Game): void {
     }
   }
 
-  /** The egg on screen near the tap (it sits in the nest or on the grass by the pond). */
-  function eggUnder(x: number, y: number): boolean {
-    if (!actors.egg.visible) return false;
-    const s = world.toScreen(actors.egg.position);
-    return s.visible && Math.hypot(s.x - x, s.y - y) < 70;
+  /** The egg on screen near the tap: the home egg (in the nest or on the grass by the pond) or the trail egg (2.4.0). */
+  function eggUnder(x: number, y: number): Egg3D | null {
+    for (const e of [actors.egg, actors.trailEgg]) {
+      if (!e?.visible) continue;
+      const s = world.toScreen(e.position);
+      if (s.visible && Math.hypot(s.x - x, s.y - y) < 70) return e;
+    }
+    return null;
   }
 
   function tapUnicorn(u: UnicornActor): void {
+    if (isMount(u)) return mountTap(g, u);
     if (u.mode === 'stall') {
       const door = [...g.stalls].find(([, x]) => x === u)?.[0];
       if (door !== undefined) peekDoor(g, door);

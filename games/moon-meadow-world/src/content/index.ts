@@ -7,7 +7,11 @@ import { HERD_LOOKS } from './looks.ts';
 
 export { type Rand, seeded, stream } from './rand.ts';
 export { babyLook } from './looks.ts';
-export { eggSpec, eggSums, eggClipIds, eggCombos, gradeCombos, nextBand, totalOf, SUM_GRADES, type Band, type MathsUsed, type MathsPick } from './eggs.ts';
+export {
+  eggSpec, eggSums, eggClipIds, eggCombos, gradeCombos, nextBand, totalOf, factClip, SUM_GRADES, type Band, type MathsUsed, type MathsPick,
+  type AskedSums,
+} from './eggs.ts';
+export { planTrip, allSignClipIds, goalClip, SIGN_WORDS, type TripPlan, type SignUse } from './signs.ts';
 export { rackSpec, allRackClipIds } from './rack.ts';
 export { namingSpec } from './naming.ts';
 export { wishSpec, foods, wishTargets, planBasket, reactOf, BASKET_SIZE, type WishOpts, type WordKind } from './wishes.ts';

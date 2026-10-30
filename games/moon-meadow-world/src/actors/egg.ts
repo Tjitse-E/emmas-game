@@ -2,7 +2,7 @@
 // texture, and a sleepy face drawn from the shared parts. It wobbles, steams, frosts and hatches, and glows more with
 // each of its three hearts (docs/v4/2.3.md sections 12 and 19.1).
 import * as THREE from 'three';
-import type { Egg3D } from '../contracts';
+import type { Egg3D, EggKind } from '../contracts';
 import { B, PartList, Xf, col, rimLambert } from './parts';
 import type { FxImpl } from './fx';
 import { damp } from './motion';
@@ -241,8 +241,9 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
     get visible() {
       return shown;
     },
-    place(at, k) {
-      kind = k;
+    place(at, k: EggKind) {
+      // The star egg (2.4.0) wears the snow egg's shell until the mount lane paints its own.
+      kind = k === 'star' ? 'snow' : k;
       cracks = 0;
       popT = -1;
       burst = 1;

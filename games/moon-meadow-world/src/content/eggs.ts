@@ -8,10 +8,10 @@
 // egg's take away from 10), with 4 stones (band A) or 5 (band B). Easy comes first, then middle and hard in either
 // order. Easy and middle always show 4 stones. The hay rack asks one sum (eggSpec, RANGES: need 7 to 9 in band A,
 // 8 to 10 in band B).
-import type { EggSpec, Outcome, StoneDecoy, SumGrade } from '../contracts.ts';
+import type { EggKind, EggSpec, Outcome, StoneDecoy, SumGrade } from '../contracts.ts';
 import { type Rand, pick } from './rand.ts';
 
-export type EggKind = EggSpec['kind'];
+export type { EggKind };
 export type Band = 'a' | 'b';
 
 type Span = readonly [number, number];
@@ -29,6 +29,12 @@ export const RANGES: Record<EggKind, Record<Band, Ranges>> = {
     b: { need: [8, 10], have: [3, 7], answer: [3, 7] },
   },
   snow: {
+    a: { need: [3, 6], have: [7, 9], answer: [3, 6] },
+    b: { need: [3, 7], have: [10, 10], answer: [3, 7] },
+  },
+  // 2.4.0's star egg (docs/v4/2.4.md section 5.5): the snow egg's numbers, read as the moon's stars (have) and the
+  // egg's (need); the answer is the difference.
+  star: {
     a: { need: [3, 6], have: [7, 9], answer: [3, 6] },
     b: { need: [3, 7], have: [10, 10], answer: [3, 7] },
   },
@@ -91,6 +97,16 @@ export interface MathsPick {
   band?: Band;
   used?: MathsUsed;
   lastTotals?: readonly number[];
+  /** What this play has asked, for "no sum twice" (2.4.0). Read by nothing until the signs-star lane's Task 15. */
+  asked?: AskedSums;
+}
+
+/** What this play has asked, for "no sum twice" (2.4 section 5.3). */
+export interface AskedSums {
+  /** Per kind and grade, the answers asked this play. The hay rack's sum counts as a warm sum of its grade. */
+  answers: Record<EggKind, Record<SumGrade, number[]>>;
+  /** Every take-away fact line said this play, by a snow or a star egg ('num-take-9-5'). */
+  facts: string[];
 }
 
 /** A play's first maths moment is band A; a first try moves to B and a helped answer back to A (4.2). */
@@ -355,6 +371,16 @@ export const GRADES: Record<EggKind, GradeRanges> = {
       b: { need: [3, 7], have: [10, 10], answer: [3, 7] },
     },
   },
+  // 2.4.0's star egg: the moon has 7 or 8 stars (easy), 9 (middle) or 10 (hard), the egg at least 3, the difference 3
+  // to 7: 14 sums, the snow egg's grades with the moon's stars as `have` and the egg's as `need`.
+  star: {
+    easy: { need: [3, 5], have: [7, 8], answer: [3, 5] },
+    middle: { need: [3, 6], have: [9, 9], answer: [3, 6] },
+    hard: {
+      a: { need: [3, 7], have: [10, 10], answer: [3, 7] },
+      b: { need: [3, 7], have: [10, 10], answer: [3, 7] },
+    },
+  },
 };
 
 /** The grades in the order an egg can ask them: easy always first. */
@@ -382,7 +408,10 @@ export function gradeReach(kind: EggKind, grade: SumGrade, band: Band = 'a'): nu
   return [...new Set(gradeCombos(kind, grade, band).flatMap((c) => placesFor(kind, c, n)))].sort((a, b) => a - b);
 }
 
-/** The number she heard that a stone can show (the 'heard' stone of 4.1): the warm cups, or the snow egg's need. */
+/**
+ * The number she heard that a stone can show (the 'heard' stone of 4.1): the warm cups, the snow egg's need, or the
+ * star egg's own stars (its need).
+ */
 export function heardOf(kind: EggKind, c: { need: number; have: number }): number {
   return kind === 'warm' ? c.have : c.need;
 }
@@ -651,8 +680,17 @@ function freshCell(g: GradePlan, cell: Cell, used: readonly number[], rand: Rand
  * the middle of a walk. Band A first: a play's first egg is band A.
  */
 export function fitEggPlans(): void {
-  for (const band of ['a', 'b'] as const) for (const kind of ['warm', 'snow'] as const) eggPlan(kind, band);
+  for (const band of ['a', 'b'] as const) for (const kind of EGG_KINDS) eggPlan(kind, band);
 }
+
+/** Every egg kind: the nest egg's warm, the shore egg's snow and the trail's star (2.4.0). */
+export const EGG_KINDS: readonly EggKind[] = ['warm', 'snow', 'star'];
+
+/**
+ * The star egg's question per sum of an egg, in the order asked (2.4.0): step 0 asks "more", "fewer", "more", so every
+ * star egg asks both. The signs-star lane draws them from the egg's stream (Task 15, starCompares).
+ */
+const STAR_COMPARES = ['more', 'fewer', 'more'] as const;
 
 /**
  * An egg's three sums (2.3 section 19.1), all planned when the egg opens, from the egg's own stream: easy first, then
@@ -674,9 +712,10 @@ export function eggSums(kind: EggKind, rand: Rand, o: MathsPick & { first?: bool
     const { combo, place } = freshCell(grades[g], planned[g], used, rand);
     used.push(totalOf(combo));
     const { stones, decoys } = trayFor(kind, combo, grades[g].n, place, rand);
+    const compare = kind === 'star' ? STAR_COMPARES[index] : undefined;
     return {
-      kind, ...combo, stones, ...(grade === 'hard' ? { band } : {}), decoys, skin: 'egg', grade,
-      round: { index: index as 0 | 1 | 2, of: 3 }, clips: sumClips(kind, combo, (o.first ?? false) && index === 0, index),
+      kind, ...combo, stones, ...(grade === 'hard' ? { band } : {}), decoys, skin: 'egg', grade, ...(compare ? { compare } : {}),
+      round: { index: index as 0 | 1 | 2, of: 3 }, clips: sumClips(kind, combo, (o.first ?? false) && index === 0, index, compare),
     };
   });
 }
@@ -696,6 +735,16 @@ export function takeClip(have: number, answer: number): string {
   return `num-take-${have}-${answer}`;
 }
 
+/**
+ * The fact line a sum says after its right stone: num-bond for warm, num-take-have-answer for snow, num-take-have-need
+ * for star ("Nine take away five is four!": the moon's stars take away the egg's). All 14 star facts were made for the
+ * snow egg, so they cost nothing (2.4 section 5.5).
+ */
+export function factClip(kind: EggKind, c: { need: number; have: number; answer: number }): string {
+  if (kind === 'warm') return addClip(c.have, c.answer);
+  return kind === 'snow' ? takeClip(c.have, c.answer) : takeClip(c.have, c.need);
+}
+
 /** The highest k each miss line exists for: num-over, num-cold and num-more 1 to 9, num-still-warm 1 to 6. */
 export const MISS_MAX = { over: 9, cold: 9, more: 9, stillWarm: 6 } as const;
 export const clampK = (k: number, max: number): number => Math.max(1, Math.min(max, Math.round(Math.abs(k))));
@@ -704,9 +753,22 @@ export function count(n: number): string[] {
   return Array.from({ length: n }, (_, i) => `num-${i + 1}`);
 }
 
-/** The clips of one egg. */
-function eggClips(kind: EggKind, c: EggCombo, first: boolean): EggSpec['clips'] {
+/** The clips of one egg. `compare` is the star egg's question ("How many more has the moon?" when not given). */
+function eggClips(kind: EggKind, c: EggCombo, first: boolean, compare?: 'more' | 'fewer'): EggSpec['clips'] {
   const { need, have, answer } = c;
+  if (kind === 'star') {
+    // 2.4.0: the moon's stars and the egg's, then the question; neither group changes, she drags the difference.
+    return {
+      intro: first ? ['g4-star-egg'] : [],
+      goal: [`num-moon-${have}`, `num-eggstar-${need}`],
+      ask: [compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon'],
+      right: ['fb-yes', factClip('star', c)],
+      tooBig: (k) => [`num-over-${clampK(k, MISS_MAX.over)}`],
+      tooSmall: (k) => [`num-more-${clampK(k, MISS_MAX.more)}`],
+      hint: ['h4-line-up'],
+      count: count(answer),
+    };
+  }
   if (kind === 'warm') {
     return {
       intro: first ? ['g-egg'] : [],
@@ -741,7 +803,8 @@ function eggClips(kind: EggKind, c: EggCombo, first: boolean): EggSpec['clips'] 
  */
 export function eggSpec(kind: EggKind, rand: Rand, o: MathsPick & { first?: boolean } = {}): EggSpec {
   const { band, combo, stones, decoys } = pickSum(kind, rand, o);
-  return { kind, ...combo, stones, band, decoys, skin: 'egg', clips: eggClips(kind, combo, o.first ?? false) };
+  const compare = kind === 'star' ? ('more' as const) : undefined;
+  return { kind, ...combo, stones, band, decoys, skin: 'egg', ...(compare ? { compare } : {}), clips: eggClips(kind, combo, o.first ?? false, compare) };
 }
 
 /** Every clip an egg or hay rack spec can say, with the miss lines of its wrong stones. */
@@ -783,11 +846,14 @@ export const HEARTS_CLIP = 'g4-hearts';
  * new. After the right stone of the first and the second sum she hears one line, the fact; the third keeps the praise
  * before it (2.3.2).
  */
-function sumClips(kind: EggKind, c: EggCombo, first: boolean, index: number): EggSpec['clips'] {
-  const clips = eggClips(kind, c, first && index === 0);
-  const fact = kind === 'warm' ? addClip(c.have, c.answer) : takeClip(c.have, c.answer);
+function sumClips(kind: EggKind, c: EggCombo, first: boolean, index: number, compare?: 'more' | 'fewer'): EggSpec['clips'] {
+  const clips = eggClips(kind, c, first && index === 0, compare);
+  const fact = factClip(kind, c);
   return { ...clips, intro: index === 0 ? [...clips.intro, HEARTS_CLIP] : [], right: index < 2 ? [fact] : clips.right };
 }
+
+/** The questions a kind can ask: the star egg's two (2.4.0), none for the others. */
+const comparesOf = (kind: EggKind): readonly ('more' | 'fewer' | undefined)[] => (kind === 'star' ? ['more', 'fewer'] : [undefined]);
 
 /** Every clip of every graded sum, in every band, at every place in an egg, with every wrong stone its tray can show. */
 function everyGradedClipIds(kind: EggKind): string[] {
@@ -798,7 +864,7 @@ function everyGradedClipIds(kind: EggKind): string[] {
       for (const c of gradeCombos(kind, grade, band)) {
         const stones = [c.answer, ...reachableStones(kind, c, n)].sort((a, b) => a - b);
         for (const [first, index] of [[true, 0], [false, 0], [false, 1], [false, 2]] as const) {
-          eggClipIds({ kind, ...c, stones, clips: sumClips(kind, c, first, index) }).forEach((id) => out.add(id));
+          for (const compare of comparesOf(kind)) eggClipIds({ kind, ...c, stones, clips: sumClips(kind, c, first, index, compare) }).forEach((id) => out.add(id));
         }
       }
     }
@@ -811,8 +877,8 @@ function everyGradedClipIds(kind: EggKind): string[] {
  * the three graded sums of 2.3 and for the one-sum moment (eggSpec, the hay rack's and the ui harness's).
  */
 export function allEggClipIds(): string[] {
-  return [...new Set((['warm', 'snow'] as const).flatMap((kind) => [
+  return [...new Set(EGG_KINDS.flatMap((kind) => [
     ...everyGradedClipIds(kind),
-    ...everySumClipIds(kind, (c, first) => eggClips(kind, c, first)),
+    ...comparesOf(kind).flatMap((compare) => everySumClipIds(kind, (c, first) => eggClips(kind, c, first, compare))),
   ]))];
 }

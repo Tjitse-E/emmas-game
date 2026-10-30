@@ -38,6 +38,11 @@ export interface HerdImpl extends Herd {
   readonly stats: { full: number; cheap: number; culled: number };
   /** Make the herd cheaper on a slow iPad: 0 full, 1 and 2 fewer full-detail unicorns, cheap ones posed less often. */
   setDetail(level: 0 | 1 | 2): void;
+  /**
+   * These ids come first for full detail (2.4.0: while riding, the mount, then her followers nearest it); an empty list
+   * goes back to distance alone. Step 0 does nothing (the mount lane fills it).
+   */
+  setFocus(ids: readonly string[]): void;
 }
 
 /** `view` is the canvas size in CSS pixels (kept up to date by the parts renderer), for the minimum tap size. */
@@ -242,6 +247,7 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
     setDetail(level) {
       detail = DETAIL[level] ?? DETAIL[0];
     },
+    setFocus() {},
     followersRide() {
       for (const u of followers()) u.rideAfterPrincess();
     },

@@ -20,6 +20,8 @@ export interface OfferOpts {
   tint?: string;
   /** A small picture on the bubble's rim: the swatch of a gift the quest can still give (2.3; drawn by wardrobe-ui). */
   badge?: string;
+  /** A picture drawn under `pic` (2.4.0: the nest under the moon egg). */
+  base?: string;
   at: () => ScreenPoint;
   onTap(): void;
 }
@@ -53,6 +55,7 @@ export function createOffers(parent: HTMLElement, screen: () => { w: number; h: 
     const bob = el('div', 'offer-bob', box);
     const ball = el('div', 'offer-ball touch', bob);
     ball.setAttribute('aria-label', `offer ${id}`);
+    if (o.base) img(o.base, 'offer-base', ball);
     wordPicEl({ pic: o.pic, tint: o.tint }, 'offer-pic', ball);
     img(PIC.sparkle, 'offer-spark', ball);
     if (o.badge) img(o.badge, 'offer-badge-pic', el('div', 'offer-badge', ball));
@@ -137,6 +140,11 @@ export function createOffers(parent: HTMLElement, screen: () => { w: number; h: 
       remove(id, false);
       if (o) add(id, o);
     },
+    /**
+     * A bubble bobs once, or with `grow` grows and bobs for about 3 s (the hub's nudge, 2.4.0). Unknown ids do nothing.
+     * Step 0's stub: nothing yet (the hub lane fills it).
+     */
+    bob(_id: string, _grow: boolean): void {},
     /** The bubbles on screen, as 'offer <id>'. */
     targets(): UiTarget[] {
       const out: UiTarget[] = [];

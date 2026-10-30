@@ -18,6 +18,8 @@ export interface Ghost {
    * part of an answer, so it also starts while a finger is down. `ms` is how long the move takes (1 s).
    */
   drag(from: () => Point, to: () => Point, o?: { fraction?: number; carry?: Flyer; follow?(p: Point): void; ms?: number }): Promise<void>;
+  /** The open hand glides over each point in turn, without a press (2.4.0: the first hub's bubbles). */
+  glide(points: (() => Point)[]): Promise<void>;
   hide(): void;
   readonly visible: boolean;
 }
@@ -89,6 +91,8 @@ export function createGhost(layer: HTMLElement): Ghost {
       if (!(await run(380, mine, () => place(at(1), false)))) return;
       show(false);
     },
+    // Step 0's stub: it resolves at once (the hub lane fills it).
+    async glide(_points) {},
     hide() {
       token++;
       show(false);

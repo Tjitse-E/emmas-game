@@ -73,6 +73,9 @@ function placePicture(place: Place): string {
       return `<img src="${v3Art('items/place-dressing.webp')}" alt="" draggable="false" style="width:100%">`;
     case 'beads':
       return `<img src="${v3Art('words/bead.webp')}" alt="" draggable="false" style="width:100%">`;
+    // 2.4.0: the paddock, with the saddle picture of the saddle sign.
+    case 'saddle':
+      return `<img src="${v3Art('words/saddle.webp')}" alt="" draggable="false" style="width:100%">`;
   }
 }
 

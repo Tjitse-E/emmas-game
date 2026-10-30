@@ -62,6 +62,25 @@ export const SENTENCES: Line[] = [
   { id: 'word-white', speaker: 'narrator', text: 'White.', note: 'Colour word.' },
   { id: 'word-silver', speaker: 'narrator', text: 'Silver.', note: 'Colour word.' },
   { id: 'word-brown', speaker: 'narrator', text: 'Brown.', note: 'Colour word.' },
+  // 2.4.0 (docs/v4/2.4.md section 6), run A: the hub's own lines. The goal lines of the signposts come from the sign
+  // pattern and the star egg's numbers from the number patterns below.
+  { id: 'g4-pick', speaker: 'narrator', text: 'Where do you want to go? Tap a bubble!', note: 'The hub, after the bubbles pop in (and after her first two places).' },
+  { id: 'g4-soon-bed', speaker: 'narrator', text: 'Soon it is bedtime!', note: 'At 29:00 of play time, once, when nobody speaks.' },
+  { id: 'g4-way-picnic', speaker: 'narrator', text: 'The picnic is this way.', note: "The hub's 90 s nudge." },
+  { id: 'g4-way-beads', speaker: 'narrator', text: 'The bead tree is this way.', note: "The hub's 90 s nudge." },
+  { id: 'g4-way-rack', speaker: 'narrator', text: 'The hay rack is this way.', note: "The hub's 90 s nudge." },
+  { id: 'g4-way-wish', speaker: 'narrator', text: 'The baby with a wish is this way.', note: "The hub's 90 s nudge, to a herd baby's wish." },
+  { id: 'lumi4-ducks', speaker: 'queen', text: 'The ducks are having their swim!', note: 'A tap on the resting slide, once a play.' },
+  // Run B: riding, the trail and the star egg.
+  { id: 'g4-way-saddle', speaker: 'narrator', text: 'The saddle is this way.', note: "The hub's 90 s nudge, to the paddock." },
+  { id: 'lumi4-saddle', speaker: 'queen', text: 'The saddle is ready! Now you can ride.', note: 'Her first ride ever, at the paddock; and at the saddle sign.' },
+  { id: 'g4-saddle', speaker: 'narrator', text: 'Tap the saddle, and ride!', note: 'At the paddock, before getting on.' },
+  { id: 'g4-signs', speaker: 'narrator', text: 'Read the signs. Then tap the right one.', note: 'Before the first sign of a ride.' },
+  { id: 'g4-ride-home', speaker: 'narrator', text: 'Time to ride home!', note: "After the trail baby's wish." },
+  { id: 'g4-star-egg', speaker: 'narrator', text: 'A star egg! The moon has stars for it.', note: "The play's first star egg, before its goal." },
+  { id: 'g4-more-moon', speaker: 'narrator', text: 'How many more has the moon?', note: 'Star egg question, after the two numbers.' },
+  { id: 'g4-fewer-egg', speaker: 'narrator', text: 'How many fewer has the egg?', note: 'Star egg question, after the two numbers.' },
+  { id: 'h4-line-up', speaker: 'narrator', text: "Let's line up the stars.", note: 'Star egg hint: the stars pair up and the extra ones are counted.' },
 ];
 
 const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
@@ -105,6 +124,11 @@ export function numberLine(id: string): Line | null {
     const text = n === 1 ? 'One cup is still too warm.' : `${cap(word(n))} cups are still too warm.`;
     return { id, speaker: 'narrator', text, note: 'Snow stone too small.' };
   }
+  // 2.4.0's star egg: "The moon has nine stars." and "The egg has five stars."
+  m = /^num-moon-(\d+)$/.exec(id);
+  if (m) return { id, speaker: 'narrator', text: `The moon has ${word(Number(m[1]))} stars.`, note: 'Star egg goal: the moon.' };
+  m = /^num-eggstar-(\d+)$/.exec(id);
+  if (m) return { id, speaker: 'narrator', text: `The egg has ${word(Number(m[1]))} stars.`, note: 'Star egg goal: the egg.' };
   m = /^num-that-(\d+)$/.exec(id);
   if (m) {
     const w = word(Number(m[1]));
@@ -120,9 +144,19 @@ export function phraseLine(id: string): Line | null {
   return { id, speaker: 'narrator', text: `The ${m[1]} ${m[2]}.`, note: 'Phrase wish, read back after she acts.' };
 }
 
+/** The signposts' goal lines (2.4.0): "Bella wants to go to the pond." for g4-go-bella-pond. */
+export function signLine(id: string): Line | null {
+  const m = /^g4-go-(bella|hazel)-([a-z]+)$/.exec(id);
+  if (!m) return null;
+  return { id, speaker: 'narrator', text: `${cap(m[1])} wants to go to the ${m[2]}.`, note: 'Signpost goal, for the mount she rides.' };
+}
+
 const byId = new Map(SENTENCES.map((l) => [l.id, l]));
 
-/** The line for a clip id: one of the sentences, a number pattern or a phrase. Null when the demo has no line for it. */
+/**
+ * The line for a clip id: one of the sentences, a number pattern, a phrase or a signpost goal. Null when the demo has no
+ * line for it.
+ */
 export function lineFor(id: string): Line | null {
-  return byId.get(id) ?? numberLine(id) ?? phraseLine(id);
+  return byId.get(id) ?? numberLine(id) ?? phraseLine(id) ?? signLine(id);
 }

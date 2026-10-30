@@ -22,6 +22,8 @@ import { runGift, type GiftHandle } from './gift';
 import { BOARD_MS, showBoard, type BoardHandle } from './board';
 import { runBeads } from './beads';
 import { createOffers } from './offer';
+import { runSign } from './sign';
+import { createSaddles } from './saddle';
 import { DEFAULT_LOOK } from '../wardrobe';
 import type { LayerCtx, MomentSnapshot, OpenMoment, UiTarget } from './moment';
 import { target } from './moment';
@@ -95,6 +97,8 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
   const home = createHome(hudLayer);
   // Offer bubbles follow places in the world like the name tags, under the moment panels.
   const offers = createOffers(tagsLayer, screen, clear);
+  // 2.4.0: the saddle icons over the mounts, on the hud.
+  const saddles = createSaddles(hudLayer);
   let wardrobe: WardrobeHandle | null = null;
   let gift: GiftHandle | null = null;
   let board: BoardHandle | null = null;
@@ -156,10 +160,16 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       open?.close();
       return runWish(ctx, spec, hooks, setOpen);
     },
+    sign: (spec, hooks) => {
+      open?.close();
+      return runSign(ctx, spec, hooks, setOpen);
+    },
+    saddles: (o) => saddles.set(o),
     replay,
     ghost: {
       tap: (at) => ghost.tap(at),
       drag: (from, to) => ghost.drag(from, to),
+      glide: (points) => ghost.glide(points),
       hide: () => ghost.hide(),
     },
     arrow: (goal, onTap) => arrow.set(goal, onTap),
@@ -194,6 +204,7 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       return runBeads(ctx, spec, hooks, setOpen, o);
     },
     offer: (id, o) => offers.set(id, o),
+    offerBob: (id, grow) => offers.bob(id, grow),
     keepClear: (box) => {
       keep = box;
     },
@@ -218,6 +229,7 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       board?.close();
       board = null;
       offers.reset();
+      saddles.set(null);
       keep = null;
       ghost.hide();
       releaseDrags();
@@ -247,7 +259,7 @@ export function createLayer(root: HTMLElement, _deps: LayerDeps = {}): Layer & L
       hudLayer.querySelectorAll('.food-tray.open .food').forEach((f) => add(f.getAttribute('aria-label') ?? 'food', f));
       add('play', screens.querySelector('.screen.start .play'));
       add('play again', screens.querySelector('.screen.end .end-moon'));
-      targets.push(...(wardrobe?.targets() ?? []), ...(gift?.targets() ?? []), ...offers.targets());
+      targets.push(...(wardrobe?.targets() ?? []), ...(gift?.targets() ?? []), ...offers.targets(), ...saddles.targets());
       return { moment: m, wardrobe: wardrobe?.snapshot() ?? null, targets };
     },
     idleNow: () => {

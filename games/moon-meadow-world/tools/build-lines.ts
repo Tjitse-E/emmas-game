@@ -46,7 +46,10 @@ const PAST_TEN = [11, 12, 13, 14, 15, 16].flatMap((have) => {
  */
 const HEART = ['g4-heart'];
 
-const RESERVE = [...STILL_WARM, ...PAST_TEN, ...HEART];
+/** "Soon you can ride here!" at the saddle sign until 2.3.3; 2.4.0 no longer plays it, and its paid clip stays. */
+const SOON = ['lumi4-soon'];
+
+const RESERVE = [...STILL_WARM, ...PAST_TEN, ...HEART, ...SOON];
 
 const byId = new Map(SENTENCES.map((l) => [l.id, l]));
 const lines: Line[] = [];

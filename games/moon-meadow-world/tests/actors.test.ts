@@ -771,8 +771,9 @@ describe('the batches', () => {
         // The busiest look is picked for the view it is measured in: the portrait draws Mid as Fine and Lo as Mid.
         const look = busiest((m) => m.batch(id), portrait);
         const hers = measure(look, { rose: true, portrait }).batch(id);
-        // The egg (a list of 16) and the effects' beam glows (at most 8) come on top in the soft and flat batches.
-        const room = id === B.Soft ? 24 : id === B.Arc ? 16 : 0;
+        // The egg (a list of 16) and the effects' beam glows (at most 8) come on top in the soft and flat batches; 2.4.0
+        // has two egg actors (the home egg and the trail egg), so the soft batch keeps room for both.
+        const room = id === B.Soft ? 40 : id === B.Arc ? 16 : 0;
         expect(hers + (unicorns.get(id) ?? 0) + room, `batch ${id}, portrait ${portrait}, ${JSON.stringify(look)}`).toBeLessThanOrEqual(CAPACITY[id]);
       }
     }

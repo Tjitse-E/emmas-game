@@ -25,8 +25,15 @@ export interface EggAsk {
 
 export function eggAsk(g: Game, first = false): EggAsk {
   const used = { totals: [...g.maths.used.totals], answers: [...g.maths.used.answers] };
-  return { first, band: g.maths.band, used, lastTotals: [...g.save.data.last.totals] };
+  // The last play's totals as this play read them at its start (2.4.0: the save's `last` is written after each place).
+  return { first, band: g.maths.band, used, lastTotals: [...(g.start ?? g.save.data).last.totals] };
 }
+
+/**
+ * Fit the egg plans the shown bubbles can start, with what this play has asked left out (2.4.0: the hub calls it at
+ * each refill, never during a walk). Step 0's stub does nothing; the signs-star lane fills it (Task 15).
+ */
+export function prepareEggPlans(_g: Game): void {}
 
 /**
  * An egg's three sums from the stream `label` (2.3 section 19.1), all planned when the egg opens: the hard sum takes

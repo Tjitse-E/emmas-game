@@ -33,6 +33,11 @@ export class Run {
     this.skippable.clear();
   }
 
+  /** How many cleanups wait for the run to stop (2.4.0: the long play checks that they stay level). */
+  get deferred(): number {
+    return this.cleanups.length;
+  }
+
   /** Run fn when the run stops (close a moment's timers, clear a door moment). */
   defer(fn: () => void): void {
     if (this.alive) this.cleanups.push(fn);

@@ -1,10 +1,9 @@
 // What the afternoon's quests share (moved out of quests.ts in 2.3.0, so the bead tree and the Dressing Corner can use
-// it from their own files): walking to a quest's spot, her babies as guests, following again afterwards and the herd
-// stepping aside; and the pure rules of the afternoon (docs/v4/2.3.md section 17): the free-play clocks, the maths
+// it from their own files): walking to a quest's spot and the herd stepping aside (the guests and following again moved
+// to guests.ts in 2.4.0); and the pure rules of the afternoon (docs/v4/2.3.md section 17): the free-play clocks, the maths
 // quest's rotation and the gifts.
 import * as THREE from 'three';
 import type { GiftItem, GiftSet, Owned, PrincessLook, Vec2 } from '../contracts';
-import type { UnicornActor } from '../actors';
 import { CORNER, GRAZE_HOMES, dist2 } from '../layout';
 import { copyOwned, giftChoices, giftSetFor, stillToEarn, withItem } from '../wardrobe';
 import { CLIPS } from '../content';
@@ -20,16 +19,6 @@ export async function walkThere(g: Game, to: Vec2): Promise<void> {
   await g.run.until(() => ['idle', 'walk', 'run'].includes(her.mode), 15_000);
   await g.run.w(Promise.race([walkTo(g, to), new Promise((r) => setTimeout(r, WALK_MS))]));
   if (dist2(princessAt(g), to) > 0.6) g.actors.placePrincess(to, 0);
-}
-
-/** Her babies as quest guests and helpers: they stop following until the quest is over. */
-export function guests(g: Game): UnicornActor[] {
-  return g.babies.slice(0, 2).map((b) => b.unicorn);
-}
-
-export function followAgain(g: Game, babies: UnicornActor[]): void {
-  for (const p of g.parked.splice(0)) g.followers.add(p);
-  babies.forEach((u, k) => g.followers.add(u, k === 0));
 }
 
 /**

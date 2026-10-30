@@ -10,6 +10,12 @@
 #   MMW_PORT=8791 MMW_SESSION=mmw-eggs bash .../run.sh   another port and playwright-cli session, so runs from two
 #                                                         worktrees at the same time do not share a browser
 #   MMW_STRICT_CLIPS=1 bash .../run.sh                    a missing clip fails even when its line waits for gen.sh
+#   MMW_FLOWS="level smoke" bash .../run.sh               only these flows, in this order (2.4.0; default: level dress
+#                                                         quest smoke ride bedtime, each when its file exists); the
+#                                                         MMW_NO_* switches still leave a flow out. ride and bedtime run
+#                                                         at her two sizes, or every size with MMW_FULL=all
+#   MMW_RIDE_PART=paddock|all, MMW_BEDTIME_PART=doors|all  pass through to ride.flow.sh and bedtime.flow.sh
+#   MMW_LONG=1|pond|slide bash .../run.sh                 only the long play (long.flow.sh, LONG=$MMW_LONG) at 1080 x 810
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(git -C "$HERE" rev-parse --show-toplevel)"
@@ -44,11 +50,38 @@ for _ in $(seq 1 50); do curl -sf "$MMW_URL" >/dev/null && break; sleep 0.2; don
 sizes_all="${MMW_SIZES:-1080x810 1080x740 1024x768 1024x690 1180x820 1366x1024}"
 sizes_full="${MMW_SIZES:-1080x810}"
 sizes_quest="${MMW_SIZES:-1080x810 1080x740}"
-[ "${MMW_FULL:-}" = all ] && sizes_full="$sizes_all"
+# 2.4.0: the ride and bedtime flows at her two sizes, every size with MMW_FULL=all.
+sizes_ride="$sizes_quest"
+[ "${MMW_FULL:-}" = all ] && sizes_full="$sizes_all" && sizes_ride="$sizes_all"
 [ "${MMW_NO_LEVEL:-}" = 1 ] && sizes_full=""
 [ "${MMW_NO_QUEST:-}" = 1 ] && sizes_quest=""
-for size in $sizes_full; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/level.flow.sh"; done
-[ "${MMW_NO_DRESS:-}" = 1 ] || for size in $sizes_all; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/dress.flow.sh"; done
-for size in $sizes_quest; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/quest.flow.sh"; done
-[ "${MMW_NO_SMOKE:-}" = 1 ] || for size in $sizes_all; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/smoke.flow.sh"; done
+[ "${MMW_NO_DRESS:-}" = 1 ] && sizes_dress="" || sizes_dress="$sizes_all"
+[ "${MMW_NO_SMOKE:-}" = 1 ] && sizes_smoke="" || sizes_smoke="$sizes_all"
+export MMW_RIDE_PART="${MMW_RIDE_PART:-}" MMW_BEDTIME_PART="${MMW_BEDTIME_PART:-}"
+
+# One flow at each of its sizes.
+run_flow() {
+  local flow="$1" sizes="$2" size
+  [ -f "$HERE/$flow.flow.sh" ] || return 0
+  for size in $sizes; do W="${size%x*}" H="${size#*x}" S="$SESSION" bash "$HERE/$flow.flow.sh"; done
+}
+
+# The long play (2.4.0): only it, at Emma's iPad size, with the history to play.
+if [ -n "${MMW_LONG:-}" ]; then
+  [ -f "$HERE/long.flow.sh" ] || { echo "No long.flow.sh yet" >&2; exit 1; }
+  W=1080 H=810 S="$SESSION" LONG="$MMW_LONG" bash "$HERE/long.flow.sh"
+  echo "all flows passed; screenshots in $MMW_SHOTS"
+  exit 0
+fi
+
+for flow in ${MMW_FLOWS:-level dress quest smoke ride bedtime}; do
+  case "$flow" in
+    level) run_flow level "$sizes_full" ;;
+    dress) run_flow dress "$sizes_dress" ;;
+    quest) run_flow quest "$sizes_quest" ;;
+    smoke) run_flow smoke "$sizes_smoke" ;;
+    ride | bedtime) run_flow "$flow" "$sizes_ride" ;;
+    *) echo "Unknown flow: $flow" >&2; exit 1 ;;
+  esac
+done
 echo "all flows passed; screenshots in $MMW_SHOTS"

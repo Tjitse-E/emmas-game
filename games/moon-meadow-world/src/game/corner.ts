@@ -17,7 +17,8 @@ import { PALETTE } from '../wardrobe';
 import { CLIPS, wishClipIds } from '../content';
 import { type Game, flat, frameAt, lumiSay, preload } from './game';
 import { crownKeep, gateKind, parkFollowers, planWish, runWish, wishExtraClipIds } from './moments';
-import { cornerLimitMs, followAgain, giveGift, guests, herdAsideAt, walkThere } from './quest-kit';
+import { cornerLimitMs, giveGift, herdAsideAt, walkThere } from './quest-kit';
+import { followAgain, guests } from './guests';
 import { dressUp } from './wardrobe-part';
 
 /** The babies' spots are reached in this long at the latest; then they are put there. */
@@ -92,7 +93,7 @@ export async function cornerQuest(g: Game): Promise<() => void> {
   const q = g.quests;
   const t0 = performance.now();
   g.free = false;
-  const babies = guests(g);
+  const babies = guests(g, CORNER.stand, 2);
   for (const u of babies) g.followers.remove(u);
   // Her other followers wait west of the rug (the picnic's spots), the herd near the step walks behind the camera.
   parkFollowers(g, CORNER.stand, CORNER.aside);

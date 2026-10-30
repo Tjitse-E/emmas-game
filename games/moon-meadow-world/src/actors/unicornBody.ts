@@ -26,6 +26,25 @@ export interface Build {
   hit: number;
 }
 
+/** A build with every length times k (2.4.0's grown stub: the foal times 1.4, until the mount lane draws its own). */
+function scaled(b: Build, k: number): Build {
+  const m = (xs: readonly number[]) => xs.map((x) => x * k);
+  return {
+    legLen: b.legLen * k, legR: b.legR * k, hoofH: b.hoofH * k, hoofR: b.hoofR * k, legX: b.legX * k, legZ: b.legZ * k,
+    bodyY: b.bodyY * k, body: m(b.body) as Build['body'], chest: m(b.chest) as Build['chest'],
+    neckAt: m(b.neckAt) as Build['neckAt'], headAt: m(b.headAt) as Build['headAt'], headR: b.headR * k,
+    stride: b.stride * k, bed: b.bed * k, hit: b.hit * k,
+  };
+}
+
+const FOAL: Build = {
+  legLen: 0.25, legR: 0.055, hoofH: 0.066, hoofR: 0.062, legX: 0.095, legZ: 0.15,
+  bodyY: 0.44, body: [0.2, 0.175, 0.275],
+  chest: [0, 0.52, 0.16, 0.14, 0.155, 0.13],
+  neckAt: [0.56, 0.19], headAt: [0.18, 0.07], headR: 0.19,
+  stride: 0.52, bed: 0.3, hit: 0.66,
+};
+
 export const BUILDS: Record<Stage, Build> = {
   baby: {
     legLen: 0.13, legR: 0.05, hoofH: 0.062, hoofR: 0.057, legX: 0.085, legZ: 0.115,
@@ -34,13 +53,9 @@ export const BUILDS: Record<Stage, Build> = {
     neckAt: [0.4, 0.14], headAt: [0.15, 0.06], headR: 0.18,
     stride: 0.38, bed: 0.46, hit: 0.56,
   },
-  foal: {
-    legLen: 0.25, legR: 0.055, hoofH: 0.066, hoofR: 0.062, legX: 0.095, legZ: 0.15,
-    bodyY: 0.44, body: [0.2, 0.175, 0.275],
-    chest: [0, 0.52, 0.16, 0.14, 0.155, 0.13],
-    neckAt: [0.56, 0.19], headAt: [0.18, 0.07], headR: 0.19,
-    stride: 0.52, bed: 0.3, hit: 0.66,
-  },
+  foal: FOAL,
+  // The mounts (2.4.0): a stub the mount lane replaces with its own build and saddle.
+  grown: scaled(FOAL, 1.4),
 };
 
 export type Eyes = 'open' | 'blink' | 'happy' | 'sleepy' | 'closed';

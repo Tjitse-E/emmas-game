@@ -46,6 +46,14 @@ export function foldReading(s: ReadingState, outcome: Outcome): ReadingState {
 }
 
 /**
+ * The sign level (2.4.0, save.signs): its own level, the same fold as the reading level, over a trip's sign outcomes in
+ * order. Written in full in step 0, so the mount lane can fold sign levels before the signs-star lane merges.
+ */
+export function foldSigns(s: ReadingState, outcomes: readonly Outcome[]): ReadingState {
+  return outcomes.reduce(foldReading, s);
+}
+
+/**
  * The level a reading moment is planned at. The play's first wish is one level lower, as a warm-up (the picnic
  * guests never are). `?rl=` forces a level for every moment, warm-up included.
  */

@@ -205,6 +205,67 @@ export const MIST = {
   signStand: v2(19.4, -14.2),
 } as const;
 
+/**
+ * Riding (2.4.0, docs/v4/2.4.md sections 5.4 and 5.5): the paddock in the north-east corner, east of the grand tree at
+ * (19, -7), so the follow camera sees the mounts past its crown. Her stand, the mounts' spots (both turned south-west
+ * towards her stand), the back rail with its gap for the ride path, the trough and the tub at the back, the gate in
+ * the north fence where the moon mist was, the fork with its signpost, the three clearing slots (west, north, east),
+ * the trail speed, the followers' gaps behind the mount, the ride camera's clamp and its look-ahead. The trough and the
+ * tub become obstacles with the trail lane.
+ */
+export const RIDE = {
+  paddock: { minX: 21, maxX: 25.5, minZ: -16.3, maxZ: -10 },
+  stand: v2(22.0, -11.2),
+  mounts: { bella: v2(22.9, -13.6), hazel: v2(24.7, -12.6) },
+  rail: { z: -16.5, minX: 21, maxX: 26, gapX: 22.5 },
+  trough: { center: v2(24.0, -15.7), radius: 0.5 },
+  tub: { center: v2(25.2, -15.0), radius: 0.5 },
+  gate: v2(21.5, -22.7),
+  fork: v2(21.5, -29),
+  slots: [v2(11.5, -31), v2(21.5, -40), v2(31.5, -31)],
+  speed: 4.2,
+  gaps: [1.6, 3.0, 4.4],
+  clamp: { minX: -23, maxX: 36, minZ: -44, maxZ: 13.5 },
+  ahead: 1,
+} as const;
+
+/** An arc-length path at y 0 through ground points (CatmullRom, centripetal so a sharp corner does not loop). */
+function groundPath(points: readonly Vec2[]): THREE.CatmullRomCurve3 {
+  return new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(p.x, 0, p.z)), false, 'centripetal');
+}
+
+/**
+ * The set paths of a trip, arc-length curves at y 0: each mount's spot to the fork through the rail gap and the gate,
+ * the fork to each slot (west, north, east), and the fork home to her stand. Step 0's curves are straight-ish
+ * polylines through the points of RIDE; the trail lane gives them their bends.
+ */
+export const RIDE_PATHS: {
+  out: { bella: THREE.CatmullRomCurve3; hazel: THREE.CatmullRomCurve3 };
+  roads: [THREE.CatmullRomCurve3, THREE.CatmullRomCurve3, THREE.CatmullRomCurve3];
+  home: THREE.CatmullRomCurve3;
+} = {
+  out: {
+    bella: groundPath([RIDE.mounts.bella, v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.gate, RIDE.fork]),
+    hazel: groundPath([RIDE.mounts.hazel, v2(RIDE.rail.gapX, RIDE.rail.z + 0.6), v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.gate, RIDE.fork]),
+  },
+  roads: [
+    groundPath([RIDE.fork, v2(16.5, -30.5), RIDE.slots[0]]),
+    groundPath([RIDE.fork, v2(21.5, -34.5), RIDE.slots[1]]),
+    groundPath([RIDE.fork, v2(26.5, -30.5), RIDE.slots[2]]),
+  ],
+  home: groundPath([RIDE.fork, RIDE.gate, v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.stand]),
+};
+
+/**
+ * The night views of bedtime and goodnight (moved from level.ts in 2.4.0, unchanged, so the trail lane's night-view test
+ * and bedtime.ts read the same poses). "Fourteen unicorns!": the camera tilts up so the stars and the castle rise above
+ * the stable roofs. The star band and the castle sit 2 to 11 degrees above the horizon, so the view looks only 12
+ * degrees down and its window is shifted up (shiftY), which puts the top edge about 15 degrees above the horizon.
+ */
+export const NIGHT_SKY = { center: { x: 0, z: -12 }, width: 19, pitch: 12, shiftY: 0.2 };
+/** The bedtime frame of both stable rows. */
+export const STABLE_FRAME = { center: { x: 0, z: -11.6 }, width: 19 };
+
 /** The big trees inside the fence (the world draws one on each). Obstacles. */
 export const TREES: { center: Vec2; radius: number }[] = [
   { center: v2(-20, -9), radius: 1.6 },
@@ -243,7 +304,7 @@ export const GRAZE_HOMES: Vec2[] = [
 ];
 
 /** Places the level points at (goal beacons, edge arrows and "this way" lines). */
-export type Place = 'nest' | 'pond' | 'slide' | 'wildEgg' | 'stable' | 'gazebo' | 'rack' | 'picnic' | 'corner' | 'beads';
+export type Place = 'nest' | 'pond' | 'slide' | 'wildEgg' | 'stable' | 'gazebo' | 'rack' | 'picnic' | 'corner' | 'beads' | 'saddle';
 export const PLACES: Record<Place, Vec2> = {
   nest: NEST.center,
   pond: POND.center,
@@ -255,4 +316,5 @@ export const PLACES: Record<Place, Vec2> = {
   picnic: PICNIC.rug.center,
   corner: CORNER.stand,
   beads: BEAD_TREE.center,
+  saddle: RIDE.stand,
 };

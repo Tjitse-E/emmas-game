@@ -1,0 +1,39 @@
+{
+  "v": 2,
+  "look": {
+    "hair": "honey",
+    "style": "long",
+    "eyes": "green",
+    "gown": "ball",
+    "gownColour": "lilac",
+    "extra": "wings",
+    "crown": "tiara",
+    "crownColour": "silver",
+    "shoes": "boots",
+    "shoeColour": "purple",
+    "thing": "stars",
+    "thingColour": "lilac",
+    "earrings": "hearts",
+    "necklace": "none",
+    "jewelColour": "pink"
+  },
+  "owned": {
+    "crown": ["lumi", "tiara"],
+    "shoes": ["slippers", "boots"],
+    "earrings": ["studs", "hearts"],
+    "necklace": [],
+    "style": ["ponytails", "high", "plaits", "bun", "low", "side", "curly", "bunches", "long"],
+    "thing": ["bows", "unicorn", "flowers", "stars", "butterflies", "hearts"]
+  },
+  "ribbons": ["lilac", "sky"],
+  "plays": 5,
+  "seen": { "wardrobe": true, "crown": true, "beads": true },
+  "reading": { "level": 2, "recent": ["first", "first"] },
+  "phrases": { "level": 2, "recent": ["miss"] },
+  "patterns": { "level": 1, "recent": ["first"] },
+  "last": {
+    "words": ["cape", "plum", "duck", "boat", "jam", "bun", "cup", "fig", "mug", "hat", "sock", "crown", "bell", "ring", "frog", "nut"],
+    "totals": [8, 9, 10, 7, 9, 10, 8, 9, 10, 9, 7, 9, 10, 8, 9, 10]
+  },
+  "afternoon": { "maths": "rack", "done": ["picnic"] }
+}

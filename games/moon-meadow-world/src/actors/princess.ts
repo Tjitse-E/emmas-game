@@ -16,6 +16,7 @@ import {
 } from './looks3d';
 import { slideSounds } from './sounds';
 import type { FxImpl } from './fx';
+import type { UnicornActor } from './unicorn';
 import { RouteWalker, SlideQueue, damp, exitLanding, headingOf, nearestExit, turnTowards, wrap, type ActorDepsPlus } from './motion';
 import { CLIMB_SPEED, CURVE_LEN, SEAT_U, SLIDE_V0, slideAt, slideDir, slideStep } from './ride';
 
@@ -416,6 +417,24 @@ export class PrincessActor implements Princess {
 
   get riding(): boolean {
     return !!this.ride && this.ride.stage !== 'toLadder' && this.ride.stage !== 'wait';
+  }
+
+  // --- riding a mount (2.4.0): step 0's stubs, filled by the mount lane (docs/v4/2.4-plan.md Task 22) --------------
+
+  /**
+   * The mount she sits on, or null. Not `riding`: that name is the slide's (on the ladder, the slide or in the water),
+   * which the followers read (Leader.riding).
+   */
+  mountedOn: UnicornActor | null = null;
+
+  /** Hop up onto a mount with a sparkle and sit side-saddle (mode 'mounted'). Step 0 resolves at once. */
+  mount(_u: UnicornActor): Promise<void> {
+    return Promise.resolve();
+  }
+
+  /** Hop down at a ground point with a sparkle. Step 0 resolves at once. */
+  dismount(_at: Vec2): Promise<void> {
+    return Promise.resolve();
   }
 
   /** Put her somewhere at once (jump() in the level script). */

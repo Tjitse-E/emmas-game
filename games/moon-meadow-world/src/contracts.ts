@@ -52,6 +52,7 @@ export type WorldPick =
   | { kind: 'corner' } // the trunk and the mirror at the gazebo step (2.3.0 Dressing Corner)
   | { kind: 'beads' } // the bead tree (2.3.0 side quest)
   | { kind: 'sign' } // the saddle sign at the moon mist (2.3.0)
+  | { kind: 'paddock' } // the paddock's sand, where she gets on a mount (2.4.0)
   | { kind: 'ground'; at: Vec2 };
 
 export interface StableApi {
@@ -139,7 +140,12 @@ export interface World {
 // actors (src/actors/index.ts exports createActors)
 // ---------------------------------------------------------------------------------------------------------------
 
-export type Stage = 'baby' | 'foal';
+/** 'grown' (2.4.0): the mounts Bella and Hazel, about 1.4 times a foal, with saddles on. */
+export type Stage = 'baby' | 'foal' | 'grown';
+/** The two mounts in the paddock (2.4.0). */
+export type MountId = 'bella' | 'hazel';
+/** The nest egg is warm, the shore egg snow, a trail egg a star egg (2.4.0: more and fewer). */
+export type EggKind = 'warm' | 'snow' | 'star';
 export type Breed = 'moon' | 'nestling' | 'snow' | 'berry';
 
 /** How a unicorn looks. Colours are CSS hex strings. */
@@ -179,8 +185,8 @@ export interface Unicorn {
   goTo(route: Vec2[], o?: { trot?: boolean }): Promise<boolean>;
   /** Follow Princess Emma, keeping slot 0, 1 or 2 behind her. Hops about and plays when she stands still. */
   follow(slot: number): void;
-  /** Wander and graze around a home point. */
-  graze(home: Vec2): void;
+  /** Wander and graze around a home point (`radius`: how far it wanders; the mounts use 0.6). */
+  graze(home: Vec2, o?: { radius?: number }): void;
   /** Climb the slide, slide down into the water with a splash, then swim. Resolves at the splash. */
   rideSlide(): Promise<void>;
   /** Swim in the pond from where it is now, then climb out by itself after 6 to 12 s and graze near the shore. */
@@ -218,7 +224,8 @@ export interface Herd {
   pick(ray: THREE.Raycaster): Unicorn | null;
 }
 
-export type PrincessMode = 'idle' | 'walk' | 'run' | 'climb' | 'slide' | 'swim';
+/** 'mounted' (2.4.0): on a mount, side-saddle. The slide's ride is 'climb' and 'slide'. */
+export type PrincessMode = 'idle' | 'walk' | 'run' | 'climb' | 'slide' | 'swim' | 'mounted';
 
 // Princess Emma's look (docs/v4/2.3.md section 15). Colour and shape are split: every coloured part takes one
 // of the twelve palette colours, the hair also one of six natural shades. The ids, hex values, words and gift sets are
@@ -312,7 +319,7 @@ export interface Princess {
 
 export interface Egg3D {
   /** Show an egg at a point (resting in the nest or on the grass). `kind` decides the shell. */
-  place(at: THREE.Vector3, kind: 'warm' | 'snow'): void;
+  place(at: THREE.Vector3, kind: EggKind): void;
   hide(): void;
   readonly position: THREE.Vector3;
   readonly visible: boolean;
@@ -352,7 +359,10 @@ export interface ActorDeps {
 export interface Actors {
   readonly princess: Princess;
   readonly herd: Herd;
+  /** The home egg: the nest egg or the shore egg, one at a time. */
   readonly egg: Egg3D;
+  /** The trail's star egg (2.4.0), drawn only while it shows. */
+  readonly trailEgg: Egg3D;
   readonly fx: Fx;
   /** Advance every actor; call once per frame. */
   update(dt: number, t: number): void;
@@ -383,7 +393,9 @@ export type SumGrade = 'easy' | 'middle' | 'hard';
 
 /** An egg, or the hay rack: a 'warm' spec (adding, the missing part) with skin 'hay'. */
 export interface EggSpec {
-  kind: 'warm' | 'snow';
+  kind: EggKind;
+  /** The star egg's question for this sum: how many more has the moon, or how many fewer has the egg. Star only. */
+  compare?: 'more' | 'fewer';
   /** Cups the egg needs to be warm. */
   need: number;
   /** Cups warm now (below need for 'warm', above need for 'snow'). */
@@ -556,6 +568,30 @@ export interface DoorSpec {
   hint?: string[];
 }
 
+// The signposts on the trail (2.4.0, docs/v4/2.4.md section 5.5): thirteen place words in four first-sound groups.
+export type SignWord = 'sand' | 'stump' | 'swing' | 'stone' | 'shed' | 'ship' | 'shell' | 'barn' | 'bench' | 'beach' | 'pond' | 'pool' | 'pines';
+export type SignGroup = 's' | 'sh' | 'b' | 'p';
+/** gpcs are the written graphemes; sounds, when a grapheme says another sound (pines: p, i-e, n, z), the letter sounds, as PhrasePart has them. */
+export interface SignItem {
+  word: SignWord;
+  gpcs: string[];
+  sounds?: string[];
+  clip: string;
+  pic: string;
+  tier: 1 | 2 | 3;
+  group: SignGroup;
+}
+export interface SignSpec {
+  /** Sign 1 or 2 of the trip. */
+  sign: 1 | 2;
+  /** The level it plays and logs at. */
+  level: 1 | 2 | 3;
+  /** The cards in arm order, west, north, east: card i points along road i, and slot i shows its word. */
+  cards: [SignItem, SignItem, SignItem];
+  target: SignItem;
+  clips: { intro: string[]; goal: string[]; right: string[]; hint: string[]; again: string[] };
+}
+
 // ---------------------------------------------------------------------------------------------------------------
 // ui (src/ui/index.ts exports createLayer): the 2D layer over the canvas. Plain DOM, pointer events, no text to read
 // except the printed words that are the learning (wish words, name gems, numerals on stones).
@@ -582,6 +618,16 @@ export interface NamingHooks extends MomentHooks {
   chosen(name: NameChoice): void;
 }
 
+export interface SignHooks extends MomentHooks {
+  /** Card i's anchor on screen, the end of arm i, every frame. */
+  cardAt(i: 0 | 1 | 2): ScreenPoint;
+  /**
+   * A card was tapped: right, the mount nickers; wrong, it steps onto road i, shakes its head and steps back. The cards
+   * wake again only after it resolves.
+   */
+  road(i: 0 | 1 | 2, right: boolean): Promise<void>;
+}
+
 export interface Layer {
   readonly root: HTMLElement;
   /**
@@ -605,12 +651,18 @@ export interface Layer {
   egg(spec: EggSpec, hooks: MomentHooks): Promise<MomentResult>;
   naming(spec: NamingSpec, hooks: NamingHooks): Promise<MomentResult & { name: NameChoice }>;
   wish(spec: WishSpec, hooks: MomentHooks): Promise<MomentResult>;
+  /** A signpost on the trail (2.4.0): three print cards on the arms; only a card tap answers. */
+  sign(spec: SignSpec, hooks: SignHooks): Promise<MomentResult>;
+  /** The saddle icons over the mounts' saddles (120 px, pointerdown), targets 'saddle bella' and 'saddle hazel'; null takes them away. */
+  saddles(o: { at: Record<MountId, () => ScreenPoint>; onTap(m: MountId): void } | null): void;
   /** Repeat the goal of the open moment (Lumi tap). Returns false when no moment is open. */
   replay(): boolean;
   /** The ghost hand: a tap at a point, or a drag from a to b. Resolves when the demonstration ends. */
   ghost: {
     tap(at: () => ScreenPoint): Promise<void>;
     drag(from: () => ScreenPoint, to: () => ScreenPoint): Promise<void>;
+    /** The hand glides over each point in turn, without a tap (2.4.0: the first hub's bubbles). */
+    glide(points: (() => ScreenPoint)[]): Promise<void>;
     hide(): void;
   };
   /** The glowing picture arrow at the screen edge for an off-screen goal. Tapping it calls onTap. */
@@ -668,9 +720,11 @@ export interface Layer {
    * A side quest's offer bubble (2.2 section 5): a picture in a bubble that follows `at` every frame and acts on
    * pointerdown. `tint` colours a greyscale picture (the bead tree's bead). `badge` is a small picture on the
    * bubble's rim (2.3: the swatch of a gift the quest can still give, swatches.ts giftSwatchUrl). One per id; null
-   * takes it away.
+   * takes it away. `base` (2.4.0) is a picture drawn under `pic` (the nest under the moon egg).
    */
-  offer(id: string, o: { pic: string; tint?: string; badge?: string; at: () => ScreenPoint; onTap(): void } | null): void;
+  offer(id: string, o: { pic: string; tint?: string; badge?: string; base?: string; at: () => ScreenPoint; onTap(): void } | null): void;
+  /** A bubble bobs once, or with `grow` grows and bobs for about 3 s (the nudge). Unknown ids do nothing. */
+  offerBob(id: string, grow: boolean): void;
   /**
    * A box on screen that bubbles and cards keep clear of (2.3.0: Princess Emma in the afternoon): the offer bubbles
    * and a wish bubble move up above it, the gift cards move beside it when there is room. Called every frame; null

@@ -262,17 +262,17 @@ describe('the trays (4.1)', () => {
 describe('variety', () => {
   it('draws each moment from its own stream, so other moments never shift its sum', () => {
     for (let seed = 1; seed <= 200; seed++) {
-      const alone = eggSpec('snow', stream(seed, 'egg2'), { band: 'b' });
+      const alone = eggSpec('snow', stream(seed, 'egg-shore'), { band: 'b' });
       // A full play draws egg 1, a wish and the rack on their own streams first.
-      const r1 = stream(seed, 'egg1');
+      const r1 = stream(seed, 'egg-nest');
       eggSpec('warm', r1);
-      for (let i = 0; i < 40; i++) stream(seed, 'wish1')();
+      for (let i = 0; i < 40; i++) stream(seed, 'wish-1')();
       rackSpec(stream(seed, 'rack'), { band: 'a' });
-      const inPlay = eggSpec('snow', stream(seed, 'egg2'), { band: 'b' });
+      const inPlay = eggSpec('snow', stream(seed, 'egg-shore'), { band: 'b' });
       expect({ ...inPlay, clips: null }).toEqual({ ...alone, clips: null });
     }
     const differ = Array.from({ length: 100 }, (_, i) => i + 1).filter((seed) => {
-      const a = eggSpec('warm', stream(seed, 'egg1'));
+      const a = eggSpec('warm', stream(seed, 'egg-nest'));
       const b = eggSpec('warm', stream(seed, 'rack'));
       return a.need !== b.need || a.have !== b.have || a.stones.join() !== b.stones.join();
     });
@@ -290,7 +290,7 @@ describe('variety', () => {
       };
       // Egg 1 is band A; each hard sum's outcome moves the band for the next moment.
       let band: Band = 'a';
-      for (const [kind, label] of [['warm', 'egg1'], ['snow', 'egg2']] as const) {
+      for (const [kind, label] of [['warm', 'egg-nest'], ['snow', 'egg-shore']] as const) {
         eggSums(kind, stream(seed, label), { band, used, first: true }).forEach(note);
         band = nextBand(band, pick() < 0.5 ? 'first' : 'helped');
       }
@@ -347,6 +347,7 @@ describe('the hay rack (4.3)', () => {
 const SUM_COUNT: Record<EggKind, Record<string, number>> = {
   warm: { easy: 5, middle: 4, 'hard a': 5, 'hard b': 5 },
   snow: { easy: 5, middle: 4, 'hard a': 5, 'hard b': 5 },
+  star: { easy: 5, middle: 4, 'hard a': 5, 'hard b': 5 },
 };
 const gradeKey = (grade: SumGrade, band: Band) => (grade === 'hard' ? `hard ${band}` : grade);
 const bandsOf = (grade: SumGrade): readonly Band[] => (grade === 'hard' ? BANDS : ['a']);
@@ -361,7 +362,7 @@ function plays(band: Band, n = 10_000): { kind: EggKind; sums: EggSpec[] }[] {
   let lastTotals: number[] = [];
   for (let seed = 1; seed <= n; seed++) {
     const used = { totals: [] as number[], answers: [] as number[] };
-    for (const [kind, label] of [['warm', 'egg1'], ['snow', 'egg2']] as const) {
+    for (const [kind, label] of [['warm', 'egg-nest'], ['snow', 'egg-shore']] as const) {
       const sums = eggSums(kind, stream(seed, label), { band, used, lastTotals, first: true });
       for (const e of sums) {
         used.totals.push(totalOf(e));
@@ -497,9 +498,9 @@ describe('three sums per egg: the egg', () => {
   it('plans the same three sums from the same stream and options, whatever other streams drew', () => {
     for (let seed = 1; seed <= 200; seed++) {
       const o = { band: 'b' as Band, used: { totals: [7, 9, 10], answers: [4, 5, 6] }, lastTotals: [8, 9, 10], first: true };
-      const alone = eggSums('snow', stream(seed, 'egg2'), o);
-      for (const label of ['egg1', 'hatch1', 'naming1', 'wish1', 'pond']) for (let i = 0; i < 40; i++) stream(seed, label)();
-      const inPlay = eggSums('snow', stream(seed, 'egg2'), o);
+      const alone = eggSums('snow', stream(seed, 'egg-shore'), o);
+      for (const label of ['egg-nest', 'hatch-1', 'naming-1', 'wish-1', 'pond']) for (let i = 0; i < 40; i++) stream(seed, label)();
+      const inPlay = eggSums('snow', stream(seed, 'egg-shore'), o);
       expect(inPlay.map((s) => ({ ...s, clips: null }))).toEqual(alone.map((s) => ({ ...s, clips: null })));
     }
   });
@@ -524,7 +525,7 @@ describe('three sums per egg: the egg', () => {
     for (let seed = 1; seed <= 300; seed++) {
       const o = { band: 'a' as Band, used: { totals: [8, 9, 10], answers: [5, 4, 6] }, first: true };
       const strip = (xs: EggSpec[]) => xs.map((s) => ({ ...s, clips: null }));
-      expect(strip(eggSums('snow', stream(seed, 'egg2'), { ...o, lastTotals: [7, 8, 9, 10] }))).toEqual(strip(eggSums('snow', stream(seed, 'egg2'), o)));
+      expect(strip(eggSums('snow', stream(seed, 'egg-shore'), { ...o, lastTotals: [7, 8, 9, 10] }))).toEqual(strip(eggSums('snow', stream(seed, 'egg-shore'), o)));
     }
   });
 
@@ -703,15 +704,15 @@ describe('three sums per egg: the band (2.3 section 19.1)', () => {
 
   it('moves only after the hard sum: a first try to B, a helped answer back to A', () => {
     const { g } = fakeGame();
-    noteMaths(g, 'egg1', easy, result('first'), t);
-    noteMaths(g, 'egg1', middle, result('first'), t);
+    noteMaths(g, 'egg-nest', easy, result('first'), t);
+    noteMaths(g, 'egg-nest', middle, result('first'), t);
     expect(g.maths.band).toBe('a');
-    noteMaths(g, 'egg1', hard, result('first'), t);
+    noteMaths(g, 'egg-nest', hard, result('first'), t);
     expect(g.maths.band).toBe('b');
-    noteMaths(g, 'egg2', easy, result('helped'), t);
-    noteMaths(g, 'egg2', middle, result('helped'), t);
+    noteMaths(g, 'egg-shore', easy, result('helped'), t);
+    noteMaths(g, 'egg-shore', middle, result('helped'), t);
     expect(g.maths.band).toBe('b');
-    noteMaths(g, 'egg2', hard, result('helped'), t);
+    noteMaths(g, 'egg-shore', hard, result('helped'), t);
     expect(g.maths.band).toBe('a');
   });
 
@@ -720,14 +721,14 @@ describe('three sums per egg: the band (2.3 section 19.1)', () => {
     noteMaths(g, 'rack', rackSpec(seeded(4), { band: 'a' }), result('first'), t);
     expect(g.maths.band).toBe('b');
     const fixed = fakeGame('a').g;
-    noteMaths(fixed, 'egg1', hard, result('first'), t);
+    noteMaths(fixed, 'egg-nest', hard, result('first'), t);
     expect(fixed.maths.band).toBe('a');
   });
 
   it('logs every sum with its grade and heart, and a band only for the hard sum', () => {
     const { g, lines } = fakeGame();
-    for (const s of [easy, hard, middle]) noteMaths(g, 'egg1', s, result('first'), t);
-    expect(lines.map((l) => [l.part, l.detail.grade, l.detail.round])).toEqual([['egg1', 'easy', 0], ['egg1', 'hard', 1], ['egg1', 'middle', 2]]);
+    for (const s of [easy, hard, middle]) noteMaths(g, 'egg-nest', s, result('first'), t);
+    expect(lines.map((l) => [l.part, l.detail.grade, l.detail.round])).toEqual([['egg-nest', 'easy', 0], ['egg-nest', 'hard', 1], ['egg-nest', 'middle', 2]]);
     // After the hard sum's first try the band is B, but the middle sum has no band and says none.
     expect(lines.map((l) => l.detail.band)).toEqual([undefined, 'a', undefined]);
   });
@@ -744,7 +745,9 @@ describe('clips', () => {
 
   it('every clip of every reachable sum and stone exists as an ok clip, the new lines of the sums within 10 too', () => {
     const all = [...new Set([...allEggClipIds(), ...allRackClipIds()])];
-    for (const id of all) expect(clipExists(id), id).toBe(true);
+    // 2.4.0's star egg lines have a line and wait for gen.sh (docs/v4/2.4-plan.md Task 27); every other clip is made.
+    const star = /^(g4-star-egg|g4-more-moon|g4-fewer-egg|h4-line-up|num-moon-\d+|num-eggstar-\d+)$/;
+    for (const id of all) expect(clipExists(id) || (star.test(id) && !!lineFor(id)), id).toBe(true);
     for (const id of NEW_10) expect(all, id).toContain(id);
     for (const id of all.filter((x) => x.startsWith('num-take-'))) {
       const [a, b] = id.split('-').slice(2).map(Number);

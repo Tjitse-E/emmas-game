@@ -84,13 +84,18 @@ const WAKE_CAP_MS = 20_000;
 /** The stones hop awake one after another, this far apart. */
 const WAKE_STEP_MS = 60;
 
+/** The cups and stones a kind draws: the star egg takes the snow egg's until its own panel comes (2.4.0). */
+const cupKind = (spec: EggSpec): 'warm' | 'snow' => (spec.kind === 'warm' ? 'warm' : 'snow');
+
 /** The egg's cups: one or two nests of ten, empty places shown as sockets so the ten-frame reads. */
 function cupsSkin(ctx: LayerCtx, spec: EggSpec, root: HTMLElement, life: Life): Skin {
-  const snow = spec.kind === 'snow';
+  // The star egg plays on the snow egg's cups until its own star panel comes (2.4.0, the signs-star lane).
+  const kind = cupKind(spec);
+  const snow = kind === 'snow';
   type Cup = { el: HTMLElement; state: CupState | 'cooled' };
   const panel = el('div', 'cups-panel', root);
   panel.setAttribute('aria-label', 'cups');
-  const start = cupStates(spec.kind, spec.need, spec.have);
+  const start = cupStates(kind, spec.need, spec.have);
   const cups: Cup[] = [];
   /** The empty places of the ten-frames after the last cup, in reading order (where spare dots land). */
   const sockets: HTMLElement[] = [];
@@ -187,13 +192,13 @@ function cupsSkin(ctx: LayerCtx, spec: EggSpec, root: HTMLElement, life: Life): 
       await liftBlanket();
     },
     revealAfterHintLine: false,
-    hintPlaces: () => hintCups(spec.kind, spec.need, spec.have).map((i) => cups[i]?.el).filter((c): c is HTMLElement => !!c),
+    hintPlaces: () => hintCups(kind, spec.need, spec.have).map((i) => cups[i]?.el).filter((c): c is HTMLElement => !!c),
     /**
      * The stone's dots go to their cups one by one, a tick each. A warm stone that is too big sends its spare dots
      * into the empty places after the last cup (or past the nest), where they glow until the stone goes back.
      */
     show: async (k, from) => {
-      const fx = stoneEffect(spec.kind, spec.need, spec.have, k);
+      const fx = stoneEffect(kind, spec.need, spec.have, k);
       const flights: Promise<HTMLElement>[] = [];
       for (const i of fx.cups) {
         if (!life.alive) break;
@@ -279,7 +284,7 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
     const n = spec.stones.length;
     const tray = el('div', `stone-tray n${n}${hay ? ' hay' : ''} asleep`, root);
     const stones = spec.stones.map((v) => {
-      const s = hay ? hayPileEl(v) : stoneEl(v, spec.kind);
+      const s = hay ? hayPileEl(v) : stoneEl(v, cupKind(spec));
       // On the cell itself, so the flyer (a copy outside the tray) keeps the size.
       if (n >= 5) s.classList.add('s5');
       tray.appendChild(s);

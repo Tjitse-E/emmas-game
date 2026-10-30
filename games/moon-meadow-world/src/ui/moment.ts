@@ -47,8 +47,8 @@ export interface UiTarget {
   h: number;
 }
 
-/** The kinds of checked moment the layer can have open. */
-export type MomentKind = 'egg' | 'naming' | 'wish' | 'beads';
+/** The kinds of checked moment the layer can have open ('sign': 2.4.0's signposts on the trail). */
+export type MomentKind = 'egg' | 'naming' | 'wish' | 'beads' | 'sign';
 
 export interface MomentSnapshot {
   kind: MomentKind;
@@ -72,6 +72,8 @@ export interface MomentSnapshot {
   round?: { index: number; of: number; lit: number };
   /** Beads only (2.3): the gap that takes a bead now (0 to 2). */
   gap?: number;
+  /** Sign only (2.4): the card words in arm order, west, north, east. */
+  cards?: string[];
   targets: UiTarget[];
 }
 

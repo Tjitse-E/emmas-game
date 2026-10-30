@@ -1,7 +1,7 @@
 // The world: renderer and loop, the camera rig, the meadow and its places, the stable, time of day, picking and
 // routing. Static scenery shares one vertex-coloured Lambert material and is merged per region of the meadow.
 import * as THREE from 'three';
-import type { ScreenPoint, World } from '../contracts';
+import type { ScreenPoint, SignWord, World } from '../contracts';
 import type { Vec2 } from '../layout';
 import { buildGlows } from './beacon';
 import { CameraRig, FOV } from './camera';
@@ -13,6 +13,7 @@ import { wordPic } from '../assets';
 import { isWalkable, nearestWalkable, route } from './route';
 import { FOG_FAR, buildSky } from './sky';
 import { buildStable } from './stable';
+import { buildTrail } from './trail';
 import { buildFence, buildGround, buildGrowth, buildHedges, buildOverlays, buildTrees, groundHeight, moundHeight, type HedgeFlowers } from './terrain';
 
 /** Optional extras on top of the World contract. */
@@ -43,6 +44,22 @@ export interface WorldExtras {
   readonly sign: { shimmer(): void };
   /** The ground point the camera holds (a frame), or null while it follows. For the flows. */
   readonly framedAt: Vec2 | null;
+  /** The trail beyond the gate (2.4.0, world/trail.ts): its slots, the signpost's arms, the gate, shown only during a ride. */
+  readonly trail: {
+    dress(words: readonly [SignWord, SignWord, SignWord] | null): void;
+    slots(): { word: SignWord | null; onScreen: boolean }[];
+    arm(i: 0 | 1 | 2): THREE.Vector3;
+    gate(open: boolean, ms?: number): Promise<void>;
+    /** The roads, the slots and the kit: drawn only during a ride (shown at getting on, hidden at getting off). Hidden at load. */
+    show(on: boolean): void;
+    readonly shown: boolean;
+  };
+  /** The follow camera's clamp: the meadow's, or the wide one of a ride (RIDE.clamp). */
+  cameraClamp(kind: 'meadow' | 'ride'): void;
+  /** For each point, whether the trees or the scenery hide it from the camera (the ride flow's occlusion check). */
+  occluded(points: readonly THREE.Vector3[]): boolean[];
+  /** The three ducks in the splash pool: under the chute while the slide rests, at the far shore during a visit. */
+  readonly ducks: { set(at: 'chute' | 'far', ms?: number): void; bob(): void };
 }
 
 export type WorldWithExtras = World & WorldExtras;
@@ -101,6 +118,8 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
   const stable = buildStable(scene, scenery, material);
   const sky = buildSky(scene, scenery, hemi, sun);
   buildGrowth(scenery, hedgeFlowers, nestFlowerSpots());
+  // 2.4.0: the paddock, the gate, the trail, the fork and the slots (named regions of their own; step 0's stub adds none).
+  const trail = buildTrail(scene, scenery);
   for (const mesh of scenery.build(material, 'scenery')) scene.add(mesh);
   const lid = cornerLid(scenery);
   scene.add(sign.mesh);
@@ -204,6 +223,7 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
     lid.update(dt);
     sign.update(dt, elapsed);
     glows.update(dt, elapsed);
+    trail.update(dt, elapsed);
     if (!paused) renderer.render(scene, camera);
   };
 
@@ -238,6 +258,10 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
       },
     },
     sign: { shimmer: () => sign.shimmer() },
+    trail: trail.trail,
+    ducks: trail.ducks,
+    occluded: (points) => trail.occluded(points),
+    cameraClamp: (kind) => trail.cameraClamp(kind),
     get framedAt() {
       return rig.framedAt;
     },

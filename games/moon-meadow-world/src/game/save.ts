@@ -4,6 +4,10 @@
 // broken entry gives the defaults and a first visit (the middle reading level, the first-visit wardrobe). Emma's home
 // server, the test servers and a renamed host are separate origins, and Safari may clear the storage after 7 days
 // without a visit; both start fresh (main.ts asks the browser to keep it, navigator.storage.persist()).
+//
+// 2.4.0 (docs/v4/2.4.md section 7): the key stays mmw.save2 and v stays 2; every 2.3 field keeps its meaning. New:
+// seen.hub, seen.ride and signs, read on their own, so a 2.3 save loads with their defaults and 2.3.3 (a rollback)
+// keeps every 2.3 field of a 2.4 save.
 import type { Outcome, Owned, PrincessLook, Ribbon } from '../contracts';
 import { DEFAULT_LOOK, GIFT_ORDER, START_OWNED, copyOwned, fromLegacy, normaliseLook, parseOwned } from '../wardrobe';
 import { type ReadingLevel, type ReadingState, UP_AFTER, parseLevel, startReading } from './reading';
@@ -28,7 +32,15 @@ export interface Save {
    * The first-visit wardrobe has been done; Lumi has given the crown (the crown tab shows); she has been to the bead
    * tree (its first gap is shown by the ghost only on her first visit).
    */
-  seen: { wardrobe: boolean; crown: boolean; beads: boolean };
+  seen: {
+    wardrobe: boolean;
+    crown: boolean;
+    beads: boolean;
+    /** 2.4.0: the first hub's explanation and ghost glide have played (or she tapped a bubble first). */
+    hub: boolean;
+    /** 2.4.0: she has sat on a mount (the first ride's long intro is done). */
+    ride: boolean;
+  };
   reading: { level: ReadingLevel; recent: Outcome[] };
   /**
    * The phrase wish's own level (2.3 section 18), the same fold as the reading level, so a struggle with the new
@@ -41,6 +53,8 @@ export interface Save {
   last: { words: string[]; totals: number[] };
   /** The last finished play's afternoon: its maths quest and the quests she finished (the rotation, quests.ts). */
   afternoon: { maths: 'rack' | 'beads' | null; done: QuestId[] };
+  /** 2.4.0: the signposts' own level (starts at 1), the same fold as the reading level, folded after each trip. */
+  signs: { level: ReadingLevel; recent: Outcome[] };
 }
 
 /** How many words and totals `last` keeps. */
@@ -50,9 +64,10 @@ const OUTCOMES: readonly Outcome[] = ['first', 'miss', 'helped'];
 export function defaultSave(): Save {
   const reading: ReadingState = startReading();
   return {
-    v: 2, look: { ...DEFAULT_LOOK }, owned: copyOwned(START_OWNED), ribbons: [], plays: 0, seen: { wardrobe: false, crown: false, beads: false },
+    v: 2, look: { ...DEFAULT_LOOK }, owned: copyOwned(START_OWNED), ribbons: [], plays: 0,
+    seen: { wardrobe: false, crown: false, beads: false, hub: false, ride: false },
     reading, phrases: { level: reading.level, recent: [] }, patterns: { level: 1, recent: [] }, last: { words: [], totals: [] },
-    afternoon: { maths: null, done: [] },
+    afternoon: { maths: null, done: [] }, signs: { level: 1, recent: [] },
   };
 }
 
@@ -95,9 +110,12 @@ export function parseSave(raw: unknown, fromV2 = false): Save {
   s.seen.wardrobe = isObj(r.seen) && r.seen.wardrobe === true;
   s.seen.crown = v1 ? s.plays > 0 : isObj(r.seen) && r.seen.crown === true;
   s.seen.beads = isObj(r.seen) && r.seen.beads === true;
+  s.seen.hub = isObj(r.seen) && r.seen.hub === true;
+  s.seen.ride = isObj(r.seen) && r.seen.ride === true;
   s.reading = levelState(r.reading, s.reading);
   s.phrases = levelState(r.phrases, { level: s.reading.level, recent: [] });
   s.patterns = levelState(r.patterns, s.patterns);
+  s.signs = levelState(r.signs, s.signs);
   if (isObj(r.last)) {
     s.last.words = list(r.last.words).filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 12).slice(-LAST_MAX);
     s.last.totals = list(r.last.totals).filter((x): x is number => Number.isInteger(x) && (x as number) > 0 && (x as number) < 100).slice(-LAST_MAX);

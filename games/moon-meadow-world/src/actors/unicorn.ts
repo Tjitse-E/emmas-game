@@ -1,7 +1,7 @@
 // One unicorn's behaviour: a task (idle, graze, walk, follow, slide, swim, carried, stall, hatching) moves it about,
 // an emote plays on top, and the pose for drawing is worked out from both every frame.
 import * as THREE from 'three';
-import type { Unicorn, UnicornEmote, UnicornLook, UnicornMode, Vec2 } from '../contracts';
+import type { Stage, Unicorn, UnicornEmote, UnicornLook, UnicornMode, Vec2 } from '../contracts';
 import { POND, SLIDE, dist2, doorFront, doorIsUpper, inPond, pondSpot, stallSpot } from '../layout';
 import { slideSounds } from './sounds';
 import type { Beam, FxImpl } from './fx';
@@ -62,7 +62,7 @@ const EMOTE_TIME: Record<UnicornEmote, number> = {
   hop: 0.7, nuzzle: 1.4, shake: 1.1, munch: 1.6, happy: 1.2, shiver: 1.2, look: 1.8, yawn: 1.6,
 };
 const CARRY_HEIGHT = 1.0;
-const SWIM_DEPTH: Record<'baby' | 'foal', number> = { baby: 0.3, foal: 0.42 };
+const SWIM_DEPTH: Record<Stage, number> = { baby: 0.3, foal: 0.42, grown: 0.5 };
 /**
  * Peeking in a lower stall it stands this far forward of its stall spot (0.3 m behind the door): further back, the
  * balcony and the arch over the door hide its face from the raised camera. Upper stalls have no balcony above them.
@@ -224,7 +224,8 @@ export class UnicornActor implements Unicorn {
     this.setTask({ kind: 'follow', walker: null, replan: 0 });
   }
 
-  graze(home: Vec2): void {
+  /** `o.radius` (2.4.0, the mounts' 0.6 m) is read by the mount lane; step 0 grazes as before. */
+  graze(home: Vec2, _o?: { radius?: number }): void {
     this.followSlot = null;
     this.setTask({ kind: 'graze', home: { ...home }, wait: rand(0.3, 2), target: null, nibble: false });
   }
@@ -1047,6 +1048,27 @@ export class UnicornActor implements Unicorn {
       }
     }
   }
+
+  // --- riding (2.4.0): step 0's stubs, filled by the mount lane (docs/v4/2.4-plan.md Tasks 21 and 23) -------------
+
+  /** The top of its saddle in world space, where Princess Emma sits: the feet point plus 0.85 m in step 0. */
+  saddleTop(out = new THREE.Vector3()): THREE.Vector3 {
+    return out.copy(this.position).setY(this.position.y + 0.85);
+  }
+
+  /**
+   * Ride a set path by arc length from `fromM` to `toM` metres at `o.speed` (backing up with `backwards`). Resolves true
+   * on arrival, false when another command replaced it. Step 0 puts it at `toM` at once.
+   */
+  ridePath(path: THREE.Curve<THREE.Vector3>, _fromM: number, toM: number, _o: { speed: number; backwards?: boolean }): Promise<boolean> {
+    const len = path.getLength();
+    const p = path.getPointAt(len > 0 ? THREE.MathUtils.clamp(toM / len, 0, 1) : 0);
+    this.place({ x: p.x, z: p.z }, this.yaw);
+    return Promise.resolve(true);
+  }
+
+  /** Follow the lead's travelled track `gapM` metres behind it (null stops). Step 0 does nothing. */
+  trackBehind(_lead: UnicornActor | null, _gapM: number): void {}
 
   /** Write this frame's parts (the herd decides who is drawn and in how much detail). */
   draw(full: boolean): void {

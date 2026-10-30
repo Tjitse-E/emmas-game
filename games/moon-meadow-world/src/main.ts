@@ -5,7 +5,8 @@
 // ?maths=a|b (maths band), ?contrast=0 (v3's miss rule), ?quest=picnic|rack|beads|corner (with ?at=free), ?pl=1|2|3
 // (pattern level), ?box=<s> (the music box), ?phrases=emma|all (which phrase pictures play), ?portrait=0 (no finer
 // detail in the customiser), ?perf=1 (stats), ?pr=<n> (pixel ratio cap) and ?aa=0 (no antialias), the last two read
-// by the world.
+// by the world. 2.4.0: ?at=hub, ?place= (?quest= is its alias), ?step=, ?babies=, ?bed=, ?sign= and ?mount=
+// (options.ts resolveStart says where a play starts).
 import { createWorld } from './world';
 import { createActors } from './actors';
 import { createLayer } from './ui';
@@ -13,10 +14,11 @@ import { audio } from './audio';
 import { CLIPS, herd as startingHerd } from './content';
 import { GRAZE_HOMES } from './layout';
 import { wordPic } from './assets';
-import { createGame, isPart, sayWay } from './game/game';
+import { createGame, sayWay } from './game/game';
 import { installInput } from './game/input';
 import { begin, installSlideWatch, installWayHelper } from './game/level';
-import { parseOptions } from './game/options';
+import { parseOptions, resolveStart } from './game/options';
+import { addMounts } from './game/ride';
 import { createSave } from './game/save';
 import { herdAside } from './game/wardrobe-part';
 import { diagQuery, sendDiag } from './game/results';
@@ -48,7 +50,7 @@ window.addEventListener('error', (e) => {
 }, true);
 
 const options = parseOptions(location.search);
-const at = isPart(options.at) ? options.at : null;
+const start = resolveStart(options);
 
 /** The fallback picture with the home button (index.html), for an iPad where WebGL 2 does not start. */
 function noWorld(e?: unknown): void {
@@ -105,7 +107,9 @@ function boot(): void {
 
   const game = createGame({ world, actors, layer, options, save, herd });
   // The play starts with the customiser: the unicorns grazing near her step behind the camera before anything shows.
-  if (!at || at === 'wardrobe') herdAside(game, true);
+  if (!start || start.part === 'wardrobe') herdAside(game, true);
+  // 2.4.0: Bella and Hazel in the paddock (step 0: none yet).
+  addMounts(game);
   installInput(game);
   installWayHelper(game);
   installSlideWatch(game);
@@ -142,7 +146,7 @@ function boot(): void {
       void audio.unlock();
       world.setPaused(false);
     });
-    await begin(game, at);
+    await begin(game, start);
   })();
 }
 

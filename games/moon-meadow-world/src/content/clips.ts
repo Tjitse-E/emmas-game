@@ -14,6 +14,7 @@ import { GEM_SOUNDS, NAMING_CLIPS } from './naming.ts';
 import { allPatternClipIds } from './patterns.ts';
 import { allPhraseClipIds } from './phrases.ts';
 import { allRackClipIds } from './rack.ts';
+import { allSignClipIds, allSignGraphemes } from './signs.ts';
 import { allWishClipIds, allWishGraphemes } from './wishes.ts';
 
 export const CLIPS = {
@@ -68,6 +69,25 @@ export const CLIPS = {
   soon: ['lumi4-soon'],
   /** When the basket opens: "Tap a food to hear its name. Then give it to a baby." */
   tray: ['g-tray'],
+  // 2.4.0 (docs/v4/2.4.md section 6): the hub, the pond's resting slide, riding and the signposts
+  /** After the bubbles pop in: "Where do you want to go? Tap a bubble!" */
+  pick: ['g4-pick'],
+  /** At 29:00 of play time, once, when nobody speaks: "Soon it is bedtime!" */
+  soonBed: ['g4-soon-bed'],
+  /** Lumi, the first tap on the resting slide in a play: "The ducks are having their swim!" */
+  ducks: ['lumi4-ducks'],
+  /** Lumi, on her first ride ever (and at the saddle sign): "The saddle is ready! Now you can ride." */
+  saddleReady: ['lumi4-saddle'],
+  /** At the paddock: "Tap the saddle, and ride!" */
+  saddle: ['g4-saddle'],
+  /** Before the first sign of a ride: "Read the signs. Then tap the right one." */
+  signs: ['g4-signs'],
+  /** After the trail's baby's wish: "Time to ride home!" */
+  rideHome: ['g4-ride-home'],
+  /** A herd baby's wish, in its intro: "Your baby has a wish!" */
+  wish: ['g-wish'],
+  /** Bedtime without babies: "The stable is this way." instead of "Walk to the stable with your babies." */
+  herdWay: ['g4-way-stable'],
   // Walking help after 20 s without progress (section 3)
   way: {
     nest: ['g4-way-nest'],
@@ -75,6 +95,12 @@ export const CLIPS = {
     slide: ['g4-way-slide'],
     wildEgg: ['g4-way-wildegg'],
     stable: ['g4-way-stable'],
+    // 2.4.0: the hub's nudge says the way to the first learning bubble.
+    picnic: ['g4-way-picnic'],
+    beads: ['g4-way-beads'],
+    rack: ['g4-way-rack'],
+    wish: ['g4-way-wish'],
+    saddle: ['g4-way-saddle'],
   },
   // 12 Bedtime
   dusk: ['g-dusk'],
@@ -106,8 +132,8 @@ export function wayTo(place: Place): string[] {
   return place in CLIPS.way ? CLIPS.way[place as keyof typeof CLIPS.way] : [];
 }
 
-/** Herd sizes the level counts: 12 at the start, 14 at goodnight. */
-const HERD_SIZES = [12, 13, 14];
+/** Herd sizes the level counts: 12 at the start, 12 + n at goodnight with up to four babies (2.4.0). */
+const HERD_SIZES = [12, 13, 14, 15, 16];
 
 const range = (lo: number, hi: number): number[] => Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
 
@@ -146,6 +172,7 @@ export function allClipIds(): string[] {
     ...allEggClipIds(),
     ...allRackClipIds(),
     ...allPatternClipIds(),
+    ...allSignClipIds(),
     ...wardrobeClipIds(),
     ...doorIds(),
   ];
@@ -170,6 +197,6 @@ export function doorClipIds(specs: (DoorSpec & { hint?: string[] })[]): string[]
 
 /** Every letter sound the names, gems and words can play, for audio.preloadSounds(). */
 export function allGraphemes(): string[] {
-  const g = [...DATA.bells.flatMap((b) => b.gpcs), ...GEM_SOUNDS, ...allWishGraphemes()];
+  const g = [...DATA.bells.flatMap((b) => b.gpcs), ...GEM_SOUNDS, ...allWishGraphemes(), ...allSignGraphemes()];
   return [...new Set(g)];
 }

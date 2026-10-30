@@ -28,7 +28,8 @@ import { afterWish, crownKeep, momentLog, parkFollowers, planWish, runWish } fro
 import { eggAsk, noteMaths } from './maths';
 import { useSum } from './band';
 import { herdAside } from './wardrobe-part';
-import { followAgain, freePlayOver, giveGift, guests, pastCutoff, tickFree, walkThere } from './quest-kit';
+import { freePlayOver, giveGift, pastCutoff, tickFree, walkThere } from './quest-kit';
+import { followAgain, guests } from './guests';
 import { beadsQuest } from './beads';
 import { cornerQuest } from './corner';
 import { QUEST_IDS, type QuestId } from './options';
@@ -345,7 +346,7 @@ function guestWish(g: Game): WishSpec {
 async function picnicQuest(g: Game): Promise<() => void> {
   const { actors, layer, world } = g;
   g.free = false;
-  const babies = guests(g);
+  const babies = guests(g, PICNIC.stand, 2);
   for (const u of babies) g.followers.remove(u);
   // Other followers wait beside the rug, off the cushions (the egg moments' spots would put them on the rug).
   parkFollowers(g, PICNIC.stand, PICNIC.aside);
@@ -449,7 +450,7 @@ async function rackQuest(g: Game): Promise<() => void> {
   const top = v3(HAY_RACK.center, RACK_FRAME.top);
   await frameAt(g, { x: HAY_RACK.center.x - RACK_FRAME.west, z: HAY_RACK.center.z }, RACK_FRAME.width, top, RACK_FRAME.frac);
   const helpers = rackHelpers(g);
-  const eaters = () => [...rackHelpers(g), ...guests(g)];
+  const eaters = () => [...rackHelpers(g), ...guests(g, HAY_RACK.center, 2)];
   let filled = false;
   const fill = () => {
     if (filled) return;

@@ -15,7 +15,8 @@ import { CLIPS } from '../content';
 import { allPatternClipIds, beadKey, beadsVisit, demoGap, patternSpec, saveVisit } from '../content/patterns';
 import { type Game, checked, flat, frameAt, preload, say, v3 } from './game';
 import { babyReact, momentLog, parkFollowers } from './moments';
-import { followAgain, guests, herdAsideAt, walkThere } from './quest-kit';
+import { herdAsideAt, walkThere } from './quest-kit';
+import { followAgain, guests } from './guests';
 import { foldReading } from './reading';
 
 /**
@@ -41,7 +42,7 @@ export async function beadsQuest(g: Game): Promise<() => void> {
   const { actors, layer, world } = g;
   g.free = false;
   // Her first baby is the one with the necklace; every other follower (the second baby too) waits aside in the yard.
-  const [baby] = guests(g);
+  const [baby] = guests(g, BEAD_TREE.baby, 1);
   g.followers.remove(baby);
   parkFollowers(g, BEAD_TREE.stand, BEAD_TREE.aside);
   herdAsideAt(g, BEAD_TREE.herd, true);

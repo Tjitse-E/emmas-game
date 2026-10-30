@@ -10,6 +10,8 @@ export type Strand = 'm' | 's' | 'r';
 
 export interface ResultLine {
   part: string;
+  /** The play number (2.4.0; the play line's pl): Results.add sets it, as begin() counts the play. */
+  pn?: number;
   strand: Strand;
   outcome: MomentResult['outcome'];
   misses: number;
@@ -57,7 +59,7 @@ function triedWith(tried: unknown, why: unknown): string {
 /** The diag fields of a result line. */
 export function resultFields(line: ResultLine): Record<string, Field> {
   const d = line.detail;
-  const base: Record<string, Field> = { kind: 'result', part: line.part, s: line.strand, o: line.outcome, ms: Math.round(line.ms), mi: line.misses };
+  const base: Record<string, Field> = { kind: 'result', part: line.part, pn: line.pn, s: line.strand, o: line.outcome, ms: Math.round(line.ms), mi: line.misses };
   if (line.strand === 'r') {
     return {
       ...base, lv: d.level as Field, n: d.size as Field, w: d.word as Field, pt: d.printTouched as Field, q: d.quick as Field,
@@ -104,9 +106,29 @@ export interface PlayLine {
   phrases: number;
   band: string;
   patterns: number;
+  // 2.4.0 (docs/v4/2.4.md section 5.8): optional, so a line without them still writes 2.3's fields only.
+  /** Reading, spelling and maths moments, counted from the result lines by strand, and the first tries of each. */
+  nr?: number;
+  ns?: number;
+  nm?: number;
+  r1?: number;
+  s1?: number;
+  m1?: number;
+  /** The places in the order she chose them, one letter each, comma separated (e s w p b k r o c). */
+  sq?: string;
+  pondVisits?: number;
+  /** Time at the pond (the visits) and on a mount. */
+  pondMs?: number;
+  rideMs?: number;
+  /** Play-clock minutes when bedtime began, or null when it did not. */
+  bedtimeMin?: number | null;
+  /** Babies hatched, and the sign level at the end. */
+  babies?: number;
+  signs?: number;
 }
 
 const secs = (ms: number): number => Math.round(ms / 1000);
+const secsOf = (ms: number | undefined): number | undefined => (ms === undefined ? undefined : secs(ms));
 
 /**
  * The kind=play line's fields: v, pl plays, min play minutes, ck checked s, dr dressing s (mi + co), mi mirror s, co
@@ -119,8 +141,30 @@ export function playFields(p: PlayLine): Record<string, Field> {
     kind: 'play', v: p.v, pl: p.plays, min: Math.round(p.playMs / 6000) / 10, ck: secs(p.checkedMs),
     dr: secs(p.mirrorMs + p.cornerDressMs), mi: secs(p.mirrorMs), co: secs(p.cornerDressMs), cv: secs(p.cornerMs), fr: secs(p.freeMs),
     gk: p.gate?.kind, gt: p.gate?.first, q: p.quests.join(','), rl: p.reading, ph: p.phrases, mb: p.band, pt: p.patterns,
+    // 2.4.0: before gf, which diagQuery cuts at a comma when the line runs long.
+    nr: p.nr, ns: p.ns, nm: p.nm, r1: p.r1, s1: p.s1, m1: p.m1, sq: p.sq, pv: p.pondVisits, po: secsOf(p.pondMs), ri: secsOf(p.rideMs),
+    bt: p.bedtimeMin == null ? undefined : Math.round(p.bedtimeMin * 10) / 10, bb: p.babies, sg: p.signs,
     gf: p.gifts.map((i) => `${i.field}:${i.id}`).join(','),
   };
+}
+
+/**
+ * The kind=hub line (2.4.0), sent when each place ends: the version, the play number, the place's letter, its count
+ * this play, the play-clock minutes, its seconds and its checked seconds. A play left before goodnight still shows what
+ * she chose.
+ */
+export interface HubLine {
+  v: string;
+  pn: number;
+  p: string;
+  n: number;
+  min: number;
+  t: number;
+  ck: number;
+}
+
+export function hubFields(l: HubLine): Record<string, Field> {
+  return { kind: 'hub', v: l.v, pn: l.pn, p: l.p, n: l.n, min: l.min, t: l.t, ck: l.ck };
 }
 
 /** Send a line to the server log. It never throws and never waits. */
@@ -135,9 +179,11 @@ export function sendDiag(query: string): void {
 
 export class Results {
   readonly lines: ResultLine[] = [];
+  /** This play's number (save.plays after the Play tap), for every line's pn. */
+  pn = 0;
 
   add(part: string, strand: Strand, r: MomentResult, detail: Record<string, unknown> = {}): void {
-    const line: ResultLine = { part, strand, outcome: r.outcome, misses: r.misses, ms: r.ms, detail };
+    const line: ResultLine = { part, pn: this.pn, strand, outcome: r.outcome, misses: r.misses, ms: r.ms, detail };
     this.lines.push(line);
     console.info('[mmw result]', JSON.stringify(line));
     sendDiag(diagQuery(resultFields(line)));

@@ -1,9 +1,15 @@
 // The save (src/game/save.ts, 2.3.0: mmw.save2 next to 2.2's mmw.save) and the address options (src/game/options.ts).
+// 2.4.0: her 2.3.3 save loads with the new fields at their defaults, and 2.3.3 (a rollback) reads a 2.4 save.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { GiftItem } from '../src/contracts';
 import { DEFAULT_LOOK, GIFT_SETS, START_OWNED, fromLegacy, withItem } from '../src/wardrobe';
 import { type KeyStore, SAVE_KEY, SAVE_KEY_V1, createSave, defaultSave, memoryStore, ownedRibbons, parseSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
+import { parseSave233 } from './fixtures/parse-save-2.3.3';
+
+const here = import.meta.dirname;
 
 /** 2.2.0's look ids, as a v1 save (mmw.save) holds them. */
 const V22 = {
@@ -60,7 +66,7 @@ describe('parseSave', () => {
       last: { words: ['crown', 'seal', 'plum'], totals: [13, 14] },
       afternoon: { maths: 'beads', done: ['picnic', 'beads', 'corner'] },
     };
-    expect(parseSave(JSON.stringify(save))).toEqual(save);
+    expect(parseSave(JSON.stringify(save))).toEqual({ ...save, seen: { ...save.seen, hub: false, ride: false }, signs: { level: 1, recent: [] } });
   });
 
   it('starts from a 2.2 save: the look in 2.3 terms, the crown given, the start items owned', () => {
@@ -78,7 +84,7 @@ describe('parseSave', () => {
     expect(s.look).toEqual(fromLegacy(old.look));
     expect(s.look).toMatchObject({ hair: 'pink', gown: 'party', extra: 'wings', thingColour: 'lilac' });
     expect(s.owned).toEqual(START_OWNED);
-    expect(s.seen).toEqual({ wardrobe: true, crown: true, beads: false });
+    expect(s.seen).toEqual({ wardrobe: true, crown: true, beads: false, hub: false, ride: false });
     expect(s.ribbons).toEqual(['lilac', 'sky']);
     expect(s.reading).toEqual(old.reading);
     // The phrase level starts at her word level, so the new form is neither too easy nor too hard on its first play.
@@ -109,7 +115,7 @@ describe('parseSave', () => {
     expect(s.v).toBe(2);
     expect(s.look).toEqual({ ...DEFAULT_LOOK, hair: 'midnight' });
     expect(s.plays).toBe(2);
-    expect(s.seen).toEqual({ wardrobe: true, crown: false, beads: false });
+    expect(s.seen).toEqual({ wardrobe: true, crown: false, beads: false, hub: false, ride: false });
   });
 
   it('drops unknown ids and broken fields one by one', () => {
@@ -275,7 +281,7 @@ describe('her collection across 2.2 and 2.3', () => {
         expect(next.data.look, `${row} ${id}`).toEqual(look);
         expect(next.data.plays).toBe(3);
         expect(next.data.ribbons).toEqual(['lilac']);
-        expect(next.data.seen).toEqual({ wardrobe: true, crown: true, beads: false });
+        expect(next.data.seen).toEqual({ wardrobe: true, crown: true, beads: false, hub: false, ride: false });
         expect(store.getItem(SAVE_KEY_V1)).toBe(old);
         expect(store.touched).not.toContain(SAVE_KEY_V1);
       }
@@ -348,7 +354,7 @@ describe('parseOptions', () => {
     const o = parseOptions('?seed=5&at=wardrobe&fresh=1&rl=3&maths=b&contrast=0&quest=beads&pl=2&phrases=all&box=5&portrait=0&perf=1', 1);
     expect(o).toEqual({
       seed: 5, at: 'wardrobe', fresh: true, readingLevel: 3, band: 'b', contrast: false, quest: 'beads', patternLevel: 2, phraseRule: 'all',
-      boxMs: 5000, portrait: false, perf: true,
+      boxMs: 5000, portrait: false, perf: true, place: 'beads', step: null, babies: null, bedMs: null, signLevel: null, mount: null,
     });
   });
 
@@ -356,7 +362,7 @@ describe('parseOptions', () => {
     const o = parseOptions('?rl=7&maths=c&quest=hunt&pl=0&phrases=some&seed=x', 42);
     expect(o).toEqual({
       seed: 42, at: null, fresh: false, readingLevel: null, band: null, contrast: true, quest: null, patternLevel: null, phraseRule: 'default',
-      boxMs: null, portrait: true, perf: false,
+      boxMs: null, portrait: true, perf: false, place: null, step: null, babies: null, bedMs: null, signLevel: null, mount: null,
     });
   });
 
@@ -364,5 +370,22 @@ describe('parseOptions', () => {
     expect(parseOptions('?phrases=emma', 1).phraseRule).toBe('emma');
     expect(parseOptions('?phrases=all', 1).phraseRule).toBe('all');
     expect(parseOptions('', 1).phraseRule).toBe('default');
+  });
+});
+
+describe('the 2.4 save', () => {
+  it('loads her 2.3.3 save with every field unchanged and the new defaults', () => {
+    const s = parseSave(readFileSync(join(here, 'fixtures/save-2.3.3.json'), 'utf8'), true);
+    const raw = JSON.parse(readFileSync(join(here, 'fixtures/save-2.3.3.json'), 'utf8'));
+    for (const k of ['look', 'owned', 'ribbons', 'plays', 'reading', 'phrases', 'patterns', 'last', 'afternoon'] as const) expect(s[k], k).toEqual(raw[k]);
+    expect(s.seen).toEqual({ ...raw.seen, hub: false, ride: false });
+    expect(s.signs).toEqual({ level: 1, recent: [] });
+  });
+
+  it('2.3.3 reads a 2.4 save and keeps every 2.3 field', () => {
+    const v24 = { ...defaultSave(), plays: 6, seen: { wardrobe: true, crown: true, beads: true, hub: true, ride: true }, signs: { level: 2, recent: ['first'] } };
+    const old = parseSave233(JSON.stringify(v24), true);
+    expect(old.plays).toBe(6);
+    expect(old.seen).toEqual({ wardrobe: true, crown: true, beads: true });
   });
 });

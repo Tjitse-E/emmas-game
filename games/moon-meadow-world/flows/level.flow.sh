@@ -11,7 +11,8 @@
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-7}"
 
-# One egg's three sums on one panel (docs/v4/2.3.md sections 19.1 and 22.5). $1 is the part (egg1 or egg2), $2 the sum
+# One egg's three sums on one panel (docs/v4/2.3.md sections 19.1 and 22.5). $1 is the part (egg-nest or egg-shore, the
+# result parts since 2.4.0), $2 the sum
 # (1 to 3) that first gets one wrong stone (the one she heard, else a slip), or 0. Each sum waits for its stones to wake
 # (phase open), and checks: the hearts lit so far, the same panel as the first sum, easy first, every number within 10
 # (stones 2 to 9), 4 stones for easy and middle and 4 (A) or 5 (B) for the hard one, the result line (part, grade,
@@ -20,7 +21,7 @@ SEED="${SEED:-7}"
 EGG_TRIED=''
 egg_sums() {
   local part="$1" wrong="$2" baby k grade band n before outcome want sb
-  baby="baby-$([ "$part" = egg1 ] && echo 13 || echo 14)"
+  baby="baby-$([ "$part" = egg-nest ] && echo 13 || echo 14)"
   for k in 0 1 2; do
     wait_for "() => { const m = window.__game.state().moment; return m && m.kind === 'egg' && m.round && m.round.index === $k && m.phase === 'open'; }" 40
     sleep 0.8
@@ -83,7 +84,7 @@ egg_sums() {
 # the first egg only.
 egg_times() {
   local i e
-  i="$([ "$1" = egg1 ] && echo 0 || echo 1)"
+  i="$([ "$1" = egg-nest ] && echo 0 || echo 1)"
   e="window.__eggTimes()[$i]"
   say "$1 times: $(val "() => JSON.stringify($e)")"
   expect_eq "$(val "() => $e.goalToAwake !== null && $e.goalToAwake <= 8000")" true "$1: stones awake within 8 s of the goal"
@@ -91,7 +92,7 @@ egg_times() {
   expect_eq "$(val "() => $e.between.length === 2 && $e.between.every((g) => g.some((c) => /^num-(bond|add|take)-/.test(c)))")" true "$1: the fact between sums"
   # Each sum's stones wake once its second number has ended (the clip's start plus its length; 150 ms for the timer).
   expect_eq "$(val "() => $e.numbersToWake.length === 3 && $e.numbersToWake.every((d) => d !== null && d >= -150)")" true "$1: stones wake after both numbers"
-  expect_eq "$(val "() => $e.opening.some((c) => c.startsWith('g4-hearts@'))")" "$([ "$1" = egg1 ] && echo true || echo false)" "$1: the hearts line"
+  expect_eq "$(val "() => $e.opening.some((c) => c.startsWith('g4-hearts@'))")" "$([ "$1" = egg-nest ] && echo true || echo false)" "$1: the hearts line"
 }
 
 open_page "?seed=$SEED&fresh=1"
@@ -124,7 +125,7 @@ wait_phase open 30
 sleep 1
 shot 03-egg1
 budget nest
-egg_sums egg1 2
+egg_sums egg-nest 2
 
 # ---- 3, 4 Hatch and naming 1: a bell, then one wrong build, then the right name.
 wait_moment naming 40
@@ -222,7 +223,7 @@ wait_moment egg 20
 wait_phase open 30
 sleep 1
 shot 12-egg2
-egg_sums egg2 0
+egg_sums egg-shore 0
 wait_moment naming 40
 sleep 2
 shot 13-naming2
@@ -320,16 +321,16 @@ shot 23-end
 # first time; every wrong choice is in detail.tried.
 results="$(val "() => JSON.stringify(window.__game.state().results.map((r) => r.part + ':' + (r.detail.moment || r.strand) + ':' + (r.misses === 1 && r.outcome !== 'first' ? 'missed' : r.outcome)))")"
 say "results $results"
-expect_eq "$results" '["egg1:m:first","egg1:m:missed","egg1:m:first","naming1:s:missed","wish1:r:missed","pond:r:first","egg2:m:first","egg2:m:first","egg2:m:first","naming2:s:first","wish2:r:first","bedtime:roll call:missed","bedtime:roll call:first","bedtime:visit:missed"]' 'results log'
+expect_eq "$results" '["egg-nest:m:first","egg-nest:m:missed","egg-nest:m:first","naming-1:s:missed","wish-1:r:missed","pond:r:first","egg-shore:m:first","egg-shore:m:first","egg-shore:m:first","naming-2:s:first","wish-2:r:first","bedtime:roll call:missed","bedtime:roll call:first","bedtime:visit:missed"]' 'results log'
 # Every wrong choice is logged once; the doors log the door number. The door misses are 'helped' (the row hint).
 tried="$(val "() => JSON.stringify(window.__game.state().results.map((r) => (r.detail.tried || []).length))")"
 expect_eq "$tried" '[0,1,0,1,1,0,0,0,0,0,0,1,0,1]' 'tried per moment'
 # Three result lines per egg: easy first, hearts 0, 1 and 2, and the three grades.
-for part in egg1 egg2; do
+for part in egg-nest egg-shore; do
   expect_eq "$(val "() => { const r = window.__game.state().results.filter((x) => x.part === '$part'); return r[0].detail.grade + ' ' + r.map((x) => x.detail.round).join(',') + ' ' + r.map((x) => x.detail.grade).sort().join(','); }")" 'easy 0,1,2 easy,hard,middle' "$part result lines"
 done
 # The light contrast: a right item after it, without the sounds, is 'miss' (guessed, then read).
-expect_eq "$(val "() => window.__game.state().results.find((r) => r.part === 'wish1').outcome")" miss 'the dress-up wish after the contrast'
+expect_eq "$(val "() => window.__game.state().results.find((r) => r.part === 'wish-1').outcome")" miss 'the dress-up wish after the contrast'
 # Egg 1's wrong stone (its second sum) is the one she heard (the warm cups), when the tray had it.
 expect_eq "$(val "() => window.__game.state().results[1].detail.tried[0]")" "${EGG_TRIED#stone }" 'egg 1 tried'
 # The wishes log their level and basket size: the warm-up at level 1 with 4 items, then level 2 with 5.

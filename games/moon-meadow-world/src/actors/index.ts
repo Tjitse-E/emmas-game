@@ -17,6 +17,7 @@ export interface ActorsImpl extends Actors {
   readonly princess: PrincessActor;
   readonly herd: HerdImpl;
   readonly egg: EggImpl;
+  readonly trailEgg: EggImpl;
   readonly fx: FxImpl;
   /** The actors' own sound effects for things only they know the timing of (slide whoosh, splashes). On by default. */
   sounds: boolean;
@@ -39,11 +40,14 @@ export function createActors(scene: THREE.Scene, deps: ActorDepsPlus): ActorsImp
   const princess = new PrincessActor(scene, { deps, fx, queue, onRide: () => herd.followersRide(), sounds: () => sounds }, START);
   const herd = createHerd({ deps, fx, queue, leader: princess, scene, sounds: () => sounds }, parts.viewSize);
   const egg = createEgg(scene, fx);
+  // 2.4.0: the trail's star egg, a second egg actor (2 calls and about 800 triangles, only while it shows).
+  const trailEgg = createEgg(scene, fx);
 
   return {
     princess,
     herd,
     egg,
+    trailEgg,
     fx,
     get sounds() {
       return sounds;
@@ -64,8 +68,9 @@ export function createActors(scene: THREE.Scene, deps: ActorDepsPlus): ActorsImp
       princess.update(dt, t);
       herd.update(dt, t, parts.camera);
       egg.update(dt, t);
+      trailEgg.update(dt, t);
       fx.update(dt, t);
-      parts.flush([princess.parts, ...herd.visibleParts(), egg.parts, fx.parts]);
+      parts.flush([princess.parts, ...herd.visibleParts(), egg.parts, trailEgg.parts, fx.parts]);
     },
   };
 }
