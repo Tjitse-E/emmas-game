@@ -68,7 +68,13 @@ The four parts and their notes: the world (`src/world/`, [notes/world.md](notes/
 
 Before she plays, Tjitse checks the touch release fixes on her real iPad, as emulation does not show the failure: the name star, the sound dots, the home button, the play-again moon and the world itself (walk, carry a unicorn, tap a door). Each must still respond after a finger lifts somewhere else.
 
-Sit next to her and note. New in 2.3.0:
+Sit next to her and note. New in 2.3.2:
+
+- The eggs are quicker: does she now get past the first egg? Between sums she hears only the fact as the heart lights. Does she still notice the heart?
+- On a snow sum the stones wake before "Drag the snow stone that cools the extra cups." Does she wait for it, or drag at once?
+- The wish reminder waits 20 s (25 s for a phrase): does she finish before it, or sit stuck longer?
+
+New in 2.3.0:
 
 - Does she find the trunk bubble after her first quest, and read the two phrases at the Corner ("the green sock")? Is the music box long enough?
 - Does she pick a present at once, and does she notice she keeps wearing it? Does she tap the trunk later to see her board?
