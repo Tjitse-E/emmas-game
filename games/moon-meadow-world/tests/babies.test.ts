@@ -23,9 +23,11 @@ import { herd as startHerd } from '../src/content';
 import { bedtimeDoors, newborn } from '../src/content/doors';
 import { seeded } from '../src/content/rand';
 import { type Baby, type Game, startClock, startQuests } from '../src/game/game';
-import { type EggSpot, firstOfKind, namingRules, newbornAt, snapBabies } from '../src/game/eggs-part';
+import { type EggSpot, eggPlace, firstOfKind, namingRules, newbornAt, runEggSums, snapBabies } from '../src/game/eggs-part';
+import { crownKeep } from '../src/game/moments';
 import { guests } from '../src/game/guests';
 import { canOfferWish, offerWish, planWish, wishKindFor, wishPlace, withdrawWish } from '../src/game/moments';
+import type { EggSpec } from '../src/contracts';
 import { createSave } from '../src/game/save';
 import { parseOptions } from '../src/game/options';
 import { createStreams } from '../src/game/streams';
@@ -182,6 +184,83 @@ describe('babies in any order', () => {
     expect(namingRules(g)).toEqual({ exclude: ['Pip'], decoys: 4 });
   });
 
+  /** The fake game's eggs, namings and egg sums: every moment answered at the first try. */
+  function withEggs(g: Game): { sums: EggSpec[]; gems: number[] } {
+    const sums: EggSpec[] = [];
+    const gems: number[] = [];
+    const egg = () => {
+      const e = {
+        position: new THREE.Vector3(0, 0, 0), visible: false, kind: '',
+        place: (at: THREE.Vector3, kind: string) => Object.assign(e, { visible: true, kind, position: at.clone() }),
+        hatch: async () => void (e.visible = false), hide: () => void (e.visible = false), steam: async () => {}, frost: async () => {},
+        wobble: async () => {}, hearts: () => {},
+      };
+      return e;
+    };
+    Object.assign(g.actors, { egg: egg(), trailEgg: egg() });
+    Object.assign(g.layer, {
+      egg: vi.fn(async (spec: EggSpec) => (sums.push(spec), { outcome: 'first', misses: 0, ms: 900 })),
+      naming: vi.fn(async (spec: { bells: { distractors: string[] }[] }) => {
+        gems.push(spec.bells[0].distractors.length);
+        return { outcome: 'first', misses: 0, ms: 900, name: spec.bells[0] };
+      }),
+    });
+    return { sums, gems };
+  }
+
+  it('runs the shore egg before the nest egg: baby 13 from the shore, baby 14 from the nest, each kind\'s intro on its egg', async () => {
+    const g = fakeGame([], 6);
+    const { sums, gems } = withEggs(g);
+    // A herd baby follows her: it steps aside for the egg and follows again after it, behind the newborn.
+    const herdBaby = g.herd.find((h) => h.look.stage === 'baby')!.id;
+    g.followers.add(unicorn(g, herdBaby) as unknown as Baby['unicorn']);
+    const release = await eggPlace(g, 'shore');
+    expect(g.actors.egg.position.x).toBeCloseTo(15.2);
+    expect(g.followers.list.map((u) => u.id)).toEqual([]);
+    release();
+    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', herdBaby]);
+    expect(g.world.releaseFrame).toHaveBeenCalled();
+    (await eggPlace(g, 'nest'))();
+    expect(g.babies.map((b) => `${b.door}:${b.spot}:${b.look.breed}`)).toEqual([
+      `13:shore:snow`, `14:nest:${g.babies[1].look.breed}`,
+    ]);
+    expect(g.babies[1].look.breed).not.toBe('snow');
+    expect(gems).toEqual([3, 4]);
+    expect(sums.map((x) => x.kind)).toEqual(['snow', 'snow', 'snow', 'warm', 'warm', 'warm']);
+    // Each kind's intro on its first egg: the shore egg's snow intro, then the nest egg's warm one.
+    expect(sums[0].clips.intro[0]).toBe('g4-snow-egg');
+    expect(sums[3].clips.intro[0]).toBe('g-egg');
+    const parts = [...new Set(g.results.lines.map((l) => l.part))];
+    expect(parts).toEqual(['egg-shore', 'naming-1', 'wish-1', 'egg-nest', 'naming-2', 'wish-2']);
+    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', herdBaby, 'baby-14']);
+    // No sum twice across the two eggs (the egg 2 shortcut is gone: each egg plans with what the play has asked).
+    const keys = sums.map((x) => `${x.kind}:${x.have}:${x.need}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('asks a second star egg without the star intro', async () => {
+    const g = fakeGame([], 2);
+    const { sums } = withEggs(g);
+    g.actors.trailEgg.place(new THREE.Vector3(21.5, 0, -40), 'star');
+    await runEggSums(g, 'trail');
+    await newbornAt(g, 'trail');
+    g.actors.trailEgg.place(new THREE.Vector3(11.5, 0, -31), 'star');
+    await runEggSums(g, 'trail');
+    expect(sums.map((x) => x.kind)).toEqual(Array(6).fill('star'));
+    expect(sums[0].clips.intro[0]).toBe('g4-star-egg');
+    expect(sums[3].clips.intro).not.toContain('g4-star-egg');
+    expect([...new Set(g.results.lines.map((l) => l.part))]).toEqual(['egg-trail-1', 'naming-1', 'wish-1', 'egg-trail-2']);
+  });
+
+  it('keeps her crown in a close-up on the mount: a little over her head', () => {
+    const g = fakeGame();
+    const her = g.actors.princess as unknown as { mountedOn: unknown; position: THREE.Vector3; point: (p: string, out: THREE.Vector3) => THREE.Vector3 };
+    expect(crownKeep(g).point.y).toBeCloseTo(1.6);
+    her.mountedOn = {};
+    her.point = (_p, out) => out.set(her.position.x, 2.1, her.position.z);
+    expect(crownKeep(g).point.y).toBeCloseTo(2.45);
+  });
+
   it('says a kind\'s intro only on its first egg of the play', () => {
     const g = fakeGame([]);
     expect(firstOfKind(g, 'star')).toBe(true);
@@ -270,6 +349,7 @@ describe('wish kinds', () => {
   });
 
   it('gives each newborn its naming and first wish: the nest egg\'s baby dresses up like her, the next wishes another kind', async () => {
+    t.said.length = 0;
     const g = fakeGame([], 5);
     const egg = () => ({ position: new THREE.Vector3(0, 0, 0), visible: true, hatch: async () => {}, hide: () => {} });
     Object.assign(g.actors, { egg: egg(), trailEgg: egg() });

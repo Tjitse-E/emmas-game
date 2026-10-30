@@ -77,7 +77,8 @@ export function playOf(g: Game): PlayLine {
     // 2.4.0: hub time with no place running (the hub lane's play clock counts it).
     freeMs: h.idleMs,
     gate: q.gate,
-    quests: [...q.done],
+    // The gift quests she finished: 2.3's free play kept them in quests.done, the hub keeps them in its done places.
+    quests: [...new Set([...q.done, ...h.done.filter(isQuest)])],
     gifts: q.gifts,
     reading: g.options.readingLevel ?? s.reading.level,
     phrases: s.phrases.level,

@@ -142,9 +142,17 @@ export async function settleBy(g: Game, u: UnicornActor): Promise<void> {
   g.actors.princess.face(flat(u.position));
 }
 
-/** Her crown stays on screen in a baby close-up, also when she stands further back than the baby (the nest wish). */
+/**
+ * Her crown stays on screen in a baby close-up, also when she stands further back than the baby (the nest wish). On a
+ * mount (the trail's naming and wish, 2.4.0) her crown sits higher: a little over her head point.
+ */
 export function crownKeep(g: Game): { point: THREE.Vector3; frac: number } {
-  return { point: g.actors.princess.position.clone().setY(1.6), frac: 0.04 };
+  const her = g.actors.princess;
+  if (her.mountedOn) {
+    const head = her.point('head', new THREE.Vector3());
+    return { point: head.setY(head.y + 0.35), frac: 0.04 };
+  }
+  return { point: her.position.clone().setY(1.6), frac: 0.04 };
 }
 
 /**

@@ -108,6 +108,8 @@ export async function eggPlace(g: Game, spot: 'nest' | 'shore'): Promise<() => v
   parkFollowers(g, home.side);
   await walkThere(g, home.side);
   faceBeside(g, flat(actors.egg.position));
+  const eggPoint = actors.egg.position.clone();
+  await frameAt(g, flat(eggPoint), EGG_WIDTH, eggPoint, 0.4);
   await runEggSums(g, spot);
   const baby = await bringNewborn(g, spot, true);
   return () => {
@@ -118,16 +120,12 @@ export async function eggPlace(g: Game, spot: 'nest' | 'shore'): Promise<() => v
 }
 
 /**
- * The egg's three sums at `spot`, each a checked moment, from the stream egg-nest, egg-shore or egg-trail-<k>. The
- * kind's intro only on its first egg of the play. A home egg frames itself; on the trail the ride frames (her on the
- * mount beside the egg).
+ * The egg's three sums at `spot` (the caller frames: the egg place at home, the ride on the trail with her on the mount
+ * beside the egg), each a checked moment, from the stream egg-nest, egg-shore or egg-trail-<k>. The kind's intro only
+ * on its first egg of the play.
  */
 export async function runEggSums(g: Game, spot: EggSpot): Promise<void> {
   const specs = await planSums(g, spot);
-  if (spot !== 'trail') {
-    const eggPoint = eggOf(g, spot).position.clone();
-    await frameAt(g, flat(eggPoint), EGG_WIDTH, eggPoint, 0.4);
-  }
   await askSums(g, spot, specs);
 }
 
