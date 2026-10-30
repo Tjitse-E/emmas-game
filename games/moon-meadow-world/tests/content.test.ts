@@ -139,7 +139,7 @@ describe('eggs', () => {
   it('every clip an egg\'s three sums can say is in allClipIds and exists or has a line', () => {
     const all = new Set(C.allClipIds());
     for (const s of seeds) {
-      for (const kind of ['warm', 'snow'] as const) {
+      for (const kind of ['warm', 'snow', 'star'] as const) {
         for (const e of eggSums(kind, C.seeded(s), { first: s % 2 === 0, band: s % 3 === 0 ? 'b' : 'a' })) {
           for (const id of C.eggClipIds(e)) {
             expect(all.has(id), id).toBe(true);
@@ -151,6 +151,25 @@ describe('eggs', () => {
     // "A happy heart!" is said no more (2.3.2); tools/build-lines.ts keeps its clip in the pack.
     expect(all.has('g4-heart')).toBe(false);
     expect(all.has('g4-snow')).toBe(true);
+  });
+
+  // 2.4.0 (docs/v4/2.4.md section 5.5): the star egg on the trail.
+  it('the star egg says its intro once, the moon\'s and the egg\'s stars, its question, and the take-away fact', () => {
+    for (const s of seeds.slice(0, 200)) {
+      const [a, b, c] = eggSums('star', C.seeded(s), { first: true });
+      expect(a.clips.intro).toEqual(['g4-star-egg', 'g4-hearts']);
+      for (const e of [b, c]) expect(e.clips.intro).toEqual([]);
+      for (const e of [a, b, c]) {
+        expect(e.clips.goal).toEqual([`num-moon-${e.have}`, `num-eggstar-${e.need}`]);
+        expect(e.clips.hint).toEqual(['h4-line-up']);
+        expect(e.clips.tooBig(2)).toEqual(['num-over-2']);
+        expect(e.clips.tooSmall(2)).toEqual(['num-more-2']);
+        expect(C.factClip('star', e)).toBe(`num-take-${e.have}-${e.need}`);
+      }
+      expect(c.clips.right).toEqual(['fb-yes', `num-take-${c.have}-${c.need}`]);
+      // The fact is one of the 14 the snow egg already has.
+      expect(clipExists(C.factClip('star', a))).toBe(true);
+    }
   });
 });
 

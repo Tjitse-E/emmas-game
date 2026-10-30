@@ -3,20 +3,21 @@
 // the per-moment streams, no fact asked twice in a play, and that every clip a maths moment can say exists. 2.3.0: an
 // egg's three sums (easy, middle, hard), the guess rules per grade and per place in the egg, and that only the hard sum
 // and the hay rack move the band. Every number in every sum, and every stone, is 10 or less (Tjitse: "On her school
-// everything is until the number 10").
+// everything is until the number 10"). 2.4.0 (docs/v4/2.4.md sections 5.3 and 5.5): the star egg's more and fewer, and
+// no sum and no take-away fact twice in a play, with the guess rules on every second egg of a kind.
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { EggSpec, MomentResult, Outcome, SumGrade } from '../src/contracts.ts';
 import {
-  type Band, type EggCombo, type EggKind, RANGES, STONES, SUM_GRADES, TRAY, allEggClipIds, eggClipIds, eggCombos,
-  LIVE, eggPlanFit, eggSpec, eggSums, freshCombos, gradeCombos, gradeRanges, gradeReach, gradeTray, heardOf, liveEnd,
-  nearFiveShare, nextBand, placesFor, reachableStones, stoneCandidates, totalOf,
+  type AskedSums, type Band, type EggCombo, type EggKind, RANGES, STONES, SUM_GRADES, TRAY, allEggClipIds, eggClipIds, eggCombos,
+  LIVE, eggPlanFit, eggSpec, eggSums, factClip, freshCombos, gradeCombos, gradeRanges, gradeReach, gradeTray, heardOf, liveEnd,
+  nearFiveShare, nextBand, placesFor, prepareEggPlan, reachableStones, starCompares, stoneCandidates, totalOf,
 } from '../src/content/eggs.ts';
 import { allRackClipIds, rackSpec } from '../src/content/rack.ts';
 import { seeded, stream } from '../src/content/rand.ts';
-import { startMaths } from '../src/game/band.ts';
-import { noteMaths } from '../src/game/maths.ts';
+import { type MathsState, startMaths, useSum } from '../src/game/band.ts';
+import { eggAsk, noteMaths, planEggs, prepareEggPlans } from '../src/game/maths.ts';
 import type { Game } from '../src/game/game.ts';
 import { lineFor } from '../tools/lines.ts';
 
@@ -732,6 +733,192 @@ describe('three sums per egg: the band (2.3 section 19.1)', () => {
     // After the hard sum's first try the band is B, but the middle sum has no band and says none.
     expect(lines.map((l) => l.detail.band)).toEqual([undefined, 'a', undefined]);
   });
+});
+
+// ---------------------------------------------------------------------------------------------------- 2.4.0
+
+describe('the star egg: more and fewer within 10 (2.4 section 5.5)', () => {
+  it('has the 14 star sums within 10 and the floor: the moon 7 to 10, the egg at least 3, the difference 3 to 7', () => {
+    const all = SUM_GRADES.flatMap((gr) => gradeCombos('star', gr, 'a'));
+    expect(all).toHaveLength(14); expect(all.every((c) => c.have <= 10 && c.need >= 3 && c.answer >= 3 && c.answer <= 7)).toBe(true);
+    expect(all.every((c) => c.answer === c.have - c.need && c.have >= 7)).toBe(true);
+    expect(gradeCombos('star', 'hard', 'b')).toEqual(gradeCombos('star', 'hard', 'a'));
+  });
+
+  it('asks "more" and "fewer" at least once in every star egg, and says the fact num-take-<moon>-<egg>', () => {
+    for (let s = 1; s <= 2000; s++) {
+      const e = eggSums('star', seeded(s));
+      expect(new Set(e.map((x) => x.compare)).size).toBe(2);
+      for (const x of e) {
+        expect(x.clips.right.at(-1)).toBe(`num-take-${x.have}-${x.need}`);
+        expect(x.clips.goal).toEqual([`num-moon-${x.have}`, `num-eggstar-${x.need}`]);
+        expect(x.clips.ask).toEqual([x.compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon']);
+      }
+    }
+  });
+
+  it('draws the questions evenly from the six orders that ask both', () => {
+    const seen = new Map<string, number>();
+    for (let s = 1; s <= 6000; s++) {
+      const k = starCompares(seeded(s)).join(' ');
+      seen.set(k, (seen.get(k) ?? 0) + 1);
+    }
+    expect(seen.size).toBe(6);
+    for (const [k, n] of seen) {
+      expect(k.split(' ')).toContain('more'); expect(k.split(' ')).toContain('fewer');
+      expect(Math.abs(n / 6000 - 1 / 6), k).toBeLessThan(0.02);
+    }
+  });
+
+  it('keeps the warm and snow eggs\' sums as they were: the star egg\'s draws never shift them', () => {
+    for (let s = 1; s <= 200; s++) {
+      for (const kind of KINDS) for (const e of eggSums(kind, seeded(s), { band: 'b' })) expect(e.compare).toBeUndefined();
+    }
+  });
+});
+
+/** A play's maths through MathsState, as the game asks it (game/maths.ts planEggs and quests.ts rackQuest): any order. */
+type Step = 'warm' | 'snow' | 'star' | 'rack';
+const LABEL: Record<Step, string> = { warm: 'egg-nest', snow: 'egg-shore', star: 'egg-trail-1', rack: 'rack' };
+function playOf(seed: number, steps: readonly Step[], band: Band): { m: MathsState; asked: { step: Step; sums: EggSpec[] }[] } {
+  const m = startMaths(band);
+  const out: { step: Step; sums: EggSpec[] }[] = [];
+  steps.forEach((step, i) => {
+    const r = stream(seed, `${LABEL[step]}-${i}`);
+    const o = { band: m.band, used: { totals: [...m.used.totals], answers: [...m.used.answers] }, asked: m.asked };
+    const sums = step === 'rack' ? [rackSpec(r, o)] : eggSums(step, r, { ...o, first: true });
+    for (const x of sums) useSum(m, x);
+    out.push({ step, sums });
+  });
+  return { m, asked: out };
+}
+const ORDERS: readonly (readonly Step[])[] = [
+  ['warm', 'snow', 'star', 'star', 'rack'],
+  ['star', 'rack', 'warm', 'star', 'snow'],
+  ['rack', 'star', 'snow', 'star', 'warm'],
+  ['snow', 'star', 'star', 'warm', 'rack'],
+];
+
+describe('no sum twice in a play (2.4 section 5.3)', () => {
+  it('repeats no sum and no take-away fact across a play of a warm, a snow, two star eggs and the hay rack, for every seed and band', () => {
+    for (const band of BANDS) {
+      for (const order of ORDERS) {
+        for (let seed = 1; seed <= 1000; seed++) {
+          const { asked } = playOf(seed, order, band);
+          const sums = asked.flatMap((a) => a.sums);
+          // The hay rack's sum is a warm sum.
+          const keys = sums.map((x) => `${x.kind} ${x.need} ${x.have}`);
+          expect(new Set(keys).size, `${order} ${band} ${seed}`).toBe(keys.length);
+          const facts = sums.filter((x) => x.kind !== 'warm').map((x) => factClip(x.kind, x));
+          expect(new Set(facts).size, `${order} ${band} ${seed}`).toBe(facts.length);
+          // Within each egg, three different answers and totals still.
+          for (const a of asked.filter((x) => x.step !== 'rack')) {
+            expect(new Set(a.sums.map((x) => x.answer)).size).toBe(3);
+            expect(new Set(a.sums.map(totalOf)).size).toBe(3);
+          }
+        }
+      }
+    }
+  }, 120_000);
+
+  it('records each sum under its kind and grade, the hay rack\'s as a warm sum of its total, and the facts of snow and star', () => {
+    const m = startMaths(null);
+    useSum(m, { kind: 'warm', need: 9, have: 4, answer: 5, grade: 'middle' });
+    useSum(m, { kind: 'warm', need: 10, have: 6, answer: 4, skin: 'hay' });
+    useSum(m, { kind: 'snow', need: 3, have: 8, answer: 5, grade: 'easy' });
+    useSum(m, { kind: 'star', need: 4, have: 9, answer: 5, grade: 'middle' });
+    expect(m.asked.answers.warm).toEqual({ easy: [], middle: [5], hard: [4] });
+    expect(m.asked.answers.snow.easy).toEqual([5]);
+    expect(m.asked.answers.star.middle).toEqual([5]);
+    expect(m.asked.facts).toEqual(['num-take-8-5', 'num-take-9-4']);
+    expect(m.asked.sums).toEqual({ warm: ['9/4', '10/6'], snow: ['3/8'], star: ['4/9'] });
+  });
+
+  it('passes what the play asked to every egg through eggAsk, and prepares the plans of the eggs the bubbles can start', () => {
+    const g = { maths: startMaths(null), randFor: (l: string) => stream(5, l), save: { data: { last: { totals: [] } } }, start: null, hub: { shown: ['egg', 'ride', 'picnic'] } } as unknown as Game;
+    const nest = planEggs(g, 'warm', 'egg-nest', true);
+    expect(eggAsk(g).asked).toBe(g.maths.asked);
+    expect(g.maths.asked.answers.warm.easy).toEqual([nest.find((x) => x.grade === 'easy')!.answer]);
+    expect(() => prepareEggPlans(g)).not.toThrow();
+    const star = planEggs(g, 'star', 'egg-trail-1', true);
+    for (const x of star) expect(x.kind).toBe('star');
+  });
+});
+
+describe('no sum twice: the guess rules on a second egg (2.4 section 5.3, 2.3 section 19.1)', () => {
+  const RULES: Record<string, (stones: number[], answer: number) => number> = {
+    biggest: (s, a) => Number(s[s.length - 1] === a),
+    smallest: (s, a) => Number(s[0] === a),
+    'lower middle': (s, a) => Number(s[Math.floor((s.length - 1) / 2)] === a),
+    'upper middle': (s, a) => Number(s[Math.ceil((s.length - 1) / 2)] === a),
+    'nearest five': nearFiveShare,
+  };
+  /** The 19.1 bounds per grade: every simple guess, the number she heard, the hard sum's live ends and its places. */
+  function bounds(eggs: EggSpec[][], label: string): void {
+    for (const grade of SUM_GRADES) {
+      const sums = eggs.map((e) => e.find((x) => x.grade === grade) as EggSpec);
+      for (const n of [4, 5]) {
+        const part = sums.filter((x) => x.stones.length === n);
+        if (part.length < 1000) continue;
+        const limit = n === 5 ? 0.3 : 0.35;
+        for (const [name, rule] of Object.entries(RULES)) {
+          expect(part.reduce((t, x) => t + rule(x.stones, x.answer), 0) / part.length, `${label} ${grade} ${n}: ${name}`).toBeLessThanOrEqual(limit);
+        }
+        expect(part.filter((x) => heardOf(x.kind, x) === x.answer).length / part.length, `${label} ${grade} ${n}: heard`).toBeLessThanOrEqual(1 / n);
+        if (grade !== 'hard') continue;
+        for (const end of ['low', 'high'] as const) {
+          expect(part.filter((x) => liveEnd(x.stones, x.answer, end)).length / part.length, `${label} ${n}: live ${end}`).toBeLessThanOrEqual(limit);
+        }
+        // A second egg's hard grade often has three sums left, so some places can be reached by one sum only and its
+        // places cannot all be within 7 points of even (notes/maths.md); no place wins more than a guess may.
+        const counts = new Array<number>(n).fill(0);
+        for (const x of part) counts[x.stones.indexOf(x.answer)]++;
+        for (const k of counts) expect(k / part.length, `${label} ${n}: places ${counts}`).toBeLessThanOrEqual(limit);
+      }
+    }
+  }
+  /** 10,000 eggs of the last step's kind, each after the steps before it in its own play. */
+  const second = (steps: readonly Step[], band: Band): EggSpec[][] =>
+    Array.from({ length: 10_000 }, (_, i) => playOf(i + 1, steps, band).asked.at(-1)!.sums);
+  const CASES: [string, readonly Step[]][] = [
+    ['a second star egg after a snow egg and a star egg', ['snow', 'star', 'star']],
+    ['a nest egg after the hay rack', ['rack', 'warm']],
+    ['a shore egg after one star egg', ['star', 'snow']],
+    ['a shore egg after two star eggs', ['star', 'star', 'snow']],
+  ];
+
+  it('meets the 19.1 guess bounds on the second egg of each kind', () => {
+    for (const band of BANDS) for (const [label, steps] of CASES) bounds(second(steps, band), `${label} (${band})`);
+    // The star egg's own plan, a first egg.
+    for (const band of BANDS) bounds(Array.from({ length: 10_000 }, (_, i) => eggSums('star', stream(i + 1, 'egg-trail-1'), { band })), `the first star egg (${band})`);
+  }, 120_000);
+
+  it('fits every refit within 1e-5, or that grade leaves out only the sums and facts asked', () => {
+    const keys = new Map<string, { kind: EggKind; band: Band; asked: AskedSums }>();
+    for (const band of BANDS) {
+      for (const [, steps] of CASES) {
+        for (let seed = 1; seed <= 400; seed++) {
+          const { m } = playOf(seed, steps.slice(0, -1), band);
+          const kind = steps.at(-1) as EggKind;
+          keys.set(`${kind} ${band} ${JSON.stringify(m.asked)}`, { kind, band, asked: structuredClone(m.asked) });
+        }
+      }
+    }
+    for (const { kind, band, asked } of keys.values()) {
+      prepareEggPlan(kind, band, asked);
+      const fit = eggPlanFit(kind, band, asked);
+      expect(fit.off <= 1e-5 || fit.relaxed.length > 0, `${kind} ${band} ${JSON.stringify(asked)}`).toBe(true);
+      // Whatever the fit, the egg still asks three sums of three different answers, none asked before.
+      const sums = eggSums(kind, seeded(3), { band, asked });
+      expect(new Set(sums.map((x) => x.answer)).size).toBe(3);
+      for (const x of sums) expect(asked.sums?.[kind]).not.toContain(`${x.need}/${x.have}`);
+    }
+    for (const band of BANDS) for (const kind of ['warm', 'snow', 'star'] as const) expect(eggPlanFit(kind, band).off).toBeLessThanOrEqual(1e-5);
+    // Leaving out a grade's asked answers, or falling back to its asked sums, never brings back a sum asked.
+    const asked = { answers: { warm: { easy: [4], middle: [], hard: [] }, snow: { easy: [], middle: [], hard: [] }, star: { easy: [], middle: [], hard: [] } }, facts: [], sums: { warm: ['8/4'], snow: [], star: [] } };
+    expect(eggPlanFit('warm', 'a', asked).relaxed).toContain('easy');
+    for (let s = 1; s <= 300; s++) expect(eggSums('warm', seeded(s), { asked }).some((x) => x.need === 8 && x.have === 4)).toBe(false);
+  }, 60_000);
 });
 
 describe('clips', () => {
