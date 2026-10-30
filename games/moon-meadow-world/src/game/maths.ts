@@ -47,9 +47,12 @@ const PREPARE_DELAY_MS = 1800;
  * opens with. A plan fitted once is cached, so a later refill costs nothing; an egg that starts first fits its own.
  */
 export function prepareEggPlans(g: Game): void {
+  // A test's small game may have no maths state or no hub; there is then nothing to prepare.
+  if (!g.maths) return;
   const kinds = [...new Set((g.hub?.shown ?? []).map((p) => EGG_OF[p]).filter((k) => k !== undefined))];
+  if (!kinds.length) return;
   const band = g.maths.band;
-  const asked = structuredClone(g.maths.asked);
+  const asked = g.maths.asked ? structuredClone(g.maths.asked) : undefined;
   const fit = () => kinds.forEach((kind) => prepareEggPlan(kind, band, asked));
   if (typeof window === 'undefined') fit();
   else setTimeout(fit, PREPARE_DELAY_MS);

@@ -239,3 +239,23 @@ Within 10 every kind and band reaches every place. The test checks evenness over
 - The clips of sail, pail, reed, pie, leek and mat passed speech-to-text only as homophones (Sale, Pale, Read, Pi, Leak, Matt). Tjitse listens to them once.
 - 2.3.0 added 72 lines (docs/v4/2.3.md section 21), all passing speech-to-text after two retakes. The sums within 10 added four more (section 19.1), and 2.3.1 added num-take-9-6 after Tjitse accepted its take, so the pack has 156 clips. num-take-9-6 came from the raw cache without a speech-to-text check.
 - Booked so far: 5,272.1 credits in `tools/audio/ledger.jsonl` (speech and sound effects) against the cap of 7,277.
+
+## Sign words (2.4.0, docs/v4/2.4.md section 5.5)
+
+- 13 place words in four first-sound groups (`SIGN_LIST` in `tools/build-content.ts`): s sand, stump, swing, stone; sh shed, ship, shell; b barn, bench, beach; p pond, pool, pines. Each comes from v3's word packs (tier by pack) and is checked as a wish word is. Pines is in v3 only as pine's plural: it takes pine's picture, its own clip `word-pines` (words-year1) and the graphemes p, i-e, n, s.z, so `gpcs` print p, i-e, n, s and `sounds` say p, i-e, n, z.
+- Each needs its own picture check entry `sign:<word>` in `tools/picture-check.json` ('ok' or 'drop'): sand, ship, shell and pool are wish words too, and the two never drop each other. Claude's 13 entries are in; Emma's check is on `check.html` (the "Sign words" section: pictures and words, no buttons, no sound). A crossed word becomes `drop`, then `node tools/build-content.ts`: it leaves `DATA.signWords`, the trip planner and `allSignClipIds()`, and a group left with two words plays at levels 1 and 2 only.
+- `DATA.signWords` is `SignItem[]` with the picture as a URL (data.ts maps the name with `wordPic`).
+
+## The trip planner (`planTrip` in `content/signs.ts`)
+
+- Levels (5.5): level 1 one s or sh word, one b and one p word (24 sets with the tier 1 and 2 words); level 2 a pair of one group and an odd word with another first letter (40 sets; an s pair never takes an sh word, nor the other way, as both start with s); level 3 one group, a pair sharing its first two letters and an odd word (st, be, po: 4 sets; sh never). Levels 1 and 2 use tier 1 and 2 words while a trip fits.
+- The target is any of the three cards, evenly, so the odd word is the target one time in three. Measured over 10,000 seeds at sign 1 and sign 2: a first-letter reader wins level 1 always and level 2 two in three, a first-two-letters reader level 3 two in three, a first-sound reader level 3 one in three, a pair-tapper at most one in three.
+- A trip takes two sets that share no word: both fresh this play if any pair is, and on trip 1 a pair that leaves two fresh sets for trip 2 (so two level 3 trips take one s set each and use all four). No target twice a play while a card of the set is fresh. A level with no two such sets plays one level lower (a level 3 trip with a word crossed plays and logs at 2). The cards' arm order is shuffled per sign.
+- `SignUse.sets` holds `setKey(words)`: the words sorted and joined with commas. The ride (mount lane) adds each trip's two sets and targets to `g.signUse`.
+- Clips: intro `g4-signs` on sign 1, goal `g4-go-<mount>-<word>`, right the word and `fb-yes`, hint `h-sounds` (the ui plays the letter sounds, `hintSounds`), again `fb-letters`.
+
+## The signpost moment (`ui/sign.ts`)
+
+- Three print cards (Andika, the print ink, no picture, 83 CSS px high at 1080 x 740) on the arms' ends (`hooks.cardAt`), laid out by `geometry.ts signCardBoxes`: 100 CSS px off the left, right and bottom edges where a palm rests, below Lumi and the home button, never touching. Each acts on pointerdown and refuses the press, so a palm on the screen never answers and never blocks a card.
+- They wake when the goal ends. Right: the card glows, the word and "Yes!", then `hooks.road(i, true)`. Wrong: `hooks.road(i, false)` while Elizabeth says the tapped word, its letters that differ from the goal word glow, then "Look at the letters again."; the cards wake after both. The ladder runs on its own 20 s timer: the goal again, then "Listen to the sounds." with the goal word's letter sounds (pines ends in z), then the ghost taps the right card (helped); two misses bring the ghost too. `layer.idleNow()` past the focused hint is the ghost.
+
