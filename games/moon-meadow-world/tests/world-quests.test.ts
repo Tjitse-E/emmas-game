@@ -38,7 +38,7 @@ vi.hoisted(() => {
 });
 
 import { DEFAULT_LOOK, GIFT_SETS, START_OWNED, copyOwned, owns, stillToEarn, withItem } from '../src/wardrobe';
-import { BEAD_TREE, CORNER, PICNIC } from '../src/layout';
+import { CORNER } from '../src/layout';
 import { fillsSet, giftOffer, giveGift, mathsQuestFor } from '../src/game/quest-kit';
 import { type Game, startClock, startQuests } from '../src/game/game';
 import { badgeOf, playQuests, runQuest } from '../src/game/quests';

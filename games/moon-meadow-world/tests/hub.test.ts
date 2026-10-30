@@ -37,7 +37,7 @@ import {
 } from '../src/game/hub';
 import { Run } from '../src/game/run';
 import { randomHistory } from './hub-sim';
-import { askPlace, firstLearning, hub, nudgeDue, visitOver, walkEndStart, walkEnded } from '../src/game/hub-part';
+import { askPlace, firstLearning, hub, installPlayClock, nudgeDue, visitOver, walkEndStart, walkEnded } from '../src/game/hub-part';
 import { type Game, startClock, startQuests } from '../src/game/game';
 import { Followers } from '../src/game/followers';
 import { Results } from '../src/game/results';
@@ -100,6 +100,35 @@ describe('the play clock', () => {
     expect([isPast(h, 'egg'), isPast(h, 'shore'), isPast(h, 'picnic'), isPast(h, 'pond')]).toEqual([true, true, false, false]);
     h.playMs = 87_300;
     expect([isPast(h, 'picnic'), isPast(h, 'corner'), isPast(h, 'wish')]).toEqual([true, true, true]);
+  });
+
+  it('leaves the start mirror, the Corner music box and the time before Play out of the play clock', () => {
+    const frames: (() => void)[] = [];
+    let now = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    const g = { world: { onFrame: (fn: () => void) => frames.push(fn) }, part: 'start', hub: startHub(), clock: startClock(), quests: startQuests() } as unknown as Game;
+    installPlayClock(g);
+    const frame = (ms: number) => {
+      now += ms;
+      for (const f of frames) f();
+    };
+    frame(500);
+    expect(g.hub.playMs).toBe(0);
+    g.part = 'wardrobe';
+    g.clock.mirror = true;
+    frame(500);
+    expect(g.hub.playMs).toBe(0);
+    g.clock.mirror = false;
+    g.part = 'welcome';
+    frame(400);
+    g.part = 'hub';
+    g.quests.dressing = true;
+    frame(600);
+    expect([g.hub.playMs, g.clock.dressMs.corner]).toEqual([400, 600]);
+    g.quests.dressing = false;
+    frame(5_000);
+    expect(g.hub.playMs).toBe(1400);
+    vi.restoreAllMocks();
   });
 
   it("until() that resolves leaves the run's deferred list as it was", async () => {

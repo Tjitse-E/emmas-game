@@ -25,6 +25,7 @@ import {
 import { HATCH_SPOT, NEST_EGG, WILD_EGG_AT, eggPlace, naming, snapBabies, wish } from './eggs-part';
 import { canOfferWish, offerWish, withdrawWish, wishPlace } from './moments';
 import { ridePlace } from './ride';
+import { Cancelled } from './run';
 import { afterPlace } from './report';
 import { prepareEggPlans } from './maths';
 import { badgeOf, helpersHome, herBox, hungryHerd, picnicQuest, rackQuest, runQuest, showBasket, trayLineOnce } from './quests';
@@ -244,8 +245,8 @@ export function lumiInHub(g: Game): boolean {
 
 /** The prompts every PROMPT_MS without a touch, in turn: the bubbles line, "Tap a bubble!", the follow line. */
 const PROMPTS: string[][] = [CLIPS.bubbles, CLIPS.pick, CLIPS.follow];
-/** g4-pick plays at the hub's opening and after her first two places of a play, then no more. */
-const PICK_REFILLS = 3;
+/** g4-pick plays at the hub's opening and after her first two places of a play (places run 0, 1 and 2), then no more. */
+const PICK_UNTIL_PLACES = 3;
 
 /** The hub part (takes over afternoon()): bubbles, place taps, prompts, the nudge, the pond visits, until bedtime. */
 export async function hub(g: Game): Promise<void> {
@@ -358,7 +359,13 @@ export async function hub(g: Game): Promise<void> {
     h.shown = refill(h, hubCtx(g));
     for (const p of before) if (!h.shown.includes(p)) delete h.shownAt[p];
     dress();
+    if (h.running) {
+      void sync(false);
+      return;
+    }
+    // The egg plans for what the play has asked so far: at a refill, never during a place or a walk.
     prepareEggPlans(g);
+    world.markGoal(null);
     if (!basket && h.shown.length) {
       basket = true;
       showBasket(g);
@@ -374,7 +381,7 @@ export async function hub(g: Game): Promise<void> {
     const pond = h.shown.includes('pond') && !pondSaid;
     if (corner) q.cornerSaid = true;
     if (pond) pondSaid = true;
-    const pick = placesRun < PICK_REFILLS && h.shown.length > 0;
+    const pick = placesRun < PICK_UNTIL_PLACES && h.shown.length > 0;
     void (async () => {
       try {
         const lumi = o.landed ? await landShore() : null;
@@ -395,8 +402,9 @@ export async function hub(g: Game): Promise<void> {
           if (await g.run.w(audio.sayWhole(CLIPS.bubbles))) g.save.write((s) => void (s.seen.hub = true));
         }
         if (pick && ok()) await say(g, CLIPS.pick);
-      } catch {
-        /* a jump ended the run */
+      } catch (e) {
+        // A jump ends the run; anything else is a bug worth seeing.
+        if (!(e instanceof Cancelled)) console.error('[mmw hub]', e);
       }
     })();
   };
@@ -641,7 +649,7 @@ export function slideTap(g: Game): void {
   }
   if (askPlace(g, 'pond')) return;
   g.world.ducks.bob();
-  if (!ducksSaid.has(g.hub) && !audio.speaking) {
+  if (!ducksSaid.has(g.hub) && !audio.speaking && !g.bedtime) {
     ducksSaid.add(g.hub);
     void g.layer.lumi.speak(CLIPS.ducks);
   }
