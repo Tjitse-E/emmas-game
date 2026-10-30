@@ -1,5 +1,5 @@
 // The hint ladder of one checked moment (v3 spec 3.3, ported from v3's core/places/hints.ts):
-//   level 1  idle (15 s; reading 10 s, or 14 s with 5 items): the goal again
+//   level 1  idle (15 s; reading 10 s, or 14 s with 5 items; a wish 20 s, or 25 s for a phrase): the goal again
 //   level 2  one miss, or a second idle: the focused hint
 //   level 3  two misses: the ghost hand shows the answer, result 'helped'
 // Idle never goes past level 2; an idle after the ghost only nudges (the moment says its next step again). An answer
@@ -10,7 +10,12 @@
 // Reading in 2.2.0 (docs/v4/2.2.md 3.1) has the miss step 'contrast': the first miss shows the word of the wrong
 // picture and lights the letters that differ (level 1, not hinted), the next idle gives the focused hint, and a
 // second miss brings the ghost. A right answer after only the contrast is 'miss': guessed, then read.
-import type { MomentResult, Outcome } from '../contracts';
+//
+// The wish's reminder in 2.3.2 (docs/v4/2.3.md section 18): the goal again ("Read the wish. Then give it to your
+// baby.") waits 20 s for a word and 25 s for the Corner's two-word phrase, counted from when the basket can be
+// touched (LadderOpts.firstIdleMs). At 10 s or 14 s after the intro it came as she dragged her answer, or while she
+// still read a phrase. The steps after it keep their times.
+import type { MomentResult, Outcome, WishSpec } from '../contracts';
 
 export type Strand = 'maths' | 'spelling' | 'reading';
 export type HintLevel = 0 | 1 | 2 | 3;
@@ -31,6 +36,13 @@ export type MissStep = 'focused' | 'contrast';
 export function idleDelay(strand: Strand, items = 0): number {
   if (strand !== 'reading') return 15_000;
   return items >= 5 ? 14_000 : 10_000;
+}
+
+/** The quiet time before a wish says its goal again (the reminder): 20 s for a word, 25 s for a two-word phrase. */
+export const WISH_REMIND_MS = 20_000;
+export const PHRASE_REMIND_MS = 25_000;
+export function remindDelay(kind: WishSpec['kind']): number {
+  return kind === 'phrase' ? PHRASE_REMIND_MS : WISH_REMIND_MS;
 }
 
 /** The quiet time before the name bells are asked for again: 20 s, then 5 s longer each time, at most 30 s. */
@@ -88,6 +100,11 @@ export interface LadderOpts {
   missStep?: MissStep;
   /** Items to choose from: a reading moment with 5 waits 14 s before an idle step instead of 10 s. */
   items?: number;
+  /**
+   * The quiet time before the first idle step, the goal again (level 0 to 1); the steps after it keep idleDelay. The
+   * wish passes remindDelay() and does not restart it when its intro ends, so it counts from open() and each touch.
+   */
+  firstIdleMs?: number;
 }
 
 /** Runs the ladder for one moment: the idle timer, the hints and the result. */
@@ -185,7 +202,8 @@ export class HintRunner {
   private arm(): void {
     this.stopTimer();
     if (this.closed || this.state.done || !this.opened) return;
-    this.timer = setTimeout(() => this.idle(), idleDelay(this.strand, this.opts.items));
+    const first = this.state.level === 0 && this.opts.firstIdleMs !== undefined;
+    this.timer = setTimeout(() => this.idle(), first ? this.opts.firstIdleMs! : idleDelay(this.strand, this.opts.items));
   }
 
   private idle(force = false): void {

@@ -8,7 +8,7 @@ import {
   menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, tintedPicStyle,
   unitFor,
 } from '../src/ui/geometry';
-import { HintRunner, bellIdleDelay, onIdle, onMiss, onTouch, openLadder, outcomeOf, idleDelay } from '../src/ui/ladder';
+import { HintRunner, bellIdleDelay, onIdle, onMiss, onTouch, openLadder, outcomeOf, idleDelay, remindDelay } from '../src/ui/ladder';
 
 describe('unit', () => {
   it('is 1 at the design size and fits the smaller side elsewhere', () => {
@@ -438,6 +438,35 @@ describe('hint runner timing', () => {
     expect(calls).toEqual(['repeat']);
     r.chose(700);
     expect(r.finish(30_000).ms).toBe(700);
+    vi.useRealTimers();
+  });
+
+  it('waits firstIdleMs before the first idle step only (the wish\'s reminder, 2.3.2): from open and from each touch', async () => {
+    expect(remindDelay('bath')).toBe(20_000);
+    expect(remindDelay('dress')).toBe(20_000);
+    expect(remindDelay('phrase')).toBe(25_000);
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    const r = new HintRunner('reading', {
+      repeat: async () => { calls.push('repeat'); },
+      focused: async () => { calls.push('focused'); },
+      ghost: async () => { calls.push('ghost'); },
+    }, { items: 5, firstIdleMs: 20_000 });
+    r.open(0);
+    await vi.advanceTimersByTimeAsync(12_000);
+    r.touch();
+    await vi.advanceTimersByTimeAsync(19_999);
+    expect(calls).toEqual([]);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(calls).toEqual(['repeat']);
+    // The step after it keeps the reading time: 14 s with 5 items, also after a touch.
+    await vi.advanceTimersByTimeAsync(10_000);
+    r.touch();
+    await vi.advanceTimersByTimeAsync(13_999);
+    expect(calls).toEqual(['repeat']);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(calls).toEqual(['repeat', 'focused']);
+    r.close();
     vi.useRealTimers();
   });
 });

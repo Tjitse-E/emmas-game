@@ -3,10 +3,11 @@
 # customiser (Done at once), then one wrong answer in egg 1 (its second sum of three, the stone she just heard),
 # naming 1 (a near capital in slot 1), the dress-up wish (the light contrast), the first roll call (a door whose
 # unicorn waits in the yard) and the visit (an empty stall), the rest right; the slide, the bath wish at the pond, the
-# wild egg and its three sums, the picnic wish, free play (skipped with a hook call), bedtime and goodnight with its
-# ribbon gift. Checks each egg's three sums on one panel with its hearts and the band (2.3), the eggs' timings and the
-# lines between their sums (2.3.2, flows/egg-times.js), the results log (with what she tried), the basket and tray
-# sizes, the save, missing clips and console errors. Screenshots of every part.
+# wild egg and its three sums, wish2 (a second pond wish, 2.3.2), free play (skipped with a hook call), bedtime and
+# goodnight with its ribbon gift. Checks each egg's three sums on one panel with its hearts and the band (2.3), the eggs'
+# timings and the lines between their sums (2.3.2, flows/egg-times.js), the results log (with what she tried), the
+# basket and tray sizes, no letter sound under a line at naming 1 (2.3.2), the save, missing clips and console errors.
+# Screenshots of every part.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-7}"
 
@@ -148,10 +149,18 @@ else
 fi
 sleep 0.5
 shot 06-naming1-spell
+# 2.3.2: "Listen again" after the wrong build, and the name after the right one, wait until the star's last letter
+# sound has ended: no letter sound plays under a line.
+trace_speech
 slide_star
 wait_for "() => window.__game.state().moment?.misses === 1" 15
 sleep 2.5
 spell_right
+wait_moment wish 40
+heard="$(speech_after_letters fb-listen,fb-spelled)"
+say "naming 1 speech after the star: $heard"
+expect_eq "$(val "() => JSON.parse($(jsq "$heard")).over")" 0 'naming 1: no letter sound under a line'
+expect_eq "$(val "() => JSON.parse($(jsq "$heard")).gaps.length")" 2 'naming 1: "Listen again" and the name after a letter sound'
 
 # ---- 5 The dress-up wish (the warm-up: a level lower, 4 items): one wrong item shows its word with the letters that
 # differ (the light contrast), then the right one.
@@ -192,6 +201,7 @@ shot 10-pond-wish
 check_targets "$(moment_targets)"
 check_targets '["baby","bubble"]'
 expect_eq "$(item_count)" 5 'items in the pond wish (level 2)'
+pond_words="$(val "() => JSON.stringify(window.__game.spec().basket)")"
 drag "$(hook 'answer()')" baby
 
 # ---- 7 The wild egg lands.
@@ -202,7 +212,8 @@ wait_for "() => window.__game.state().goal === 'wildEgg'" 60
 shot 11-wild-egg-goal
 wait_for "() => window.__game.state().princess.mode === 'idle'" 30
 
-# ---- 8, 9, 10 Egg 2 (its hard sum in the band egg 1's hard sum left), naming 2 and the picnic wish, all right first time.
+# ---- 8, 9, 10 Egg 2 (its hard sum in the band egg 1's hard sum left), naming 2 and wish2, all right first time. Free
+# play offers the royal picnic, so wish2 is a second pond wish without a word of the first (2.3.2).
 walk_to_goal
 wait_moment egg 20
 wait_phase open 30
@@ -220,7 +231,10 @@ wait_open
 sleep 1.5
 shot 14-wish2
 check_targets "$(moment_targets)"
-expect_eq "$(item_count)" 5 'items in the picnic wish'
+expect_eq "$(item_count)" 5 'items in wish2'
+expect_eq "$(val "() => window.__game.spec().kind")" bath 'wish2 is a pond wish'
+expect_eq "$(val "() => { const before = $pond_words; return window.__game.spec().basket.filter((w) => before.includes(w)).join(','); }")" '' 'wish2 repeats no word of the pond wish'
+say "pond wish $pond_words, wish2 $(val "() => JSON.stringify(window.__game.spec().basket)")"
 drag "$(hook 'answer()')" baby
 
 # ---- 11 Free play: the basket and the two side quests' bubbles (a fresh save offers the picnic and the bead tree; not

@@ -396,6 +396,133 @@ describe('the gate\'s word wishes before Emma\'s picture check (2.3 sections 17.
   });
 });
 
+describe('wish2 as a second pond wish (2.3.2)', () => {
+  const bath = DATA.kinds.bath;
+  const clipIds = new Set(W.allWishClipIds());
+  const sounds = new Set(W.allWishGraphemes());
+
+  /**
+   * Plays as the game plans them when free play offers the picnic: the nest's dress-up wish (the warm-up), the pond
+   * wish, then wish2 as a pond wish without the pond wish's words, at the same level. The last of three plays is
+   * measured, with the play before it as `last`.
+   */
+  const cache = new Map<number, { pond: WishSpec; wish2: WishSpec; last: string[] }[]>();
+  function plays(level: 1 | 2 | 3) {
+    if (cache.has(level)) return cache.get(level)!;
+    const out: { pond: WishSpec; wish2: WishSpec; last: string[] }[] = [];
+    for (let s = 0; s < 3000; s++) {
+      const r = seeded(s * 17 + level);
+      let last: string[] = [];
+      for (let play = 0; play < 3; play++) {
+        const today: string[] = [];
+        const exclude = () => [...new Set([...last, ...today])];
+        today.push(W.wishSpec('dress', r, exclude(), { level: Math.max(1, level - 1) as 1 | 2 | 3 }).target.word);
+        const pond = W.wishSpec('bath', r, exclude(), { level });
+        today.push(pond.target.word);
+        const wish2 = W.wishSpec('bath', r, exclude(), { level, avoid: pond.basket.map((b) => b.word) });
+        today.push(wish2.target.word);
+        if (play === 2) out.push({ pond, wish2, last });
+        last = today;
+      }
+    }
+    cache.set(level, out);
+    return out;
+  }
+
+  it('never shows a word of the play\'s pond wish, as target or in the basket', () => {
+    for (const level of LEVELS) {
+      const bad: string[] = [];
+      for (const { pond, wish2 } of plays(level)) {
+        const before = new Set(pond.basket.map((b) => b.word));
+        const words = wish2.basket.map((b) => b.word);
+        if (words.some((w) => before.has(w))) bad.push(`${level} [${words.join(' ')}] after [${[...before].join(' ')}]`);
+        expect(wish2.kind).toBe('bath');
+        expect(words).toContain(wish2.target.word);
+      }
+      expect(bad.slice(0, 5)).toEqual([]);
+    }
+  });
+
+  it('plans baskets that meet 3.1 at the reading level and keep the guessers within bounds', () => {
+    for (const level of LEVELS) {
+      let pFirst = 0;
+      let pLast = 0;
+      let fell = 0;
+      let reads = 0;
+      const bad: string[] = [];
+      const targets = new Set<string>();
+      for (const { wish2: g } of plays(level)) {
+        reads++;
+        const t = g.target.word;
+        targets.add(t);
+        const words = g.basket.map((b) => b.word);
+        const fail = (why: string) => bad.length < 10 && bad.push(`${level} ${t} [${words.join(' ')}]: ${why}`);
+        if (g.level !== level) fell++;
+        if (words.length !== (g.level === 1 ? 4 : 5)) fail('size');
+        if (words.some((w) => !bath.pool.includes(w))) fail('not a pond word');
+        if (!W.wishTargets('bath', g.level).some((w) => w.word === t)) fail('not a target of its level');
+        for (let i = 0; i < words.length; i++) for (let j = i + 1; j < words.length; j++) if (clash(words[i], words[j])) fail(`${words[i]} and ${words[j]} look alike`);
+        const sameFirst = words.filter((w) => first(w) === first(t)).length;
+        const sameLast = words.filter((w) => last(w) === last(t)).length;
+        if (g.level === 1) {
+          if (sameFirst < 2) fail('no word with the same first letter');
+          if (!words.some((w) => w !== t && first(w) !== first(t) && (W.rime(word(w)) === W.rime(word(t)) || last(w) === last(t)))) fail('no rhyme or ending');
+        } else {
+          if (sameFirst < 3) fail('fewer than 3 with the first letter');
+          if (sameLast < 2) fail('fewer than 2 with the last letter');
+          if (words.filter((w) => w.length === t.length).length < 2) fail('the length decides');
+        }
+        if (g.level === 3 && !Object.values(g.decoys).some((k) => k === 'twin' || k === 'frame')) fail('level 3 without a twin or frame');
+        pFirst += 1 / sameFirst;
+        pLast += 1 / sameLast;
+      }
+      expect(bad).toEqual([]);
+      if (level > 1) {
+        expect(pFirst / reads, `level ${level} first letter`).toBeLessThanOrEqual(0.4);
+        expect(pLast / reads, `level ${level} last letter`).toBeLessThanOrEqual(0.55);
+      }
+      // Level 3 plays as level 2 when the pond wish's basket left no fresh level 3 target a full basket (five of its six
+      // start with s, as most of the pond's s words do): about 1 in 18, as the gate's word wishes allow.
+      expect(fell / reads, `level ${level} played as level 2`).toBeLessThanOrEqual(level === 3 ? 0.06 : 0);
+      // Most of the level's targets still come up.
+      expect(targets.size, `level ${level} targets`).toBeGreaterThanOrEqual(W.wishTargets('bath', level).length - 1);
+    }
+  });
+
+  it('keeps the miss contrast (and ?contrast=0), the lines of a pond wish, and every clip and letter sound', () => {
+    for (const { pond, wish2 } of plays(2).slice(0, 300)) {
+      expect(wish2.clips).toEqual(pond.clips);
+      expect(wish2.clips.again).toEqual(['fb-letters']);
+      for (const b of wish2.basket) {
+        expect(clipIds.has(b.clip), b.clip).toBe(true);
+        expect(wordClips.has(b.clip), b.clip).toBe(true);
+        expect(b.react).toBe('play');
+        for (const g of b.gpcs) expect(sounds.has(g), g).toBe(true);
+      }
+    }
+    const pond = W.wishSpec('bath', seeded(5), [], { level: 2 });
+    expect(W.wishSpec('bath', seeded(6), [], { level: 2, contrast: false, avoid: pond.basket.map((b) => b.word) }).clips.again).toBeUndefined();
+  });
+
+  it('is planned as before without words to avoid (the same draws), and falls back to every word only when too few are left', () => {
+    for (let s = 1; s <= 300; s++) {
+      for (const kind of KINDS) {
+        const a = W.wishSpec(kind, seeded(s), ['ship'], { level: LEVELS[s % 3] });
+        const b = W.wishSpec(kind, seeded(s), ['ship'], { level: LEVELS[s % 3], avoid: [] });
+        expect(b).toEqual(a);
+      }
+    }
+    // Every level 1 target avoided: level 1 plays as level 2, and no avoided word is the target.
+    const l1 = bath.level1;
+    const spec = W.wishSpec('bath', seeded(1), [], { level: 1, avoid: l1 });
+    expect(spec.level).toBe(2);
+    expect(l1).not.toContain(spec.target.word);
+    for (const b of spec.basket) expect(l1).not.toContain(b.word);
+    // With fewer than five words left the basket takes from the whole pool.
+    expect(W.wishSpec('bath', seeded(1), [], { level: 2, avoid: bath.pool.slice(0, 23) }).basket).toHaveLength(5);
+  });
+});
+
 describe('the ladder with the contrast', () => {
   it('waits 10 s with 4 items and 14 s with 5 on reading', () => {
     expect(idleDelay('reading')).toBe(10_000);

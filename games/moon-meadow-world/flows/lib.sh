@@ -305,6 +305,19 @@ walk_into_yard() {
   wait_for "() => window.__game.state().goal !== 'stable'" 20
 }
 
+# Trace the shared player's speech and letter sounds from now on (2.3.2): each say or sayAll with its start, each letter
+# sound with its start and end (performance.now(); the end is when it stopped, at its end or cut). Calling it again
+# clears the trace.
+trace_speech() {
+  val "() => { const A = window.EmmaAudio; if (!A.__traced) { A.__traced = true; window.__speech = []; const log = window.__speech; const sound = A.sound; A.sound = function (g, o) { const e = { kind: 'sound', g, t: performance.now(), end: null }; log.push(e); const p = sound.call(this, g, o); p.then(() => { e.end = performance.now(); }); return p; }; for (const k of ['say', 'sayAll']) { const f = A[k]; A[k] = function (ids, o) { log.push({ kind: 'say', ids: [].concat(ids), t: performance.now() }); return f.call(this, ids, o); }; } } window.__speech.length = 0; return 'ok'; }" >/dev/null
+}
+
+# Since trace_speech: the longest time a letter sound still played when a line of speech started (ms, 0 when none),
+# and the gap from the last letter sound's end to each line in \$1 (clip ids, comma separated) that followed one.
+speech_after_letters() {
+  val "() => { const log = window.__speech || []; const now = performance.now(); const want = $(jsq "$1").split(','); let over = 0; const gaps = []; for (const e of log) { if (e.kind !== 'say') continue; for (const s of log) { if (s.kind !== 'sound' || s.t >= e.t) continue; over = Math.max(over, (s.end ?? now) - e.t); } if (!want.some((w) => e.ids.includes(w))) continue; const before = log.filter((s) => s.kind === 'sound' && s.t < e.t); if (!before.length) continue; const last = before[before.length - 1]; gaps.push(e.ids[0] + ' ' + Math.round(e.t - (last.end ?? now)) + ' ms after /' + last.g + '/'); } return JSON.stringify({ over: Math.max(0, Math.round(over)), gaps }); }"
+}
+
 # Frame budget (spec 7.3): under 80 draw calls and 100,000 triangles. Logs the numbers to the shots folder.
 budget() {
   local p

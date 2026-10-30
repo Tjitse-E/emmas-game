@@ -14,7 +14,7 @@
 import type { MomentHooks, MomentResult, WishItem, WishSpec } from '../contracts';
 import { audio } from '../audio';
 import { bubbleBox, clearOf, inBox, phraseUnits, printUnits, type Box, type Point, type PrintUnit } from './geometry';
-import { HintRunner } from './ladder';
+import { HintRunner, remindDelay } from './ladder';
 import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, img, onTick, play, sleep, u, wordPicEl } from './dom';
 import { Life, QUICK_MS, leave, target, type LayerCtx, type OpenMoment } from './moment';
@@ -226,7 +226,7 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
         await ctx.ghost.drag(() => centreOf(right.cell), babyPoint, { carry: f });
         if (life.alive) await give(right.it, f);
       },
-    }, { missStep: spec.clips.again ? 'contrast' : 'focused', items: spec.basket.length });
+    }, { missStep: spec.clips.again ? 'contrast' : 'focused', items: spec.basket.length, firstIdleMs: remindDelay(spec.kind) });
     life.own(() => ladder.close());
 
     const give = async (it: WishItem, f: Flyer) => {
@@ -331,14 +331,12 @@ export function runWish(ctx: LayerCtx, spec: WishSpec, hooks: MomentHooks, setOp
     };
     setOpen(handle);
 
-    // Input is on from the start, so decision time starts here; the quiet time before an idle step starts again once
-    // the intro has been said.
-    void (async () => {
-      busy = false;
-      openedAt = performance.now();
-      ladder.open(openedAt);
-      await audio.sayAll(spec.clips.intro);
-      if (life.alive) ladder.restartIdle();
-    })();
+    // Input is on from the start, so decision time starts here. The reminder's quiet time (20 s, or 25 s for a phrase)
+    // counts from here too, not from the intro's end (2.3.2): it never restarts when the intro has been said, only at
+    // a touch.
+    busy = false;
+    openedAt = performance.now();
+    ladder.open(openedAt);
+    void audio.sayAll(spec.clips.intro);
   });
 }

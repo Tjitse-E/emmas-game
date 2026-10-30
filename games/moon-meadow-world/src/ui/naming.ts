@@ -3,6 +3,8 @@
 // hear what she built. A wrong build hums the sounds the slots need; two wrong builds bring the ghost hand, which
 // fills every slot that is still empty or wrong (v3 answerMoves) and slides the star, so the name is finished. The
 // tray holds up to 8 gems (2.2.md 3.1): the name's 3 or 4 and 3 or 4 wrong ones, one of them a second capital.
+// The star plays a letter sound as it passes each slot; the name or "Listen again" after a slide waits until the last
+// one has ended (2.3.2), so neither plays over a letter sound.
 import type { MomentResult, NameChoice, NamingHooks, NamingSpec } from '../contracts';
 import { audio } from '../audio';
 import { clamp, inBox, judgeBuild, nameGems, planTray, type Point } from './geometry';
@@ -14,6 +16,11 @@ import { PIC, gemEl, slotEl, sparkleBurst, starSlider, type StarSlider } from '.
 import { namePill } from './hud';
 
 const HALOS = ['#ffd0e8', '#cfe6ff', '#e4d8ff'];
+/**
+ * The longest wait for the last letter sound the star played before the name or "Listen again" (2.3.2). A held sound
+ * lasts about 1 s; the cap keeps a sound that never ends from holding the game.
+ */
+export const LETTER_WAIT_MS = 1500;
 const BOW_SVG = '<svg viewBox="0 0 80 40" aria-hidden="true"><path d="M40 20 L8 4 Q2 20 8 36 Z M40 20 L72 4 Q78 20 72 36 Z" fill="#ff9cc8" stroke="#d9579a" stroke-width="3" stroke-linejoin="round"/><circle cx="40" cy="20" r="8" fill="#ffc4e1" stroke="#d9579a" stroke-width="3"/></svg>';
 
 type TrayGem = { g: string; cell: HTMLElement; gem: HTMLElement; slot: number | null };
@@ -147,6 +154,10 @@ export function runNaming(ctx: LayerCtx, spec: NamingSpec, hooks: NamingHooks, s
     let tray: HTMLElement | null = null;
     let slider: StarSlider | null = null;
     let slideSaid = false;
+    /** The letter sound the star played last; it resolves when the sound has ended or was stopped. */
+    let starSound: Promise<void> = Promise.resolve();
+    /** The star's last letter sound has ended, or LETTER_WAIT_MS has passed. */
+    const lettersDone = () => Promise.race([starSound, sleep(LETTER_WAIT_MS)]);
     /** She has touched a gem, a slot or the star at some time (never cleared: no gesture demo after that). */
     let everTouched = false;
 
@@ -235,6 +246,9 @@ export function runNaming(ctx: LayerCtx, spec: NamingSpec, hooks: NamingHooks, s
         const result = ladder.finish();
         hooks.log?.('naming', { name: chosen.name, ...result });
         panel?.classList.add('right');
+        // The star's last letter sound first: the sparkle and the name would play over it.
+        await lettersDone();
+        if (!life.alive) return;
         await effectFirst('sparkle');
         if (!life.alive) return;
         await audio.sayAll([chosen.clip, ...spec.clips.done]);
@@ -249,6 +263,8 @@ export function runNaming(ctx: LayerCtx, spec: NamingSpec, hooks: NamingHooks, s
       hooks.log?.('tried', { what: slotGems().join('') });
       hooks.log?.('naming-miss', { name: chosen.name, built: slotGems() });
       hooks.react('look');
+      await lettersDone();
+      if (!life.alive) return;
       await audio.sayAll(spec.clips.again);
       if (!life.alive) return;
       // The wrong gems pop back, then each wrong slot hums the sound it needs.
@@ -387,7 +403,7 @@ export function runNaming(ctx: LayerCtx, spec: NamingSpec, hooks: NamingHooks, s
           ladder?.touch();
           audio.stop();
         },
-        onPass: (i) => { const g = filled[i]?.g; if (g) void audio.sound(g); },
+        onPass: (i) => { const g = filled[i]?.g; if (g) starSound = audio.sound(g); },
         onDone: () => void check(),
       });
       // The slider listens on the window too (press.ts), so it must let go when the moment ends.

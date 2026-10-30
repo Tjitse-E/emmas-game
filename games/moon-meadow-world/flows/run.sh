@@ -31,6 +31,8 @@ if [ ! -d "$REPO/games/moon-meadow-home/$V3_DIST" ]; then
   MAIN="$(cd "$(git -C "$HERE" rev-parse --git-common-dir)/.." && pwd)"
   [ -d "$MAIN/games/moon-meadow-home/$V3_DIST" ] && V3_DIST="$MAIN/games/moon-meadow-home/$V3_DIST"
 fi
+# A server already on this port (another lane's flows) would answer for this one, and the flows would test its build.
+if curl -sf "$MMW_URL" >/dev/null 2>&1; then echo "Port $PORT is in use: pick another MMW_PORT" >&2; exit 1; fi
 PORT="$PORT" HOST=127.0.0.1 MOON_DIST="$V3_DIST" node games/moon-meadow-home/server/serve.ts >"${TMPDIR:-/tmp}/mmw-server-$PORT.log" 2>&1 &
 SERVER=$!
 disown "$SERVER"

@@ -197,6 +197,31 @@ describe('the gate wish and the two levels in the save', () => {
     expect(b.basket.map((x) => x.word)).toEqual(a.basket.map((x) => x.word));
   });
 
+  it('wish2 as a pond wish (2.3.2) repeats no word of the play\'s pond wish, at the word level with no warm-up', () => {
+    for (const level of [1, 2, 3] as const) {
+      for (let s = 0; s < 200; s++) {
+        const { g } = fakeGame({ reading: level });
+        (g as { randFor: (l: string) => () => number }).randFor = (l: string) => seeded(s * 7 + l.length);
+        planWish(g, 'dress', 'wish1', { wish: true });
+        const pond = planWish(g, 'bath', 'pond', { wish: true });
+        const wish2 = planWish(g, 'bath', 'wish2', { wish: true });
+        const before = new Set(pond.basket.map((b) => b.word));
+        expect(wish2.kind).toBe('bath');
+        for (const b of wish2.basket) expect(before.has(b.word), `${level} ${s} ${b.word}`).toBe(false);
+        // Level 3 plays as level 2 only when the pond wish left no level 3 target a full basket.
+        expect(wish2.level === level || (level === 3 && wish2.level === 2)).toBe(true);
+        expect(wish2.clips.again).toEqual(['fb-letters']);
+        expect(g.today.wishes).toBe(3);
+      }
+    }
+    // A new play starts with nothing to avoid: its pond wish is planned as before.
+    const { g } = fakeGame({ reading: 2 });
+    const a = planWish(g, 'bath', 'pond', { wish: true });
+    g.today = { wishes: 0, words: [] };
+    const b = planWish(g, 'bath', 'pond', { wish: true });
+    expect(b.basket.map((x) => x.word)).toEqual(a.basket.map((x) => x.word));
+  });
+
   it('by default, with ?phrases=all, or with ?phrases=emma once Emma has checked enough, it plans a phrase wish at the phrase level', () => {
     for (const [rule, pairsNow] of [['default', claudeOnly()], ['all', claudeOnly()], ['emma', emmaAll()]] as const) {
       DATA.phrasePairs = pairsNow;

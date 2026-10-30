@@ -22,10 +22,10 @@ import { Run, Cancelled } from './run';
 import { doorMoment, heartsBetween } from './doors';
 import { startMaths } from './band';
 import { ownedRibbons } from './save';
-import { afterWish, babyReact, crownKeep, dropToyAfter, momentLog, parkFollowers, planWish, runWish, settleBy } from './moments';
+import { afterWish, babyReact, crownKeep, dropToyAfter, momentLog, parkFollowers, planWish, runWish, secondWishKind, settleBy } from './moments';
 import { HATCH_SPOT, NEST_EGG, SIDE, WILD_EGG_AT, egg } from './eggs-part';
 import { herdAside, wardrobe, wardrobePartClipIds } from './wardrobe-part';
-import { afternoon, hideOffers } from './quests';
+import { afternoon, hideOffers, playQuests } from './quests';
 import { type PlayLine, diagQuery, playFields, sendDiag } from './results';
 
 /** Width of ground across the screen for each framing. */
@@ -48,6 +48,8 @@ const POND_AGAIN_MS = 20_000;
 const POND_WAIT_MS = 45_000;
 /** Play after the first slide before the bath wish at the pond. */
 const POND_PLAY_MS = 8000;
+/** A pond toy from wish2 stays at the baby's feet this long after the wish, as a picnic dish does (moments.ts PLAY_MS). */
+const WISH_TOY_MS = 8000;
 /** Where she and her baby stand for the bath wish at the pond: on the shore with the water behind them. */
 const POND_WISH: { her: Vec2; baby: Vec2 }[] = [
   { her: { x: 3.4, z: 7.4 }, baby: { x: 5.1, z: 8.1 } },
@@ -181,22 +183,26 @@ function bathSwim(u: UnicornActor): void {
 }
 
 /**
- * A baby's wish beside her: the first baby wants to dress up like her (at the nest), the second asks for a picnic
- * treat (by the wild egg). "Your baby wants to dress up like you!" before the dress-up wish. Nothing before the picnic
- * wish: "I'm hungry!" only before a food would tell her the answer is a food.
+ * A baby's wish beside her: the first baby wants to dress up like her (at the nest), the second (by the wild egg)
+ * wants a pond toy when free play offers the royal picnic, which every play in 2.3 does, and else a picnic treat
+ * (2.3.2, moments.ts secondWishKind): the picnic's two guests read picnic words, so a picnic wish here made three
+ * picnic baskets in about 100 s. "Your baby wants to dress up like you!" before the dress-up wish. Nothing before the
+ * other wish: "I'm hungry!" only before a food would tell her the answer is a food.
  */
 async function wish(g: Game, i: 0 | 1): Promise<void> {
   const baby = g.babies[i];
   const u = baby.unicorn;
   g.free = false;
   const part = i === 0 ? 'wish1' : 'wish2';
-  const kind = i === 0 ? 'dress' : 'picnic';
+  const kind = i === 0 ? 'dress' : secondWishKind(playQuests(g));
   const spec = planWish(g, kind, part, { wish: true });
   const before = kind === 'dress' ? CLIPS.dressUp : [];
   await preload(g, [...wishClipIds(spec), ...afterWish(spec), ...before]);
   await settleBy(g, u);
   await say(g, before);
   await runWish(g, u, spec, part);
+  // A pond toy stays until the swim takes it at the pond (bathSwim); here it goes as a picnic dish does.
+  if (spec.kind === 'bath') dropToyAfter(u, WISH_TOY_MS);
   for (const p of g.parked.splice(0)) g.followers.add(p);
   g.followers.add(u, i === 0);
 }
