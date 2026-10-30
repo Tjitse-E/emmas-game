@@ -9,6 +9,13 @@ show the newest version, bottom right. `scripts/deploy.sh` refuses to deploy a v
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.3.3] - 2026-10-30
+
+A patch for Moon Meadow Home, after Emma got stuck at a nest egg on 30 October.
+
+### Fixed
+- Moon Meadow Home: after two wrong stones at a nest egg, the hint hand places the right stone and the egg now hatches. Before, the egg was solved and saved but the nest stayed on screen until the page was reloaded.
+
 ## [2.3.2] - 2026-10-30
 
 A patch after two test plays of 2.3.1, in which the eggs felt slow.
