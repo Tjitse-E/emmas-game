@@ -25,8 +25,9 @@ export interface WishOpts {
   /** false brings back v3's miss rule (?contrast=0): no clips.again, so one miss gives the focused hint at once. */
   contrast?: boolean;
   /**
-   * The words of this play's earlier wish of the same kind (its target and basket): none of them in this wish while
-   * others are left (2.3.2: wish2 is a second pond wish after the pond wish when free play offers the picnic).
+   * The words of this play's earlier wishes of the same kind (their targets and baskets): none of them in this wish
+   * while others are left (2.3.2: wish2 as a second pond wish; 2.4.0: every dress-up, pond and picnic wish of a play,
+   * the picnic's two guests too, moments.ts planWish).
    */
   avoid?: readonly string[];
 }

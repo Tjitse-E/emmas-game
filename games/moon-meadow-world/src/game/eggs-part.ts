@@ -25,8 +25,8 @@ import {
   walkTo,
 } from './game';
 import {
-  type MomentLog, afterWish, babyReact, crownKeep, dropToyAfter, frameWish, momentLog, parkFollowers, planWish, runWish, secondWishKind,
-  settleBy,
+  type MomentLog, afterWish, babyReact, crownKeep, dropToyAfter, frameWish, momentLog, nextWishKind, parkFollowers, planWish, runWish,
+  secondWishKind, settleBy,
 } from './moments';
 import { noteMaths, planEggs } from './maths';
 import { playQuests } from './quests';
@@ -332,8 +332,9 @@ export function bathSwim(u: UnicornActor): void {
 }
 
 /**
- * A newborn's first wish, right after its naming (2.4 section 5.3), from the stream and part wish-<n>: at the nest
- * and the shore the baby settles beside her, on the trail it stays where it hatched. "Your baby wants to dress up like
+ * A newborn's first wish, right after its naming (2.4 section 5.3), from the stream and part wish-<n>, of the kind the
+ * play has read least (moments.ts nextWishKind: so the play's first baby wants to dress up like her): at the nest and
+ * the shore the baby settles beside her, on the trail it stays where it hatched. "Your baby wants to dress up like
  * you!" before a dress-up wish; nothing before the others ("I'm hungry!" before a food would give the answer away).
  * With `keepFrame` the camera stays on the wish (the egg place lets it go in its release).
  */
@@ -342,7 +343,7 @@ async function firstWish(g: Game, baby: Baby, keepFrame: boolean): Promise<void>
   const n = g.babies.indexOf(baby) + 1;
   g.free = false;
   const part = `wish-${n}`;
-  const kind = n === 1 ? 'dress' : secondWishKind(playQuests(g));
+  const kind = nextWishKind(g);
   const spec = planWish(g, kind, part, { wish: true });
   const before = kind === 'dress' ? CLIPS.dressUp : [];
   await preload(g, [...wishClipIds(spec), ...afterWish(spec), ...before]);

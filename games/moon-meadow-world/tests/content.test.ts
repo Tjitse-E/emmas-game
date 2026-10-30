@@ -200,6 +200,22 @@ describe('wishes', () => {
     }
   });
 
+  // 2.4.0 (docs/v4/2.4.md section 5.3): every kind leaves out its earlier basket words this play, the picnic too.
+  it('a second wish of a kind shows none of the first one\'s words, at every level, and still meets its basket rules', () => {
+    for (const kind of ['picnic', 'dress', 'bath'] as const) {
+      for (const s of seeds) {
+        const level = ((s % 3) + 1) as 1 | 2 | 3;
+        const first = C.wishSpec(kind, C.seeded(s), [], { level });
+        const seen = [first.target.word, ...first.basket.map((b) => b.word)];
+        const second = C.wishSpec(kind, C.seeded(s + 1000), [first.target.word], { level, avoid: seen });
+        const words = [second.target.word, ...second.basket.map((b) => b.word)];
+        expect(words.filter((w) => seen.includes(w)), `${kind} ${s}`).toEqual([]);
+        expect(second.basket).toHaveLength(second.level === 1 ? 4 : 5);
+        expect(second.basket.map((b) => b.word)).toContain(second.target.word);
+      }
+    }
+  });
+
   it('?contrast=0 drops clips.again, so a miss keeps v3\'s rule', () => {
     const spec = C.wishSpec('dress', C.seeded(1), [], { contrast: false });
     expect(spec.clips.again).toBeUndefined();
