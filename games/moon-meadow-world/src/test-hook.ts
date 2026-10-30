@@ -154,7 +154,8 @@ export function installHook(g: Game): void {
     },
     /**
      * The open moment's spec as the game planned it: an egg's numbers, stones and decoy kinds; a wish's target,
-     * basket, level and decoy kinds; naming's bells and, once chosen, the gems of the name in slot order.
+     * basket, level and decoy kinds; a signpost's sign, level, card words and target word; naming's bells and, once
+     * chosen, the gems of the name in slot order.
      */
     spec(): unknown {
       const s = g.openSpec as Record<string, unknown> | null;
@@ -167,6 +168,11 @@ export function installHook(g: Game): void {
       if ('basket' in s) {
         const w = s as { kind: string; level: number; target: { word: string }; basket: { word: string }[]; decoys: Record<string, string> };
         return { kind: w.kind, level: w.level, target: w.target.word, basket: w.basket.map((i) => i.word), decoys: w.decoys };
+      }
+      // 2.4.0: a signpost (SignSpec): the sign of the trip, its level, the card words in arm order and the target word.
+      if ('cards' in s) {
+        const sg = s as { sign: number; level: number; cards: { word: string }[]; target: { word: string } };
+        return { sign: sg.sign, level: sg.level, cards: sg.cards.map((c) => c.word), target: sg.target.word };
       }
       const n = s as { bells: { name: string }[]; chosen: { name: string; gpcs: string[]; distractors: string[] } | null };
       return {

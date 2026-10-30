@@ -7,15 +7,21 @@ import type { Outcome } from '../src/contracts';
 import { BEDTIME_MS } from '../src/game/hub';
 import { lineFor } from '../tools/lines';
 import { parseOptions, resolveStart } from '../src/game/options';
-import { DIAG_MAX, type PlayLine, diagQuery, hubFields, playFields, resultFields } from '../src/game/results';
+import { DIAG_MAX, type PlayLine, Results, diagQuery, hubFields, playFields, resultFields } from '../src/game/results';
+import { Run } from '../src/game/run';
+import type { Game } from '../src/game/game';
 import { type ReadingState, foldReading, foldSigns } from '../src/game/reading';
 import { GIFT_SETS } from '../src/wardrobe';
 
 // src/assets.ts reads the page location when it loads (the sign words' pictures).
 vi.stubGlobal('location', { pathname: '/' });
+// guests.ts and the test hook load game.ts, which loads the audio; the shared audio needs a browser window.
+vi.mock('../src/audio', () => ({ audio: { soundState: () => ({}), missing: [] } }));
 const { eggSums, factClip } = await import('../src/content/eggs');
 const { seeded } = await import('../src/content/rand');
 const { allClipIds } = await import('../src/content/clips');
+const { guests } = await import('../src/game/guests');
+const { installHook } = await import('../src/test-hook');
 
 const RUN_A: Record<string, [string, string]> = {
   'g4-pick': ['narrator', 'Where do you want to go? Tap a bubble!'],
@@ -107,5 +113,70 @@ describe('the 2.4 contracts', () => {
   it('folds sign outcomes as the reading level folds', () => {
     const s: ReadingState = { level: 1, recent: [] };
     expect(foldSigns(s, ['first', 'first', 'first'])).toEqual(['first', 'first', 'first'].reduce((a, o) => foldReading(a, o as Outcome), s));
+  });
+
+  it('puts the play number Results.pn holds on every result line', () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const r = new Results();
+    r.pn = 3;
+    r.add('egg-nest', 'm', { outcome: 'first', misses: 0, ms: 900 });
+    expect(r.lines[0].pn).toBe(3);
+    expect(diagQuery(resultFields(r.lines[0]))).toContain('&pn=3&');
+    info.mockRestore();
+  });
+
+  it('Run.defer returns an undo that takes its cleanup off the list, so a ride leaves the list level', () => {
+    const run = new Run(() => () => {});
+    const before = run.deferred;
+    const hide = vi.fn();
+    const undo = run.defer(hide);
+    expect(run.deferred).toBe(before + 1);
+    undo();
+    undo();
+    expect(run.deferred).toBe(before);
+    const kept = vi.fn();
+    run.defer(kept);
+    run.stop();
+    expect(hide).not.toHaveBeenCalled();
+    expect(kept).toHaveBeenCalledOnce();
+    // After the run stopped, a cleanup runs at once and its undo does nothing.
+    const late = vi.fn();
+    run.defer(late)();
+    expect(late).toHaveBeenCalledOnce();
+  });
+
+  it('gives a place its guests with no baby hatched: her babies in hatch order first, then the grazing herd babies nearest', () => {
+    const u = (id: string, stage: string, mode: string, x: number, followSlot: number | null = null) => ({ id, look: { stage }, mode, followSlot, position: { x, y: 0, z: 0 } });
+    const herd = [
+      u('far', 'baby', 'graze', 10), u('foal', 'foal', 'graze', 1), u('near', 'baby', 'graze', 2), u('stall', 'baby', 'stall', 0),
+      u('follows', 'baby', 'follow', 0.5, 1), u('waits', 'baby', 'graze', 0.2), u('helper', 'baby', 'idle', 0.3), u('mount-bella', 'baby', 'graze', 0.1),
+      u('still', 'baby', 'idle', 3),
+    ];
+    const byId = new Map(herd.map((x) => [x.id, x]));
+    const g = {
+      babies: [] as { unicorn: unknown }[], herd: herd.map((x) => ({ id: x.id })), actors: { herd: { get: (id: string) => byId.get(id) } },
+      waiting: byId.get('waits'), quests: { helpers: ['helper'] },
+    };
+    const ids = (n: number) => guests(g as unknown as Game, { x: 0, z: 0 }, n).map((x) => x.id);
+    expect(ids(2)).toEqual(['near', 'still']);
+    expect(ids(1)).toEqual(['near']);
+    const b13 = u('baby-13', 'baby', 'follow', 5, 0);
+    const b14 = u('baby-14', 'baby', 'follow', 6, 1);
+    g.babies = [{ unicorn: b13 }];
+    expect(ids(2)).toEqual(['baby-13', 'near']);
+    g.babies = [{ unicorn: b13 }, { unicorn: b14 }];
+    expect(ids(2)).toEqual(['baby-13', 'baby-14']);
+    expect(ids(1)).toEqual(['baby-13']);
+  });
+
+  it('gives the test hook a signpost spec as words', () => {
+    const win = {} as { __game?: { spec(): unknown } };
+    vi.stubGlobal('window', win);
+    const item = (word: string) => ({ word, gpcs: [], clip: `word-${word}`, pic: '', tier: 1, group: 's' });
+    const g = { world: {}, actors: {}, layer: {}, openSpec: { sign: 2, level: 1, cards: [item('shed'), item('bench'), item('pool')], target: item('bench'), clips: {} } };
+    installHook(g as unknown as Game);
+    expect(win.__game!.spec()).toEqual({ sign: 2, level: 1, cards: ['shed', 'bench', 'pool'], target: 'bench' });
+    vi.unstubAllGlobals();
+    vi.stubGlobal('location', { pathname: '/' });
   });
 });

@@ -310,10 +310,11 @@ export function snapTo(g: Game, part: Part): void {
   g.today = { wishes: 0, words: [] };
   g.clock = startClock();
   g.quests = startQuests(g.quests.maths);
-  // 2.4.0: a new hub (with ?bed=, its bedtime), no trip, no waiting wish.
+  // 2.4.0: a new hub (with ?bed=, its bedtime), no trip, no waiting wish, no sign set used.
   g.hub = startHub(g.options.bedMs ?? BEDTIME_MS);
   g.ride = null;
   g.waiting = null;
+  g.signUse = { sets: [], targets: [] };
   g.openSpec = null;
   g.door = null;
   g.free = false;

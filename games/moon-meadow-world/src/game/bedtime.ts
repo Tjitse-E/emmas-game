@@ -63,9 +63,9 @@ export async function bedtime(g: Game): Promise<void> {
   // 1. Roll call: two doors from 7 to 12 of unicorns still outside. The next door is asked while the last walks in.
   const outside = g.herd.filter((h) => !g.stalls.has(h.door)).map((h) => h.door);
   const calls = rollCall(outside, g.randFor('rollcall'), 2);
-  const b1 = g.babies[0].member!;
-  const b2 = g.babies[1].member!;
-  await preload(g, [...doorClipIds(calls), ...moveIn(b1), ...moveIn(b2)]);
+  // Her named babies, in hatch order: none, one or more (2.4.0: a play may skip an egg; Task 10 sets the doors by count).
+  const named = g.babies.filter((b) => b.member);
+  await preload(g, [...doorClipIds(calls), ...named.flatMap((b) => moveIn(b.member!))]);
   const walking: Promise<void>[] = [];
   for (const spec of calls) {
     const r = await doorMoment(g, spec, 'roll call', async () => {
@@ -74,16 +74,17 @@ export async function bedtime(g: Game): Promise<void> {
     });
     g.results.add('bedtime', 'm', r, { moment: 'roll call', door: spec.door, tried: r.tried });
   }
-  // 2. Everyone else of the herd goes in, while the two newborns move in at doors 13 and 14 (not checked).
+  // 2. Everyone else of the herd goes in, while the newborns move in at their doors, 13 on (not checked).
   const rest = g.herd.filter((h) => !g.stalls.has(h.door) && !g.entering.has(h.door));
   const herdIn = Promise.all(rest.map((h, k) => g.run.sleep(k * HERD_STAGGER_MS).then(() => goIn(g, h.door, false)))).catch(() => {});
   await say(g, CLIPS.herdIn);
-  await moveInBaby(g, 0);
-  await moveInBaby(g, 1);
+  for (let i = 0; i < g.babies.length; i++) await moveInBaby(g, i);
   await g.run.w(Promise.all([herdIn, ...walking]));
-  // 3. The visit (checked): one of the newborns visits a teen door, 11 to 14.
+  // 3. The visit (checked): one of the newborns visits a teen door, 11 to 14. No named baby, no visit. With two, the
+  // same draw as 2.3.3 (under 0.5 the first).
+  if (!named.length) return;
   const visiting = g.randFor('visit');
-  const visitor = visiting() < 0.5 ? b1 : b2;
+  const visitor = named[Math.min(named.length - 1, Math.floor(visiting() * named.length))].member!;
   const visit = doorVisit(visitor, [...g.stalls.keys()], visiting, calls.map((c) => c.door));
   await preload(g, doorClipIds([visit]));
   const r = await doorMoment(g, visit, 'visit', async () => {

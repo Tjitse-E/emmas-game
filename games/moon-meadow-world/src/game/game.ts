@@ -8,7 +8,7 @@ import type { LayerExtras } from '../ui';
 import { PITCH } from '../world/camera';
 import { NEST, STABLE, SLIDE, WILD_EGG, dist2, doorCenter, doorIsUpper } from '../layout';
 import { type Sfx, audio } from '../audio';
-import { type Rand, wayTo } from '../content';
+import { type Rand, type SignUse, wayTo } from '../content';
 import { Followers } from './followers';
 import { Results } from './results';
 import { Run } from './run';
@@ -185,6 +185,11 @@ export interface Game {
   readonly start: { last: Save['last']; afternoon: Save['afternoon'] };
   /** Set by the hub part while it waits: a refill now (the test hook's setHub). */
   hubRefresh: (() => void) | null;
+  /**
+   * The sign sets and targets this play's trips have used (2.4 section 5.5): planTrip reads it for trip 2, and the ride
+   * adds each trip's to it. Empty at a new play and after a jump (snapTo).
+   */
+  signUse: SignUse;
 }
 
 export function createGame(o: {
@@ -229,6 +234,7 @@ export function createGame(o: {
       afternoon: { maths: o.save.data.afternoon.maths, done: [...o.save.data.afternoon.done] },
     },
     hubRefresh: null,
+    signUse: { sets: [], targets: [] },
   };
 }
 

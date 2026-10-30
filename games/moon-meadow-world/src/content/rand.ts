@@ -27,7 +27,7 @@ export function hash(label: string): number {
 
 /**
  * A moment's own generator: the same seed and label give the same sequence. Each moment draws from its own stream
- * (g.randFor('egg1'), 'wish1', 'picnic', ...), so the customiser or a quest never shifts a later sum or word, and
+ * (g.randFor('egg-nest'), 'wish-1', 'picnic', ...), so the customiser or a quest never shifts a later sum or word, and
  * ?at=egg2&seed=5 gives the same egg as a full play with seed 5.
  */
 export function stream(seed: number, label: string): Rand {

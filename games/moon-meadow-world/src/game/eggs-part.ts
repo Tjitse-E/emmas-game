@@ -63,13 +63,15 @@ function sumsLabel(g: Game, spot: EggSpot): string {
 
 /**
  * The nest or shore egg as a hub place: walk, three sums, hatch, naming and the newborn's first wish; resolves framed
- * with its release. Step 0 runs 2.3.3's egg, naming and wish for index 0 (nest) or 1 (shore).
+ * with its release. Step 0 runs 2.3.3's egg for index 0 (nest) or 1 (shore); the baby hatches, is named and wishes at
+ * the next baby index (g.babies.length), so a shore egg before the nest egg gives baby 0, with no hole in g.babies.
+ * In 2.3.3's order (the nest egg, then the shore egg) that is the egg index, as before.
  */
 export async function eggPlace(g: Game, spot: 'nest' | 'shore'): Promise<() => void> {
-  const i = indexOf(spot);
-  await egg(g, i);
-  await naming(g, i);
-  await wish(g, i);
+  const n = g.babies.length;
+  await egg(g, indexOf(spot));
+  await naming(g, n);
+  await wish(g, n);
   return () => {};
 }
 
@@ -88,7 +90,7 @@ export async function newbornAt(g: Game, spot: EggSpot): Promise<Baby> {
 
 // ---- 2.3.3's egg parts ---------------------------------------------------------------------------------------------
 
-/** The egg moment and the hatch, for the nest egg (index 0) and the wild egg (index 1). */
+/** The egg moment and the hatch, for the nest egg (index 0) and the wild egg (index 1); the baby takes the next baby index. */
 export async function egg(g: Game, i: 0 | 1): Promise<void> {
   const { actors, world } = g;
   const goal = i === 0 ? GOALS.nest : GOALS.wildEgg;
@@ -112,7 +114,7 @@ export async function egg(g: Game, i: 0 | 1): Promise<void> {
   const eggPoint = actors.egg.position.clone();
   await frameAt(g, flat(eggPoint), EGG_WIDTH, eggPoint, 0.4);
   await askSums(g, spot, specs);
-  await hatch(g, i, spot);
+  await hatch(g, g.babies.length, spot);
 }
 
 /** An egg's three sums from its stream, with their clips loaded. */
@@ -184,13 +186,17 @@ async function hatch(g: Game, i: number, spot: EggSpot): Promise<void> {
   await say(g, CLIPS.foalHello);
 }
 
-/** Baby `i`'s naming (moved from level.ts in 2.4.0): the second naming has a fourth wrong gem (docs/v4/2.2.md 3.1). */
-export async function naming(g: Game, i: 0 | 1): Promise<void> {
+/**
+ * Baby `i`'s naming (moved from level.ts in 2.4.0): every later naming has a fourth wrong gem (docs/v4/2.2.md 3.1) and
+ * leaves out the names of the babies named before it.
+ */
+export async function naming(g: Game, i: number): Promise<void> {
   const { layer, world } = g;
   const baby = g.babies[i];
   const u = baby.unicorn;
   g.free = false;
-  const spec = namingSpec(g.randFor(`naming-${i + 1}`), i === 1 && g.babies[0]?.member ? [g.babies[0].member.name] : [], i === 0 ? 3 : 4);
+  const names = g.babies.filter((b) => b !== baby && b.member).map((b) => b.member!.name);
+  const spec = namingSpec(g.randFor(`naming-${i + 1}`), names, i === 0 ? 3 : 4);
   await preload(g, namingClipIds(spec));
   faceBeside(g, flat(u.position));
   // The frame centre a little towards her, so her crown stays clear of Lumi's portrait (top left).
@@ -233,7 +239,7 @@ export function bathSwim(u: UnicornActor): void {
  * picnic baskets in about 100 s. "Your baby wants to dress up like you!" before the dress-up wish. Nothing before the
  * other wish: "I'm hungry!" only before a food would tell her the answer is a food.
  */
-export async function wish(g: Game, i: 0 | 1): Promise<void> {
+export async function wish(g: Game, i: number): Promise<void> {
   const baby = g.babies[i];
   const u = baby.unicorn;
   g.free = false;

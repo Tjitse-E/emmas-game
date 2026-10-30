@@ -38,10 +38,20 @@ export class Run {
     return this.cleanups.length;
   }
 
-  /** Run fn when the run stops (close a moment's timers, clear a door moment). */
-  defer(fn: () => void): void {
-    if (this.alive) this.cleanups.push(fn);
-    else fn();
+  /**
+   * Run fn when the run stops (close a moment's timers, clear a door moment). Returns an undo that takes fn off the
+   * list again, for a cleanup whose job ended before the run did (2.4.0: the ride hides the trail at getting off).
+   */
+  defer(fn: () => void): () => void {
+    if (!this.alive) {
+      fn();
+      return () => {};
+    }
+    this.cleanups.push(fn);
+    return () => {
+      const k = this.cleanups.indexOf(fn);
+      if (k >= 0) this.cleanups.splice(k, 1);
+    };
   }
 
   /** Await p, unless the run stops first. */

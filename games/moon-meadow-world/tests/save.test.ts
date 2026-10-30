@@ -382,10 +382,25 @@ describe('the 2.4 save', () => {
     expect(s.signs).toEqual({ level: 1, recent: [] });
   });
 
+  it('keeps the 2.4 fields through a load: the hub and the ride seen, and the sign level', () => {
+    const raw = JSON.parse(readFileSync(join(here, 'fixtures/save-2.3.3.json'), 'utf8'));
+    const v24 = { ...raw, seen: { ...raw.seen, hub: true, ride: true }, signs: { level: 2, recent: ['first'] } };
+    const s = parseSave(JSON.stringify(v24), true);
+    expect(s.seen).toEqual({ wardrobe: true, crown: true, beads: true, hub: true, ride: true });
+    expect(s.signs).toEqual({ level: 2, recent: ['first'] });
+    for (const k of ['look', 'owned', 'ribbons', 'plays', 'reading', 'phrases', 'patterns', 'last', 'afternoon'] as const) expect(s[k], k).toEqual(raw[k]);
+  });
+
   it('2.3.3 reads a 2.4 save and keeps every 2.3 field', () => {
-    const v24 = { ...defaultSave(), plays: 6, seen: { wardrobe: true, crown: true, beads: true, hub: true, ride: true }, signs: { level: 2, recent: ['first'] } };
+    // Her 2.3.3 save with 2.4's fields added: 2.3.3's parser gives back exactly the 2.3 save, every field unchanged.
+    const raw = JSON.parse(readFileSync(join(here, 'fixtures/save-2.3.3.json'), 'utf8'));
+    const v24 = { ...raw, seen: { ...raw.seen, hub: true, ride: true }, signs: { level: 2, recent: ['first'] } };
     const old = parseSave233(JSON.stringify(v24), true);
-    expect(old.plays).toBe(6);
-    expect(old.seen).toEqual({ wardrobe: true, crown: true, beads: true });
+    expect(old).toEqual(raw);
+    for (const k of Object.keys(raw)) expect(old[k as keyof typeof old], k).toEqual(raw[k]);
+    // And through 2.4's own writer: a 2.4 save as 2.4 stores it reads back in 2.3.3 with every 2.3 field.
+    const stored = parseSave(JSON.stringify(v24), true);
+    const back = parseSave233(JSON.stringify(stored), true);
+    for (const k of Object.keys(raw)) expect(back[k as keyof typeof back], k).toEqual(raw[k]);
   });
 });
