@@ -2,7 +2,8 @@
 // with its toys and the slide. Static parts go into the merged scenery; the water, the ducks and the boat are their own
 // small meshes because they move. The trunk lid moves inside its merged region (cornerLid), with no mesh of its own.
 import * as THREE from 'three';
-import { CORNER, GAZEBO, MIST, NEST, PICNIC, POND, SLIDE, SLIDE_CURVE } from '../layout';
+import { CORNER, GAZEBO, MIST, NEST, PICNIC, POND, SLIDE, SLIDE_CURVE, type Vec2 } from '../layout';
+import type { DucksApi } from './trail';
 import { Scenery, blob, canvasTexture, faceUp, merge, paint, paintBy, paintY, place, rng, type Geo } from './geo';
 import { MOUND, grassColour, groundHeight, moundHeight } from './terrain';
 
@@ -594,9 +595,120 @@ export function buildNest(scenery: Scenery): void {
 export interface Pond {
   water: THREE.Mesh;
   toys: THREE.Object3D[];
+  /** The three small ducks of the splash pool (2.4.0). */
+  ducks: DucksApi;
   update(dt: number, t: number): void;
   /** 0 day to 1 night: the shimmer softens. */
   setNight(n: number): void;
+}
+
+/**
+ * Where the three small ducks swim (2.4.0, docs/v4/2.4.md 5.2): in the splash pool under the chute while the slide
+ * rests (the reason she can see that it rests), and at the far shore during a pond visit, out of the sliders' way.
+ */
+export const DUCK_SPOTS: Record<'chute' | 'far', readonly Vec2[]> = {
+  chute: [{ x: 6.9, z: 2.7 }, { x: 7.9, z: 1.9 }, { x: 7.7, z: 3.1 }],
+  far: [{ x: 14.6, z: 3.9 }, { x: 15.5, z: 4.9 }, { x: 14.7, z: 5.6 }],
+};
+
+/** The ducks' batch bounds: every duck of the pond, the two paddling ones of 2.3 and the three small ones. */
+const DUCK_BOUNDS = { x: 11, y: 0.2, z: 4.2, r: 5.4 } as const;
+
+export interface PondDucks {
+  /** One batch for all five ducks: the two that paddle in circles (2.3) and the three small ones (2.4.0). */
+  mesh: THREE.InstancedMesh;
+  api: DucksApi;
+  update(dt: number, t: number): void;
+}
+
+/**
+ * The pond's ducks in one instanced batch, culled with the pond: the two rubber ducks paddling slow circles (2.3) and
+ * three small ducks that paddle round their spots under the chute, swim to the far shore and back (set), and hop a
+ * little on a tap of the resting slide (bob). Silent.
+ */
+export function createDucks(material: THREE.Material): PondDucks {
+  const { x: cx, z: cz } = POND.center;
+  const mesh = new THREE.InstancedMesh(duckGeometry(), material, 5);
+  mesh.name = 'ducks';
+  mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(DUCK_BOUNDS.x, DUCK_BOUNDS.y, DUCK_BOUNDS.z), DUCK_BOUNDS.r);
+  mesh.frustumCulled = true;
+  const duckPaths = [
+    { x: cx + 2.4, z: cz + 1.4, r: 1.1, speed: 0.22, phase: 0 },
+    { x: cx - 0.6, z: cz + 2.1, r: 0.9, speed: -0.18, phase: 2 },
+  ];
+  const m = new THREE.Matrix4();
+  const q = new THREE.Quaternion();
+  const e = new THREE.Euler();
+  const pos = new THREE.Vector3();
+  const one = new THREE.Vector3(1, 1, 1);
+  const small = new THREE.Vector3(0.62, 0.62, 0.62);
+  // The small ducks: where each swims from and to, how far along (0 to 1), and its heading.
+  let goal: 'chute' | 'far' = 'chute';
+  let from: Vec2[] = DUCK_SPOTS.chute.map((p) => ({ ...p }));
+  let k = 1;
+  let ms = 1;
+  const heading = [0.6, 2.2, -1.8];
+  let bob = 0;
+  const ease = (x: number): number => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
+  const here = (i: number, t: number): Vec2 => {
+    const to = DUCK_SPOTS[goal][i];
+    const f = ease(k);
+    // At its spot a duck paddles a small circle; on the way it swims straight.
+    const a = t * (0.5 + i * 0.13) + i * 2.1;
+    const r = 0.22 * k ** 4;
+    return { x: from[i].x + (to.x - from[i].x) * f + Math.cos(a) * r, z: from[i].z + (to.z - from[i].z) * f + Math.sin(a) * r * 0.8 };
+  };
+  const last: Vec2[] = DUCK_SPOTS.chute.map((p) => ({ ...p }));
+  return {
+    mesh,
+    api: {
+      set(at, time = 4000) {
+        // From wherever they swim now, straight to the new spots.
+        from = last.map((p) => ({ ...p }));
+        goal = at;
+        ms = Math.max(0, time);
+        k = ms <= 0 ? 1 : 0;
+        if (k >= 1) from = DUCK_SPOTS[at].map((p) => ({ ...p }));
+      },
+      bob() {
+        bob = 1;
+      },
+    },
+    update(dt, t) {
+      duckPaths.forEach((d, i) => {
+        const a = d.phase + t * d.speed;
+        pos.set(d.x + Math.cos(a) * d.r, POND.waterY + 0.02 + Math.sin(t * 2.1 + i) * 0.025, d.z + Math.sin(a) * d.r * 0.7);
+        // Face along the circle: the duck's beak points along +x in its own space.
+        const h = Math.atan2(-Math.cos(a) * d.r * 0.7 * Math.sign(d.speed), -Math.sin(a) * d.r * Math.sign(d.speed));
+        e.set(Math.sin(t * 2.1 + i) * 0.06, h, Math.sin(t * 1.7 + i) * 0.08, 'YXZ');
+        m.compose(pos, q.setFromEuler(e), one);
+        mesh.setMatrixAt(i, m);
+      });
+      if (k < 1) {
+        k = Math.min(1, k + (dt * 1000) / ms);
+        if (k >= 1) from = DUCK_SPOTS[goal].map((p) => ({ ...p }));
+      }
+      bob = Math.max(0, bob - dt / 0.9);
+      const hop = Math.sin((1 - bob) * Math.PI * 3) * bob * 0.09;
+      for (let i = 0; i < 3; i++) {
+        const p = here(i, t);
+        const dx = p.x - last[i].x;
+        const dz = p.z - last[i].z;
+        // Turn smoothly to face where it swims (the beak along +x in its own space).
+        if (Math.hypot(dx, dz) > 1e-4) {
+          const want = Math.atan2(-dz, dx);
+          const diff = Math.atan2(Math.sin(want - heading[i]), Math.cos(want - heading[i]));
+          heading[i] += diff * Math.min(1, dt * 6);
+        }
+        last[i] = p;
+        pos.set(p.x, POND.waterY + 0.015 + Math.sin(t * 2.4 + i * 1.3) * 0.018 + Math.max(0, hop), p.z);
+        e.set(Math.sin(t * 2.4 + i) * 0.06, heading[i], Math.sin(t * 1.9 + i) * 0.08 + hop * 1.5, 'YXZ');
+        m.compose(pos, q.setFromEuler(e), small);
+        mesh.setMatrixAt(2 + i, m);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+    },
+  };
 }
 
 function shimmerTexture(): THREE.CanvasTexture {
@@ -737,39 +849,21 @@ export function buildPond(scenery: Scenery, material: THREE.Material): Pond {
     scenery.add(place(paintY(blob(1, 1), '#c9c2d6', '#ebe6f2', -0.6, 1), { x: ex, y: groundHeight(ex, ez) + 0.05, z: ez, sx: s * 0.6, sy, sz: s * 0.5, ry: ang }));
   }
 
-  // Two rubber ducks paddling in slow circles, and a toy sailing boat drifting and bobbing.
-  const ducks = new THREE.InstancedMesh(duckGeometry(), material, 2);
-  ducks.name = 'ducks';
-  ducks.frustumCulled = false;
+  // Two rubber ducks paddling in slow circles and three small ones in the splash pool (one batch), and a toy sailing
+  // boat drifting and bobbing.
+  const ducks = createDucks(material);
   const boat = new THREE.Mesh(boatGeometry(), material);
   boat.name = 'boat';
-  const duckPaths = [
-    { x: cx + 2.4, z: cz + 1.4, r: 1.1, speed: 0.22, phase: 0 },
-    { x: cx - 0.6, z: cz + 2.1, r: 0.9, speed: -0.18, phase: 2 },
-  ];
-  const m = new THREE.Matrix4();
-  const q = new THREE.Quaternion();
-  const e = new THREE.Euler();
-  const pos = new THREE.Vector3();
-  const one = new THREE.Vector3(1, 1, 1);
   let night = 0;
 
   return {
     water,
-    toys: [ducks, boat],
-    update(_dt, t) {
+    toys: [ducks.mesh, boat],
+    ducks: ducks.api,
+    update(dt, t) {
       shimmer.offset.set(t * 0.012, Math.sin(t * 0.35) * 0.04);
       waterMat.emissiveIntensity = (0.26 + 0.08 * Math.sin(t * 1.3)) * (1 - night * 0.55);
-      duckPaths.forEach((d, i) => {
-        const a = d.phase + t * d.speed;
-        pos.set(d.x + Math.cos(a) * d.r, POND.waterY + 0.02 + Math.sin(t * 2.1 + i) * 0.025, d.z + Math.sin(a) * d.r * 0.7);
-        // Face along the circle: the duck's beak points along +x in its own space.
-        const heading = Math.atan2(-Math.cos(a) * d.r * 0.7 * Math.sign(d.speed), -Math.sin(a) * d.r * Math.sign(d.speed));
-        e.set(Math.sin(t * 2.1 + i) * 0.06, heading, Math.sin(t * 1.7 + i) * 0.08, 'YXZ');
-        m.compose(pos, q.setFromEuler(e), one);
-        ducks.setMatrixAt(i, m);
-      });
-      ducks.instanceMatrix.needsUpdate = true;
+      ducks.update(dt, t);
       boat.position.set(cx + 3.1 + Math.sin(t * 0.13) * 0.5, POND.waterY + 0.02 + Math.sin(t * 1.6) * 0.03, cz - 1.6 + Math.cos(t * 0.11) * 0.3);
       boat.rotation.set(Math.sin(t * 1.3) * 0.05, 0.6 + Math.sin(t * 0.2) * 0.2, Math.sin(t * 1.6 + 1) * 0.06);
     },

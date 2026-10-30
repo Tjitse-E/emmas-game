@@ -2,12 +2,16 @@
 // check and the ducks (2.4.0, docs/v4/2.4.md sections 5.4 and 5.5; docs/v4/2.4-plan.md Tasks 17 to 20).
 import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
-import { NIGHT_SKY, RIDE, RIDE_PATHS, STABLE_FRAME, dist2, type Vec2 } from '../src/layout';
+import { MIST, NIGHT_SKY, RIDE, RIDE_PATHS, STABLE_FRAME, dist2, inPond, type Vec2 } from '../src/layout';
 import { CameraRig, FOV } from '../src/world/camera';
 import { Scenery, type Geo } from '../src/world/geo';
 import { GATE, GATE_REGION, PADDOCK_REGION, buildPaddock } from '../src/world/paddock';
-import { FENCE_GAP, HEDGE_GAP, TRAIL_LINES, buildFence, buildGround, buildHedges, groundHeight, treeSpots } from '../src/world/terrain';
-import { CLEARINGS, TRAIL_REGIONS, buildTrail, type TrailWorld } from '../src/world/trail';
+import {
+  FENCE_GAP, HEDGE_GAP, TRAIL_LINES, buildFence, buildGround, buildGrowth, buildHedges, buildOverlays, buildTrees, groundHeight, treeSpots,
+} from '../src/world/terrain';
+import { CLEARINGS, TRAIL_REGIONS, buildTrail, occludersOf, type TrailWorld } from '../src/world/trail';
+import { DUCK_SPOTS, buildCorner, buildGazebo, buildNest, buildPicnic, buildSlide, createDucks, signGeometry } from '../src/world/places';
+import { buildBeadTree } from '../src/world/beadtree';
 import { KIT, KIT_AT, KIT_HEIGHT, KIT_RADIUS } from '../src/world/kit';
 
 // src/assets.ts (the sign words' pictures, through content/signs.ts) reads the page location when it loads.
@@ -421,5 +425,115 @@ describe('the clearing kit (Task 19)', () => {
     expect(t.trail.slots()[0].onScreen).toBe(true);
     frameAt(RIDE.stand, 13.5);
     expect(t.trail.slots().map((s) => s.onScreen)).toEqual([false, false, false]);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------
+// Task 20: the ride camera, occlusion and the ducks
+// ---------------------------------------------------------------------------------------------------------------
+
+/** The world's scenery and trees as createWorld builds them (without the stable, the pond and the sky: they need a canvas). */
+function meadowForTest(w: number, h: number): { t: TrailWorld; rig: CameraRig; cam: THREE.PerspectiveCamera; scene: THREE.Scene } {
+  const scene = new THREE.Scene();
+  const scenery = new Scenery();
+  buildGround(scenery);
+  buildOverlays(scenery);
+  buildFence(scenery);
+  const hedge = { at: [] as THREE.Vector3[] };
+  buildHedges(scenery, hedge);
+  buildGazebo(scenery);
+  buildCorner(scenery);
+  buildPicnic(scenery);
+  buildBeadTree(scenery);
+  for (const g of signGeometry()) scenery.add(g.applyMatrix4(new THREE.Matrix4().makeTranslation(MIST.sign.x, 0, MIST.sign.z)), Scenery.regionOf(MIST.sign.x, MIST.sign.z));
+  buildNest(scenery);
+  buildSlide(scenery);
+  buildGrowth(scenery, hedge, []);
+  const t = buildTrail(scene, scenery);
+  for (const m of scenery.build(material, 'scenery')) scene.add(m);
+  for (const m of buildTrees(material)) scene.add(m);
+  const cam = new THREE.PerspectiveCamera(FOV, w / h, 0.5, 700);
+  const rig = new CameraRig(cam);
+  rig.resize(w, h);
+  t.attach({ scene, material, camera: cam, rig, occluders: () => occludersOf(scene) });
+  scene.updateMatrixWorld(true);
+  return { t, rig, cam, scene };
+}
+
+describe('the ride camera, occlusion and the ducks (Task 20)', () => {
+  it('widens the follow clamp for a ride and narrows it again', () => {
+    const { t, rig } = meadowForTest(1080, 810);
+    let at: Vec2 = RIDE.slots[1];
+    rig.follow(() => at);
+    const pose = (): Vec2 => ({ x: rig.followPose().x, z: rig.followPose().z });
+    expect(pose()).toEqual({ x: RIDE.slots[1].x, z: -19.5 });
+    t.cameraClamp('ride');
+    expect(pose()).toEqual(RIDE.slots[1]);
+    at = { x: 40, z: -50 };
+    expect(pose()).toEqual({ x: RIDE.clamp.maxX, z: RIDE.clamp.minZ });
+    at = { x: -30, z: 20 };
+    expect(pose()).toEqual({ x: RIDE.clamp.minX, z: RIDE.clamp.maxZ });
+    t.cameraClamp('meadow');
+    at = { x: 40, z: -50 };
+    expect(pose()).toEqual({ x: 23, z: -19.5 });
+  });
+
+  it('sees her stand, both saddles and the icons\' points from the follow camera at the paddock, past the tree crown', () => {
+    for (const [w, h] of [[1080, 810], [1080, 740]]) {
+      const { t, rig } = meadowForTest(w, h);
+      rig.follow(() => RIDE.stand);
+      rig.snap();
+      rig.update(0);
+      // Her head (Princess Emma is 1.05 m), each mount's saddle (the back at about 0.85 m) and its icon 0.35 m above.
+      const points = [new THREE.Vector3(RIDE.stand.x, 0.95, RIDE.stand.z)];
+      for (const m of Object.values(RIDE.mounts)) points.push(new THREE.Vector3(m.x, 0.85, m.z), new THREE.Vector3(m.x, 1.2, m.z));
+      expect(t.occluded(points), `${w}x${h}`).toEqual(points.map(() => false));
+      // The check does see the grand tree: a point inside its crown, or just behind it from the camera, is hidden.
+      const crown = new THREE.Vector3(19, 2.9, -7);
+      expect(t.occluded([crown, new THREE.Vector3(19, 2.2, -9.5)])).toEqual([true, true]);
+    }
+  });
+
+  it('swims the three ducks under the chute or at the far shore, inside the pond\'s one batch', () => {
+    const d = createDucks(material);
+    expect(d.mesh).toBeInstanceOf(THREE.InstancedMesh);
+    expect(d.mesh.count).toBe(5);
+    const spots = (): Vec2[] => [2, 3, 4].map((i) => {
+      const m = new THREE.Matrix4();
+      d.mesh.getMatrixAt(i, m);
+      const p = new THREE.Vector3().setFromMatrixPosition(m);
+      return { x: p.x, z: p.z };
+    });
+    const near = (ps: Vec2[], to: readonly Vec2[]): boolean => ps.every((p, i) => dist2(p, to[i]) < 0.45);
+    d.update(0.016, 1);
+    expect(near(spots(), DUCK_SPOTS.chute), 'they start under the chute').toBe(true);
+    d.api.set('far', 0);
+    d.update(0.016, 2);
+    expect(near(spots(), DUCK_SPOTS.far)).toBe(true);
+    // Back under the chute over 4 s, swimming in the water all the way.
+    d.api.set('chute');
+    for (let k = 0; k < 300; k++) {
+      d.update(1 / 60, 2 + k / 60);
+      for (const p of spots()) expect(inPond(p, -0.6), `${p.x},${p.z}`).toBe(true);
+    }
+    expect(near(spots(), DUCK_SPOTS.chute)).toBe(true);
+    // A bob is a little hop in place: they stay where they swim.
+    const before = spots();
+    d.api.bob();
+    for (let k = 0; k < 30; k++) d.update(1 / 60, 7 + k / 60);
+    expect(spots().every((p, i) => dist2(p, before[i]) < 0.3)).toBe(true);
+    // The two paddling ducks of 2.3 keep their circles; every duck sits in the batch's bounds, so the batch is culled
+    // where the pond is out of view (the stable at night).
+    const sphere = d.mesh.boundingSphere!;
+    expect(d.mesh.frustumCulled).toBe(true);
+    for (let i = 0; i < 5; i++) {
+      const m = new THREE.Matrix4();
+      d.mesh.getMatrixAt(i, m);
+      expect(sphere.distanceToPoint(new THREE.Vector3().setFromMatrixPosition(m))).toBeLessThan(-0.3);
+    }
+    for (const [w, h] of [[1080, 810], [1080, 740]]) {
+      expect(inFrustum(framePose(STABLE_FRAME, w, h), d.mesh), `stable ${w}x${h}`).toBe(false);
+      expect(inFrustum(framePose(NIGHT_SKY, w, h), d.mesh), `sky ${w}x${h}`).toBe(false);
+    }
   });
 });

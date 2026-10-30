@@ -13,7 +13,7 @@ import { wordPic } from '../assets';
 import { isWalkable, nearestWalkable, route } from './route';
 import { FOG_FAR, buildSky } from './sky';
 import { buildStable } from './stable';
-import { buildTrail } from './trail';
+import { buildTrail, occludersOf } from './trail';
 import { buildFence, buildGround, buildGrowth, buildHedges, buildOverlays, buildTrees, groundHeight, moundHeight, type HedgeFlowers } from './terrain';
 
 /** Optional extras on top of the World contract. */
@@ -121,7 +121,7 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
   // 2.4.0: the paddock, the gate, the trail, the fork and the slots: named regions of their own (world/trail.ts).
   const trail = buildTrail(scene, scenery);
   for (const mesh of scenery.build(material, 'scenery')) scene.add(mesh);
-  trail.attach({ scene, material, camera, rig });
+  trail.attach({ scene, material, camera, rig, occluders: () => occludersOf(scene), ducks: pond.ducks });
   const lid = cornerLid(scenery);
   scene.add(sign.mesh);
   for (const mesh of buildTrees(material)) scene.add(mesh);

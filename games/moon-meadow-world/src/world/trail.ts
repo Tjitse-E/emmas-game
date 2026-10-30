@@ -151,6 +151,14 @@ export interface TrailAttach {
   ducks?: DucksApi;
 }
 
+/**
+ * What can hide a point from the camera in the world: the scenery's merged regions, the trees, the stable's doors and
+ * the kit on show (the sky, the water, glows and the actors cannot).
+ */
+export function occludersOf(scene: THREE.Scene): THREE.Object3D[] {
+  return scene.children.filter((o) => o.visible && (/^(scenery-|tree-|kit-)/.test(o.name) || o.name === 'doors'));
+}
+
 export interface TrailWorld {
   readonly trail: TrailApi;
   readonly ducks: DucksApi;
@@ -224,11 +232,36 @@ export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
       return shown;
     },
   };
+  let rig: CameraRig | null = null;
+  let occluders: (() => THREE.Object3D[]) | null = null;
+  let pondDucks: DucksApi | null = null;
+  const raycaster = new THREE.Raycaster();
+  const eye = new THREE.Vector3();
+  const dir = new THREE.Vector3();
   return {
     trail,
-    ducks: { set() {}, bob() {} },
-    occluded: (points) => points.map(() => false),
-    cameraClamp() {},
+    // The pond's three ducks (world/places.ts), once attached; silent.
+    ducks: {
+      set: (at, ms) => pondDucks?.set(at, ms),
+      bob: () => pondDucks?.bob(),
+    },
+    occluded(points) {
+      if (!camera || !occluders) return points.map(() => false);
+      camera.updateMatrixWorld();
+      camera.getWorldPosition(eye);
+      const objects = occluders();
+      return points.map((p) => {
+        const d = dir.copy(p).sub(eye).length();
+        raycaster.set(eye, dir.normalize());
+        raycaster.near = 0;
+        // A hit just short of the point itself (the ground under a foot, a saddle's own surface) does not count.
+        raycaster.far = Math.max(0, d - 0.05);
+        return raycaster.intersectObjects(objects, false).length > 0;
+      });
+    },
+    cameraClamp(kind) {
+      rig?.setClamp(kind);
+    },
     update(dt) {
       paddock.update(dt);
     },
@@ -236,6 +269,9 @@ export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
       const region = (r: string): THREE.Object3D | undefined => o.scene.getObjectByName(`scenery-${r}`);
       rideOnly = RIDE_ONLY.map(region).filter((m): m is THREE.Object3D => !!m);
       camera = o.camera ?? null;
+      rig = o.rig ?? null;
+      occluders = o.occluders ?? null;
+      pondDucks = o.ducks ?? null;
       if (kit.size === 0) {
         for (const w of Object.keys(KIT) as SignWord[]) {
           const m = new THREE.Mesh(KIT[w](), o.material);
