@@ -91,9 +91,16 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
       const b = cards[i].box!;
       return { x: b.x + b.w / 2, y: b.y + b.h / 2, visible: true };
     };
+    // Asleep (dimmed) until the goal has been said; after that a card that is not taking taps only rests (a little
+    // paler), so the tapped card's glowing letters stand out.
+    let woken = false;
     const wake = (on: boolean) => {
       busy = !on;
-      for (const x of cards) x.card.classList.toggle('asleep', !on);
+      if (on) woken = true;
+      for (const x of cards) {
+        x.card.classList.toggle('asleep', !woken);
+        x.card.classList.toggle('resting', woken && !on);
+      }
     };
 
     // ---- the contrast after a wrong card: the letters that differ from the goal word glow on it
@@ -188,6 +195,7 @@ export function runSign(ctx: LayerCtx, spec: SignSpec, hooks: SignHooks, setOpen
       hooks.log?.('tried', { what: x.c.word });
       const step = hooks.road(i as 0 | 1 | 2, false);
       x.card.classList.add('wrong');
+      x.card.classList.remove('resting');
       await audio.sayAll([x.c.clip]);
       if (!life.alive) return;
       glowDiff(i);

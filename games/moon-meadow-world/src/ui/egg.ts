@@ -89,7 +89,7 @@ const WAKE_CAP_MS = 20_000;
 /** The stones hop awake one after another, this far apart. */
 const WAKE_STEP_MS = 60;
 
-/** The stones a kind draws: the star egg's are the snow egg's stones in gold (ui.css .stone-cell.star, 2.4.0). */
+/** The stones a kind draws: the star egg's are the snow egg's stones in gold (ui.css .stone-cell.star-stone, 2.4.0). */
 const cupKind = (spec: EggSpec): 'warm' | 'snow' => (spec.kind === 'warm' ? 'warm' : 'snow');
 
 /** The egg's cups: one or two nests of ten, empty places shown as sockets so the ten-frame reads. */
@@ -292,7 +292,7 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
       const s = hay ? hayPileEl(v) : stoneEl(v, cupKind(spec));
       // On the cell itself, so the flyer (a copy outside the tray) keeps the size.
       if (n >= 5) s.classList.add('s5');
-      if (spec.kind === 'star') s.classList.add('star');
+      if (spec.kind === 'star') s.classList.add('star-stone');
       tray.appendChild(s);
       return s;
     });
