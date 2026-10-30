@@ -377,10 +377,6 @@ export async function hub(g: Game): Promise<void> {
     }
     const mine = ++talkToken;
     const ok = () => mine === talkToken && !h.running && !h.asked;
-    const corner = h.shown.includes('corner') && !q.cornerSaid;
-    const pond = h.shown.includes('pond') && !pondSaid;
-    if (corner) q.cornerSaid = true;
-    if (pond) pondSaid = true;
     const pick = placesRun < PICK_UNTIL_PLACES && h.shown.length > 0;
     void (async () => {
       try {
@@ -389,8 +385,15 @@ export async function hub(g: Game): Promise<void> {
         await sync(true);
         if (lumi) await lumi;
         if (!ok()) return;
-        if (corner) await lumiSay(g, CLIPS.cornerOpen);
-        if (pond && ok()) await say(g, CLIPS.pond);
+        // Each play bubble's line the first time it shows in a play (counted as said when it starts).
+        if (displayed.has('corner') && !q.cornerSaid) {
+          q.cornerSaid = true;
+          await lumiSay(g, CLIPS.cornerOpen);
+        }
+        if (displayed.has('pond') && !pondSaid && ok()) {
+          pondSaid = true;
+          await say(g, CLIPS.pond);
+        }
         if (!g.save.data.seen.hub && displayed.size && ok()) {
           // The first hub ever: the bubbles line while the ghost hand glides over each bubble in turn.
           // Over each bubble where it shows (an edge bubble waits at the screen edge, not over its place).
