@@ -386,7 +386,11 @@ export async function hub(g: Game): Promise<void> {
         if (pond && ok()) await say(g, CLIPS.pond);
         if (!g.save.data.seen.hub && displayed.size && ok()) {
           // The first hub ever: the bubbles line while the ghost hand glides over each bubble in turn.
-          const points = [...displayed].map((p) => bubbleAt(p));
+          // Over each bubble where it shows (an edge bubble waits at the screen edge, not over its place).
+          const points = [...displayed].map((p) => () => {
+            const t = layer.snapshot().targets.find((x) => x.name === `offer ${p}`);
+            return t ? { x: t.x, y: t.y, visible: true } : bubbleAt(p)();
+          });
           void layer.ghost.glide(points);
           if (await g.run.w(audio.sayWhole(CLIPS.bubbles))) g.save.write((s) => void (s.seen.hub = true));
         }
