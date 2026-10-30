@@ -1,7 +1,7 @@
 // The ground: a flat meadow inside the fence (soft greens), sandy paths and the stable yard, the pond basin, the
 // white fence with flower hedges, trees, rolling hills beyond and the castle hill far to the north.
 import * as THREE from 'three';
-import { BOUNDS, GAZEBO, NEST, POND, RIDE, SLIDE, STABLE, TREES, type Vec2 } from '../layout';
+import { BOUNDS, GAZEBO, NEST, POND, RIDE, RIDE_PATHS, SLIDE, STABLE, TREES, type Vec2 } from '../layout';
 import { Scenery, eachFaceUp, faceUp, fillSouth, merge, paint, paintBy, paintY, place, rng, type Geo } from './geo';
 
 const smooth = (e0: number, e1: number, x: number): number => {
@@ -40,19 +40,82 @@ export function moundHeight(x: number, z: number): number {
   return d >= 1 ? 0 : MOUND.height * (1 - d * d) ** 2;
 }
 
-/** Ground height: 0 in the meadow, a basin under the pond, hills beyond the fence. */
+// ---------------------------------------------------------------------------------------------------------------
+// The trail beyond the gate (2.4.0, docs/v4/2.4.md 5.5)
+// ---------------------------------------------------------------------------------------------------------------
+
+/** A curve as a ground polyline, a point about every `step` metres. */
+function lineOf(c: THREE.Curve<THREE.Vector3>, step = 0.4): Vec2[] {
+  return c.getSpacedPoints(Math.max(4, Math.round(c.getLength() / step))).map((p) => ({ x: p.x, z: p.z }));
+}
+
+/**
+ * The trail beyond the fence as ground lines: the stretch from the fork to the gate (the way home, from the fork to
+ * just inside the gate), then the three roads (west, north, east), each from the fork. world/trail.ts lays its beds
+ * on them; the ground cuts them flat and the trees keep off them.
+ */
+export const TRAIL_LINES: Vec2[][] = [
+  lineOf(RIDE_PATHS.home).filter((p, i, all) => all.slice(0, i + 1).every((q) => q.z <= RIDE.gate.z + 0.5)),
+  ...RIDE_PATHS.roads.map((r) => lineOf(r)),
+];
+
+/** The three clearings, west, north, east: a little north of their slots, where the kit stands behind the mount. */
+export const CLEARINGS: { center: Vec2; radius: number }[] = RIDE.slots.map((s) => ({ center: { x: s.x, z: s.z - 0.8 }, radius: 2.8 }));
+
+/**
+ * The cutting: the beds lie flat at y 0, 3 m wide, the clearings on flat pads and the fork on a flat plaza; the hills
+ * stay beside them. The flat ground reaches `verge` past each bed, so every ground cell (2 m, 2.83 m across) that a
+ * bed reaches has all its corners at 0 and a hidden road leaves plain ground; the banks then rise over `bank`.
+ */
+export const CUT = { bed: 1.5, plaza: 2.4, verge: 2.9, bank: 2.0, box: { minX: 2, maxX: 42, minZ: -52, maxZ: -19 } } as const;
+
+function segDist(px: number, pz: number, a: Vec2, b: Vec2): number {
+  const abx = b.x - a.x;
+  const abz = b.z - a.z;
+  const t = THREE.MathUtils.clamp(((px - a.x) * abx + (pz - a.z) * abz) / (abx * abx + abz * abz || 1), 0, 1);
+  return Math.hypot(px - a.x - abx * t, pz - a.z - abz * t);
+}
+
+/** Each trail line's bounds grown by the cutting's reach, so a point far from a line skips its segments. */
+const REACH = CUT.bed + CUT.verge + CUT.bank;
+const LINE_BOXES = TRAIL_LINES.map((l) => ({
+  minX: Math.min(...l.map((p) => p.x)) - REACH, maxX: Math.max(...l.map((p) => p.x)) + REACH,
+  minZ: Math.min(...l.map((p) => p.z)) - REACH, maxZ: Math.max(...l.map((p) => p.z)) + REACH,
+}));
+
+/** How far a point is outside the trail's flat ground (beds, plaza and pads with their verges), 0 or less inside. */
+function pastTrail(x: number, z: number): number {
+  let d = Math.hypot(x - RIDE.fork.x, z - RIDE.fork.z) - CUT.plaza;
+  for (const c of CLEARINGS) d = Math.min(d, Math.hypot(x - c.center.x, z - c.center.z) - c.radius);
+  TRAIL_LINES.forEach((line, k) => {
+    const b = LINE_BOXES[k];
+    if (x < b.minX || x > b.maxX || z < b.minZ || z > b.maxZ) return;
+    for (let i = 1; i < line.length; i++) d = Math.min(d, segDist(x, z, line[i - 1], line[i]) - CUT.bed);
+  });
+  return d - CUT.verge;
+}
+
+/** 0 on the trail's flat ground, rising to 1 (the hills as they are) over the banks. */
+function trailCut(x: number, z: number): number {
+  const b = CUT.box;
+  if (x < b.minX || x > b.maxX || z < b.minZ || z > b.maxZ) return 1;
+  return smooth(0, CUT.bank, pastTrail(x, z));
+}
+
+/** Ground height: 0 in the meadow, a basin under the pond, hills beyond the fence, cut flat along the trail. */
 export function groundHeight(x: number, z: number): number {
   let h = 0;
   const s = pondEdge(x, z);
   if (s < 0.35) h -= 0.62 * smooth(0.35, -1.1, s);
+  let hills = 0;
   const d = outside(x, z);
   if (d > 0) {
-    h += smooth(0, 18, d) * (2 + 1.6 * (0.5 + 0.5 * Math.sin(x * 0.13 + 0.5) * Math.cos(z * 0.11 + 1.3)));
-    h += smooth(10, 70, d) * (4 + 5 * (0.5 + 0.5 * Math.sin(x * 0.045 + 2.1) * Math.sin(z * 0.05 + 0.7)));
+    hills += smooth(0, 18, d) * (2 + 1.6 * (0.5 + 0.5 * Math.sin(x * 0.13 + 0.5) * Math.cos(z * 0.11 + 1.3)));
+    hills += smooth(10, 70, d) * (4 + 5 * (0.5 + 0.5 * Math.sin(x * 0.045 + 2.1) * Math.sin(z * 0.05 + 0.7)));
   }
   const c = CASTLE_HILL;
-  h += c.height * Math.exp(-((x - c.x) ** 2 + (z - c.z) ** 2) / (2 * c.sigma * c.sigma));
-  return h;
+  hills += c.height * Math.exp(-((x - c.x) ** 2 + (z - c.z) ** 2) / (2 * c.sigma * c.sigma));
+  return h + hills * trailCut(x, z);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -185,35 +248,77 @@ function normalAt(x: number, z: number, out: THREE.Vector3): THREE.Vector3 {
  * The ground: fine cells over the meadow and the first hills, coarser cells further out, sorted into the scenery's
  * regions so the far hills cost nothing in the follow view.
  */
+/**
+ * Where the ground needs fine cells beyond the meadow's (2.4.0): round the north road's cutting and the north slot's
+ * pad, where the base grid's rows are 6 m apart. The patch's cells are 2 m; on its edges its extra vertices take the
+ * base cell edge's own straight line, so no crack opens where the two grids meet. It adds 48 triangles to `far-n`.
+ */
+export const FINE_PATCHES = [{ minX: 12, maxX: 32, minZ: -48, maxZ: -36 }] as const;
+
 export function buildGround(scenery: Scenery): void {
   const xs = axis([[-180, -70, 22], [-70, -34, 6], [-34, 34, 2], [34, 70, 6], [70, 180, 22]]);
   const zs = axis([[-230, -90, 20], [-90, -34, 6], [-34, 24, 2], [24, 54, 6], [54, 100, 23]]);
   type Buf = { p: number[]; n: number[]; c: number[] };
   const bufs = new Map<string, Buf>();
   const col = new THREE.Color();
-  const vert = (b: Buf, x: number, z: number): void => {
-    // Under the shore overlay the coarse cells sink a little, so their straight edges never poke through it.
-    b.p.push(x, groundHeight(x, z) - 0.25 * smooth(0.5, 0, pondEdge(x, z)), z);
+  // Under the shore overlay the coarse cells sink a little, so their straight edges never poke through it.
+  const h0 = (x: number, z: number): number => groundHeight(x, z) - 0.25 * smooth(0.5, 0, pondEdge(x, z));
+  const vert = (b: Buf, x: number, z: number, y = h0(x, z)): void => {
+    b.p.push(x, y, z);
     normalAt(x, z, tmpN);
     b.n.push(tmpN.x, tmpN.y, tmpN.z);
     // Grass only: paths, the yard and the shore are fine overlays, so no sand bleeds across a coarse cell.
     grassColour(x, z, col);
     b.c.push(col.r, col.g, col.b);
   };
+  const cell = (x0: number, x1: number, z0: number, z1: number, alt: boolean, y: (x: number, z: number) => number): void => {
+    const key = Scenery.regionOf((x0 + x1) / 2, (z0 + z1) / 2);
+    let b = bufs.get(key);
+    if (!b) bufs.set(key, (b = { p: [], n: [], c: [] }));
+    const at = (x: number, z: number): void => vert(b, x, z, y(x, z));
+    // Alternate the diagonal so the facets do not line up.
+    if (alt) {
+      at(x0, z0); at(x0, z1); at(x1, z1);
+      at(x0, z0); at(x1, z1); at(x1, z0);
+    } else {
+      at(x0, z0); at(x0, z1); at(x1, z0);
+      at(x1, z0); at(x0, z1); at(x1, z1);
+    }
+  };
+  const eps = 1e-6;
+  const inPatch = (x0: number, x1: number, z0: number, z1: number): boolean =>
+    FINE_PATCHES.some((q) => x0 >= q.minX - eps && x1 <= q.maxX + eps && z0 >= q.minZ - eps && z1 <= q.maxZ + eps);
   for (let j = 0; j < zs.length - 1; j++) {
     for (let i = 0; i < xs.length - 1; i++) {
       const [x0, x1, z0, z1] = [xs[i], xs[i + 1], zs[j], zs[j + 1]];
-      const key = Scenery.regionOf((x0 + x1) / 2, (z0 + z1) / 2);
-      let b = bufs.get(key);
-      if (!b) bufs.set(key, (b = { p: [], n: [], c: [] }));
-      // Alternate the diagonal so the facets do not line up.
-      if ((i + j) % 2 === 0) {
-        vert(b, x0, z0); vert(b, x0, z1); vert(b, x1, z1);
-        vert(b, x0, z0); vert(b, x1, z1); vert(b, x1, z0);
-      } else {
-        vert(b, x0, z0); vert(b, x0, z1); vert(b, x1, z0);
-        vert(b, x1, z0); vert(b, x0, z1); vert(b, x1, z1);
+      if (inPatch(x0, x1, z0, z1)) continue;
+      cell(x0, x1, z0, z1, (i + j) % 2 === 0, h0);
+    }
+  }
+  // The fine patches. A vertex on a patch's edge lies on a base cell's edge: it takes that edge's straight line
+  // between the base vertices on either side of it, as the base cell draws it.
+  const around = (list: number[], v: number): [number, number] => {
+    let k = 0;
+    while (k < list.length - 2 && list[k + 1] < v - eps) k++;
+    return [list[k], list[k + 1]];
+  };
+  const onList = (list: number[], v: number): boolean => list.some((w) => Math.abs(w - v) < eps);
+  for (const q of FINE_PATCHES) {
+    const edgeY = (x: number, z: number): number => {
+      const side = Math.abs(x - q.minX) < eps || Math.abs(x - q.maxX) < eps;
+      const end = Math.abs(z - q.minZ) < eps || Math.abs(z - q.maxZ) < eps;
+      if (side && !onList(zs, z)) {
+        const [za, zb] = around(zs, z);
+        return THREE.MathUtils.lerp(h0(x, za), h0(x, zb), (z - za) / (zb - za));
       }
+      if (end && !onList(xs, x)) {
+        const [xa, xb] = around(xs, x);
+        return THREE.MathUtils.lerp(h0(xa, z), h0(xb, z), (x - xa) / (xb - xa));
+      }
+      return h0(x, z);
+    };
+    for (let z = q.minZ, j = 0; z < q.maxZ - eps; z += 2, j++) {
+      for (let x = q.minX, i = 0; x < q.maxX - eps; x += 2, i++) cell(x, x + 2, z, z + 2, (i + j) % 2 === 0, edgeY);
     }
   }
   for (const [key, b] of bufs) {
@@ -560,7 +665,7 @@ export function buildHedges(scenery: Scenery, flowers: HedgeFlowers): void {
 // Trees
 // ---------------------------------------------------------------------------------------------------------------
 
-interface TreeSpot {
+export interface TreeSpot {
   x: number;
   z: number;
   s: number;
@@ -570,8 +675,51 @@ interface TreeSpot {
 
 const TREE_COLOURS = ['#8fd18a', '#7fca8e', '#a2d877', '#94d6a4', '#f5b5cf', '#cdb8f2', '#9fd68f', '#f7c7a8'];
 
-/** Every tree: the six inside the fence (the round obstacles in layout.ts) and the woods and hills beyond. */
-function treeSpots(): TreeSpot[] {
+/**
+ * Every tree: the six inside the fence (the round obstacles in layout.ts) and the woods and hills beyond, with the
+ * trees beyond the fence kept off the trail (2.4.0): each keeps 3 m and its crown from a bed, its crown and the kit's
+ * room from a clearing, and clear of the signpost. A tree in the way moves to the nearest free spot and keeps its kind
+ * and size, so the woods cost exactly what they did.
+ */
+export function treeSpots(): TreeSpot[] {
+  const spots = seededTrees();
+  for (let k = TREES.length; k < spots.length; k++) {
+    const t = spots[k];
+    if (offTrail(t.x, t.z, t.s)) continue;
+    const others = spots.filter((o) => o !== t);
+    const free = (x: number, z: number): boolean =>
+      offTrail(x, z, t.s) && beyondHedge(x, z) && others.every((o) => Math.hypot(o.x - x, o.z - z) >= (o.s + t.s) * 1.25);
+    found: for (let r = 0.5; r < 30; r += 0.5) {
+      const n = Math.max(12, Math.ceil((Math.PI * 2 * r) / 0.75));
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const x = t.x + Math.cos(a) * r;
+        const z = t.z + Math.sin(a) * r;
+        if (!free(x, z)) continue;
+        t.x = x;
+        t.z = z;
+        break found;
+      }
+    }
+  }
+  return spots;
+}
+
+/** Off the trail with a crown of `s`: 3 m and the crown from every bed, the kit's room from the clearings, the post. */
+function offTrail(x: number, z: number, s: number): boolean {
+  for (const line of TRAIL_LINES) for (let i = 1; i < line.length; i++) if (segDist(x, z, line[i - 1], line[i]) < 3 + s * 1.15) return false;
+  for (const c of CLEARINGS) if (Math.hypot(x - c.center.x, z - c.center.z) < c.radius + 2.2 + s * 1.15) return false;
+  if (Math.hypot(x - RIDE.fork.x, z - RIDE.fork.z) < CUT.plaza + 2 + s) return false;
+  return Math.hypot(x - RIDE.post.x, z - RIDE.post.z) >= 1.5 + s;
+}
+
+/** Outside the hedges, where the woods grow. */
+function beyondHedge(x: number, z: number): boolean {
+  const m = HEDGE_OUT + 1.5;
+  return x < FENCE.minX - m || x > FENCE.maxX + m || z < FENCE.minZ - m || z > FENCE.maxZ + m;
+}
+
+function seededTrees(): TreeSpot[] {
   const r = rng(7);
   const out: TreeSpot[] = [];
   const pick = (): string => {

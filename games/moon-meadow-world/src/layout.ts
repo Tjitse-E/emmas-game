@@ -219,6 +219,8 @@ export const RIDE = {
   tub: { center: v2(25.2, -15.0), radius: 0.5 },
   gate: v2(21.5, -22.7),
   fork: v2(21.5, -29),
+  /** The signpost at the fork, in the wedge between the north and the east roads (world/trail.ts builds its arms). */
+  post: v2(22.8, -31.9),
   slots: [v2(11.5, -31), v2(21.5, -40), v2(31.5, -31)],
   speed: 4.2,
   gaps: [1.6, 3.0, 4.4],
@@ -232,9 +234,16 @@ function groundPath(points: readonly Vec2[]): THREE.CatmullRomCurve3 {
 }
 
 /**
+ * The way through the back rail and the gate, shared by every path in and out: straight across the rail's gap and the
+ * gate, so neither the rail's ends nor the gate's posts touch a mount or a follower.
+ */
+const RIDE_WAY: readonly Vec2[] = [v2(RIDE.rail.gapX, RIDE.rail.z), v2(22.3, -17.8), v2(21.75, -21.2), RIDE.gate, v2(RIDE.gate.x, -25.5), RIDE.fork];
+
+/**
  * The set paths of a trip, arc-length curves at y 0: each mount's spot to the fork through the rail gap and the gate,
- * the fork to each slot (west, north, east), and the fork home to her stand. Step 0's curves are straight-ish
- * polylines through the points of RIDE; the trail lane gives them their bends.
+ * the fork to each slot (west, north, east), and the fork home to her stand. Hazel's way out passes between Bella's
+ * spot and the trough, and the way home passes west of Bella's spot, so the mount that stays at home is never in the
+ * way. The north road bends west round the signpost (RIDE.post), the west and east roads bend a little north.
  */
 export const RIDE_PATHS: {
   out: { bella: THREE.CatmullRomCurve3; hazel: THREE.CatmullRomCurve3 };
@@ -242,15 +251,15 @@ export const RIDE_PATHS: {
   home: THREE.CatmullRomCurve3;
 } = {
   out: {
-    bella: groundPath([RIDE.mounts.bella, v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.gate, RIDE.fork]),
-    hazel: groundPath([RIDE.mounts.hazel, v2(RIDE.rail.gapX, RIDE.rail.z + 0.6), v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.gate, RIDE.fork]),
+    bella: groundPath([RIDE.mounts.bella, v2(22.78, -15.2), ...RIDE_WAY]),
+    hazel: groundPath([RIDE.mounts.hazel, v2(24.1, -14.05), v2(23.2, -15.15), ...RIDE_WAY]),
   },
   roads: [
-    groundPath([RIDE.fork, v2(16.5, -30.5), RIDE.slots[0]]),
-    groundPath([RIDE.fork, v2(21.5, -34.5), RIDE.slots[1]]),
-    groundPath([RIDE.fork, v2(26.5, -30.5), RIDE.slots[2]]),
+    groundPath([RIDE.fork, v2(18.0, -28.75), v2(14.8, -29.7), RIDE.slots[0]]),
+    groundPath([RIDE.fork, v2(20.6, -31.9), v2(20.45, -35.6), RIDE.slots[1]]),
+    groundPath([RIDE.fork, v2(25.0, -28.75), v2(28.2, -29.7), RIDE.slots[2]]),
   ],
-  home: groundPath([RIDE.fork, RIDE.gate, v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.stand]),
+  home: groundPath([...RIDE_WAY.slice().reverse(), v2(22.1, -15.2), v2(21.65, -13.9), RIDE.stand]),
 };
 
 /**

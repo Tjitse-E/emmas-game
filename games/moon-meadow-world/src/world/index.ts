@@ -118,9 +118,10 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
   const stable = buildStable(scene, scenery, material);
   const sky = buildSky(scene, scenery, hemi, sun);
   buildGrowth(scenery, hedgeFlowers, nestFlowerSpots());
-  // 2.4.0: the paddock, the gate, the trail, the fork and the slots (named regions of their own; step 0's stub adds none).
+  // 2.4.0: the paddock, the gate, the trail, the fork and the slots: named regions of their own (world/trail.ts).
   const trail = buildTrail(scene, scenery);
   for (const mesh of scenery.build(material, 'scenery')) scene.add(mesh);
+  trail.attach({ scene, material, camera, rig });
   const lid = cornerLid(scenery);
   scene.add(sign.mesh);
   for (const mesh of buildTrees(material)) scene.add(mesh);

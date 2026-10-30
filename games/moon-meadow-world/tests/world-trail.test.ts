@@ -2,10 +2,12 @@
 // check and the ducks (2.4.0, docs/v4/2.4.md sections 5.4 and 5.5; docs/v4/2.4-plan.md Tasks 17 to 20).
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { RIDE } from '../src/layout';
+import { NIGHT_SKY, RIDE, RIDE_PATHS, STABLE_FRAME, dist2, type Vec2 } from '../src/layout';
+import { CameraRig, FOV } from '../src/world/camera';
 import { Scenery, type Geo } from '../src/world/geo';
 import { GATE, GATE_REGION, PADDOCK_REGION, buildPaddock } from '../src/world/paddock';
-import { FENCE_GAP, HEDGE_GAP, buildFence, buildHedges } from '../src/world/terrain';
+import { FENCE_GAP, HEDGE_GAP, TRAIL_LINES, buildFence, buildGround, buildHedges, groundHeight, treeSpots } from '../src/world/terrain';
+import { CLEARINGS, TRAIL_REGIONS, buildTrail, type TrailWorld } from '../src/world/trail';
 
 const triangles = (g: Geo): number => (g.index ? g.index.count : g.attributes.position.count) / 3;
 
@@ -111,5 +113,215 @@ describe('the paddock and the gate (Task 17)', () => {
     await paddock.gate(false, 0);
     expect(paddock.open).toBe(0);
     expect(box().max.z).toBeCloseTo(shut.max.z, 5);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------
+// Task 18: the trail ground, the fork and the slots
+// ---------------------------------------------------------------------------------------------------------------
+
+const flatOf = (p: THREE.Vector3): Vec2 => ({ x: p.x, z: p.z });
+const allPaths = (): THREE.CatmullRomCurve3[] => [...Object.values(RIDE_PATHS.out), ...RIDE_PATHS.roads, RIDE_PATHS.home];
+const material = new THREE.MeshLambertMaterial({ vertexColors: true });
+
+/** The world's trail as createWorld builds it: the paddock and the trail in the scenery, built, then attached. */
+function buildTrailForTest(): { t: TrailWorld; scene: THREE.Scene } {
+  const scene = new THREE.Scene();
+  const scenery = new Scenery();
+  const t = buildTrail(scene, scenery);
+  for (const m of scenery.build(material, 'scenery')) scene.add(m);
+  t.attach({ scene, material });
+  return { t, scene };
+}
+const regionMesh = (scene: THREE.Scene, r: string): THREE.Mesh => scene.getObjectByName(`scenery-${r}`) as THREE.Mesh;
+const geometryCount = (scene: THREE.Scene): number => {
+  const seen = new Set<THREE.BufferGeometry>();
+  scene.traverse((o) => void ((o as THREE.Mesh).geometry && seen.add((o as THREE.Mesh).geometry)));
+  return seen.size;
+};
+/** The camera camera.ts puts at a frame pose (the bedtime stable frame, the goodnight sky shot) on a W x H screen. */
+function framePose(pose: { center: Vec2; width: number; pitch?: number; shiftY?: number }, w: number, h: number): THREE.PerspectiveCamera {
+  const cam = new THREE.PerspectiveCamera(FOV, w / h, 0.5, 700);
+  const rig = new CameraRig(cam);
+  rig.resize(w, h);
+  void rig.frame(pose.center, pose.width, { ms: 0, pitch: pose.pitch, shiftY: pose.shiftY });
+  rig.update(0);
+  cam.updateMatrixWorld();
+  return cam;
+}
+/** Whether the renderer would draw a mesh from this camera (three.js culls by the bounding sphere). */
+function inFrustum(cam: THREE.Camera, mesh: THREE.Mesh): boolean {
+  const f = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
+  mesh.updateMatrixWorld(true);
+  return f.intersectsObject(mesh);
+}
+/** The distance from a point to a polyline. */
+function lineDist(p: Vec2, line: readonly Vec2[]): number {
+  let d = Infinity;
+  for (let i = 1; i < line.length; i++) {
+    const a = line[i - 1];
+    const b = line[i];
+    const abx = b.x - a.x;
+    const abz = b.z - a.z;
+    const t = THREE.MathUtils.clamp(((p.x - a.x) * abx + (p.z - a.z) * abz) / (abx * abx + abz * abz || 1), 0, 1);
+    d = Math.min(d, Math.hypot(p.x - a.x - abx * t, p.z - a.z - abz * t));
+  }
+  return d;
+}
+const pathLine = (c: THREE.Curve<THREE.Vector3>, n = 200): Vec2[] => c.getSpacedPoints(n).map(flatOf);
+
+describe('the trail ground, the fork and the slots (Task 18)', () => {
+  it('runs each path flat at y 0, at least 3 m from every seeded tree, ending where the next one starts', () => {
+    for (const c of allPaths()) for (let u = 0; u <= 1; u += 0.01) expect(c.getPointAt(u).y).toBe(0);
+    for (const c of Object.values(RIDE_PATHS.out)) expect(dist2(flatOf(c.getPointAt(1)), RIDE.fork)).toBeLessThan(0.01);
+    expect(dist2(flatOf(RIDE_PATHS.home.getPointAt(0)), RIDE.fork)).toBeLessThan(0.01);
+    expect(dist2(flatOf(RIDE_PATHS.home.getPointAt(1)), RIDE.stand)).toBeLessThan(0.01);
+    for (const m of ['bella', 'hazel'] as const) expect(dist2(flatOf(RIDE_PATHS.out[m].getPointAt(0)), RIDE.mounts[m])).toBeLessThan(0.01);
+    expect(RIDE_PATHS.roads.every((r) => dist2(flatOf(r.getPointAt(0)), RIDE.fork) < 0.01)).toBe(true);
+    for (const [i, r] of RIDE_PATHS.roads.entries()) expect(dist2(flatOf(r.getPointAt(1)), RIDE.slots[i])).toBeLessThan(0.01);
+    expect(RIDE_PATHS.roads.every((r) => r.getLength() > 9 && r.getLength() < 14)).toBe(true);
+    const trees = treeSpots();
+    expect(trees.length).toBe(76);
+    for (const c of allPaths()) {
+      const line = pathLine(c);
+      for (const t of trees) expect(lineDist(t, line), `tree ${t.x.toFixed(1)},${t.z.toFixed(1)}`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('rides out through the rail\'s gap and the gate, clear of the trough, the tub and the other mount', () => {
+    const sample = (c: THREE.CatmullRomCurve3): Vec2[] => pathLine(c, 400);
+    const other = { bella: RIDE.mounts.hazel, hazel: RIDE.mounts.bella };
+    for (const m of ['bella', 'hazel'] as const) {
+      const pts = sample(RIDE_PATHS.out[m]);
+      for (const p of pts) {
+        for (const o of [RIDE.trough, RIDE.tub]) expect(dist2(p, o.center), `${m} at ${p.x.toFixed(2)},${p.z.toFixed(2)}`).toBeGreaterThan(o.radius + 0.35);
+        expect(dist2(p, other[m]), `${m} past the other mount`).toBeGreaterThan(1.1);
+      }
+    }
+    // Home with either mount: the other one stands at its spot.
+    for (const p of sample(RIDE_PATHS.home)) {
+      for (const o of [RIDE.trough, RIDE.tub]) expect(dist2(p, o.center)).toBeGreaterThan(o.radius + 0.35);
+      if (p.z > RIDE.rail.z) for (const s of Object.values(RIDE.mounts)) expect(dist2(p, s), `home at ${p.x.toFixed(2)},${p.z.toFixed(2)}`).toBeGreaterThan(1.1);
+    }
+    // Where a path crosses the rail and the fence, it is inside the gap and the gate, and runs about straight across.
+    for (const c of allPaths().filter((c) => c !== RIDE_PATHS.roads[0] && c !== RIDE_PATHS.roads[1] && c !== RIDE_PATHS.roads[2])) {
+      const pts = sample(c);
+      for (let i = 1; i < pts.length; i++) {
+        const [a, b] = [pts[i - 1], pts[i]];
+        for (const [z, x, half] of [[RIDE.rail.z, RIDE.rail.gapX, RIDE.rail.gapWidth / 2], [RIDE.gate.z, RIDE.gate.x, GATE.width / 2]] as const) {
+          if ((a.z - z) * (b.z - z) > 0) continue;
+          expect(Math.abs(a.x - x), `crossing at ${z}`).toBeLessThan(half - 0.4);
+          expect(Math.abs(b.x - a.x) / Math.abs(b.z - a.z || 1e-9)).toBeLessThan(0.6);
+        }
+      }
+    }
+  });
+
+  it('cuts the north road through the hill and sits the north slot on a 6 m pad at y 0', () => {
+    const slot = RIDE.slots[1];
+    for (let dx = -3; dx <= 3; dx += 0.25) for (let dz = -3; dz <= 3; dz += 0.25) {
+      if (Math.hypot(dx, dz) <= 3) expect(groundHeight(slot.x + dx, slot.z + dz), `${dx},${dz}`).toBe(0);
+    }
+    // Every bed of the trail beyond the fence, 3 m wide, is flat at y 0 (inside the fence the meadow is flat anyway).
+    for (const c of [...RIDE_PATHS.roads, RIDE_PATHS.home]) {
+      const pts = c.getSpacedPoints(120);
+      for (let i = 1; i < pts.length; i++) {
+        const [a, b] = [pts[i - 1], pts[i]];
+        if (a.z > RIDE.gate.z) continue;
+        const l = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+        for (const o of [-1.5, -0.75, 0, 0.75, 1.5]) expect(groundHeight(a.x - ((b.z - a.z) / l) * o, a.z + ((b.x - a.x) / l) * o)).toBe(0);
+      }
+    }
+    // Without the cutting the north slot's ground would stand about 2.7 m up; beside it the hills stay.
+    expect(groundHeight(slot.x + 10, slot.z)).toBeGreaterThan(1.5);
+    expect(groundHeight(slot.x, slot.z - 10)).toBeGreaterThan(1.5);
+  });
+
+  it('lays the ground mesh flat wherever a bed or a clearing lies on it, so a hidden road leaves plain ground', () => {
+    const parts = collect(buildGround);
+    const lines = TRAIL_LINES;
+    const v = new THREE.Vector3();
+    let near = 0;
+    for (const { geo } of parts) {
+      const pos = geo.attributes.position;
+      const idx = geo.index!;
+      for (let i = 0; i < idx.count; i += 3) {
+        // A cell that a bed (1.5 m each side of its line) or a clearing (2.8 m round its slot) reaches into has all
+        // three corners at 0. The cell is sampled at 15 points, its corners and edges included.
+        const corners = [0, 1, 2].map((k) => new THREE.Vector3().fromBufferAttribute(pos, idx.getX(i + k)));
+        const samples: Vec2[] = [];
+        for (let a = 0; a <= 4; a++) for (let b = 0; b <= 4 - a; b++) {
+          const c = 4 - a - b;
+          samples.push({ x: (corners[0].x * a + corners[1].x * b + corners[2].x * c) / 4, z: (corners[0].z * a + corners[1].z * b + corners[2].z * c) / 4 });
+        }
+        const touches = samples.some((q) => lines.some((l) => lineDist(q, l) < 1.5) || CLEARINGS.some((s) => Math.hypot(q.x - s.center.x, q.z - s.center.z) < s.radius));
+        if (!touches) continue;
+        // Cells of the meadow and the first hills only: the bed reaches no coarse cell but the east slot's last 0.5 m.
+        const span = Math.max(...corners.map((c) => c.x)) - Math.min(...corners.map((c) => c.x));
+        if (span > 2.01) continue;
+        near++;
+        for (const c of corners) expect(c.y, `${c.x},${c.z}`).toBeLessThan(0.001);
+      }
+    }
+    expect(near).toBeGreaterThan(100);
+    void v;
+  });
+
+  it('names the trail regions, none of them ne or far-n: one mesh each', () => {
+    const scenery = new Scenery();
+    const regions = new Set<string | undefined>();
+    const fake = { add: (_g: Geo, r?: string) => void regions.add(r), addMovable: (_g: Geo, r?: string) => void regions.add(r), movable: () => undefined } as unknown as Scenery;
+    buildTrail(new THREE.Scene(), fake);
+    expect([...regions].sort()).toEqual(TRAIL_REGIONS.slice().sort());
+    expect(TRAIL_REGIONS.slice().sort()).toEqual(['fork', 'paddock', 'roads', 'slot-e', 'slot-n', 'slot-w', 'trail-gate']);
+    buildTrail(new THREE.Scene(), scenery);
+    const meshes = scenery.build(material, 'scenery');
+    expect(meshes.map((m) => m.name).sort()).toEqual(TRAIL_REGIONS.map((r) => `scenery-${r}`).sort());
+  });
+
+  it('keeps the night views clear: the paddock, trail-gate and the fork outside both night frames, the roads and slots hidden', () => {   // 5.5
+    const { t, scene } = buildTrailForTest();
+    for (const [w, h] of [[1080, 810], [1080, 740]]) for (const [name, pose] of [['stable', STABLE_FRAME], ['sky', NIGHT_SKY]] as const) {
+      const cam = framePose(pose, w, h);
+      for (const r of ['paddock', 'trail-gate', 'fork']) expect(inFrustum(cam, regionMesh(scene, r)), `${r} in the ${name} frame at ${w}x${h}`).toBe(false);
+    }
+    expect(t.trail.shown).toBe(false);
+    for (const r of ['roads', 'slot-w', 'slot-n', 'slot-e']) expect(regionMesh(scene, r).visible, r).toBe(false);
+    for (const r of ['paddock', 'trail-gate', 'fork']) expect(regionMesh(scene, r).visible, r).toBe(true);
+    t.trail.show(true);
+    expect(t.trail.shown).toBe(true);
+    for (const r of ['roads', 'slot-w', 'slot-n', 'slot-e']) expect(regionMesh(scene, r).visible, r).toBe(true);
+    t.trail.show(false);
+    expect(regionMesh(scene, 'roads').visible).toBe(false);
+  });
+
+  it('builds the roads, the slots and the kit once at load, so a ride adds no geometry', () => {   // the long play's memory check
+    const { t, scene } = buildTrailForTest();
+    const before = geometryCount(scene);
+    const children = scene.children.length;
+    t.trail.show(true); t.trail.dress(['sand', 'barn', 'pond']); t.trail.dress(['stump', 'bench', 'pool']); t.trail.dress(null); t.trail.show(false);
+    expect(geometryCount(scene)).toBe(before);
+    expect(scene.children.length).toBe(children);
+  });
+
+  it('points the signpost\'s arms along the roads, at card height, its post clear of every bed', () => {
+    const { t } = buildTrailForTest();
+    const post = RIDE.post;
+    for (const l of TRAIL_LINES) expect(lineDist(post, l)).toBeGreaterThan(1.5 + 0.4);
+    expect(dist2(post, RIDE.fork)).toBeLessThan(4.5);
+    const arms = ([0, 1, 2] as const).map((i) => t.trail.arm(i));
+    for (const [i, a] of arms.entries()) {
+      expect(a.y, `arm ${i}`).toBeGreaterThan(1.2);
+      expect(a.y).toBeLessThan(2.3);
+      // Each arm points the way its road leaves the fork.
+      const along = RIDE_PATHS.roads[i].getPointAt(4 / RIDE_PATHS.roads[i].getLength());
+      const road = new THREE.Vector2(along.x - RIDE.fork.x, along.z - RIDE.fork.z).normalize();
+      const arm = new THREE.Vector2(a.x - post.x, a.z - post.z);
+      expect(arm.length()).toBeGreaterThan(0.8);
+      expect(arm.normalize().dot(road), `arm ${i}`).toBeGreaterThan(0.95);
+    }
+    // West to east on screen: the west card left of the east one, the north card above both.
+    expect(arms[0].x).toBeLessThan(arms[2].x - 1.5);
+    expect(arms[1].z).toBeLessThan(Math.min(arms[0].z, arms[2].z));
   });
 });

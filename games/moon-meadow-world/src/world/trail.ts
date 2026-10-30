@@ -1,13 +1,97 @@
-// The trail beyond the fence (2.4.0, docs/v4/2.4.md sections 5.4 and 5.5): the gate, the trail from the gate to the
-// fork, the three roads, the clearing slots with their kit, the ride camera's clamp, the occlusion check and the ducks
-// under the slide. The trail lane builds them (docs/v4/2.4-plan.md Tasks 17 to 20); step 0's stub keeps the names, so
-// the game and the mount lane build on them: dress() records the words, slots() returns them off screen, arm(i) is the
-// fork at card height, the gate opens at once, show() records `shown`, nothing is ever occluded, the rest does nothing.
+// The trail beyond the fence (2.4.0, docs/v4/2.4.md sections 5.4 and 5.5): the paddock and the gate (paddock.ts),
+// the bed from the gate to the fork, the fork with its signpost, the three roads with the fork's plaza, the three
+// clearings and their kit (kit.ts), the ride camera's clamp, the occlusion check and the ducks under the slide.
+//
+// Each part is a scenery region of its own by name, never by Scenery.regionOf (5.5): `paddock`, `trail-gate` and
+// `fork` lie outside every night view and are always drawn; `roads`, `slot-w`, `slot-n`, `slot-e` and the kit are
+// built once at load and drawn only during a ride (show), so the bedtime stable frame and the goodnight sky shot gain
+// nothing. The ground keeps its cutting and pads (terrain.ts), so a hidden road leaves plain ground.
 import * as THREE from 'three';
 import type { SignWord } from '../contracts';
-import { RIDE } from '../layout';
-import type { Scenery } from './geo';
+import { RIDE, RIDE_PATHS, type Vec2 } from '../layout';
+import { EARTH, ellipse, patch, ribbon } from './beds';
+import type { CameraRig } from './camera';
+import { Scenery, blob, paint, paintY, place, type Geo } from './geo';
 import { buildPaddock } from './paddock';
+import { CLEARINGS, CUT, TRAIL_LINES } from './terrain';
+
+export { CLEARINGS };
+
+export const TRAIL_REGIONS = ['paddock', 'trail-gate', 'fork', 'roads', 'slot-w', 'slot-n', 'slot-e'] as const;
+/** The regions drawn only during a ride. */
+export const RIDE_ONLY = ['roads', 'slot-w', 'slot-n', 'slot-e'] as const;
+const SLOT_REGIONS = ['slot-w', 'slot-n', 'slot-e'] as const;
+
+/** Bed heights over the flat ground: the trail-gate bed under the roads, the roads under the plaza and the clearings. */
+const Y = { gate: 0.035, road: 0.04, plaza: 0.045, clearing: 0.05 } as const;
+
+/**
+ * The signpost at RIDE.post: a post with three finger boards, west, north and east, each pointing the way its road
+ * leaves the fork. The cards (ui/sign.ts) sit on the boards' outer ends (arm(i)); the north board sits higher, so on
+ * screen its card shows above the other two.
+ */
+export const SIGNPOST = { height: 2.25, arms: [{ y: 1.45, len: 1.15 }, { y: 1.9, len: 1.0 }, { y: 1.45, len: 1.15 }] } as const;
+
+/** The way road i leaves the fork: towards its point 4 m along. */
+function armDir(i: 0 | 1 | 2): Vec2 {
+  const r = RIDE_PATHS.roads[i];
+  const p = r.getPointAt(4 / r.getLength());
+  const l = Math.hypot(p.x - RIDE.fork.x, p.z - RIDE.fork.z);
+  return { x: (p.x - RIDE.fork.x) / l, z: (p.z - RIDE.fork.z) / l };
+}
+
+/** The end of arm i of the signpost, at its card height. */
+export function armEnd(i: 0 | 1 | 2, out = new THREE.Vector3()): THREE.Vector3 {
+  const d = armDir(i);
+  const a = SIGNPOST.arms[i];
+  return out.set(RIDE.post.x + d.x * (a.len + 0.07), a.y, RIDE.post.z + d.z * (a.len + 0.07));
+}
+
+const WOOD = { dark: '#9b6a42', light: '#c08a5c' } as const;
+
+export function signpostGeometry(): Geo[] {
+  const parts: Geo[] = [];
+  const { x, z } = RIDE.post;
+  const h = SIGNPOST.height;
+  parts.push(place(paintY(new THREE.BoxGeometry(0.14, h, 0.14), WOOD.dark, WOOD.light, -h / 2, h / 2), { x, y: h / 2, z }));
+  parts.push(place(paint(new THREE.ConeGeometry(0.13, 0.16, 4), WOOD.light), { x, y: h + 0.08, z, ry: Math.PI / 4 }));
+  ([0, 1, 2] as const).forEach((i) => {
+    const d = armDir(i);
+    const { y, len } = SIGNPOST.arms[i];
+    const ry = Math.atan2(-d.z, d.x);
+    const mid = 0.07 + len / 2;
+    parts.push(place(paintY(new THREE.BoxGeometry(len, 0.26, 0.05), '#f6e2bd', '#fff4dc', -0.13, 0.13), { x: x + d.x * mid, y, z: z + d.z * mid, ry }));
+    // A pointed end: a square board turned 45 degrees, half of it past the board's end.
+    const tip = 0.07 + len;
+    parts.push(place(paint(new THREE.BoxGeometry(0.184, 0.184, 0.05), '#fff4dc'), { x: x + d.x * tip, y, z: z + d.z * tip, ry, rz: Math.PI / 4 }));
+  });
+  return parts;
+}
+
+/** The way into a clearing: from its slot back towards the fork, along its road's last metres. */
+function entryAngle(i: 0 | 1 | 2): number {
+  const r = RIDE_PATHS.roads[i];
+  const a = r.getPointAt(1 - 3 / r.getLength());
+  const s = RIDE.slots[i];
+  return Math.atan2(a.z - s.z, a.x - s.x);
+}
+
+/** A bare clearing: trodden ground round its slot and a few grey stones on its rim, clear of the way in and the kit. */
+export function clearingGeometry(i: 0 | 1 | 2): Geo[] {
+  const c = CLEARINGS[i];
+  const parts: Geo[] = [patch(ellipse(c.center, c.radius, c.radius, 28), c.center, 0.45, Y.clearing, EARTH)];
+  const entry = entryAngle(i);
+  const north = -Math.PI / 2;
+  const off = (a: number, b: number): number => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+  for (let k = 0; k < 12; k++) {
+    const a = (k / 12) * Math.PI * 2 + 0.2;
+    if (off(a, entry) < 0.8 || off(a, north) < 1.1) continue;
+    const r = c.radius + 0.1;
+    const s = 0.16 + 0.1 * ((k * 7) % 3) / 2;
+    parts.push(place(paintY(blob(1, 0), '#c9c2d6', '#ebe6f2', -0.6, 1), { x: c.center.x + Math.cos(a) * r, y: s * 0.35, z: c.center.z + Math.sin(a) * r, sx: s * 1.3, sy: s * 0.8, sz: s, ry: a }));
+  }
+  return parts;
+}
 
 export interface TrailApi {
   /** Dress the three slots (west, north, east) with these words' kit, or bare them with null. */
@@ -30,6 +114,18 @@ export interface DucksApi {
   bob(): void;
 }
 
+/** What the trail needs from the world once the scenery is built (world/index.ts). */
+export interface TrailAttach {
+  scene: THREE.Scene;
+  /** The shared scenery material: the kit uses it, so it compiles no shader of its own. */
+  material: THREE.Material;
+  camera?: THREE.Camera;
+  rig?: CameraRig;
+  /** What can hide a point from the camera: the scenery's meshes and the trees. */
+  occluders?: () => THREE.Object3D[];
+  ducks?: DucksApi;
+}
+
 export interface TrailWorld {
   readonly trail: TrailApi;
   readonly ducks: DucksApi;
@@ -38,21 +134,40 @@ export interface TrailWorld {
   /** The follow camera's clamp: the meadow's, or the wide one of a ride. */
   cameraClamp(kind: 'meadow' | 'ride'): void;
   update(dt: number, t: number): void;
+  /** Wire the parts the trail does not build: its built meshes, the camera, the occluders and the pond's ducks. */
+  attach(o: TrailAttach): void;
+  /** Every mesh the trail draws (its regions and the kit), for the harness's budget check. */
+  meshes(): THREE.Object3D[];
 }
 
 export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
   const paddock = buildPaddock(scenery);
+  // The bed from the gate to the fork, then the roads with the fork's plaza over their starts.
+  scenery.add(ribbon(TRAIL_LINES[0], CUT.bed, 0.4, Y.gate, EARTH), 'trail-gate');
+  for (const line of TRAIL_LINES.slice(1)) scenery.add(ribbon(line, CUT.bed, 0.4, Y.road, EARTH), 'roads');
+  scenery.add(patch(ellipse(RIDE.fork, CUT.plaza, CUT.plaza, 28), RIDE.fork, 0.4, Y.plaza, EARTH), 'roads');
+  for (const g of signpostGeometry()) scenery.add(g, 'fork');
+  ([0, 1, 2] as const).forEach((i) => {
+    for (const g of clearingGeometry(i)) scenery.add(g, SLOT_REGIONS[i]);
+  });
+
   let words: (SignWord | null)[] = [null, null, null];
   let shown = false;
+  let rideOnly: THREE.Object3D[] = [];
+  let all: THREE.Object3D[] = [];
+  const apply = (): void => {
+    for (const m of rideOnly) m.visible = shown;
+  };
   const trail: TrailApi = {
     dress(w) {
       words = w ? [...w] : [null, null, null];
     },
     slots: () => words.map((word) => ({ word, onScreen: false })),
-    arm: () => new THREE.Vector3(RIDE.fork.x, 1.3, RIDE.fork.z),
+    arm: (i) => armEnd(i),
     gate: (open, ms) => paddock.gate(open, ms),
     show(on) {
       shown = on;
+      apply();
     },
     get shown() {
       return shown;
@@ -66,5 +181,12 @@ export function buildTrail(_scene: THREE.Scene, scenery: Scenery): TrailWorld {
     update(dt) {
       paddock.update(dt);
     },
+    attach(o) {
+      const region = (r: string): THREE.Object3D | undefined => o.scene.getObjectByName(`scenery-${r}`);
+      rideOnly = RIDE_ONLY.map(region).filter((m): m is THREE.Object3D => !!m);
+      all = TRAIL_REGIONS.map(region).filter((m): m is THREE.Object3D => !!m);
+      apply();
+    },
+    meshes: () => all.slice(),
   };
 }
