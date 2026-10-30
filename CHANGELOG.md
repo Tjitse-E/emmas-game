@@ -11,7 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [2.3.3] - 2026-10-30
 
-A patch for Moon Meadow Home, after Emma got stuck at a nest egg on 30 October.
+A patch for Moon Meadow Home, after Emma got stuck at a nest egg on 30 October. Tjitse approved Moon Meadow World's new clips and sound effects without listening to them yet; what sounds wrong in a play gets a retake.
 
 ### Fixed
 - Moon Meadow Home: after two wrong stones at a nest egg, the hint hand places the right stone and the egg now hatches. Before, the egg was solved and saved but the nest stayed on screen until the page was reloaded.

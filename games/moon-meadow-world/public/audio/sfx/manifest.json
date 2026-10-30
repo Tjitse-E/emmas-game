@@ -7,7 +7,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:09",
    "raw": "egg-crack-20261029T033209.mp3",
    "text": "A small magical egg cracking open: three gentle shell cracks, then a soft sparkly chime. Cartoon, for a children's game. No voice, no music."
@@ -18,7 +18,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:11",
    "raw": "nicker-1-20261029T033211.mp3",
    "text": "A tiny baby pony giving a short, happy, gentle nicker. Cute and soft, close up. No music."
@@ -29,7 +29,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:13",
    "raw": "nicker-2-20261029T033213.mp3",
    "text": "A baby horse's soft, happy little whinny, very short and high. Cute, close up. No music."
@@ -40,7 +40,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:15",
    "raw": "stable-door-20261029T033215.mp3",
    "text": "A small wooden stable half door swinging open with a soft creak and a gentle wooden knock. No voice."
@@ -51,7 +51,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:17",
    "raw": "trunk-lid-20261029T033217.mp3",
    "text": "An old wooden toy chest lid creaking open, then a short magical sparkle shimmer. Warm and gentle. No voice."
@@ -62,7 +62,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:19",
    "raw": "gift-paper-20261029T033219.mp3",
    "text": "Soft crinkle of tissue paper as a small present is unwrapped. Gentle, close up. No voice."
@@ -73,7 +73,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:21",
    "raw": "dress-swish-20261029T033221.mp3",
    "text": "A soft swish of a silky princess dress as it twirls. Gentle fabric whoosh, close up."
@@ -84,7 +84,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:24",
    "raw": "bead-clink-20261029T033224.mp3",
    "text": "A single small glass bead clicking onto a string: one tiny bright clink."
@@ -95,7 +95,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:26",
    "raw": "crown-twinkle-20261029T033226.mp3",
    "text": "A magical twinkle of tiny bells and a soft shimmer, like a crown sparkling. Gentle, for a children's game."
@@ -106,7 +106,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:28",
    "raw": "hay-rustle-20261029T033228.mp3",
    "text": "Dry hay bundles dropped into a wooden rack: a soft rustle, close up. No animals."
@@ -117,7 +117,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:30",
    "raw": "splash-1-20261029T033229.mp3",
    "text": "A cheerful big splash as a child slides into a pond: water spray and a few droplets. No voice, no screaming."
@@ -128,7 +128,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:31",
    "raw": "splash-2-20261029T033231.mp3",
    "text": "A playful splash into a garden pond: a bright water splash with bubbly droplets. No voice."
@@ -139,7 +139,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:34",
    "raw": "slide-whoosh-20261029T033234.mp3",
    "text": "A smooth playful whoosh of sliding down a plastic slide, quick and bright. No voice."
@@ -150,7 +150,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T00:55:08",
    "raw": "bedtime-bell-20261029T005508.mp3",
    "text": "A soft evening bell ringing twice in the distance. Warm and calm, bedtime."
@@ -161,7 +161,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:36",
    "raw": "owl-20261029T033236.mp3",
    "text": "A soft friendly owl hooting twice at night, gentle and far away. Calm."
@@ -172,7 +172,7 @@
    "loop": false,
    "loopStart": null,
    "loopEnd": null,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:38",
    "raw": "heart-glow-20261029T033238.mp3",
    "text": "A warm gentle magical shimmer rising up, like a heart starting to glow. Soft and sweet, for a children's game."
@@ -183,11 +183,11 @@
    "loop": true,
    "loopStart": 7.5,
    "loopEnd": 22.5,
-   "approved": false,
+   "approved": true,
    "made": "2026-10-29T03:32:43",
    "raw": "amb-day-20261029T033242.mp3",
    "text": "A calm sunny meadow: soft birdsong far away and a light breeze in the grass. Peaceful. No voices, no music, no sudden sounds."
   }
  },
- "updated": "2026-10-29T03:32:43"
+ "updated": "2026-10-30T14:12:41"
 }
