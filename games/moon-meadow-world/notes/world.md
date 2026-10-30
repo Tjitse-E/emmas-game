@@ -52,7 +52,7 @@ At width 19 the numerals measure 30 to 34 px tall at 1180 x 820 and 27.5 to 31 p
 
 - `route(a, b)` returns `[a, ...waypoints, end]`. The first point is always `a` itself. When `a` is blocked (a swimmer), the second point is the nearest walkable point. `end` is `b`, or `nearestWalkable(b)` when `b` is blocked, or the reachable point nearest to `b` when `b` cannot be reached.
 - Deviation: routing also blocks a small box around the slide's platform posts and first chute support (`SLIDE_BLOCK` in `src/world/route.ts`, x 2.65 to 5.05, z -0.3 to 1.1 with its margin). Without it, walkers pass through the posts. `SLIDE.ladderBase`, the queue spots and the pond exits stay walkable. `isWalkable` is false for points on the platform, so check `SLIDE.dropZone` before `isWalkable` when a unicorn is dropped there.
-- `pick()` priority: door, slide, nest, rack, picnic, corner, beads, sign (2.3.0), gazebo, the rest of the stable buildings, pond, ground. The rack's tap box is 2.1 x 1.5 x 1.4 m round its crib; the picnic's covers the rug, its tassels and the hamper, 0.55 m high (her spot `PICNIC.stand` stays outside it). Doors are checked first, so the rack can never take a door's tap, and a tap on the gazebo over the rug stays the gazebo (both checked in `tests/world-pick.test.ts`). Doors are found where the tap ray meets the stable fronts, so every door gets its full 1.5 m width and its storey. A tap on the ground up to 0.7 m in front of a lower door counts as that door. A tap on a roof, a side wall or a ramp (an invisible box per building) is a `door` pick for the nearest door of that building (upper storey above 1.95 m), so it never walks her behind the stables. The pond's `at` is the hit on the y = 0 plane (the water is at -0.2).
+- `pick()` priority: door, slide, nest, rack, picnic, corner, beads, sign (2.3.0), paddock (2.4.0), gazebo, the rest of the stable buildings, pond, ground. The rack's tap box is 2.1 x 1.5 x 1.4 m round its crib; the picnic's covers the rug, its tassels and the hamper, 0.55 m high (her spot `PICNIC.stand` stays outside it). Doors are checked first, so the rack can never take a door's tap, and a tap on the gazebo over the rug stays the gazebo (both checked in `tests/world-pick.test.ts`). Doors are found where the tap ray meets the stable fronts, so every door gets its full 1.5 m width and its storey. A tap on the ground up to 0.7 m in front of a lower door counts as that door. A tap on a roof, a side wall or a ramp (an invisible box per building) is a `door` pick for the nearest door of that building (upper storey above 1.95 m), so it never walks her behind the stables. The pond's `at` is the hit on the y = 0 plane (the water is at -0.2).
 - Routing treats the stables as one block from the door fronts back (both buildings, the gap between them and the ramps, x ±9.2, `STABLE_BLOCK` in `src/world/route.ts`), and nothing north of the back walls (`BEHIND_Z`, z < -16.7) is walkable. `nearestWalkable` of a point there (a roof drop, a route target behind) lands in front of the doors, or beside the stables when the point is over a ramp.
 - `frame()`, `introSweep()` and `setTimeOfDay()` resolve when they arrive. A new camera move resolves the one it replaces at once.
 - `stable.open(n)` swings the half door inwards (into the stall, along its west partition), so nothing sticks out into the yard. `rattle(n)` is a 0.46 s shake. A call on a door that is still moving replaces that move.
@@ -82,7 +82,7 @@ All four stand where `src/layout.ts` puts them (`CORNER`, `BEAD_TREE`, `MIST`); 
 
 - **The Dressing Corner** (`buildCorner` in `src/world/places.ts`, merged into the `mw` region with the gazebo, no draw call of its own): the lilac trunk moved out of the gazebo to `CORNER.trunk`, turned 0.75 rad towards her spot, with gold bands, a heart clasp, gold feet and a pink satin inside. Its lid is a half cylinder hinged on the back top edge. It is a *movable part* of the region (`Scenery.addMovable`): `cornerLid` rewrites only the lid's vertices inside the merged mesh (an update range of the position and normal buffers), so opening it (0.6 s, `world.corner.lid(open)`) costs no draw call. A standing mirror (oval gold frame, lilac glass with a glint, a post and a base, about 300 triangles) stands at `CORNER.mirror`, turned towards her spot. The gazebo's two flower pots moved round to 0.2 and 0.8 pi. The trunk and the mirror are obstacles of 0.45 m.
 - **The bead tree** (`src/world/beadtree.ts`, merged into the `me` region, about 800 triangles): a round green crown with pink blossoms on a trunk, 2.6 m high, three branches with a bead string each in the five bead colours (round, gem and flat beads). Its trunk is an obstacle of 0.8 m; nothing below the crown reaches outside it.
-- **The moon mist** (`meadowMist` in `src/world/sky.ts`): five low soft banks over `MIST`, behind the stables' back line where nobody walks. They are quads in the existing mist mesh, so they cost no draw call and no shader of their own.
+- **The moon mist** (gone in 2.4.0: the paddock's gate stands where it was): five low soft banks behind the stables' back line, quads in the existing mist mesh.
 - **The saddle sign** (`buildSign` in places.ts): a post and a wooden board in the `ne` scenery region, and the picture (v3's `words/saddle.webp` drawn on a cream board in a canvas texture) as its own small mesh, drawn only while in view (one draw call then). Its material has the stable plaques' features (map, emissive map, alpha test), so it compiles no new program. `world.sign.shimmer()` glows it for 1.6 s. The post is an obstacle of 0.25 m.
 - **The hamper moved** 0.9 m south (`PICNIC.hamper` (-12.7, 5.3)): the Corner's close-up camera stands over the rug, and at 2.2's spot the hamper stood in the bottom of that picture.
 - **Picks** (`src/world/pick.ts`): `corner` (the trunk with its lid open, the mirror on its stand and the gazebo's south step between them, not her spot), `beads` (the tree's crown, strings and trunk) and `sign` (its post and board), after the picnic and before the gazebo. Tested in `tests/world-pick.test.ts` from her spots, the start and the frames.
@@ -140,3 +140,85 @@ Static scenery (ground, paths, fence, hedges, places, stable shell, grass and fl
 - `pick()` returns `rack` and `picnic`; `input.ts` starts that quest (or walks her there). Unicorns are picked before `world.pick`, so a tap on a baby on its cushion still reaches the baby.
 - The hamper at `PICNIC.hamper` is not an obstacle. A baby walking from behind her to its seat can pass through it for a moment; the picnic places the babies at the seats after 4 s anyway.
 - The babies at the seats stand 9 to 12 cm up on the cushions through `heightAt`.
+
+## 2.4.0: the paddock, the trail, the clearing kit, the ride camera and the ducks
+
+Design: docs/v4/2.4.md sections 5.4 and 5.5; plan: docs/v4/2.4-plan.md Tasks 17 to 20. The points are in `src/layout.ts`
+(`RIDE`, `RIDE_PATHS`); the fence, `BOUNDS`, the walk grid and the routes did not move.
+
+- **The paddock** (`src/world/paddock.ts`, region `paddock`, 1,450 triangles): trodden sand over `RIDE.paddock` (an
+  overlay like the yard), a low wooden rail along the back only with a 1.6 m gap at x 22.5 (`RIDE.rail.gapWidth`), a hay
+  trough and a water tub (round obstacles of 0.5 m in `OBSTACLES`; nothing else in the walk grid changed, tested against
+  `tests/fixtures/walk-2.3.3.json`), and the bed from the rail's gap to the gate. No tuft or flower grows on its sand
+  (the growth loop still draws its random numbers there, so every other tuft stays where 2.3 put it).
+- **The gate** (region `trail-gate`): two white leaves of 1.5 m in the north fence at x 21.5, hinged on two posts,
+  swinging 92 degrees into the meadow (`world.trail.gate(open, ms = 1000)`). The leaves are movable parts of their
+  merged region (as the Corner's lid): no draw call. The fence's own posts keep a metre clear of the gate and its rails
+  stop at the gate's posts; the hedge folds its rings into two round ends of 0.65 m round a 4.2 m opening and lies flat
+  across it. Both keep at most the triangles they had (their regions are drawn in the stable views).
+- **The trail** (`src/world/trail.ts`): beds 3 m wide at y 0 (`world/beds.ts` ribbons and patches, earthy sand), from
+  the gate to the fork (`trail-gate`), the three roads with the fork's plaza (`roads`), the fork's signpost (`fork`) and
+  three bare clearings with grey stones on their rims (`slot-w`, `slot-n`, `slot-e`). Every region is named, never placed
+  by `Scenery.regionOf`. The plaza and the clearings keep the bed's colour where they lie over a road (`under` in
+  `patch`).
+- **The ground** (`terrain.ts`): `groundHeight` cuts the hills flat along `TRAIL_LINES`, round `CLEARINGS` and the fork
+  (`CUT`): flat 2.9 m past each bed (so every 2 m cell a bed reaches has all its corners at 0 and a hidden road leaves
+  plain ground), then banks over 2 m. The north slot (natural ground about 2.7 m up) sits on a flat pad in a cutting.
+  `FINE_PATCHES` gives 2 m cells round the north road and slot (the base rows are 6 m apart there): 48 triangles more in
+  `far-n`; the patch's edge vertices take the base cell edge's line, so no crack opens. The trees beyond the fence keep 3
+  m and their crown off every bed (`treeSpots`): a tree in the way moves to the nearest free spot and keeps its kind and
+  size, so the woods cost what they did.
+- **Drawn only during a ride:** `roads`, the slots and the kit are built at load, hidden, and shown by
+  `world.trail.show(on)` (the mount lane: true at getting on, false at getting off). `paddock`, `trail-gate` and `fork`
+  are always drawn but lie outside the bedtime stable frame and the goodnight sky shot (`STABLE_FRAME`, `NIGHT_SKY`),
+  tested with three.js's own sphere culling at 1080 x 810 and 1080 x 740. `world.start()` draws the ride's meshes once
+  into a 1 x 1 target (`trail.warm`), so their buffers are on the GPU from the load and a ride adds no geometry to
+  `renderer.info.memory`.
+- **The signpost** at `RIDE.post` (23.0, -30.8), in the wedge between the north and the east roads: three finger boards
+  pointing the way their roads leave the fork, west and east at 1.35 m, north at 1.7 m. `world.trail.arm(i)` is the end
+  of board i (card i's anchor). `RIDE.forkFrame` (`world.frame({ x: 22.0, z: -31.0 }, 8)`) holds the mount at the fork,
+  the three cards apart (more than 220 px between west and east, the north card 70 px higher) and clear of the rider's
+  head, and the road starts, with no kit in view, at both of her sizes (tested).
+- **The clearing kit** (`src/world/kit.ts`, `KIT`): 13 models after their v3 word pictures, 156 to 528 triangles each
+  (shell 528, pool 496), one geometry and one mesh each (`kit-<word>`) in the shared scenery material, so no new shader.
+  `world.trail.dress(words)` moves the three kinds to `KIT_AT` (2.5 m behind the west and east slots, 2.8 m behind the
+  north one, inside their clearings) and shows them while the trail is shown; `dress(null)` bares the slots. The world
+  does not check where the camera is: the ride dresses only while `slots()` says every slot is off screen.
+  `slots()[i].onScreen` is the kit's bounding sphere (1.6 m round, 3 m high) against the camera frustum (a sphere on
+  the ground would reach under it and call the north slot on screen from the fork frame). The contact sheet:
+  `dev/world.html?view=clearings`.
+- **The ride camera:** `world.cameraClamp('ride')` swaps the follow target's box to `RIDE.clamp` (x -23 to 36, z -44
+  to 13.5), `'meadow'` back to 2.3's. The look-ahead is the ride place's follow target.
+- **Occlusion:** `world.occluded(points)` casts a ray from the camera to each point against the scenery regions, the
+  trees, the stable doors and the kit on show (`occludersOf`); a hit within 5 cm of the point does not count. From the
+  follow camera at her stand, her head, both saddles and the icons' points are clear of the grand tree's crown at both
+  sizes (tested); a point inside the crown is hidden.
+- **The ducks** (`createDucks` in `places.ts`): the pond's duck batch holds five ducks, 2.3's two that paddle circles
+  and three small ones that paddle round `DUCK_SPOTS.chute` (the splash pool under the chute, where the slide rests) or
+  swim to `DUCK_SPOTS.far` (`world.ducks.set(at, ms = 4000)`) and hop on `world.ducks.bob()`. Silent. The batch now has
+  fixed bounds round the pond and is culled with it, so the stable at night no longer draws 2.3's two ducks.
+
+Budget (world only, `__dev.trailMeasure()` in the harness, day unless said; calls / triangles):
+
+| View | 1080 x 810 | 1080 x 740 |
+|---|---|---|
+| Stable frame at night, trail as outside a ride (2.3.3's step 0: 24 / 51,758) | 23 / 50,964 | 23 / 50,964 |
+| The same with every paddock and trail mesh off | 23 / 50,964 | 23 / 50,964 |
+| Goodnight sky shot (step 0: 26 / 54,243 and 25 / 54,179) | 25 / 53,449 | 24 / 53,385 |
+| The same with every paddock and trail mesh off | 25 / 53,449 | 24 / 53,385 |
+| Ride: her paddock stand | 19 / 30,928 | 19 / 30,928 |
+| Ride: galloping at the gate | 23 / 27,621 | 23 / 27,621 |
+| Ride: the fork frame | 14 / 19,726 | 14 / 19,726 |
+| Ride: the slots with pines, barn, shed (west, north, east) | 18 / 21,697, 15 / 19,858, 16 / 17,930 | 19 / 26,553, 15 / 19,858, 17 / 18,022 |
+
+- The paddock's region (bounding sphere about 7 m) is drawn in some day views of the east meadow where nothing of it
+  shows, the pond follow view among them: 1 call and 1,450 triangles there (the pond follow: step 0 26 / 49,963, now
+  27 / 51,939 with the three ducks). Splitting it does not help: its sand alone straddles that frustum's corner.
+- For the mount lane: the trail beyond the stables' back line is ridden, never walked (`isWalkable` is false north of
+  z -16.7 and outside `BOUNDS`), so followers move along the mount's track by placement, not by `route`. Hazel's way out
+  passes 1.1 m from Bella's spot and the way home 1.2 m from it: the mount at home should graze close to its spot while
+  the other rides.
+- Harness (2.4.0): walk to `paddock stand`; `trail show` and `hide`, `gate open` and `shut`, two dressings and `bare`,
+  `ride clamp` and `meadow clamp`, camera `fork` and `slot w`, `n`, `e`, `ducks far`, `chute` and `bob`;
+  `__dev.trailMeasure()` (also in `__dev.measure().trail`). A dev server started inside the sandbox does not see file
+  changes (no file events reach it): restart it after an edit.
