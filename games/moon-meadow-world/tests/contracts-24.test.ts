@@ -76,16 +76,16 @@ describe('the 2.4 contracts', () => {
     expect(parseOptions('?babies=5&bed=0&sign=4&mount=luna')).toMatchObject({ babies: null, bedMs: null, signLevel: null, mount: null });
   });
 
-  it('keeps 2.3.3\'s parts in step 0: the hub and free play give free, an egg place its egg part', () => {
+  it('maps the address options to the hub: the old part names are aliases', () => {
     const at = (s: string) => resolveStart(parseOptions(s));
     expect(at('')).toBeNull();
-    expect(at('?at=hub')).toEqual({ part: 'free', place: null, step: null, done: [] });
-    expect(at('?at=hub&place=egg&step=naming')).toMatchObject({ part: 'naming1', place: 'egg', step: 'naming' });
-    expect(at('?at=hub&place=shore&step=wish')).toMatchObject({ part: 'wish2', place: 'shore', step: 'wish' });
-    expect(at('?at=hub&place=pond')).toMatchObject({ part: 'pond', place: 'pond' });
-    expect(at('?at=free&quest=corner')).toMatchObject({ part: 'free', place: 'corner' });
-    expect(at('?at=hub&place=ride')).toMatchObject({ part: 'free', place: 'ride' });
-    expect(at('?at=egg2')).toMatchObject({ part: 'egg2', place: 'shore', done: [] });
+    expect(at('?at=hub')).toEqual({ part: 'hub', place: null, step: null, done: [] });
+    expect(at('?at=hub&place=egg&step=naming')).toEqual({ part: 'hub', place: 'egg', step: 'naming', done: [] });
+    expect(at('?at=hub&place=shore&step=wish')).toEqual({ part: 'hub', place: 'shore', step: 'wish', done: [] });
+    expect(at('?at=hub&place=pond')).toEqual({ part: 'hub', place: 'pond', step: null, done: [] });
+    expect(at('?at=free&quest=corner')).toEqual({ part: 'hub', place: 'corner', step: null, done: ['egg', 'shore'] });
+    expect(at('?at=hub&place=ride')).toEqual({ part: 'hub', place: 'ride', step: null, done: [] });
+    expect(at('?at=egg2')).toEqual({ part: 'hub', place: 'shore', step: null, done: ['egg'] });
     expect(at('?at=bedtime')?.part).toBe('bedtime');
   });
 

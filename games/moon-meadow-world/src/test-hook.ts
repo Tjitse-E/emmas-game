@@ -202,7 +202,7 @@ export function installHook(g: Game): void {
       jump(g, start);
       return true;
     },
-    /** End the current timed wait (free play's two minutes, the pond's 45 s). */
+    /** End the current timed wait (2.4.0: a pond visit; the hub's own wait goes on, so skip() never ends the hub). */
     skip(): number {
       return g.run.skip();
     },

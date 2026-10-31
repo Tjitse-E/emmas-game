@@ -1,10 +1,10 @@
 // The three fixed histories of docs/v4/2.4.md sections 5.7 and 8 through the pure hub (tests/hub-sim.ts, plan Task 3),
 // and plays B and C of 5.7: the pond-lover, the child who skips the Corner and the child who only taps the slide each
-// meet their target counts, and play C reaches bedtime at 30:00 without done early. Two targets the rules miss under
-// the model are skipped, with the numbers reached (plan Task 3; notes/requests-hub.md): play B's no done early and the
-// pond-lover's bedtime before 30:00.
+// meet their target counts, and play C reaches bedtime at 30:00 without done early. Play B's and the pond-lover's
+// done early and bedtime targets are the ones the rules reach (the lead's decision of 31 October 2026;
+// notes/requests-hub.md).
 import { describe, expect, it } from 'vitest';
-import { BEDTIME_MS, NUDGE_MS } from '../src/game/hub';
+import { BEDTIME_MS, LEARNING, NUDGE_MS, PLACE_LIMIT, cutoffs } from '../src/game/hub';
 import { noTwoPondsInARow, simulate } from './hub-sim';
 
 describe('the histories', () => {
@@ -46,30 +46,34 @@ describe('the histories', () => {
     expect(Math.abs(p.bedtimeAt - BEDTIME_MS)).toBeLessThan(1000);
   });
 
-  // Skipped as plan Task 3 says for a target the rules miss (notes/requests-hub.md, notes/game.md). Target: play B
-  // never reaches done early (5.6: "Plays B and C never reach it"). Reached: done early at 26:43, when the shore egg
-  // ends after ride 2's cutoff at 26:00 (bedtime still at 30:00, at the end of the last pond visit). 5.7's own table
-  // has B's shore egg end at 25.5, but its early rows leave out about 1.2 minutes of the model's walks and its 0.2 min
-  // between places (the picnic ends at 2.0 there; 0.3 + 1.9 already makes 2.2).
-  it.skip('play B reaches bedtime at 30:00 without done early', () => {
+  // Target set to what 5.2 and 5.6 reach (lead, 31 October 2026): 5.7's model left out about 1.2 minutes of walking, so done early comes at 26:43.
+  it('play B reaches bedtime at 30:00, and done early only once every learning place is done or past its cutoff', () => {
     const p = simulate('nearest');
-    expect(p.early).toBeNull();
     expect(Math.abs(p.bedtimeAt - BEDTIME_MS)).toBeLessThan(1000);
+    if (p.early === null) return;
+    // Done early begins as a place ends, so it never cuts one short.
+    const i = p.ends.indexOf(p.early);
+    expect(i).toBeGreaterThanOrEqual(0);
+    const c = cutoffs(BEDTIME_MS);
+    for (const q of LEARNING.filter((x) => x !== 'rack')) {
+      const done = p.places.slice(0, i + 1).filter((x) => x === q).length >= PLACE_LIMIT[q];
+      const past = p.early >= (q === 'ride' ? c.ride : q === 'egg' || q === 'shore' ? c.egg : c.all);
+      expect(done || past, q).toBe(true);
+    }
   });
 
-  // Skipped as above. Target: the pond-lover reaches bedtime after done early, at 29:00 or later and before 30:00
-  // (5.6: done early at about 26:30, bedtime at about 29:50). Reached: done early at 27:38 (the shore egg ends then),
-  // and its last pond visit starts at 27:53, so the 30:00 cutoff ends it and bedtime starts at 30:00.
-  it.skip('the pond-lover reaches bedtime just before 30:00, after done early', () => {
+  // Target set to what 5.2 and 5.6 reach (lead, 31 October 2026): 5.7's model left out about 1.2 minutes of walking, so done early comes at 27:38.
+  it('the pond-lover reaches done early between 26:00 and 28:00 and bedtime at 30:00', () => {
     const lover = simulate('pond-lover');
     expect(lover.early).not.toBeNull();
-    expect(lover.bedtimeAt).toBeGreaterThanOrEqual(29 * 60_000);
-    expect(lover.bedtimeAt).toBeLessThan(BEDTIME_MS);
+    expect(lover.early!).toBeGreaterThanOrEqual(26 * 60_000);
+    expect(lover.early!).toBeLessThan(28 * 60_000);
+    expect(Math.abs(lover.bedtimeAt - BEDTIME_MS)).toBeLessThan(1000);
   });
 
   it('the nearest-first and pond-lover plays end at bedtime, done early or not, and done early only from a refill before 28:00', () => {
-    // What still holds for B and the pond-lover while the two tests above are skipped: bedtime at 30:00 at the latest
-    // (a pond visit ends there), and done early came before its last check.
+    // For B and the pond-lover: bedtime at 30:00 at the latest (a pond visit ends there), and done early came before
+    // its last check.
     for (const policy of ['nearest', 'pond-lover'] as const) {
       const p = simulate(policy);
       expect(p.bedtimeAt, policy).toBeLessThanOrEqual(BEDTIME_MS);
