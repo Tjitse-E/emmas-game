@@ -14,8 +14,9 @@
 #   place=beads: the ghost fills gap 1, two gaps with one wrong, results beads1 to beads3, the jewel gift, then the
 #     Corner's bubble.
 #   place=picnic and place=rack: as 2.2, with their gifts (a crown, shoes) saved and worn.
-#   The rotation over two loads, on a real save: the bead tree ends, the save's afternoon says so at once (it is
-#     written after each place), and the next load gets the hay rack.
+#   The rotation over three loads, on a real save: a play that leaves the bead tree undone (only the picnic) gets the
+#     bead tree again next time; then the bead tree ends, the save's afternoon says so at once (it is written after each
+#     place), and the next load gets the hay rack.
 # Checks the results, the budget, missing clips and console errors.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-9}"
@@ -303,13 +304,20 @@ expect_eq "$(val "() => window.__game.state().results[0].detail.band")" a 'the r
 gifts="$(gift_check)"
 case "$gifts" in *'shoes:'*':true:true:true"]') ;; *) fail "the rack's gift is not saved, worn shoes: $gifts" ;; esac
 
-# ---- The rotation over two loads, on a real save (cleared first and last): the bead tree ends, the save's afternoon
-# says so at once (2.4.0: written after each place), and the next load gets the hay rack.
-goto_page "?seed=$SEED&at=hub&place=beads"
+# ---- The rotation over three loads, on a real save (cleared first and last): a play with only the picnic leaves the
+# bead tree undone, so the next play gets it again (2.3's check); the bead tree ends, the save's afternoon says so at
+# once (2.4.0: written after each place), and the next load gets the hay rack.
+goto_page "?seed=$SEED&at=hub&place=picnic"
 hook 'clearSave()' >/dev/null
-goto_page "?seed=$SEED&at=hub&place=beads"
+goto_page "?seed=$SEED&at=hub&place=picnic"
 press_play
 expect_eq "$(val "() => window.__game.state().quests.maths")" beads 'a first play gets the bead tree'
+wait_for "() => window.__game.state().hub.running === 'picnic'" 30
+play_place 180
+expect_eq "$(val "() => JSON.stringify(window.__game.save().afternoon)")" '{"maths":"beads","done":["picnic"]}' 'the afternoon saved without the bead tree'
+goto_page "?seed=$SEED&at=hub&place=beads"
+press_play
+expect_eq "$(val "() => window.__game.state().quests.maths")" beads 'the bead tree again when she did not finish it'
 answer_beads
 pick_gift
 wait_for "() => { const h = window.__game.state().hub; return !h.running && h.done.includes('beads'); }" 90

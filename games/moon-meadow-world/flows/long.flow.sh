@@ -6,7 +6,9 @@
 #   LONG=pond   the pond-lover: every play bubble at once, staying until each visit ends, else the nearest bubble
 #   LONG=slide  the slide-only child: she taps only the slide, so it rests all play and no place starts
 # After every place: no reload, no console error, the run's deferred list as after the first place, and the scene's
-# geometry and texture counts never higher after a kind of place she has done before (check_level). At the end it reads the kind=play line (__game.playLine()) and checks the
+# geometry and texture counts never higher after a kind of place she has done before (check_level). Growth over the
+# first place's counts at a kind's first place is listed at the end and in budget.txt, so a leak in a place done once
+# a play can be told from a first load. At the end it reads the kind=play line (__game.playLine()) and checks the
 # history's targets. LONG_BED=<seconds> plays to an earlier bedtime and skips the count checks (a quick run of the
 # driver itself).
 source "$(dirname "$0")/lib.sh"
@@ -55,6 +57,9 @@ LEVEL=''
 MAXG=0
 MAXT=0
 KINDS=' '
+FIRSTG=''
+FIRSTT=''
+GROWN=''
 check_level() {
   local now loads geo tex def kind
   now="$(val "() => { const p = window.__game.perf(); return [window.__mmwLoads, p.geometries, p.textures, window.__game.state().run.deferred].join(' '); }")"
@@ -65,8 +70,13 @@ check_level() {
   expect_eq "$loads" 1 'one page load'
   if [ -z "$LEVEL" ]; then
     LEVEL="$def"
+    FIRSTG="$geo"
+    FIRSTT="$tex"
   else
     expect_eq "$def" "$LEVEL" 'the deferred cleanups after a place'
+    if [ "$geo" -gt "$MAXG" ] || [ "$tex" -gt "$MAXT" ]; then
+      GROWN="$GROWN $1(+$((geo - FIRSTG)) geometries, +$((tex - FIRSTT)) textures over the first place)"
+    fi
   fi
   case "$KINDS" in
     *" $kind "*)
@@ -136,6 +146,8 @@ while [ "$(field part)" = hub ]; do
 done
 say "bedtime at $(val "() => (window.__game.state().hub.playMs / 60000).toFixed(2)") min after $places places ($slides slide taps)"
 [ "$LONG" = slide ] && check_level slide
+say "growth at a kind's first place:${GROWN:- none}"
+echo "${W}x$H long $LONG growth at a kind's first place:${GROWN:- none}" >> "$MMW_SHOTS/budget.txt"
 
 # Bedtime and goodnight: into the yard, every door right at a child's pace.
 wait_for "() => window.__game.state().goal === 'stable' || window.__game.state().part === 'goodnight'" 60

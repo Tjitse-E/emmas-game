@@ -20,7 +20,7 @@ import { type Game, GOALS, flat, headScreen, lumiSay, princessAt, say, setTime, 
 import { type HubPlace, QUEST_IDS, type QuestId, type StartStep } from './options';
 import {
   FREE_WAIT_MS, type HubCtx, type HubState, LEARNING, NUDGE_MS, POND_SLIDES, POND_VISIT_MS, POP_GAP_MS, PROMPT_MS, STOP_NEAR_M,
-  bedtimeDue, cutoffs, isPast, placeEnded, refill, tickPlay,
+  bedtimeDue, cutNow, cutoffs, idleRefill, isPast, placeEnded, refill, tickPlay,
 } from './hub';
 import { HATCH_SPOT, NEST_EGG, WILD_EGG_AT, eggPlace, naming, snapBabies, wish } from './eggs-part';
 import { canOfferWish, offerWish, withdrawWish, wishPlace } from './moments';
@@ -320,18 +320,21 @@ export async function hub(g: Game): Promise<void> {
     })();
   };
 
-  /** The places in h.shown that need the world: the waiting wish baby, the rack's helpers, the eggs and the nest glow. */
+  /**
+   * The places in h.shown that need the world: the waiting wish baby, the rack's helpers, the eggs and the nest glow.
+   * While a place runs only a wish bubble that went lets its baby graze; the rest waits for the refill after the place.
+   */
   const dress = () => {
-    if (h.shown.includes('wish') && !g.waiting) {
-      g.waiting = offerWish(g);
-      if (g.waiting) g.followers.remove(g.waiting);
-      else h.shown = h.shown.filter((p) => p !== 'wish');
-    }
     if (!h.shown.includes('wish') && g.waiting && h.running !== 'wish') {
       withdrawWish(g, g.waiting);
       g.waiting = null;
     }
     if (h.running) return;
+    if (h.shown.includes('wish') && !g.waiting) {
+      g.waiting = offerWish(g);
+      if (g.waiting) g.followers.remove(g.waiting);
+      else h.shown = h.shown.filter((p) => p !== 'wish');
+    }
     if (h.shown.includes('rack') && !q.helpers.length) hungryHerd(g);
     if (!h.shown.includes('rack') && q.helpers.length) helpersHome(g);
     // The nest keeps its glow while the nest egg waits (the shore egg is placed as it lands, landShore).
@@ -353,8 +356,12 @@ export async function hub(g: Game): Promise<void> {
     return lumiSay(g, CLIPS.anotherEgg);
   };
 
-  /** A refill between places (or as the hub opens, or at a cutoff): the bubbles, then what is said about them. */
-  const refillNow = (o: { landed?: boolean; talk?: boolean } = {}) => {
+  /**
+   * A refill between places (or as the hub opens, or when the shore egg lands or an empty hub fills while she waits):
+   * the bubbles, then what is said about them. `nudge` (after a pond visit) points at the first learning bubble once
+   * the other lines have played, in place of g4-pick, so no line cuts its "this way" line.
+   */
+  const refillNow = (o: { landed?: boolean; talk?: boolean; nudge?: boolean } = {}) => {
     const before = h.shown.slice();
     h.shown = refill(h, hubCtx(g));
     for (const p of before) if (!h.shown.includes(p)) delete h.shownAt[p];
@@ -404,7 +411,10 @@ export async function hub(g: Game): Promise<void> {
           void layer.ghost.glide(points);
           if (await g.run.w(audio.sayWhole(CLIPS.bubbles))) g.save.write((s) => void (s.seen.hub = true));
         }
-        if (pick && ok()) await say(g, CLIPS.pick);
+        if (o.nudge) {
+          await g.run.until(() => !audio.speaking, 6000);
+          if (ok()) nudge();
+        } else if (pick && ok()) await say(g, CLIPS.pick);
       } catch (e) {
         // A jump ends the run; anything else is a bug worth seeing.
         if (!(e instanceof Cancelled)) console.error('[mmw hub]', e);
@@ -420,10 +430,30 @@ export async function hub(g: Game): Promise<void> {
 
   // ---- walking near, the prompts, the nudge, the cutoffs ----
   let prev: PrincessMode = actors.princess.mode;
+  let idleAt = 0;
   const offWalk = world.onFrame(() => {
-    // A cutoff passed: its bubble goes, during a place too (the learning bubbles of a pond visit).
-    const c = cutoffs(h.bedMs);
-    if (h.shown.some((p) => isPast(h, p)) || (h.shown.length && h.playMs >= c.all)) refillNow({ talk: false });
+    // A cutoff passed: its bubble goes, during a place too (the learning bubbles of a pond visit), and its slot stays
+    // empty until the refill after the next place, so nothing new appears while she decides.
+    const gone = cutNow(h);
+    if (gone.length) {
+      for (const p of gone) delete h.shownAt[p];
+      dress();
+      if (!h.running) world.markGoal(null);
+      void sync(false);
+    }
+    // An egg whose cutoff passed leaves the nest or the shore between places (5.6), shown or not: a tap on it would
+    // walk her there for nothing.
+    if (!h.running && actors.egg.visible && isPast(h, 'egg')) {
+      actors.fx.sparkle(actors.egg.position.clone().setY(0.6), { count: 14 });
+      actors.egg.hide();
+    }
+    // With no place running, twice a second: the shore egg lands when nothing else is left, and an empty hub fills.
+    const t = performance.now();
+    if (t - idleAt >= 500 && !h.running && !h.asked) {
+      idleAt = t;
+      const r = idleRefill(h, hubCtx(g));
+      if (r) refillNow({ landed: r === 'land' });
+    }
     const now = actors.princess.mode;
     const end = walkEnded(prev, now, princessAt(g), h.playMs);
     prev = now;
@@ -431,7 +461,7 @@ export async function hub(g: Game): Promise<void> {
     const p = walkEndStart(end, h.shown.filter((x) => displayed.has(x)), h.shownAt, (x) => placePoint(g, x));
     if (p) askPlace(g, p);
   });
-  g.run.defer(offWalk);
+  const undoWalk = g.run.defer(offWalk);
 
   let prompt = 0;
   let prompted = performance.now();
@@ -490,6 +520,8 @@ export async function hub(g: Game): Promise<void> {
     // A tap asks the place and she walks there; the first play's forced egg keeps its goal, so she walks herself.
     if ((p === 'egg' || p === 'shore') && !g.goal) void walkTo(g, STAND[p]);
     if (p === 'wish' && !g.waiting) g.waiting = offerWish(g);
+    // A wish counts when a baby waited as it started: wishPlace's release lets the baby graze and clears g.waiting.
+    const wisher = p === 'wish' ? g.waiting : null;
     const fromMs = h.playMs;
     const ck0 = g.clock.checkedMs;
     const step = steps.get(g);
@@ -500,7 +532,7 @@ export async function hub(g: Game): Promise<void> {
       else if (isQuest(p)) await runQuest(g, p, (gg) => RUN[p](gg, n));
       else (await RUN[p](g, n))();
       if (p === 'pond') counted = visitedNow.has(g);
-      if (p === 'wish' && !g.waiting) counted = false;
+      if (p === 'wish' && !wisher) counted = false;
     } finally {
       visitedNow.delete(g);
       h.running = null;
@@ -519,9 +551,8 @@ export async function hub(g: Game): Promise<void> {
     afterPlace(g, p, { n, fromMs, checkedMs: g.clock.checkedMs - ck0 });
     placesRun++;
     showBasket(g);
-    refillNow({ landed: !landed && h.shoreLanded });
     // After a visit the first learning bubble grows and bobs, and its "this way" line plays (5.2).
-    if (p === 'pond' && !h.asked) nudge();
+    refillNow({ landed: !landed && h.shoreLanded, nudge: p === 'pond' });
     prompted = performance.now();
   };
 
@@ -540,6 +571,11 @@ export async function hub(g: Game): Promise<void> {
   }
   talkToken++;
   popToken++;
+  // The hub's frame callback and its bubbles end with it, so nothing refills during bedtime.
+  offWalk();
+  undoWalk();
+  h.shown = [];
+  h.shownAt = {};
   for (const p of [...displayed]) hideBubble(p);
   // A place that ran across 29:00 ends at bedtime: "Soon it is bedtime!" after it, once, when nobody speaks (5.6).
   if (!soonSaid && h.playMs >= cutoffs(h.bedMs).all) {
@@ -656,6 +692,8 @@ export function slideTap(g: Game): void {
     void g.actors.princess.rideSlide();
     return;
   }
+  // On her way to the ladder for a visit: the ducks' line explains a resting slide, so nothing.
+  if (g.hub.running === 'pond') return;
   if (askPlace(g, 'pond')) return;
   g.world.ducks.bob();
   if (!ducksSaid.has(g.hub) && !audio.speaking && !g.bedtime) {

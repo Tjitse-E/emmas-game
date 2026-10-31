@@ -227,23 +227,34 @@ export function refill(h: HubState, c: HubCtx): HubPlace[] {
   return [...out, ...h.play.filter((p) => isLeft(h, p, c))];
 }
 
+/** The shore egg may still land: the nest egg is done, it has not landed, and its cutoff has not passed. */
+const shoreMayLand = (h: HubState): boolean => !h.shoreLanded && h.done.includes('egg') && !isPast(h, 'shore');
+
+/**
+ * The shore egg lands now, with no learning place ended (5.2's "at once after the nest egg when no other learning
+ * place is left"): the nest egg is done and no other learning place can run, because the last one passed its cutoff
+ * during a play place or while she waited. Without this done early would come with the shore egg still to do. Pure.
+ */
+export function shoreAlone(h: HubState, c: HubCtx): boolean {
+  return shoreMayLand(h) && !learningLeft(h, c, (q) => q === 'shore');
+}
+
 /**
  * A place finished, in this order: it is done; the nudge's and done early's counts start again; the shore egg lands
- * after the nest egg and one more learning place (or at once after the nest egg when no other learning place is left);
- * the play bubble (5.2: a learning place earns one when none waits, the Corner's while she has not been, else the
- * pond's; a waiting one swaps for the other while she has not been to the Corner; a visit uses its own); then done
- * early's check (5.6), only here, only before its last check: when no learning place can run any more she gets a last
- * pond bubble (only after a learning place, or when one still waits) and the Corner's if she has not been.
+ * after the nest egg and one more learning place, or whenever no other learning place is left once the nest egg is
+ * done (never past its cutoff); the play bubble (5.2: a learning place earns one when none waits, the Corner's while
+ * she has not been, else the pond's; a waiting one swaps for the other while she has not been to the Corner; a visit
+ * uses its own); then done early's check (5.6), only here, only before its last check: when no learning place can run
+ * any more (each done or past its cutoff: a herd baby's wish counts as left while it is under its limit, even when no
+ * baby is free at this refill) she gets a last pond bubble (only after a learning place, or when one still waits) and
+ * the Corner's if she has not been.
  */
 export function placeEnded(h: HubState, p: HubPlace, c: HubCtx): void {
   h.done.push(p);
   h.nudgeIdleMs = 0;
   h.earlyIdleMs = 0;
   const learning = LEARNING.includes(p);
-  if (!h.shoreLanded && h.done.includes('egg')) {
-    if (p !== 'egg' && learning) h.shoreLanded = true;
-    else if (p === 'egg' && !learningLeft(h, c, (q) => q === 'shore')) h.shoreLanded = true;
-  }
+  if (shoreMayLand(h) && ((p !== 'egg' && learning) || !learningLeft(h, c, (q) => q === 'shore'))) h.shoreLanded = true;
   const cornerDone = h.done.includes('corner');
   if (p === 'pond' || p === 'corner') h.play = h.play.filter((q) => q !== p);
   else if (learning && h.early === null) {
@@ -251,10 +262,41 @@ export function placeEnded(h: HubState, p: HubPlace, c: HubCtx): void {
     if (!waiting) h.play = [cornerDone ? 'pond' : 'corner'];
     else if (!cornerDone) h.play = [waiting === 'corner' ? 'pond' : 'corner'];
   }
-  if (h.early !== null || h.playMs >= cutoffs(h.bedMs).early || learningLeft(h, c)) return;
+  if (h.early !== null || h.playMs >= cutoffs(h.bedMs).early || learningLeft(h, { ...c, wishBaby: true })) return;
   h.early = h.playMs;
   const pond = learning || h.play.includes('pond');
   h.play = [...(pond ? (['pond'] as const) : []), ...(cornerDone ? [] : (['corner'] as const))];
+}
+
+/**
+ * The hub's wait, each frame: a bubble whose cutoff passed goes (from 29:00 every bubble), during a place too, and its
+ * slot stays empty while she decides (5.2: the slots refill after a place). Returns the bubbles that went. Pure.
+ */
+export function cutNow(h: HubState): HubPlace[] {
+  const all = h.playMs >= cutoffs(h.bedMs).all;
+  const gone = h.shown.filter((p) => all || isPast(h, p));
+  if (gone.length) h.shown = h.shown.filter((p) => !gone.includes(p));
+  return gone;
+}
+
+/**
+ * The hub's wait with no place running or asked, before 29:00: the shore egg lands when no other learning place can
+ * run ('land'), and when no learning bubble shows while a learning place can start the slots fill ('fill'; 5.2:
+ * "while a learning place can still start, the hub always shows one"), as after a cutoff took the last learning bubble
+ * or once a herd baby is free for a wish. Sets shown and shoreLanded; null when nothing changes. Pure.
+ */
+export function idleRefill(h: HubState, c: HubCtx): 'land' | 'fill' | null {
+  if (h.running || h.asked || h.playMs >= cutoffs(h.bedMs).all) return null;
+  if (shoreAlone(h, c)) {
+    h.shoreLanded = true;
+    h.shown = refill(h, c);
+    return 'land';
+  }
+  if (h.shown.some((p) => LEARNING.includes(p))) return null;
+  const next = refill(h, c);
+  if (!next.some((p) => LEARNING.includes(p))) return null;
+  h.shown = next;
+  return 'fill';
 }
 
 /** The hub for the test hook (__game.state().hub). */

@@ -1,5 +1,5 @@
 // The model of docs/v4/2.4.md section 5.7 for the hub's tests (plan Task 3): a play through the pure hub (hub.ts
-// refill, placeEnded, tickPlay and bedtimeDue only) with the place times of 5.2 at her pace, walks at 2.6 m/s over
+// refill, placeEnded, cutNow, idleRefill, tickPlay and bedtimeDue only) with the place times of 5.2 at her pace, walks at 2.6 m/s over
 // routes a quarter longer than a straight line between the place points, 0.2 min between places, and the moments each
 // place gives. Time goes through tickPlay in 1 s frames with `hub` on, so the nudge and done early's wait count as the
 // game counts them. Not a test file itself: tests/hub-history.test.ts and tests/hub.test.ts read it.
@@ -8,8 +8,8 @@ import { BEAD_TREE, CORNER, HAY_RACK, NEST, PICNIC, RIDE, SLIDE, START, WILD_EGG
 import { seeded } from '../src/content/rand';
 import { HUB_PLACES } from '../src/game/options';
 import {
-  type HubCtx, type HubPlace, type HubState, LEARNING, NUDGE_MS, POND_VISIT_MS, bedtimeDue, isLeft, placeEnded, refill,
-  startHub, tickPlay,
+  type HubCtx, type HubPlace, type HubState, LEARNING, NUDGE_MS, POND_VISIT_MS, bedtimeDue, cutNow, idleRefill, isLeft, placeEnded,
+  refill, startHub, tickPlay,
 } from '../src/game/hub';
 
 export type Policy = 'pond-lover' | 'skips-corner' | 'slide-only' | 'nearest' | 'idle-then-nearest';
@@ -88,8 +88,8 @@ export function simulate(policy: Policy, o: { maths?: 'beads' | 'rack' } = {}): 
   let at: Vec2 = START;
   const ctx = (): HubCtx => ({ maths, wishBaby: true, moments: { r: out.r + out.s, m: out.m } });
   const playShown = new Set<HubPlace>();
-  const show = () => {
-    h.shown = refill(h, ctx());
+  /** The play bubbles that showed, counted once from when each showed until it went. */
+  const track = () => {
     for (const p of h.shown) {
       if (p !== 'corner' && p !== 'pond') continue;
       if (!playShown.has(p)) out.playBubbles++;
@@ -98,14 +98,21 @@ export function simulate(policy: Policy, o: { maths?: 'beads' | 'rack' } = {}): 
     for (const p of [...playShown]) if (!h.shown.includes(p)) playShown.delete(p);
     for (const p of h.shown) if (p === 'corner' || p === 'pond') playShown.add(p);
   };
+  /** The refill after a place (or as the hub opens). */
+  const show = () => {
+    h.shown = refill(h, ctx());
+    track();
+  };
   /** Hub time with no place running, 1 s frames, until `ms` passed, bedtime is due or `stop()`; nudges as the game nudges. */
   const wait = (ms: number, stop: () => boolean = () => false): boolean => {
     for (let t = 0; t < ms; t += 1000) {
       if (bedtimeDue(h, { dressing: false })) return true;
       if (stop()) return false;
       tickPlay(h, 1000, { paused: false, hub: true });
-      // The game refills when a cutoff passes, so a bubble past its cutoff goes while she waits.
-      show();
+      // As the game waits: a bubble past its cutoff goes, the shore egg lands when nothing else is left, an empty hub fills.
+      cutNow(h);
+      idleRefill(h, ctx());
+      track();
       if (h.nudgeIdleMs >= NUDGE_MS) {
         out.nudges.push(h.playMs);
         h.nudgeIdleMs = 0;
@@ -115,7 +122,10 @@ export function simulate(policy: Policy, o: { maths?: 'beads' | 'rack' } = {}): 
   };
   const runFor = (p: HubPlace, ms: number) => {
     h.running = p;
-    for (let t = 0; t < ms; t += 1000) tickPlay(h, 1000, { paused: false, hub: true });
+    for (let t = 0; t < ms; t += 1000) {
+      tickPlay(h, 1000, { paused: false, hub: true });
+      cutNow(h);
+    }
   };
   const nearest = (from: Vec2, among: readonly HubPlace[]): HubPlace | null =>
     among.reduce<HubPlace | null>((best, p) => (best === null || walkM(from, p) < walkM(from, best) ? p : best), null);
@@ -192,36 +202,57 @@ export function simulate(policy: Policy, o: { maths?: 'beads' | 'rack' } = {}): 
 /** A wait long enough to reach bedtime from anywhere in a play. */
 const BEDTIME_MS_CAP = 40 * MIN;
 
+/** One refill of a random history (randomHistory). */
+export interface HistoryStep {
+  shown: HubPlace[];
+  /** What was left in the refill. */
+  left: HubPlace[];
+  /** The learning bubbles from before the refill that are still left. */
+  stayed: HubPlace[];
+  /** Done early had begun. */
+  early: boolean;
+  /** Learning places done before the refill. */
+  learned: number;
+}
+
 /**
  * Random hub histories for the invariant test: random choices among the shown bubbles, random waits and place lengths
- * (so cutoffs pass in the middle), a random maths quest and a wish baby that comes and goes. One step per refill, with
- * what was left in it, the learning bubbles that stayed from the refill before, and whether the kind just finished
- * held back a place that could otherwise run.
+ * (so cutoffs pass in the middle, while she waits and during a place), a random maths quest and a wish baby that comes
+ * and goes. One step per refill: after each place, and each time the waiting hub lands the shore egg or fills.
  */
-export function randomHistory(seed: number): { shown: HubPlace[]; left: HubPlace[]; stayed: HubPlace[]; afterSameKind: boolean }[] {
+export function randomHistory(seed: number): HistoryStep[] {
   const rand = seeded(seed);
   const maths = rand() < 0.5 ? 'beads' : 'rack';
   const h: HubState = startHub();
-  const steps: { shown: HubPlace[]; left: HubPlace[]; stayed: HubPlace[]; afterSameKind: boolean }[] = [];
-  const tick = (ms: number) => {
-    for (let t = 0; t < ms; t += 1000) tickPlay(h, 1000, { paused: false, hub: true });
-  };
+  const steps: HistoryStep[] = [];
   let r = 0;
   let m = 0;
+  let c: HubCtx = { maths, wishBaby: true, moments: { r, m } };
+  const learned = () => h.done.filter((p) => LEARNING.includes(p)).length;
+  const step = (before: HubPlace[], left: HubPlace[]) =>
+    steps.push({ shown: h.shown.slice(), left, stayed: before.filter((p) => isLeft(h, p, c)), early: h.early !== null, learned: learned() });
+  /** As the game waits (or runs a place): cutoffs every second, and with no place running the idle refill. */
+  const tick = (ms: number) => {
+    for (let t = 0; t < ms; t += 1000) {
+      tickPlay(h, 1000, { paused: false, hub: true });
+      cutNow(h);
+      const before = h.shown.filter((p) => LEARNING.includes(p));
+      const left = HUB_PLACES.filter((p) => isLeft(h, p, c));
+      if (idleRefill(h, c)) step(before, left);
+    }
+  };
   for (let k = 0; k < 40 && h.playMs < h.bedMs; k++) {
-    const c: HubCtx = { maths, wishBaby: rand() < 0.8, moments: { r, m } };
+    c = { maths, wishBaby: rand() < 0.8, moments: { r, m } };
     const before = h.shown.filter((p) => LEARNING.includes(p));
     const left = HUB_PLACES.filter((p) => isLeft(h, p, c));
-    // The just-finished rule held a place back: it would be left if the last place had been of another kind.
-    const other: HubState = { ...h, done: [...h.done, 'pond'] };
-    const afterSameKind = LEARNING.some((p) => !isLeft(h, p, c) && isLeft(other, p, c));
     h.shown = refill(h, c);
-    steps.push({ shown: h.shown.slice(), left, stayed: before.filter((p) => isLeft(h, p, c)), afterSameKind });
+    step(before, left);
     if (!h.shown.length) {
       tick(60_000);
       continue;
     }
     tick(Math.floor(rand() * 4) * 30_000);
+    if (!h.shown.length) continue;
     const p = h.shown[Math.floor(rand() * h.shown.length)];
     h.running = p;
     tick(30_000 + Math.floor(rand() * 10) * 30_000);

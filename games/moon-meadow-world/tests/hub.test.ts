@@ -9,7 +9,7 @@ import { CORNER, NEST, PICNIC, SLIDE } from '../src/layout';
 import { DEFAULT_LOOK } from '../src/wardrobe';
 
 /** What Elizabeth (audio.sayAll) and Lumi (layer.lumi.speak) said, in order. */
-const t = vi.hoisted(() => ({ said: [] as string[], speaking: false }));
+const t = vi.hoisted(() => ({ said: [] as string[], speaking: false, wishBaby: false, wishes: 0, withdrawn: 0 }));
 vi.hoisted(() => {
   (globalThis as { location?: unknown }).location ??= { pathname: '/games/moon-meadow-world/index.html' };
 });
@@ -30,15 +30,37 @@ vi.mock('../src/game/quests', async (importOriginal) => ({
 vi.mock('../src/game/beads', () => ({ beadsQuest: async () => () => {} }));
 vi.mock('../src/game/corner', () => ({ cornerQuest: async () => () => {}, trunkTap: () => false }));
 vi.mock('../src/game/quest-kit', async (importOriginal) => ({ ...(await importOriginal<object>()), giveGift: async () => null }));
+// The herd wish as the babies lane writes it (notes/requests-hub.md item 6): offerWish stops a grazing baby to wait
+// (g.waiting), and wishPlace's release lets it graze again, which clears g.waiting. t.wishBaby says whether one can.
+vi.mock('../src/game/moments', async (importOriginal) => {
+  const THREE = await import('three');
+  return {
+    ...(await importOriginal<object>()),
+    canOfferWish: () => t.wishBaby,
+    offerWish: (g: { waiting: unknown }) => {
+      if (!t.wishBaby) return null;
+      const n = ++t.wishes;
+      const u = {
+        id: `herd ${n}`, mode: 'idle', followSlot: null, position: new THREE.Vector3(-6, 0, 3), follow() {}, graze() {},
+        headTop: (out = new THREE.Vector3()) => out.set(-6, 1.4, 3),
+      };
+      g.waiting = u;
+      return u;
+    },
+    withdrawWish: () => void t.withdrawn++,
+    wishPlace: async (g: { waiting: unknown }) => () => void (g.waiting = null),
+  };
+});
 
 import {
-  BEDTIME_MS, type HubCtx, type HubPlace, type HubState, KIND, LEARNING, LETTER, PLACE_LIMIT, STRANDS, bedtimeDue, cutoffs, isLeft, isPast,
-  placeEnded, refill, startHub, tickPlay,
+  BEDTIME_MS, type HubCtx, type HubPlace, type HubState, KIND, LEARNING, LETTER, PLACE_LIMIT, STRANDS, bedtimeDue, cutNow, cutoffs, idleRefill,
+  isLeft, isPast, placeEnded, refill, startHub, tickPlay,
 } from '../src/game/hub';
 import { Run } from '../src/game/run';
 import { randomHistory } from './hub-sim';
-import { askPlace, firstLearning, hub, installPlayClock, nudgeDue, visitOver, walkEndStart, walkEnded } from '../src/game/hub-part';
-import { type Game, startClock, startQuests } from '../src/game/game';
+import { askPlace, firstLearning, hub, installPlayClock, nudgeDue, slideTap, visitOver, walkEndStart, walkEnded } from '../src/game/hub-part';
+import { type Game, createGame, startClock, startQuests } from '../src/game/game';
+import type { UnicornActor } from '../src/actors';
 import { Followers } from '../src/game/followers';
 import { Results } from '../src/game/results';
 import { createSave } from '../src/game/save';
@@ -338,18 +360,85 @@ describe('the refill', () => {
     expect(h.early).toBe(26.5 * 60_000);
   });
 
+  it('lands the shore egg whenever nothing else is left once the nest egg is done, so done early waits for it', () => {
+    // Review finding 3: the ride passes its cutoff during a pond visit after the nest egg.
+    const h = startHub();
+    h.done = ['picnic', 'corner', 'beads', 'wish', 'ride', 'wish', 'egg'];
+    h.playMs = 26 * 60_000 + 40_000;
+    placeEnded(h, 'pond', c());
+    expect([h.shoreLanded, h.early]).toEqual([true, null]);
+    expect(refill(h, c())).toContain('shore');
+    expect(bedtimeDue(h, { dressing: false })).toBe(false);
+    // While she waits: the ride's bubble goes at 26:00 with nothing else left, and the shore egg lands.
+    const w = startHub();
+    w.done = ['picnic', 'corner', 'beads', 'wish', 'ride', 'wish', 'egg'];
+    w.playMs = 25 * 60_000;
+    w.shown = refill(w, c());
+    expect(w.shown).toEqual(['ride']);
+    w.playMs = 26 * 60_000;
+    expect(cutNow(w)).toEqual(['ride']);
+    expect(idleRefill(w, c())).toBe('land');
+    expect([w.shoreLanded, w.shown]).toEqual([true, ['shore']]);
+    // Never past its own cutoff.
+    const late = startHub();
+    late.done = ['picnic', 'corner', 'beads', 'wish', 'ride', 'wish', 'egg'];
+    late.playMs = 27 * 60_000;
+    placeEnded(late, 'pond', c());
+    expect(late.shoreLanded).toBe(false);
+    expect(idleRefill(late, c())).toBeNull();
+  });
+
+  it('counts a herd wish under its limit as left for done early, even when no baby is free at that refill', () => {
+    // Review finding 5: done early is "each done or past its cutoff", not "no baby free now".
+    const h = startHub();
+    h.done = ['egg', 'shore', 'ride', 'picnic', 'ride', 'beads', 'wish'];
+    h.shoreLanded = true;
+    h.playMs = 18 * 60_000;
+    placeEnded(h, 'corner', c({ wishBaby: false }));
+    expect(h.early).toBeNull();
+    expect(bedtimeDue(h, { dressing: false })).toBe(false);
+    h.shown = refill(h, c({ wishBaby: false }));
+    expect(h.shown).toEqual([]);
+    // Once a baby is free while she waits, the empty hub fills with its wish.
+    expect(idleRefill(h, c({ wishBaby: false }))).toBeNull();
+    expect(idleRefill(h, c())).toBe('fill');
+    expect(h.shown).toEqual(['wish']);
+  });
+
+  it('takes a bubble away at its cutoff and leaves its slot empty while she decides', () => {
+    // Review finding 7: slots refill after a place, so nothing new appears at a cutoff while learning bubbles show.
+    const h = startHub();
+    h.done = ['egg', 'picnic'];
+    h.shoreLanded = true;
+    h.playMs = 25 * 60_000;
+    h.shown = refill(h, c());
+    expect(h.shown).toEqual(['shore', 'ride', 'beads']);
+    h.playMs = 26 * 60_000;
+    expect(cutNow(h)).toEqual(['ride']);
+    expect(idleRefill(h, c())).toBeNull();
+    expect(h.shown).toEqual(['shore', 'beads']);
+    h.playMs = 29 * 60_000;
+    expect(cutNow(h)).toEqual(['shore', 'beads']);
+    expect(idleRefill(h, c())).toBeNull();
+  });
+
   it('keeps at most three learning bubbles, one of each kind, never two wishes, a learning bubble while one can start, and a reading and a maths place whenever both are left', () => {
     for (let seed = 1; seed <= 3000; seed++) {
       for (const step of randomHistory(seed)) {
         const learning = step.shown.filter((p) => LEARNING.includes(p));
         expect(learning.length).toBeLessThanOrEqual(3);
         expect(new Set(step.shown.map((p) => KIND[p])).size).toBe(step.shown.length);
-        if (step.left.some((p) => LEARNING.includes(p))) expect(learning.length).toBeGreaterThan(0);
+        if (step.left.some((p) => LEARNING.includes(p))) expect(learning.length, `seed ${seed}`).toBeGreaterThan(0);
+        // `left` already holds back the kind just finished (ride 2 right after ride 1), so no step is exempt.
         const has = (s: 'r' | 'm') => step.shown.some((p) => STRANDS[p].includes(s));
         const left = (s: 'r' | 'm') => step.left.some((p) => STRANDS[p].includes(s));
-        if (left('r') && left('m') && !step.afterSameKind) expect([has('r'), has('m')], `seed ${seed}`).toEqual([true, true]);
+        if (left('r') && left('m')) expect([has('r'), has('m')], `seed ${seed}`).toEqual([true, true]);
         // Shown learning bubbles never swap while they are left.
         expect(step.stayed.every((p) => step.shown.includes(p)), `seed ${seed}`).toBe(true);
+        // At most one play bubble, two only after done early, and none before a learning place (design section 8).
+        const play = step.shown.filter((p) => !LEARNING.includes(p));
+        expect(play.length, `seed ${seed}`).toBeLessThanOrEqual(step.early ? 2 : 1);
+        if (play.length) expect(step.learned, `seed ${seed}`).toBeGreaterThan(0);
       }
     }
   });
@@ -661,6 +750,157 @@ describe('the hub part', () => {
     expect(vi.mocked(f.g.layer.offerBob).mock.calls.some(([, grow]) => grow)).toBe(true);
     expect(t.said.some((id) => id.startsWith('g4-way-'))).toBe(true);
     f.stop();
+  });
+});
+
+describe('the herd wish and the cutoffs in the hub part', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    t.said.length = 0;
+    t.speaking = false;
+    t.wishBaby = true;
+    t.wishes = 0;
+    t.withdrawn = 0;
+    vi.stubGlobal('fetch', () => Promise.resolve());
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    t.wishBaby = false;
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("counts a herd wish when its release clears g.waiting, holds wish 2 back for one place, and stops at the limit of 2", async () => {
+    // Review findings 1 and 4: the babies lane's release lets the baby graze (g.waiting null) before the hub counts it.
+    const f = fakeHub();
+    f.g.hub.done = ['egg', 'shore', 'ride', 'ride', 'beads'];
+    f.g.hub.shoreLanded = true;
+    void hub(f.g).catch(() => {});
+    await f.pump(2000);
+    expect(f.g.hub.shown).toEqual(['picnic', 'wish']);
+    expect(f.g.waiting).not.toBeNull();
+    await f.tap('wish');
+    await f.pump(2000);
+    expect(f.g.hub.done.at(-1)).toBe('wish');
+    expect(f.g.hub.play).toEqual(['corner']);
+    // The kind just finished waits one place, with the picnic left.
+    expect(f.g.hub.shown).toEqual(['picnic', 'corner']);
+    expect([f.offers.has('wish'), f.g.waiting]).toEqual([false, null]);
+    await f.tap('picnic');
+    await f.pump(2000);
+    expect(f.g.hub.shown).toContain('wish');
+    await f.tap('wish');
+    await f.pump(2000);
+    expect(f.g.hub.done.filter((p) => p === 'wish')).toHaveLength(2);
+    expect(t.wishes).toBe(2);
+    // The limit of 2 reached and nothing else left: done early, with the last pond bubble and the Corner's.
+    expect(f.g.hub.early).not.toBeNull();
+    expect(f.g.hub.shown).toEqual(['pond', 'corner']);
+    expect(f.offers.has('wish')).toBe(false);
+    f.stop();
+  });
+
+  it('lands the shore egg when the last other learning bubble goes at its cutoff while she waits', async () => {
+    const f = fakeHub();
+    t.wishBaby = false;
+    f.g.hub.done = ['picnic', 'corner', 'beads', 'wish', 'ride', 'wish', 'egg'];
+    f.g.hub.playMs = 25.9 * 60_000;
+    void hub(f.g).catch(() => {});
+    await f.pump(1000);
+    expect([...f.offers.keys()]).toEqual(['ride']);
+    f.g.hub.playMs = 26 * 60_000;
+    await f.pump(3000);
+    expect(f.g.hub.shoreLanded).toBe(true);
+    expect(f.g.hub.early).toBeNull();
+    expect(t.said).toContain('lumi4-another-egg');
+    expect([...f.offers.keys()]).toEqual(['shore']);
+    f.stop();
+  });
+
+  it('fills no slot at a cutoff while learning bubbles show, and takes the egg away with its bubble at 27:00', async () => {
+    // Review findings 7 and 10.
+    const f = fakeHub();
+    f.g.hub.done = ['egg'];
+    f.g.hub.shoreLanded = true;
+    f.g.hub.playMs = 25.9 * 60_000;
+    f.g.actors.egg.place(new THREE.Vector3(16, 0, 11), 'snow');
+    void hub(f.g).catch(() => {});
+    await f.pump(2000);
+    expect([...f.offers.keys()]).toEqual(['ride', 'picnic', 'beads']);
+    const offered = t.wishes;
+    f.g.hub.playMs = 26 * 60_000;
+    await f.pump(2000);
+    expect([...f.offers.keys()]).toEqual(['picnic', 'beads']);
+    expect(t.wishes).toBe(offered);
+    expect(f.g.actors.egg.visible).toBe(true);
+    f.g.hub.playMs = 27 * 60_000;
+    await f.pump(1000);
+    expect(f.g.actors.egg.visible).toBe(false);
+    f.stop();
+  });
+
+  it('nudges after a pond visit in place of g4-pick, so no line cuts its "this way" line', async () => {
+    // Review finding 11, with ?at=hub&place=pond: g4-pick would still be due after one place.
+    const f = fakeHub();
+    t.wishBaby = false;
+    f.g.hub = hubAt(resolveStart(parseOptions('?at=hub&place=pond'))!, BEDTIME_MS);
+    void hub(f.g).catch(() => {});
+    await f.pump(2000);
+    expect(f.g.hub.visit).not.toBeNull();
+    t.said.length = 0;
+    f.g.hub.playMs = f.g.hub.visit!.fromMs + 180_000;
+    await f.pump(3000);
+    expect(f.g.hub.done).toEqual(['pond']);
+    expect(t.said.some((id) => id.startsWith('g4-way-'))).toBe(true);
+    expect(t.said).not.toContain('g4-pick');
+    expect(vi.mocked(f.g.layer.offerBob).mock.calls.some(([, grow]) => grow)).toBe(true);
+    f.stop();
+  });
+
+  it('does nothing at a slide tap on her way to the ladder', () => {
+    // Review finding 8: the ducks line explains a resting slide, not a visit she is walking to.
+    const f = fakeHub();
+    f.g.hub.running = 'pond';
+    slideTap(f.g);
+    expect(f.g.world.ducks.bob).not.toHaveBeenCalled();
+    expect(t.said).toEqual([]);
+  });
+
+  it('ends its frame callback and its bubbles with the hub', async () => {
+    // Review finding 6: nothing refills during bedtime.
+    const f = fakeHub();
+    t.wishBaby = false;
+    let ended = false;
+    void hub(f.g).then(() => (ended = true), () => {});
+    await f.pump(2000);
+    f.g.hub.playMs = 30 * 60_000;
+    await f.pump(500);
+    expect(ended).toBe(true);
+    expect(f.g.hub.shown).toEqual([]);
+    vi.mocked(f.g.world.markGoal).mockClear();
+    f.g.hub.playMs = 29 * 60_000 + 1;
+    await f.pump(1000);
+    expect(f.g.world.markGoal).not.toHaveBeenCalled();
+    expect(f.g.hub.shown).toEqual([]);
+  });
+
+  it("never lets the waiting wish baby follow, through the game's own followers", () => {
+    // Review finding 4: the refuse rule as createGame wires it (game.ts).
+    const g = createGame({
+      world: { onFrame: () => () => {} }, actors: {}, layer: {}, options: parseOptions(''), save: createSave(() => null, true), herd: [],
+    } as unknown as Parameters<typeof createGame>[0]);
+    const u = { id: 'herd 1', mode: 'graze', followSlot: null as number | null, follow(i: number) { this.followSlot = i; }, graze() {} };
+    const baby = u as unknown as UnicornActor;
+    g.waiting = baby;
+    expect(g.followers.add(baby)).toBeNull();
+    expect(g.followers.list).toEqual([]);
+    g.waiting = null;
+    g.followers.add(baby);
+    expect(g.followers.list).toEqual([baby]);
+    g.waiting = baby;
+    g.followers.sync();
+    expect([g.followers.list, u.followSlot]).toEqual([[], null]);
   });
 });
 
