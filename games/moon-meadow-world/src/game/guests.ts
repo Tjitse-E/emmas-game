@@ -13,8 +13,8 @@ function free(g: Game, u: UnicornActor): boolean {
 }
 
 /**
- * Up to `n` guests for a place at `at`: they stop following until the place is over. Her babies first, in hatch order
- * (baby 13 first, as in 2.3.3), then the babies among her followers in slot order, then the grazing herd babies nearest
+ * Up to `n` guests for a place at `at`: they stop following until the place is over. Her babies first, newest first
+ * (design 5.3), then the babies among her followers in slot order, then the grazing herd babies nearest
  * `at`. Foals that follow her stay followers: the places are made for babies (the picnic's cushions, the gate's wishes).
  */
 export function guests(g: Game, at: Vec2, n: number): UnicornActor[] {
@@ -22,7 +22,7 @@ export function guests(g: Game, at: Vec2, n: number): UnicornActor[] {
   const take = (u: UnicornActor) => {
     if (out.length < n && !out.includes(u)) out.push(u);
   };
-  for (const b of g.babies) take(b.unicorn);
+  for (const b of [...g.babies].reverse()) take(b.unicorn);
   // A fake game without followers (the step 0 contract's) has none to give.
   for (const u of g.followers?.list ?? []) if (u.look.stage === 'baby' && free(g, u)) take(u);
   if (out.length >= n) return out;

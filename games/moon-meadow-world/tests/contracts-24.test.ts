@@ -145,7 +145,7 @@ describe('the 2.4 contracts', () => {
     expect(late).toHaveBeenCalledOnce();
   });
 
-  it('gives a place its guests with no baby hatched: her babies in hatch order first, then the grazing herd babies nearest', () => {
+  it('gives a place its guests with no baby hatched: her babies newest first, then the grazing herd babies nearest', () => {
     const u = (id: string, stage: string, mode: string, x: number, followSlot: number | null = null) => ({ id, look: { stage }, mode, followSlot, position: { x, y: 0, z: 0 } });
     const herd = [
       u('far', 'baby', 'graze', 10), u('foal', 'foal', 'graze', 1), u('near', 'baby', 'graze', 2), u('stall', 'baby', 'stall', 0),
@@ -165,8 +165,8 @@ describe('the 2.4 contracts', () => {
     g.babies = [{ unicorn: b13 }];
     expect(ids(2)).toEqual(['baby-13', 'near']);
     g.babies = [{ unicorn: b13 }, { unicorn: b14 }];
-    expect(ids(2)).toEqual(['baby-13', 'baby-14']);
-    expect(ids(1)).toEqual(['baby-13']);
+    expect(ids(2)).toEqual(['baby-14', 'baby-13']);
+    expect(ids(1)).toEqual(['baby-14']);
   });
 
   it('gives the test hook a signpost spec as words', () => {

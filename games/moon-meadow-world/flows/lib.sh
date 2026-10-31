@@ -209,12 +209,12 @@ no_missing_clips() {
   echo "waiting for gen.sh: $missing"
 }
 
-# No missing clip and no console error. Each result, look and play line and each missing clip go to diag.txt, which no
+# No missing clip and no console error. Each result, look, play and hub line and each missing clip go to diag.txt, which no
 # server has: those requests are meant to fail (the server log is the record), so their 404s are not errors.
 finish() {
   no_missing_clips
   local errs
-  errs="$(pw console error 2>/dev/null | grep -E '^\[ERROR\]' | grep -vE 'diag\.txt\?kind=(result|look|play|missing)&' || true)"
+  errs="$(pw console error 2>/dev/null | grep -E '^\[ERROR\]' | grep -vE 'diag\.txt\?kind=(result|look|play|hub|missing)&' || true)"
   [ -z "$errs" ] || fail "console errors: $errs"
   pw close >/dev/null 2>&1 || true
   echo "ok ${W}x$H $1"

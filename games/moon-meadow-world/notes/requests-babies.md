@@ -18,6 +18,8 @@ It finds the spot's snapped baby (named for `wish`), runs its naming for `naming
 rule (`nextWishKind`) as `eggPlace` does, and resolves framed with `eggPlace`'s release. With no baby of that spot it runs
 the whole egg place. Tested in tests/babies.test.ts ("jumps into an egg place at its naming or its wish").
 
+**Done** (integrator, babies merge): `eggStep` in `hub-part.ts` snaps the spot's baby and returns `eggPlaceStep(g, spot, step)`, so a jump also gets the egg place's release.
+
 ## 2. `src/game/eggs-part.ts` and `src/game/level.ts`: delete 2.3.3's index-based `egg`, `naming` and `wish`
 
 After request 1, and once the hub has replaced level.ts's 2.3 parts (`egg1`, `naming1`, `wish1`, `egg2`, `naming2`,
@@ -31,11 +33,15 @@ export async function wish(g: Game, i: number): Promise<void> { ... }
 
 and the imports only they use (`secondWishKind`, `playQuests`, `walkTo`).
 
+**Done** (integrator, babies merge): `egg`, `naming` and `wish` are deleted from `eggs-part.ts`, with the imports only they used (`secondWishKind`, `playQuests`, `walkTo`). level.ts no longer used them.
+
 ## 3. `src/game/moments.ts` and `tests/world-quests.test.ts`: delete `secondWishKind`
 
 With request 2, when only the test at tests/world-quests.test.ts:344 still uses it, delete
 `export function secondWishKind(offered: readonly string[]): 'bath' | 'picnic'` and that test. A baby's wish takes the
 kind the play has read least (`wishKindFor`, design 5.3).
+
+**Done** (integrator, babies merge): `secondWishKind` is deleted from `moments.ts`. Its test in tests/world-quests.test.ts keeps only the `playQuests` check, under a new title, and the comment in quests.ts no longer names it.
 
 ## 4. Guests: hatch order or newest first (your call)
 
@@ -49,12 +55,16 @@ first. With 4 babies, babies 13 and 14 then always go to the places and the two 
   (tests/babies.test.ts "takes her babies in hatch order" needs only its title changed, as it has one baby); or
 - hatch order: change design 5.3 to "her babies in hatch order".
 
+**Done: newest first** (integrator, babies merge), as design 5.3 and the plan's Task 9 say. `guests` takes `[...g.babies].reverse()`; tests/contracts-24.test.ts now expects `['baby-14', 'baby-13']` and `['baby-14']`, and both test titles say newest first.
+
 ## 5. Herd wishes log as `wish-herd-<k>` (please confirm)
 
 Plan Task 9 Step 3 says a herd baby's wish has the result line `wish-<n>`. The lane logs it as `wish-herd-<k>` (k counts
 herd wishes this play), because `wish-<n>` is the newborns' stream and part by baby: a herd wish and a later newborn
 would share a stream and a result part. Please confirm, change the plan's Task 9 text to match, and tell the hub lane
 before `long.flow.sh` counts wish lines.
+
+**Done** (integrator, babies merge): confirmed. The plan's Task 9 Step 3 now says `wish-herd-<k>`. The hub lane has merged, and `long.flow.sh` and the other flows count no `wish-` lines, so nothing there changes.
 
 ## 6. For Tjitse, not blocking: the words or the level for a level 3 reader's later reads
 
@@ -65,6 +75,8 @@ still folds into her reading level; level 3 is the top, so it can only delay a d
 keeps 2.3.2's order (words first), which tests/reading-level.test.ts:200-212 pins. To keep the level first instead, `planWish` would plan again leaving
 out only the play's earlier targets when the level drops, and that test would change.
 
+**Declined for tonight** (integrator, babies merge): the lane keeps 2.3.2's words first, which tests/reading-level.test.ts pins. Left for Tjitse to decide after 2.4.0.
+
 ## 7. For Tjitse, not blocking: a spoken stone line for a star egg that is the play's first maths moment
 
 `first` is per egg kind (design 5.3). The warm egg says "Drag one stone to the nest." and the snow egg "Drag the snow
@@ -73,3 +85,5 @@ can be the play's first maths moment only from play 2 (the ride is in the openin
 sums, and the ghost drag of a wrong stone shows on the play's first maths moment of any kind (ui/egg.ts, `egg-demo`). If
 a spoken line is still wanted, it needs a new Elizabeth clip in run B and the star egg's `afterGoal` (signs-star's
 eggs.ts); "Drag one stone to the nest." does not fit a panel without a nest.
+
+**Declined for tonight** (integrator, babies merge): a new Elizabeth clip is outside tonight's audio run, and the ghost drag already shows on the play's first maths moment. Left for Tjitse to decide after 2.4.0.

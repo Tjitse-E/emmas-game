@@ -55,7 +55,7 @@ const QUEST_RUN: Record<QuestId, (g: Game) => Promise<() => void>> = {
 
 /**
  * The quests this play offers: the royal picnic, this play's maths quest (the hay rack or the bead tree) and the
- * Dressing Corner (moments.ts secondWishKind reads it).
+ * Dressing Corner.
  */
 export function playQuests(g: Game): QuestId[] {
   return QUEST_IDS.filter((id) => id === 'picnic' || id === 'corner' || id === g.quests.maths);

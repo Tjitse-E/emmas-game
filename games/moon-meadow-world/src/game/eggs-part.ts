@@ -12,7 +12,6 @@
 // avoids every earlier baby's, each naming leaves out every name given this play (3 wrong gems at the first naming,
 // 4 at every later one), and a kind's intro plays only on its first egg of the play. Streams and result parts:
 // egg-nest, egg-shore, egg-trail-<k>, hatch-<n>, naming-<n>, wish-<n> (n counts babies, k trail eggs, both from 1).
-// 2.3.3's index-based egg, naming and wish stay for level.ts's 2.3 parts until the hub replaces them.
 import * as THREE from 'three';
 import type { EggKind, EggSpec, MomentHooks, MomentResult, NameChoice, Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
@@ -22,14 +21,12 @@ import { CLIPS, babyLook, eggClipIds, namingClipIds, namingSpec, newborn, wishCl
 import { audio } from '../audio';
 import {
   type Baby, type Game, type Goal, GOALS, checked, faceBeside, flat, frameAt, lumiSay, preload, princessAt, say, setGoal, waitToReach,
-  walkTo,
 } from './game';
 import {
   type MomentLog, afterWish, babyReact, crownKeep, dropToyAfter, frameWish, momentLog, nextWishKind, parkFollowers, planWish, runWish,
-  secondWishKind, settleBy,
+  settleBy,
 } from './moments';
 import { noteMaths, planEggs } from './maths';
-import { playQuests } from './quests';
 import { walkThere } from './quest-kit';
 import { MAX_FOLLOWERS } from './followers';
 
@@ -188,33 +185,6 @@ function followHer(g: Game, u: UnicornActor): void {
   g.followers.add(u, !g.followers.list.some(isBaby));
 }
 
-// ---- 2.3.3's egg parts ---------------------------------------------------------------------------------------------
-
-/** The egg moment and the hatch, for the nest egg (index 0) and the wild egg (index 1); the baby takes the next baby index. */
-export async function egg(g: Game, i: 0 | 1): Promise<void> {
-  const { actors, world } = g;
-  const goal = i === 0 ? GOALS.nest : GOALS.wildEgg;
-  const eggAt = i === 0 ? NEST_EGG : WILD_EGG_AT;
-  const spot = i === 0 ? 'nest' : 'shore';
-  if (!actors.egg.visible) actors.egg.place(eggAt, KIND_AT[spot]);
-  if (!g.goal) setGoal(g, goal);
-  g.free = true;
-  await waitToReach(g, goal);
-  setGoal(g, null);
-  // The glow's job (find the nest) is done: it would only bleach the egg moment.
-  world.nestGlow(false);
-  g.free = false;
-  parkFollowers(g, SIDE[i]);
-  const eggFlat = flat(actors.egg.position);
-  void walkTo(g, SIDE[i]).then(() => faceBeside(g, eggFlat));
-  // 2.4.0: no "plan egg 1 first" for a jump to the wild egg any more; each egg plans with what the play has asked.
-  const specs = await planSums(g, spot);
-  const eggPoint = actors.egg.position.clone();
-  await frameAt(g, flat(eggPoint), EGG_WIDTH, eggPoint, 0.4);
-  await askSums(g, spot, specs);
-  await hatch(g, g.babies.length, spot);
-}
-
 /** An egg's three sums from its stream, with their clips loaded; the kind's intro only on its first egg of the play. */
 async function planSums(g: Game, spot: EggSpot): Promise<EggSpec[]> {
   const kind = KIND_AT[spot];
@@ -332,14 +302,6 @@ async function nameBaby(g: Game, baby: Baby): Promise<void> {
   layer.tag(r.name.name, () => world.toScreen(u.headTop()), 3500);
 }
 
-/**
- * Baby `i`'s naming (2.3's naming1 and naming2 parts): every later naming has a fourth wrong gem (docs/v4/2.2.md 3.1)
- * and leaves out the names of the babies named before it.
- */
-export async function naming(g: Game, i: number): Promise<void> {
-  await nameBaby(g, g.babies[i]);
-}
-
 export function named(g: Game, baby: Baby, choice: NameChoice): void {
   baby.unicorn.name = choice.name;
   baby.member = newborn(choice, baby.look, baby.door);
@@ -374,31 +336,6 @@ async function firstWish(g: Game, baby: Baby, keepFrame: boolean): Promise<void>
   await runWish(g, u, spec, part, { frame: !keepFrame });
   // A pond toy stays until the swim takes it at the pond (bathSwim); here it goes as a picnic dish does.
   if (spec.kind === 'bath') dropToyAfter(u, WISH_TOY_MS);
-}
-
-/**
- * A baby's wish beside her: the first baby wants to dress up like her (at the nest), the second (by the wild egg)
- * wants a pond toy when free play offers the royal picnic, which every play in 2.3 does, and else a picnic treat
- * (2.3.2, moments.ts secondWishKind): the picnic's two guests read picnic words, so a picnic wish here made three
- * picnic baskets in about 100 s. "Your baby wants to dress up like you!" before the dress-up wish. Nothing before the
- * other wish: "I'm hungry!" only before a food would tell her the answer is a food.
- */
-export async function wish(g: Game, i: number): Promise<void> {
-  const baby = g.babies[i];
-  const u = baby.unicorn;
-  g.free = false;
-  const part = `wish-${i + 1}`;
-  const kind = i === 0 ? 'dress' : secondWishKind(playQuests(g));
-  const spec = planWish(g, kind, part, { wish: true });
-  const before = kind === 'dress' ? CLIPS.dressUp : [];
-  await preload(g, [...wishClipIds(spec), ...afterWish(spec), ...before]);
-  await settleBy(g, u);
-  await say(g, before);
-  await runWish(g, u, spec, part);
-  // A pond toy stays until the swim takes it at the pond (bathSwim); here it goes as a picnic dish does.
-  if (spec.kind === 'bath') dropToyAfter(u, WISH_TOY_MS);
-  for (const p of g.parked.splice(0)) g.followers.add(p);
-  g.followers.add(u, i === 0);
 }
 
 // ---- the babies of a jump ------------------------------------------------------------------------------------------

@@ -27,10 +27,9 @@ names blocks of `tests/content.test.ts`. Flow: `flows/bedtime.flow.sh`.
 
 ## Guests and wishes (guests.ts, moments.ts)
 
-- `guests(g, at, n)`: her babies in hatch order, then the babies among her followers in slot order, then the grazing
-  herd babies nearest the place. Foals that follow her stay followers, because the places are made for babies. The
-  step 0 contract test pins hatch order, so "her newest named babies" in the design is read as "her newborns"
-  until the integrator decides (requests-babies.md, request 4).
+- `guests(g, at, n)`: her babies newest first (design 5.3; the integrator chose it at the merge, requests-babies.md,
+  request 4), then the babies among her followers in slot order, then the grazing herd babies nearest the place.
+  Foals that follow her stay followers, because the places are made for babies. The guests follow again in that order.
 - `wishKindFor(read, last, picnicNear)` (pure): the kind read least, a tie going dress, bath, picnic. Never the kind of
   the last word read, and never picnic while the picnic's bubble shows or right after the picnic. `nextWishKind(g)`
   counts the reads from the result lines. The play's first baby still wants to dress up like her.

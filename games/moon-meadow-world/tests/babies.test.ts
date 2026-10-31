@@ -298,7 +298,7 @@ const put = (g: Game, id: string, x: number, z: number) => unicorn(g, id).positi
 const herdBabies = (g: Game) => g.herd.filter((h) => h.look.stage === 'baby').map((h) => h.id);
 
 describe('guests', () => {
-  it('takes her babies in hatch order, then her baby followers, then the herd babies nearest the place', () => {
+  it('takes her babies newest first, then her baby followers, then the herd babies nearest the place', () => {
     const g = fakeGame();
     const at = { x: 30, z: 30 };
     // Everyone far away, two herd babies near the place.

@@ -22,7 +22,7 @@ import {
   FREE_WAIT_MS, type HubCtx, type HubState, LEARNING, NUDGE_MS, POND_SLIDES, POND_VISIT_MS, POP_GAP_MS, PROMPT_MS, STOP_NEAR_M,
   bedtimeDue, cutNow, cutoffs, idleRefill, isPast, placeEnded, refill, tickPlay,
 } from './hub';
-import { HATCH_SPOT, NEST_EGG, WILD_EGG_AT, eggPlace, naming, snapBabies, wish } from './eggs-part';
+import { HATCH_SPOT, NEST_EGG, WILD_EGG_AT, eggPlace, eggPlaceStep, snapBabies } from './eggs-part';
 import { canOfferWish, offerWish, withdrawWish, wishPlace } from './moments';
 import { ridePlace } from './ride';
 import { Cancelled } from './run';
@@ -157,14 +157,11 @@ export function askStep(g: Game, step: StartStep | null): void {
   else steps.delete(g);
 }
 
-async function eggStep(g: Game, p: 'egg' | 'shore', step: StartStep): Promise<() => void> {
+async function eggStep(g: Game, p: 'egg' | 'shore', step: 'naming' | 'wish'): Promise<() => void> {
   const spot = p === 'egg' ? 'nest' : 'shore';
-  const i = g.babies.length;
   g.actors.egg.hide();
   snapBabies(g, [spot], spot === 'nest' ? HATCH_SPOT[13] : HATCH_SPOT[14], step === 'wish');
-  if (step === 'naming') await naming(g, i);
-  await wish(g, i);
-  return () => {};
+  return eggPlaceStep(g, spot, step);
 }
 
 /**

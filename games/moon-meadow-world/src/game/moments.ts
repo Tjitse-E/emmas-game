@@ -235,16 +235,6 @@ export function nextWishKind(g: Game): BabyWishKind {
 }
 
 /**
- * wish2's kind (2.3.2, the level's last wish, by the wild egg). When this play's free play offers the royal picnic,
- * whose two guests read picnic words, wish2 is a second pond word wish ('bath'), so a child who takes the picnic first
- * does not meet three picnic baskets in about 100 s. Without the picnic it stays a picnic wish. `offered` is
- * quests.ts playQuests(); every play in 2.3 offers the picnic.
- */
-export function secondWishKind(offered: readonly string[]): 'bath' | 'picnic' {
-  return offered.includes('picnic') ? 'bath' : 'picnic';
-}
-
-/**
  * A wish of `kind` from the stream `label`. The three wishes count for the warm-up (the play's first one is a level
  * lower); the picnic guests and the Corner's phrase reads do not. Targets leave out the last play's and the ones asked
  * earlier today. A second pond wish (wish2 in 2.3.2) has no target or basket word of the play's pond wish while

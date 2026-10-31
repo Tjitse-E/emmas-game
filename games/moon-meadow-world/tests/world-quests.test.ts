@@ -43,7 +43,6 @@ import { fillsSet, giftOffer, giveGift, mathsQuestFor } from '../src/game/quest-
 import { type Game, startClock, startQuests } from '../src/game/game';
 import { badgeOf, playQuests, runQuest } from '../src/game/quests';
 import { hubCtx } from '../src/game/hub-part';
-import { secondWishKind } from '../src/game/moments';
 import { cornerQuest, trunkTap } from '../src/game/corner';
 import { MIRROR_MS, dressClips, wardrobe } from '../src/game/wardrobe-part';
 import { gateKind as phraseGateKind } from '../src/content/phrases';
@@ -217,14 +216,12 @@ describe('the maths quest', () => {
     expect(offered()).toEqual(['picnic', 'rack']);
   });
 
-  it('offers the picnic on every play, so wish2 by the wild egg is a pond wish; without the picnic it would be a picnic wish (2.3.2)', () => {
+  it('offers the picnic, this play\'s maths quest and the Corner on every play', () => {
     for (const maths of ['beads', 'rack'] as const) {
       const { g } = fakeGame();
       g.quests.maths = maths;
       expect(playQuests(g)).toEqual(['picnic', maths, 'corner']);
-      expect(secondWishKind(playQuests(g))).toBe('bath');
     }
-    expect(secondWishKind(['beads', 'corner'])).toBe('picnic');
   });
 });
 
@@ -356,7 +353,8 @@ describe('every quest', () => {
     expect(calls.order).toEqual(['wish framed', 'wish framed', 'lumi lumi4-picnic-done', 'gift framed', 'release']);
     expect(g.results.lines.map((r) => r.part)).toEqual(['picnic1', 'picnic2']);
     expect(GIFT_SETS.crowns.items).toContainEqual(g.quests.gifts[0]);
-    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', 'baby-14']);
+    // Her guests follow again newest first (guests.ts, design 5.3).
+    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-14', 'baby-13']);
   });
 
   it('rack: the sum in its frame, then the gift picker in that frame, then the release', async () => {
@@ -413,7 +411,7 @@ describe('the Corner visit', () => {
     expect(g.world.releaseFrame).not.toHaveBeenCalled();
     release();
     expect(g.world.releaseFrame).toHaveBeenCalledTimes(1);
-    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-13', 'baby-14']);
+    expect(g.followers.list.map((u) => u.id)).toEqual(['baby-14', 'baby-13']);
   });
 
   // On a fresh device without ?phrases= every ok pair plays, Claude's checks too (2.3 section 18).
