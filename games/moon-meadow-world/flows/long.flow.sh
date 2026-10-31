@@ -108,8 +108,8 @@ while [ "$(field part)" = hub ]; do
     running="$(val "() => window.__game.state().hub.running || window.__game.state().hub.asked")"
     say "$(val "() => (window.__game.state().hub.playMs / 60000).toFixed(1)") min: $running"
     if [ "$running" = pond ] && [ "$LONG" = pond ]; then
-      # The pond-lover stays until the visit ends by itself at 3 minutes (docs/v4/2.4.md section 8): a slide about
-      # every 40 s, so the visit's time runs out before its 6 slides.
+      # The pond-lover stays until the visit ends by itself (docs/v4/2.4.md section 8), with a slide about every 40 s.
+      # The herd's slides count too, so a visit usually ends at 6 slides after about 1.5 minutes, not at 3 minutes.
       while [ "$(val "() => window.__game.state().hub.running")" = pond ]; do
         if [ "$(val "() => window.__game.targets().some((t) => t.name === 'slide') && window.__game.state().princess.mode === 'idle'")" = true ]; then
           tap slide
@@ -189,7 +189,10 @@ if [ -z "${LONG_BED:-}" ]; then
       expect_eq "$(val "() => $bt >= 29.5 && $bt <= 31.8")" true 'bedtime near 30:00'
       ;;
     pond)
-      expect_eq "$(val "() => $pv <= 5 && $po <= 900")" true 'at most 5 visits and 15 minutes at the pond'
+      # 5.7's model gave her 5 visits of 3 minutes. The herd's slides end a visit after about 1.5 minutes, so she fits
+      # more learning places and as many visits (31 October 2026, the lead's call): the rule is 5.8's, visits no more
+      # than the learning places, never two visits in a row, at least 6 learning places and 15 minutes at the pond.
+      expect_eq "$(val "() => $pv <= $learning && !',$sq,'.includes(',o,o,') && $learning >= 6 && $po <= 900")" true 'visits no more than the learning places, never two in a row, and 15 minutes at the pond'
       expect_eq "$(val "() => $nr + $ns >= 10")" true 'reading and spelling'
       expect_eq "$(val "() => $nm >= 12")" true 'maths'
       ;;
