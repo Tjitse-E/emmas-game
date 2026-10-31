@@ -185,7 +185,8 @@ export async function dressUp(g: Game, o: DressOpts): Promise<{ look: PrincessLo
     her.portrait(false);
     o.onBox?.(false);
   };
-  g.run.defer(close);
+  // 2.4.0: taken off the run again once closed, so the Corner leaves the run's cleanups level (the long play checks it).
+  const closeOnStop = g.run.defer(close);
 
   void frameNow(ENTER_MS);
   restFace();
@@ -260,6 +261,7 @@ export async function dressUp(g: Game, o: DressOpts): Promise<{ look: PrincessLo
   await g.run.w(her.emote('curtsy'));
   await g.run.until(() => !audio.speaking, LOVELY_MS);
   close();
+  closeOnStop();
   return { look, end, ms };
 }
 
@@ -270,7 +272,17 @@ export async function wardrobe(g: Game): Promise<void> {
   actors.princess.crown(g.save.data.seen.crown);
   actors.princess.setLook(g.save.data.look);
   herdAside(g, true);
-  const { ms } = await dressUp(g, { at: 'mirror', limitMs: g.options.boxMs ?? MIRROR_MS, firstTime: !g.save.data.seen.wardrobe });
+  // 2.4.0: the play clock stands still while the start mirror is open (hub.ts tickPlay), so dressing never costs her
+  // a learning place.
+  g.clock.mirror = true;
+  const open = g.run.defer(() => void (g.clock.mirror = false));
+  let ms: number;
+  try {
+    ({ ms } = await dressUp(g, { at: 'mirror', limitMs: g.options.boxMs ?? MIRROR_MS, firstTime: !g.save.data.seen.wardrobe }));
+  } finally {
+    g.clock.mirror = false;
+    open();
+  }
   g.clock.dressMs.mirror += ms;
   world.releaseFrame();
   herdAside(g, false);

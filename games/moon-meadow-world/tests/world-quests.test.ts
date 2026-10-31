@@ -1,4 +1,4 @@
-// The afternoon's rules (docs/v4/2.3.md section 17): the free-play clocks of 17.3, the maths quest's rotation, which
+// The afternoon's rules (docs/v4/2.3.md section 17; 2.4.0 moved the clocks to the hub, tests/hub.test.ts): the maths quest's rotation, which
 // quest may start, gifts that are saved at the pick and kept on, a full set that keeps paying, every quest resolving
 // framed with the gift picker before its release, the Dressing Corner's visit (its gate with phrase wishes on a fresh
 // device and word wishes with too few strong phrases), the trunk tap after it, and the start mirror's music box. A small fake game stands in for the world, the actors and the layer; the game code
@@ -38,13 +38,11 @@ vi.hoisted(() => {
 });
 
 import { DEFAULT_LOOK, GIFT_SETS, START_OWNED, copyOwned, owns, stillToEarn, withItem } from '../src/wardrobe';
-import { BEAD_TREE, CORNER, PICNIC } from '../src/layout';
-import {
-  CORNER_MAX_MS, CORNER_MIN_MS, FREE_PLAY_MS, QUEST_CUTOFF_MS, TALK_MAX_MS, cornerLimitMs, fillsSet, freePlayOver, giftOffer,
-  giveGift, mathsQuestFor, pastCutoff, tickFree,
-} from '../src/game/quest-kit';
+import { CORNER } from '../src/layout';
+import { fillsSet, giftOffer, giveGift, mathsQuestFor } from '../src/game/quest-kit';
 import { type Game, startClock, startQuests } from '../src/game/game';
-import { askQuest, badgeOf, canQuest, placeAt, playQuests, runQuest } from '../src/game/quests';
+import { badgeOf, playQuests, runQuest } from '../src/game/quests';
+import { hubCtx } from '../src/game/hub-part';
 import { secondWishKind } from '../src/game/moments';
 import { cornerQuest, trunkTap } from '../src/game/corner';
 import { MIRROR_MS, dressClips, wardrobe } from '../src/game/wardrobe-part';
@@ -56,6 +54,7 @@ import { Followers } from '../src/game/followers';
 import { Results } from '../src/game/results';
 import { Run } from '../src/game/run';
 import { startMaths } from '../src/game/band';
+import { placeEnded, refill, startHub } from '../src/game/hub';
 import type { QuestId } from '../src/game/options';
 
 // ---- a fake game ---------------------------------------------------------------------------------------------------
@@ -143,7 +142,6 @@ function fakeGame(o: { search?: string; owned?: Owned } = {}): { g: Game; calls:
         calls.wardrobe = wo;
         calls.order.push(calls.framed ? 'wardrobe framed' : 'wardrobe unframed');
         wo.onBox?.(true);
-        tickFree(g, 5000);
         wo.onBox?.(false);
         return { look: wo.look, end: 'time' as const };
       }),
@@ -178,6 +176,8 @@ function fakeGame(o: { search?: string; owned?: Owned } = {}): { g: Game; calls:
     slid: false,
     lastTouch: 0,
     entering: new Set(),
+    hub: startHub(),
+    waiting: null,
   } as unknown as Game;
   return { g, calls };
 }
@@ -197,132 +197,6 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// ---- the clocks (17.3) ---------------------------------------------------------------------------------------------
-
-/** Run `ms` of afternoon in 50 ms frames, with a quest running or not, and the music box playing or not. */
-function play(g: Game, ms: number, running: QuestId | null = null, dressing = false): void {
-  g.quests.running = running;
-  g.quests.dressing = dressing;
-  for (let t = 0; t < ms; t += 50) tickFree(g, 50);
-  g.quests.running = null;
-  g.quests.dressing = false;
-}
-
-describe('the free-play clocks', () => {
-  it('count free time only without a quest, and the Corner music box as both free time and dressing', () => {
-    const { g } = fakeGame();
-    play(g, 10_000);
-    play(g, 96_000, 'picnic');
-    expect(g.quests.freeMs).toBe(10_000);
-    expect(g.quests.wallMs).toBe(106_000);
-    play(g, 50_000, 'corner');
-    expect(g.quests.freeMs).toBe(10_000);
-    play(g, 60_000, 'corner', true);
-    expect(g.quests.freeMs).toBe(70_000);
-    expect(g.clock.dressMs.corner).toBe(60_000);
-  });
-
-  it('let the maths quest start after the picnic and a 60 s Corner', () => {
-    const { g } = fakeGame();
-    play(g, 15_000);
-    play(g, 96_000, 'picnic');
-    g.quests.done.add('picnic');
-    expect(canQuest(g, 'corner')).toBe(true);
-    expect(cornerLimitMs(g.quests.freeMs)).toBe(CORNER_MAX_MS);
-    play(g, 60_000, 'corner');
-    play(g, cornerLimitMs(g.quests.freeMs), 'corner', true);
-    g.quests.done.add('corner');
-    play(g, 5000);
-    expect(g.quests.freeMs).toBe(80_000);
-    expect(pastCutoff(g)).toBe(false);
-    expect(canQuest(g, 'beads')).toBe(true);
-    expect(canQuest(g, 'rack')).toBe(false);
-  });
-
-  it('stop new picnic and maths quests after 90 s of free time without dressing, but not the Corner', () => {
-    const { g } = fakeGame();
-    g.quests.done.add('picnic');
-    play(g, QUEST_CUTOFF_MS - 50);
-    expect(canQuest(g, 'beads')).toBe(true);
-    play(g, 50);
-    expect(canQuest(g, 'beads')).toBe(false);
-    expect(canQuest(g, 'corner')).toBe(true);
-  });
-
-  it('reach the next learning quest after a learning quest and a 60 s Corner, and end by 150 s of free time', () => {
-    const { g } = fakeGame();
-    const q = g.quests;
-    // The bead tree first, then straight to the Corner, as she will: free time is at 120 s when the wardrobe closes.
-    play(g, 55_000);
-    play(g, 90_000, 'beads');
-    q.done.add('beads');
-    play(g, 5_000);
-    expect(cornerLimitMs(q.freeMs)).toBe(CORNER_MAX_MS);
-    play(g, 40_000, 'corner');
-    play(g, cornerLimitMs(q.freeMs), 'corner', true);
-    q.done.add('corner');
-    expect(q.freeMs).toBe(FREE_PLAY_MS);
-    // The picnic's bubble still shows, so free play goes on and the picnic may start.
-    q.offered.add('picnic');
-    expect(freePlayOver(g)).toBe(false);
-    expect(canQuest(g, 'picnic')).toBe(true);
-    // Without its bubble (or with both learning quests done) the 120 s end it.
-    q.offered.delete('picnic');
-    expect(freePlayOver(g)).toBe(true);
-    q.offered.add('picnic');
-    // She never taps it: the cutoff comes at 90 s without dressing, so free time ends at 150 s at the most.
-    play(g, 29_950);
-    expect(freePlayOver(g)).toBe(false);
-    play(g, 50);
-    expect(pastCutoff(g)).toBe(true);
-    expect(canQuest(g, 'picnic')).toBe(false);
-    expect(freePlayOver(g)).toBe(true);
-    expect(q.freeMs).toBe(150_000);
-  });
-
-  it('stand still while Lumi or Elizabeth speaks outside a quest, up to 45 s a play, but never in the music box', () => {
-    const { g } = fakeGame();
-    const q = g.quests;
-    for (let t = 0; t < 13_000; t += 50) tickFree(g, 50, true);
-    expect(q.freeMs).toBe(0);
-    expect(q.talkMs).toBe(13_000);
-    expect(q.wallMs).toBe(13_000);
-    for (let t = 0; t < 40_000; t += 50) tickFree(g, 50, true);
-    expect(q.talkMs).toBe(TALK_MAX_MS);
-    expect(q.freeMs).toBe(53_000 - TALK_MAX_MS);
-    q.dressing = true;
-    q.running = 'corner';
-    const before = q.freeMs;
-    for (let t = 0; t < 10_000; t += 50) tickFree(g, 50, true);
-    expect(q.freeMs).toBe(before + 10_000);
-    expect(g.clock.dressMs.corner).toBe(10_000);
-  });
-
-  it('never end free play while the Corner runs or its music box plays', () => {
-    const { g } = fakeGame();
-    play(g, FREE_PLAY_MS + 5000);
-    expect(freePlayOver(g)).toBe(true);
-    g.quests.running = 'corner';
-    expect(freePlayOver(g)).toBe(false);
-    g.quests.dressing = true;
-    expect(freePlayOver(g)).toBe(false);
-    g.quests.running = null;
-    expect(freePlayOver(g)).toBe(false);
-  });
-
-  it('give the Corner 30 to 60 s of music box, so free time never passes 150 s', () => {
-    for (let f = 0; f <= FREE_PLAY_MS; f += 500) {
-      const limit = cornerLimitMs(f);
-      expect(limit).toBeGreaterThanOrEqual(CORNER_MIN_MS);
-      expect(limit).toBeLessThanOrEqual(CORNER_MAX_MS);
-      expect(f + limit).toBeLessThanOrEqual(150_000);
-      if (f <= FREE_PLAY_MS - CORNER_MIN_MS && f >= FREE_PLAY_MS - CORNER_MAX_MS) expect(f + limit).toBe(FREE_PLAY_MS);
-    }
-  });
-});
-
-// ---- rotation and offers (17.2) ------------------------------------------------------------------------------------
-
 describe('the maths quest', () => {
   it('starts with the bead tree, comes again when she missed it, and takes turns when she finished it', () => {
     expect(mathsQuestFor({ maths: null, done: [] })).toBe('beads');
@@ -334,11 +208,13 @@ describe('the maths quest', () => {
     expect(mathsQuestFor({ maths: null, done: [] }, 'rack')).toBe('rack');
   });
 
-  it('is the one the game offers this play, from the save, with the picnic', () => {
+  it('is the one the hub offers this play, from the save, with the picnic (2.4.0: through the refill)', () => {
     const { g } = fakeGame();
-    expect(['picnic', 'rack', 'beads', 'corner'].filter((id) => canQuest(g, id as QuestId))).toEqual(['picnic', 'beads']);
+    const offered = () => refill(g.hub, hubCtx(g)).filter((id) => ['picnic', 'rack', 'beads', 'corner'].includes(id));
+    g.hub.done = ['egg'];
+    expect(offered()).toEqual(['picnic', 'beads']);
     g.quests.maths = 'rack';
-    expect(['picnic', 'rack', 'beads', 'corner'].filter((id) => canQuest(g, id as QuestId))).toEqual(['picnic', 'rack']);
+    expect(offered()).toEqual(['picnic', 'rack']);
   });
 
   it('offers the picnic on every play, so wish2 by the wild egg is a pond wish; without the picnic it would be a picnic wish (2.3.2)', () => {
@@ -353,35 +229,14 @@ describe('the maths quest', () => {
 });
 
 describe('the Dressing Corner and the bubbles', () => {
-  it('opens after her first finished quest, once a play, and at once with ?quest=corner', () => {
+  it('opens after her first finished learning place, once a play (2.4.0: the play bubble of the hub)', () => {
     const { g } = fakeGame();
-    expect(canQuest(g, 'corner')).toBe(false);
-    g.quests.done.add('beads');
-    expect(askQuest(g, 'corner')).toBe(true);
-    g.quests.asked = null;
-    g.quests.done.add('corner');
-    expect(canQuest(g, 'corner')).toBe(false);
-    expect(canQuest(fakeGame({ search: '?quest=corner' }).g, 'corner')).toBe(true);
-  });
-
-  it('needs both named babies, and nothing starts at bedtime or once free play is over', () => {
-    const { g } = fakeGame();
-    g.babies[1].member = null;
-    expect(canQuest(g, 'picnic')).toBe(false);
-    const b = fakeGame().g;
-    b.bedtime = true;
-    expect(canQuest(b, 'picnic')).toBe(false);
-    const c = fakeGame().g;
-    c.quests.over = true;
-    expect(canQuest(c, 'picnic')).toBe(false);
-  });
-
-  it('start by walking near the nearest place: her Corner spot is the Corner, not the picnic rug 1.9 m away', () => {
-    expect(placeAt(CORNER.stand)).toBe('corner');
-    expect(placeAt(PICNIC.stand)).toBe('picnic');
-    expect(placeAt(PICNIC.rug.center)).toBe('picnic');
-    expect(placeAt(BEAD_TREE.stand)).toBe('beads');
-    expect(placeAt({ x: -11, z: 1 })).toBeNull();
+    expect(refill(g.hub, hubCtx(g))).not.toContain('corner');
+    placeEnded(g.hub, 'beads', hubCtx(g));
+    expect(refill(g.hub, hubCtx(g))).toContain('corner');
+    placeEnded(g.hub, 'corner', hubCtx(g));
+    placeEnded(g.hub, 'picnic', hubCtx(g));
+    expect(refill(g.hub, hubCtx(g))).not.toContain('corner');
   });
 
   it('show a gift she can still earn on the quest bubbles, the trunk bubble too, and none once every set is full', () => {
@@ -538,7 +393,6 @@ describe('the Corner visit', () => {
   it('gates with two reads, gives a hair gift she wears into the wardrobe, and resolves still framed', async () => {
     const { g, calls } = fakeGame({ search: '?seed=3&phrases=all' });
     g.quests.done.add('picnic');
-    g.quests.freeMs = 70_000;
     const release = await cornerQuest(g);
     expect(calls.order).toEqual(['lumi lumi4-corner', 'wish framed', 'wish framed', 'gift framed', 'wardrobe framed']);
     expect(g.results.lines.map((r) => r.part)).toEqual(['gate1', 'gate2']);
@@ -551,12 +405,10 @@ describe('the Corner visit', () => {
     expect(GIFT_SETS.hair.items).toContainEqual(gift);
     expect(w.look[gift.field]).toBe(gift.id);
     expect(owns(w.owned, gift)).toBe(true);
-    // The music box gets the free time that is left; the board shows today's gift.
-    expect(w.limitMs).toBe(50_000);
+    // The music box plays 60 s whatever the play clock says (2.4.0: CORNER_BOX_MS, off the play clock); the board
+    // shows today's gift.
+    expect(w.limitMs).toBe(60_000);
     expect(w.board?.fresh).toEqual([gift]);
-    // Its music box time was free time and dressing time.
-    expect(g.quests.freeMs).toBe(75_000);
-    expect(g.clock.dressMs.corner).toBe(5000);
     expect(g.quests.dressing).toBe(false);
     expect(g.world.releaseFrame).not.toHaveBeenCalled();
     release();
@@ -641,7 +493,10 @@ describe('the start mirror', () => {
   it('plays its music box for 45 s, as decision 1 says, with no board; ?box= shortens it', async () => {
     expect(MIRROR_MS).toBe(45_000);
     const { g, calls } = fakeGame();
+    const deferred = g.run.deferred;
     await wardrobe(g);
+    // 2.4.0: the mirror leaves the run's cleanups level, and the play clock running again.
+    expect([g.run.deferred, g.clock.mirror]).toEqual([deferred, false]);
     expect(calls.wardrobe!.limitMs).toBe(45_000);
     expect(calls.wardrobe!.board).toBeUndefined();
     expect(calls.wardrobe!.clips.idle).toEqual(['g4-ready-play']);
@@ -664,7 +519,7 @@ describe('the trunk after her visit', () => {
     // A second tap while it shows: still no refusal, one board.
     expect(trunkTap(g)).toBe(true);
     expect(g.layer.board).toHaveBeenCalledTimes(1);
-    expect(canQuest(g, 'corner')).toBe(false);
+    expect([g.hub.asked, g.quests.asked]).toEqual([null, null]);
     expect(g.quests.boards).toBe(1);
     await vi.advanceTimersByTimeAsync(3000);
     expect(g.world.corner.lid).toHaveBeenLastCalledWith(true);

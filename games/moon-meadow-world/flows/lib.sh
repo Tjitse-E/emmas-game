@@ -326,3 +326,99 @@ budget() {
   echo "${W}x$H $1 $p" >> "$MMW_SHOTS/budget.txt"
   val "() => { const p = window.__game.perf(); return p.calls < 80 && p.triangles < 100000 && p.pixelRatio <= 1.5; }" | grep -q true || fail "over budget at $1: $p"
 }
+
+# ---- the hub (2.4.0, the hub lane) ------------------------------------------------------------------------------------
+
+# Tap a hub bubble: wait for 'offer <id>' on screen (the bubbles pop in 0.4 s apart), then tap it. It acts on
+# pointerdown, so the hub asks its place at once.
+tap_offer() {
+  wait_target "offer $1" "${2:-20}"
+  sleep 0.3
+  tap "offer $1"
+  wait_for "() => { const h = window.__game.state().hub; return h.running === $(jsq "$1") || h.done.includes($(jsq "$1")); }" 20
+}
+
+# The gift picker after a quest (ui/gift.ts): tap a card once the cards take touches.
+pick_gift() {
+  wait_for "() => window.__game.targets().some((t) => t.name.startsWith('gift '))" "${1:-60}"
+  tap "$(val "() => window.__game.targets().filter((t) => t.name.startsWith('gift ')).pop().name")"
+}
+
+# The open moment takes an answer now (a door after its goal, a ui moment that is not busy or done).
+moment_open() {
+  val "() => { const m = window.__game.state().moment; return !!m && (m.kind === 'door' ? m.open : m.phase !== 'busy' && m.phase !== 'done'); }"
+}
+
+# Answer the open moment once with its right answer, whatever moment it is: a stone or a pile onto the cups or the
+# rack, an item onto the baby, a bead onto the string, a bell and then the gems and the star of a naming, or a tap (a
+# door, a sign card). Returns 1 when no moment takes an answer now.
+answer_moment() {
+  local m kind phase a
+  m="$(val "() => { const m = window.__game.state().moment; return m ? m.kind + ':' + (m.kind === 'door' ? (m.open ? 'open' : 'busy') : m.phase) : ''; }")"
+  [ -n "$m" ] || return 1
+  kind="${m%%:*}"
+  phase="${m#*:}"
+  case "$phase" in busy | done | '') return 1 ;; esac
+  a="$(hook 'answer()')"
+  { [ -n "$a" ] && [ "$a" != null ]; } || return 1
+  case "$kind" in
+    egg) drag "$a" "$(drop_target)" ;;
+    wish) drag "$a" baby ;;
+    beads) drag "$a" "$(val "() => window.__game.targets().find((t) => /^string/.test(t.name))?.name || 'string'")" ;;
+    naming)
+      if [ "$phase" = spell ]; then spell_right; else
+        tap "$a"
+        sleep 0.8
+        drag "$a" baby
+      fi
+      ;;
+    *) tap "$a" ;;
+  esac
+  return 0
+}
+
+# Play the place that runs until the hub has no place running or asked: each open moment is answered right after
+# PACE seconds (2.5, a child's pace), a gift card is picked, a saddle icon is tapped, and the Corner's wardrobe ends
+# with Done after a few seconds. Fails after $1 seconds (default 600).
+play_place() {
+  local t0 now limit="${1:-600}"
+  t0="$(date +%s)"
+  for _ in $(seq 1 100000); do
+    now="$(date +%s)"
+    [ $((now - t0)) -lt "$limit" ] || fail "the place never ended: $(val "() => JSON.stringify(window.__game.state().hub)")"
+    [ "$(val "() => { const h = window.__game.state().hub; return !h.running && !h.asked; }")" = true ] && return 0
+    if [ "$(val "() => window.__game.targets().some((t) => t.name.startsWith('gift '))")" = true ]; then
+      sleep 1
+      tap "$(val "() => window.__game.targets().filter((t) => t.name.startsWith('gift ')).pop().name")"
+      sleep 1
+      continue
+    fi
+    if [ "$(val "() => window.__game.targets().some((t) => /^saddle (bella|hazel)$/.test(t.name))")" = true ]; then
+      sleep "${PACE:-2.5}"
+      tap "$(val "() => window.__game.targets().find((t) => /^saddle (bella|hazel)$/.test(t.name)).name")"
+      sleep 1
+      continue
+    fi
+    if [ "$(val "() => !!window.__game.state().wardrobe?.open")" = true ]; then
+      sleep 4
+      [ "$(val "() => window.__game.targets().some((t) => t.name === 'done')")" = true ] && tap done
+      sleep 1.5
+      continue
+    fi
+    if [ "$(moment_open)" = true ]; then
+      sleep "${PACE:-2.5}"
+      answer_moment || true
+      sleep 1
+      continue
+    fi
+    sleep 0.5
+  done
+}
+
+# Bubbles on screen: every 'offer <id>' given is on screen, at least 64 px, none over another, and clear of the home
+# button and the food basket.
+check_bubbles() {
+  local bad
+  bad="$(val "() => { const W = innerWidth, H = innerHeight; const ts = window.__game.targets(); const names = $1; const bs = []; const out = []; for (const n of names) { const t = ts.find((x) => x.name === 'offer ' + n); if (!t) { out.push(n + ' missing'); continue; } const b = { x: t.x - t.w / 2, y: t.y - t.h / 2, w: t.w, h: t.h, n }; if (b.x < 0 || b.y < 0 || b.x + b.w > W || b.y + b.h > H) out.push(n + ' off screen'); if (Math.min(t.w, t.h) < 64) out.push(n + ' ' + t.w + 'x' + t.h); bs.push(b); } const over = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h; for (let i = 0; i < bs.length; i++) for (let j = i + 1; j < bs.length; j++) if (over(bs[i], bs[j])) out.push(bs[i].n + ' over ' + bs[j].n); for (const k of ['home', 'food basket']) { const t = ts.find((x) => x.name === k); if (!t) continue; const c = { x: t.x - t.w / 2, y: t.y - t.h / 2, w: t.w, h: t.h }; for (const b of bs) if (over(b, c)) out.push(b.n + ' over ' + k); } return out.join('; '); }")"
+  [ -z "$bad" ] || fail "bubbles: $bad"
+}

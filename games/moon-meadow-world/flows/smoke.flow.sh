@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Smoke runs at W x H with a fresh save: start at a part with ?at= (after the Play tap, as Emma would), check that its
 # moment opens and that every target of it (and every 3D unicorn near her) is on screen and at least 64 px.
-# Screenshots of every part. Extra address options after the part: `start_at egg2 '&maths=b'`.
+# Screenshots of every part. Extra address options after the part: `start_at egg2 '&maths=b'`. 2.4.0: the old part
+# names start the hub with their place asked (the aliases); ?at=hub with a bubble tap; four bubbles on one edge; the
+# resting slide with its ducks; the meadow with every unicorn near.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-11}"
 
@@ -74,8 +76,8 @@ check_targets "$(moment_targets)"
 check_targets '["baby","bubble"]'
 expect_eq "$(item_count)" 5 'items at level 3'
 
-# The afternoon (2.3.0): the picnic and this play's maths quest (the bead tree on a first play) offer their bubbles,
-# touchable at every size.
+# The hub with both home eggs done (?at=free, 2.3's free play): the picnic and this play's maths quest (the bead tree
+# on a first play) show their bubbles, touchable at every size.
 start_at free
 wait_for "() => window.__game.state().quests.offered.length === 2" 30
 sleep 1
@@ -83,23 +85,64 @@ shot smoke-free
 check_targets '["offer picnic","offer beads"]'
 budget 'free play'
 
-# The pond: the slide, the followers near her, and the bath wish after the first slide.
-start_at pond
-wait_for "() => window.__game.state().goal === 'pond'" 30
+# The hub (2.4.0): the opening set, every bubble touchable, and a bubble tap starts its place.
+start_at hub
+wait_target 'offer picnic' 30
+sleep 0.5
+shot smoke-hub
+check_bubbles '["egg","ride","picnic"]'
+budget 'the hub'
+tap_offer picnic
+wait_moment wish 60
+wait_open 30
+sleep 1
+shot smoke-hub-picnic
+check_targets "$(moment_targets)"
+
+# Four bubbles on one edge: her at the Corner, the nest egg, the ride, the bead tree and the pond's bubbles east of her
+# (5.2: small edge bubbles), all on screen, at least 64 px, apart, and clear of the home button and the basket.
+start_at hub
+wait_target 'offer picnic' 30
+hook 'placeAt(-14, 2.7)' >/dev/null
+hook "setHub({ done: ['picnic', 'corner'], play: ['pond'] })" >/dev/null
+wait_for "() => ['egg', 'ride', 'beads', 'pond'].every((p) => window.__game.targets().some((t) => t.name === 'offer ' + p))" 20
+sleep 1
+shot smoke-hub-four
+expect_eq "$(val "() => JSON.stringify(window.__game.state().hub.shown)")" '["egg","ride","beads","pond"]' 'the four bubbles'
+check_bubbles '["egg","ride","beads","pond"]'
+budget 'hub four bubbles'
+
+# The pond (?at=pond): the visit with a baby, the slide and the followers near her; the baby slides; then the slide
+# rests with its ducks once the visit ends.
+start_at pond '&babies=1'
+wait_for "() => window.__game.state().hub.visit !== null" 40
 # World touches whose release never reached the canvas (as on her iPad): one released only on the window, one never
-# released at all. Neither may block the taps that follow (walk_to_goal taps the world).
+# released at all. Neither may block the taps that follow.
 stale_touches
-walk_to_goal
 sleep 2
 shot smoke-pond
 check_targets '["slide","slide top","unicorn baby-13"]'
 check_near_unicorns 6
 drag 'unicorn baby-13' 'slide top'
-wait_moment wish 60
+wait_for "() => ['slide', 'swim'].includes(window.__game.state().herd.find((h) => h.id === 'baby-13').mode)" 10
+hook 'skip()' >/dev/null
+wait_for "() => { const h = window.__game.state().hub; return h.visit === null && h.done.includes('pond'); }" 30
 sleep 1.5
-shot smoke-pond-wish
-check_targets "$(moment_targets)"
-check_targets '["baby","bubble"]'
+shot smoke-pond-rest
+tap slide
+sleep 0.5
+expect_eq "$(val "() => ['climb', 'slide'].includes(window.__game.state().princess.mode)")" false 'the resting slide does not run'
+budget 'pond ducks'
+
+# The meadow with every unicorn near her (the 12 of the herd and four babies; the mounts when they are there).
+start_at hub '&babies=4'
+wait_target 'offer picnic' 30
+n="$(hook 'gather(2, -4)')"
+hook 'placeAt(2, -4)' >/dev/null
+sleep 2
+shot smoke-meadow-near
+say "gathered $n unicorns"
+budget 'meadow 18 near'
 
 # Bedtime: a tap anywhere in the stable yard reaches the stable; the roll call's doors are all touchable.
 start_at bedtime

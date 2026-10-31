@@ -537,6 +537,12 @@ html.mmw-guarded body {
   transform-origin: calc(8 * var(--u)) calc(14 * var(--u));
 }
 
+/* ---- the hub lane (2.4.0, docs/v4/2.4.md section 5.2): the offer bubbles' base picture (the nest under the moon egg).
+   An edge bubble's small size is set on it in px by offer.ts. ---- */
+.offer-ball .offer-base { position: absolute; left: 12%; bottom: 8%; width: 76%; height: 46%; object-fit: contain; }
+.offer-ball .offer-base + .offer-pic { position: relative; width: 56%; height: 56%; margin-bottom: 18%; }
+/* ---- end of the hub lane block ---- */
+
 /* ---------------------------------------------------------------------------------------------- food basket */
 .food-btn {
   position: absolute; right: calc(18 * var(--u)); bottom: calc(18 * var(--u)); width: calc(112 * var(--u)); height: calc(112 * var(--u));

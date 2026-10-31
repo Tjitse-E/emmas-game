@@ -21,8 +21,11 @@ import type { RideState } from './ride';
 import { type Streams, createStreams } from './streams';
 import { mathsQuestFor } from './quest-kit';
 
-/** The parts of the level, in order (docs/v4/demo.md section 1; the wardrobe is 2.2.0's customiser). */
-export const PARTS = ['wardrobe', 'welcome', 'egg1', 'naming1', 'wish1', 'pond', 'egg2', 'naming2', 'wish2', 'free', 'bedtime', 'goodnight'] as const;
+/**
+ * The parts of the level, in order (docs/v4/demo.md section 1; the wardrobe is 2.2.0's customiser; 2.4.0: the hub took
+ * over the fixed script, docs/v4/2.4.md section 5.1).
+ */
+export const PARTS = ['wardrobe', 'welcome', 'hub', 'bedtime', 'goodnight'] as const;
 export type Part = (typeof PARTS)[number];
 export const isPart = (s: string | null): s is Part => !!s && (PARTS as readonly string[]).includes(s);
 
@@ -75,14 +78,6 @@ export interface QuestState {
   running: QuestId | null;
   /** Asked by a bubble tap, a tap on its place or walking near it: the afternoon starts it at its next frame. */
   asked: QuestId | null;
-  /**
-   * Time since free play began (ms, for the log), and free time: while no quest runs and while the Corner's music box
-   * plays (2.3 section 17.3, quest-kit.ts tickFree).
-   */
-  wallMs: number;
-  freeMs: number;
-  /** Free-play time that stood still while Lumi or Elizabeth spoke (quest-kit.ts tickFree, at most TALK_MAX_MS). */
-  talkMs: number;
   /** "When you see a bubble, someone is waiting for you." has played this play. */
   explained: boolean;
   /** The herd unicorns waiting at the hay rack (ids). */
@@ -92,14 +87,10 @@ export interface QuestState {
   hay: number;
   /** This play's maths quest: the hay rack or the bead tree, in turn (the one she missed last play comes again). */
   maths: 'rack' | 'beads';
-  /** The Dressing Corner's wardrobe is open: free play cannot end and bedtime cannot start. */
+  /** The Dressing Corner's music box plays: the play clock stands still and bedtime cannot start. */
   dressing: boolean;
   /** The gifts she got today, in order. */
   gifts: GiftItem[];
-  /** Free play has ended: no quest starts any more. */
-  over: boolean;
-  /** Past the quest cutoff: the picnic and maths bubbles have gone. */
-  cut: boolean;
   /** The Corner's gate: a phrase or (with fewer than 6 strong phrases) a word wish, and how many reads were first tries. */
   gate: { kind: 'phrase' | 'word'; first: number } | null;
   /** Lumi has said "Come and try my Dressing Corner!" this play, and "Soon you can ride here!" at the sign. */
@@ -113,8 +104,8 @@ export interface QuestState {
 
 export function startQuests(maths: QuestState['maths'] = 'beads'): QuestState {
   return {
-    offered: new Set(), done: new Set(), running: null, asked: null, wallMs: 0, freeMs: 0, talkMs: 0, explained: false, helpers: [], rose: false, hay: 0,
-    maths, dressing: false, gifts: [], over: false, cut: false, gate: null, cornerSaid: false, signSaid: false, boards: 0, signs: 0, cornerMs: 0,
+    offered: new Set(), done: new Set(), running: null, asked: null, explained: false, helpers: [], rose: false, hay: 0,
+    maths, dressing: false, gifts: [], gate: null, cornerSaid: false, signSaid: false, boards: 0, signs: 0, cornerMs: 0,
   };
 }
 
@@ -128,6 +119,8 @@ export interface PlayClock {
   dressMs: { mirror: number; corner: number };
   /** Time on a mount (2.4.0, the play line's ri). */
   rideMs: number;
+  /** The start mirror's wardrobe is open (2.4.0): the play clock stands still. */
+  mirror: boolean;
 }
 
 export interface Game {
@@ -201,7 +194,7 @@ export function createGame(o: {
   herd: HerdMember[];
 }): Game {
   const streams = createStreams(o.options.seed);
-  return {
+  const g: Game = {
     ...o,
     seed: o.options.seed,
     streams,
@@ -236,10 +229,13 @@ export function createGame(o: {
     hubRefresh: null,
     signUse: { sets: [], targets: [] },
   };
+  // 2.4.0: the herd baby whose wish waits never follows (5.2).
+  g.followers.refuse = (u) => u === g.waiting;
+  return g;
 }
 
 export function startClock(): PlayClock {
-  return { startedAt: performance.now(), checkedMs: 0, dressMs: { mirror: 0, corner: 0 }, rideMs: 0 };
+  return { startedAt: performance.now(), checkedMs: 0, dressMs: { mirror: 0, corner: 0 }, rideMs: 0, mirror: false };
 }
 
 // ---- small helpers ---------------------------------------------------------------------------------------------

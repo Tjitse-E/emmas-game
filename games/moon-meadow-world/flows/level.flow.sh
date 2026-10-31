@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # The whole level, played with real taps and drags at W x H with a fixed seed and a fresh save (a first visit): the
-# customiser (Done at once), then one wrong answer in egg 1 (its second sum of three, the stone she just heard),
-# naming 1 (a near capital in slot 1), the dress-up wish (the light contrast), the first roll call (a door whose
-# unicorn waits in the yard) and the visit (an empty stall), the rest right; the slide, the bath wish at the pond, the
-# wild egg and its three sums, wish2 (a second pond wish, 2.3.2), free play (skipped with a hook call), bedtime and
-# goodnight with its ribbon gift. Checks each egg's three sums on one panel with its hearts and the band (2.3), the eggs'
-# timings and the lines between their sums (2.3.2, flows/egg-times.js), the results log (with what she tried), the
-# basket and tray sizes, no letter sound under a line at naming 1 (2.3.2), the save, missing clips and console errors.
-# Screenshots of every part.
+# customiser (Done at once), the long welcome, then the hub's forced nest egg with one wrong answer (its second sum of
+# three, the stone she just heard), naming 1 (a near capital in slot 1) and the dress-up wish (the light contrast);
+# then the hub (2.4.0): its four bubbles after the forced egg, the first hub's explanation, the picnic from its bubble,
+# the shore egg landing and its three sums, its naming and wish, a minute with no leak, every bubble gone at 29:00
+# with "Soon it is bedtime!", bedtime at 30:00 with the first roll call (a door whose unicorn waits in the yard) and the
+# visit (an empty stall), and goodnight with its ribbon gift. Then play 2 on a real save: the short welcome, the
+# explanation with the ghost hand's glide, and the opening set. Checks each egg's three sums on one panel with its
+# hearts and the band (2.3), the eggs' timings and the lines between their sums (2.3.2, flows/egg-times.js), the
+# results log per place (with what she tried, and the play number on every line), the basket and tray sizes, no
+# letter sound under a line at naming 1 (2.3.2), the save, missing clips and console errors. Screenshots of every part.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-7}"
 
@@ -180,89 +182,81 @@ expect_eq "$(contrast_shown)" true 'the contrast tag after a wrong item'
 shot 07-wish1-contrast
 drag "$(hook 'answer()')" baby
 
-# ---- 6 Pond: walk to the slide, carry the baby to the top of the slide, slide down herself.
-wait_for "() => window.__game.state().goal === 'pond'" 40
+# ---- 6 The hub (2.4.0): after the forced nest egg its four bubbles pop in (the ride, the picnic, the bead tree and
+# the Corner), and the first hub's explanation plays (seen.hub after it).
+wait_for "() => { const s = window.__game.state(); return s.part === 'hub' && s.hub.done.length === 1 && s.hub.shown.length === 4; }" 60
+expect_eq "$(val "() => JSON.stringify(window.__game.state().hub.shown)")" '["ride","picnic","beads","corner"]' 'the bubbles after the forced egg'
+wait_target 'offer corner' 20
 sleep 1
-shot 08-pond
-walk_to_goal
-sleep 6
-wait_target 'unicorn baby-13' 20
-check_near_unicorns 6
-drag 'unicorn baby-13' 'slide top'
-wait_for "() => window.__game.state().herd.find((h) => h.id === 'baby-13').mode === 'slide'" 5
-sleep 0.6
-shot 09-slide
-budget 'pond, a baby sliding'
-tap slide
-wait_for "() => ['climb', 'slide', 'swim'].includes(window.__game.state().princess.mode)" 10
-budget 'pond, Princess Emma sliding'
+shot 08-hub
+check_bubbles '["ride","picnic","beads","corner"]'
+budget 'the hub'
+wait_for "() => window.__game.save().seen.hub" 40
+say "the first hub's explanation played to its end"
 
-# ---- 6b The first baby's bath wish on the shore, after the first slide (right first time).
+# ---- 7 The picnic from its bubble: two reads, the gift.
+tap_offer picnic
 wait_moment wish 60
-wait_open
+wait_open 30
 sleep 1.5
-shot 10-pond-wish
+shot 09-picnic
 check_targets "$(moment_targets)"
-check_targets '["baby","bubble"]'
-expect_eq "$(item_count)" 5 'items in the pond wish (level 2)'
-pond_words="$(val "() => JSON.stringify(window.__game.spec().basket)")"
 drag "$(hook 'answer()')" baby
+wait_for "() => window.__game.state().results.some((r) => r.part === 'picnic1')" 30
+wait_for "() => { const m = window.__game.state().moment; return m && m.kind === 'wish' && m.misses === 0 && m.phase === 'open'; }" 60
+drag "$(hook 'answer()')" baby
+wait_for "() => window.__game.state().results.some((r) => r.part === 'picnic2')" 30
+pick_gift
+wait_for "() => { const h = window.__game.state().hub; return !h.running && h.done.includes('picnic'); }" 60
 
-# ---- 7 The wild egg lands.
-wait_for "() => { const e = window.__game.state().egg; return e && e.x > 14; }" 60
-sleep 0.4
-shot 11-wild-egg-lands
-wait_for "() => window.__game.state().goal === 'wildEgg'" 60
-shot 11-wild-egg-goal
-wait_for "() => window.__game.state().princess.mode === 'idle'" 30
+# ---- 8 The shore egg lands between places, and its bubble pops in; the Corner's bubble gave way to the pond's.
+wait_for "() => { const e = window.__game.state().egg; return e && e.x > 14; }" 30
+wait_target 'offer shore' 30
+sleep 0.5
+shot 10-shore-lands
+expect_eq "$(val "() => JSON.stringify(window.__game.state().hub.play)")" '["pond"]' 'the pond bubble after the second learning place'
 
-# ---- 8, 9, 10 Egg 2 (its hard sum in the band egg 1's hard sum left), naming 2 and wish2, all right first time. Free
-# play offers the royal picnic, so wish2 is a second pond wish without a word of the first (2.3.2).
-walk_to_goal
-wait_moment egg 20
+# ---- 9, 10, 11 The shore egg (its hard sum in the band egg 1's hard sum left), naming 2 and wish 2, right first time.
+tap_offer shore
+wait_moment egg 60
 wait_phase open 30
 sleep 1
-shot 12-egg2
+shot 11-egg2
 egg_sums egg-shore 0
 wait_moment naming 40
 sleep 2
-shot 13-naming2
+shot 12-naming2
 bell="$(hook 'answer()')"
 drag "$bell" baby
 spell_right
 wait_moment wish 40
 wait_open
 sleep 1.5
-shot 14-wish2
+shot 13-wish2
 check_targets "$(moment_targets)"
-expect_eq "$(item_count)" 5 'items in wish2'
-expect_eq "$(val "() => window.__game.spec().kind")" bath 'wish2 is a pond wish'
-expect_eq "$(val "() => { const before = $pond_words; return window.__game.spec().basket.filter((w) => before.includes(w)).join(','); }")" '' 'wish2 repeats no word of the pond wish'
-say "pond wish $pond_words, wish2 $(val "() => JSON.stringify(window.__game.spec().basket)")"
+expect_eq "$(item_count)" 5 'items in wish 2'
 drag "$(hook 'answer()')" baby
+wait_for "() => { const h = window.__game.state().hub; return !h.running && h.done.includes('shore'); }" 60
 
-# ---- 11 Free play: the basket and the two side quests' bubbles (a fresh save offers the picnic and the bead tree; not
-# taken here), feed a baby, call a herd unicorn; the two minutes are skipped.
-wait_for "() => window.__game.state().part === 'free'" 40
+# ---- 12 Back in the hub: the basket, a fed baby, a called herd unicorn; then a minute with no leak.
 wait_target 'food basket' 20
 sleep 2
-expect_eq "$(val "() => JSON.stringify(window.__game.state().quests.offered.slice().sort())")" '["beads","picnic"]' 'side quest bubbles'
 tap 'food basket'
 sleep 0.8
-shot 15-free-basket
+shot 14-hub-basket
 food="$(val "() => window.__game.targets().find((t) => t.name.startsWith('food ') && t.name !== 'food basket').name")"
 drag "$food" 'unicorn baby-13'
 sleep 1
 tap 'food basket'
-# Found and tapped in one call, 80 px inside the screen and not under a quest bubble or the basket: a grazing unicorn
-# at the edge can step off it between two calls, and a tap on a bubble starts its quest.
+# Found and tapped in one call, 80 px inside the screen and not under a bubble or the basket: a grazing unicorn at the
+# edge can step off it between two calls, and a tap on a bubble asks its place.
 run_code "async page => { const t = await page.evaluate(() => { const m = 80; const u = window.__game.targets().find((x) => /^unicorn (?!baby)/.test(x.name) && x.x > m && x.y > m && x.x < innerWidth - m && x.y < innerHeight - m && document.elementFromPoint(x.x, x.y) === document.querySelector('#world canvas')) || null; window.__flowHerd = u ? u.name : ''; return u; }); if (t) { await page.mouse.move(t.x, t.y); await page.mouse.down(); await page.waitForTimeout(60); await page.mouse.up(); } }" || fail "cannot tap a herd unicorn"
 herd1="$(val "() => window.__flowHerd || ''")"
 if [ -n "$herd1" ]; then sleep 1; say "called $herd1"; fi
-shot 16-free
+shot 15-hub
 sleep 3
 check_near_unicorns 6
-# No leak: geometries and textures stay flat over a minute of play (followers playing, swimming, tags).
+# No leak: geometries and textures stay flat over a minute in the hub (followers playing, tags, prompts).
 if [ -z "${MMW_NO_LEAK_CHECK:-}" ]; then
   before="$(val "() => { const p = window.__game.perf(); return p.geometries + '/' + p.textures; }")"
   sleep 60
@@ -271,7 +265,15 @@ if [ -z "${MMW_NO_LEAK_CHECK:-}" ]; then
   echo "${W}x$H leak $before -> $after" >> "$MMW_SHOTS/budget.txt"
   expect_eq "$after" "$before" 'geometries and textures over a minute'
 fi
-expect_eq "$(hook 'skip()')" '1' 'free play timer'
+
+# ---- 13 29:00 of play time: every bubble goes, and "Soon it is bedtime!" once; 30:00: bedtime.
+trace_speech
+hook 'setPlayMs(29 * 60_000)' >/dev/null
+wait_for "() => window.__game.state().hub.shown.length === 0 && !window.__game.targets().some((t) => t.name.startsWith('offer '))" 10
+wait_for "() => (window.__speech || []).some((e) => e.kind === 'say' && e.ids.includes('g4-soon-bed'))" 20
+shot 16-soon-bed
+expect_eq "$(field part)" hub 'no bedtime before 30:00'
+hook 'setPlayMs(30 * 60_000)' >/dev/null
 
 # ---- 12 Bedtime: into the stable yard; roll call with one wrong door (its unicorn waits in the yard and trots to
 # it); everyone in while the newborns move in; the visit to a teen door with one wrong (empty) stall.
@@ -290,7 +292,7 @@ shot 19-rollcall-wrong
 wait_for "() => window.__game.state().moment?.misses === 1" 15
 wait_open 15
 tap "$(hook 'answer()')"
-wait_for "() => window.__game.state().results.length === 12" 30
+wait_for "() => window.__game.state().results.length === 13" 30
 wait_moment door 30
 wait_open 20
 tap "$(hook 'answer()')"
@@ -317,30 +319,30 @@ wait_target 'play again' 30
 sleep 1
 shot 23-end
 
-# The results: what was missed once may be 'miss' or 'helped' (the hint after a miss can count as help), the rest is
-# first time; every wrong choice is in detail.tried.
+# The results per place: what was missed once may be 'miss' or 'helped' (the hint after a miss can count as help), the
+# rest is first time; every wrong choice is in detail.tried; every line has this play's number (pn).
 results="$(val "() => JSON.stringify(window.__game.state().results.map((r) => r.part + ':' + (r.detail.moment || r.strand) + ':' + (r.misses === 1 && r.outcome !== 'first' ? 'missed' : r.outcome)))")"
 say "results $results"
-expect_eq "$results" '["egg-nest:m:first","egg-nest:m:missed","egg-nest:m:first","naming-1:s:missed","wish-1:r:missed","pond:r:first","egg-shore:m:first","egg-shore:m:first","egg-shore:m:first","naming-2:s:first","wish-2:r:first","bedtime:roll call:missed","bedtime:roll call:first","bedtime:visit:missed"]' 'results log'
-# Every wrong choice is logged once; the doors log the door number. The door misses are 'helped' (the row hint).
+expect_eq "$results" '["egg-nest:m:first","egg-nest:m:missed","egg-nest:m:first","naming-1:s:missed","wish-1:r:missed","picnic1:r:first","picnic2:r:first","egg-shore:m:first","egg-shore:m:first","egg-shore:m:first","naming-2:s:first","wish-2:r:first","bedtime:roll call:missed","bedtime:roll call:first","bedtime:visit:missed"]' 'results log'
+expect_eq "$(val "() => window.__game.state().results.every((r) => r.pn === 1)")" true 'the play number on every result line'
 tried="$(val "() => JSON.stringify(window.__game.state().results.map((r) => (r.detail.tried || []).length))")"
-expect_eq "$tried" '[0,1,0,1,1,0,0,0,0,0,0,1,0,1]' 'tried per moment'
-# Three result lines per egg: easy first, hearts 0, 1 and 2, and the three grades.
+expect_eq "$tried" '[0,1,0,1,1,0,0,0,0,0,0,0,1,0,1]' 'tried per moment'
 for part in egg-nest egg-shore; do
   expect_eq "$(val "() => { const r = window.__game.state().results.filter((x) => x.part === '$part'); return r[0].detail.grade + ' ' + r.map((x) => x.detail.round).join(',') + ' ' + r.map((x) => x.detail.grade).sort().join(','); }")" 'easy 0,1,2 easy,hard,middle' "$part result lines"
 done
+expect_eq "$(val "() => JSON.stringify(window.__game.state().hub.done)")" '["egg","picnic","shore"]' 'the places in the order she chose them'
 # The light contrast: a right item after it, without the sounds, is 'miss' (guessed, then read).
 expect_eq "$(val "() => window.__game.state().results.find((r) => r.part === 'wish-1').outcome")" miss 'the dress-up wish after the contrast'
 # Egg 1's wrong stone (its second sum) is the one she heard (the warm cups), when the tray had it.
 expect_eq "$(val "() => window.__game.state().results[1].detail.tried[0]")" "${EGG_TRIED#stone }" 'egg 1 tried'
 # The wishes log their level and basket size: the warm-up at level 1 with 4 items, then level 2 with 5.
-expect_eq "$(val "() => JSON.stringify(window.__game.state().results.filter((r) => r.strand === 'r').map((r) => r.detail.level + '/' + r.detail.size))")" '["1/4","2/5","2/5"]' 'wish levels and sizes'
-expect_eq "$(val "() => new Set(window.__game.state().results.filter((r) => r.strand === 'r').map((r) => r.detail.word)).size")" 3 'three different wish words'
+expect_eq "$(val "() => JSON.stringify(window.__game.state().results.filter((r) => r.strand === 'r').map((r) => r.detail.level + '/' + r.detail.size))")" '["1/4","2/5","2/5","2/5"]' 'wish levels and sizes'
+expect_eq "$(val "() => new Set(window.__game.state().results.filter((r) => r.strand === 'r').map((r) => r.detail.word)).size")" 4 'four different wish words'
 # The save: one earned ribbon (the goodnight gift, on her look), and this play's targets and totals for the next play.
 expect_eq "$(val "() => JSON.stringify(window.__game.save().ribbons)")" '["lilac"]' 'ribbons earned'
 # 2.3.0: the goodnight ribbon is the colour of her hair things.
 expect_eq "$(val "() => window.__game.save().look.thingColour")" lilac 'her hair-thing colour'
-expect_eq "$(val "() => { const l = window.__game.save().last; return l.words.length + '/' + l.totals.length; }")" '3/6' 'last play in the save'
+expect_eq "$(val "() => { const l = window.__game.save().last; return l.words.length + '/' + l.totals.length; }")" '4/6' 'last play in the save'
 expect_eq "$(val "() => window.__game.save().seen.wardrobe")" true 'customiser seen'
 expect_eq "$(val "() => JSON.stringify(window.__game.state().results.filter((r) => r.part === 'bedtime').map((r) => r.detail.tried))")" '[["1"],[],["17"]]' 'wrong doors'
 expect_eq "$(val "() => window.__game.state().results.filter((r) => r.part === 'bedtime' && r.misses === 1).every((r) => r.outcome === 'helped')")" true 'door misses are helped'
@@ -353,4 +355,23 @@ tap 'play again'
 sleep 2.5
 wait_for "() => window.__game && window.__game.state().part === 'start' && window.__game.targets().some((t) => t.name === 'play')" 20
 shot 24-play-again
+
+# ---- Play 2 on a real save (cleared first and last): the short welcome, then the hub at once with the first hub's
+# explanation and the ghost hand gliding over the bubbles, and the opening set: the nest egg, the ride and the picnic.
+goto_page "?seed=$SEED"
+hook 'clearSave()' >/dev/null
+hook 'setSave({ plays: 1, seen: { wardrobe: true, crown: true } })' >/dev/null
+goto_page "?seed=$SEED"
+# The ghost hand's glide lasts about 3 s: a watcher in the page notes it, so the checks below cannot miss it.
+val "() => { const t = setInterval(() => { if (document.querySelector('.ghost.on')) { window.__ghostSeen = true; clearInterval(t); } }, 40); return 'ok'; }" >/dev/null
+press_play
+dress_done
+wait_for "() => { const s = window.__game.state(); return s.part === 'hub' && s.hub.shown.length === 3; }" 60
+expect_eq "$(val "() => JSON.stringify(window.__game.state().hub.shown)")" '["egg","ride","picnic"]' 'the opening set of play 2'
+expect_eq "$(val "() => window.__game.save().plays")" 2 'play 2'
+wait_for "() => window.__ghostSeen" 30
+shot 25-play2-hub
+wait_for "() => window.__game.save().seen.hub" 40
+expect_eq "$(val "() => { const e = window.__game.state().egg; return !!e && Math.hypot(e.x + 4, e.z - 3) < 0.5; }")" true 'the nest egg waits in the nest'
+hook 'clearSave()' >/dev/null
 finish level

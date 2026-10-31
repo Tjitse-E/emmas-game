@@ -353,6 +353,62 @@ export function edgeArrow(p: Point, visible: boolean, screen: { w: number; h: nu
   return { x: cx + dx * s, y: cy + dy * s, angle: Math.atan2(dy, dx) };
 }
 
+// ---- the hub's edge bubbles (2.4.0, docs/v4/2.4.md section 5.2; the hub lane) ----
+
+/** An offer bubble at a screen edge, in design px: 100 (90 on a screen under 760 CSS px high, Safari's bars), no tail. */
+export const EDGE_BUBBLE = { size: 100, short: 90, shortUnder: 760, margin: 12, gap: 10, topRight: 112, topLeft: 160, basket: 150 } as const;
+
+/** An edge bubble's size in CSS px on this screen. */
+export function edgeSize(screen: { w: number; h: number }): number {
+  const e = EDGE_BUBBLE;
+  return Math.round((screen.h < e.shortUnder ? e.short : e.size) * unitFor(screen.w, screen.h));
+}
+
+/**
+ * Where a bubble on a side edge may sit, top to bottom: under the home button (right) or Lumi (left), and on the right
+ * above the food basket in the bottom corner.
+ */
+export function edgeBand(side: 'left' | 'right', screen: { w: number; h: number }): { top: number; bottom: number } {
+  const e = EDGE_BUBBLE;
+  const k = unitFor(screen.w, screen.h);
+  return side === 'right' ? { top: e.topRight * k, bottom: screen.h - e.basket * k } : { top: e.topLeft * k, bottom: screen.h - e.margin * k };
+}
+
+/**
+ * Box `b` on a side edge, moved along the edge off the boxes placed before it, `gap` apart, to the free spot nearest
+ * where it wants to be, inside `band`. When no spot is free it stays as near as the band allows.
+ */
+export function stackOnEdge(b: Box, placed: readonly Box[], band: { top: number; bottom: number }, gap: number): Box {
+  const lo = band.top;
+  const hi = Math.max(lo, band.bottom - b.h);
+  const at = (y: number): Box => ({ ...b, y });
+  // A hair under the gap, so a spot exactly `gap` away still counts as free in floating point.
+  const pad = gap - 0.001;
+  const free = (y: number) => !placed.some((p) => overlaps(at(y), { x: p.x - pad, y: p.y - pad, w: p.w + 2 * pad, h: p.h + 2 * pad }));
+  const want = clamp(b.y, lo, hi);
+  const ys = [want, ...placed.flatMap((p) => [p.y + p.h + gap, p.y - b.h - gap])].filter((y) => y >= lo - 0.01 && y <= hi + 0.01);
+  const best = ys.filter(free).sort((a, c) => Math.abs(a - want) - Math.abs(c - want))[0];
+  return at(best ?? want);
+}
+
+/**
+ * `n` edge bubbles whose places all lie east of the screen, as the hub can show them (four of its bubbles while she
+ * stands at the Corner): each waits on the right edge at the middle and moves along it off the ones before it.
+ */
+export function edgeBubbles(n: number, screen: { w: number; h: number }): Box[] {
+  const s = edgeSize(screen);
+  const k = unitFor(screen.w, screen.h);
+  const band = edgeBand('right', screen);
+  const out: Box[] = [];
+  for (let i = 0; i < n; i++) {
+    const want = { x: screen.w - EDGE_BUBBLE.margin * k - s, y: screen.h / 2 - s / 2, w: s, h: s };
+    out.push(stackOnEdge(want, out, band, EDGE_BUBBLE.gap * k));
+  }
+  return out;
+}
+
+// ---- end of the hub's edge bubbles ----
+
 // ------------------------------------------------------------------------------------------------ sky and end screen
 
 /**

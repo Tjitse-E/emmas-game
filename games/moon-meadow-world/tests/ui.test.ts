@@ -289,6 +289,32 @@ describe('placement', () => {
     const behind = edgeArrow({ x: 590, y: 200 }, false, screen, 76, 40)!;
     expect(behind.y).toBeCloseTo(820 - 76);
   });
+
+  // 2.4.0, the hub lane (docs/v4/2.4.md section 5.2): four small bubbles on one edge. Imported here, so the file's
+  // shared import lines stay as they are for the other lanes.
+  it('fits four small edge bubbles on the right edge at 1080 x 740 and 1080 x 810, apart and clear of the home button and the basket', async () => {
+    const { edgeBubbles } = await import('../src/ui/geometry');
+    for (const [w, h] of [[1080, 740], [1080, 810]]) {
+      const boxes = edgeBubbles(4, { w, h });
+      expect(boxes).toHaveLength(4);
+      expect(boxes.every((b) => b.w === Math.round((h === 740 ? 90 : 100) * unitFor(w, h)))).toBe(true);
+      expect(boxes.every((b) => b.w >= 64 && b.h >= 64)).toBe(true);
+      expect(boxes.some((a, i) => boxes.some((b, j) => i !== j && overlaps(a, b)))).toBe(false);
+      expect(boxes.every((b) => b.y >= 112 * unitFor(w, h) && b.y + b.h <= h - 150 * unitFor(w, h))).toBe(true);
+      expect(boxes.every((b) => b.x + b.w <= w)).toBe(true);
+    }
+  });
+
+  it('keeps an edge bubble in its band when the bubbles before it fill the middle', async () => {
+    const { stackOnEdge } = await import('../src/ui/geometry');
+    const band = { top: 100, bottom: 600 };
+    const placed = [{ x: 900, y: 250, w: 90, h: 90 }, { x: 900, y: 350, w: 90, h: 90 }];
+    const b = stackOnEdge({ x: 900, y: 300, w: 90, h: 90 }, placed, band, 10);
+    expect(placed.some((p) => overlaps(b, p))).toBe(false);
+    expect(b.y).toBeGreaterThanOrEqual(100);
+    expect(b.y + b.h).toBeLessThanOrEqual(600);
+    expect(stackOnEdge({ x: 900, y: 700, w: 90, h: 90 }, [], band, 10).y).toBe(510);
+  });
 });
 
 describe('home', () => {

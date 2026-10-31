@@ -11,11 +11,12 @@ import { createWorld } from './world';
 import { createActors } from './actors';
 import { createLayer } from './ui';
 import { audio } from './audio';
-import { CLIPS, herd as startingHerd } from './content';
+import { herd as startingHerd } from './content';
 import { GRAZE_HOMES } from './layout';
 import { wordPic } from './assets';
 import { createGame, sayWay } from './game/game';
 import { installInput } from './game/input';
+import { installPlayClock, lumiInHub } from './game/hub-part';
 import { begin, installSlideWatch, installWayHelper } from './game/level';
 import { parseOptions, resolveStart } from './game/options';
 import { addMounts } from './game/ride';
@@ -111,6 +112,7 @@ function boot(): void {
   // 2.4.0: Bella and Hazel in the paddock (step 0: none yet).
   addMounts(game);
   installInput(game);
+  installPlayClock(game);
   installWayHelper(game);
   installSlideWatch(game);
   installHook(game);
@@ -119,9 +121,10 @@ function boot(): void {
     if (game.door) return game.door.replay();
     // Lumi never talks over a line that plays.
     if (audio.speaking) return;
-    // A side quest hides the basket: between its moments she hears nothing (an open moment replays its goal above).
-    if (game.quests.running) return;
-    if (!game.goal && game.part === 'free') return void audio.sayAll(CLIPS.basket);
+    // A place hides the bubbles: between its moments she hears nothing (an open moment replays its goal above).
+    if (game.quests.running || game.hub.running) return;
+    // In the hub: "Where do you want to go? Tap a bubble!" and every bubble bobs once (2.4.0).
+    if (!game.goal && lumiInHub(game)) return;
     sayWay(game);
   });
 

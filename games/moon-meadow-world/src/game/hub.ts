@@ -67,6 +67,238 @@ export function startHub(bedMs: number = BEDTIME_MS): HubState {
   };
 }
 
+// ---- the play clock, the cutoffs and bedtime (5.6; plan Task 1) ---------------------------------------------------
+
+/** The play clock's times for one bedtime: the last ride, the last egg, the last place, done early's last check and wait. */
+export interface Cutoffs {
+  ride: number;
+  egg: number;
+  all: number;
+  early: number;
+  wait: number;
+  bed: number;
+}
+
+/** Bedtime under this is a flow's short ?bed=: its cutoffs scale with it. */
+const SHORT_BED_MS = 5 * 60_000;
+
+/**
+ * 4, 3, 2 and 1 minutes before bedtime and a 2-minute wait; under 5 minutes 87%, 90%, 93% and 97% of it and a wait of
+ * 7%. Everything derives from the one bedtime, so ?bed= moves every cutoff with it.
+ */
+export function cutoffs(bedMs: number): Cutoffs {
+  if (bedMs < SHORT_BED_MS) {
+    const at = (f: number) => Math.round(bedMs * f);
+    return { ride: at(0.87), egg: at(0.9), all: at(0.97), early: at(0.93), wait: at(0.07), bed: bedMs };
+  }
+  const min = 60_000;
+  return { ride: bedMs - 4 * min, egg: bedMs - 3 * min, all: bedMs - min, early: bedMs - 2 * min, wait: 2 * min, bed: bedMs };
+}
+
+/** The longest frame the play clock counts: a hidden tab or a stall never jumps the clock. */
+const FRAME_CAP_MS = 1000;
+
+/**
+ * One frame of play time: rawMs capped at 1000, nothing while paused (the start mirror, the Corner's music box). With
+ * `hub` (the hub part runs) and no place running it also adds to idleMs, nudgeIdleMs and, after done early, earlyIdleMs.
+ */
+export function tickPlay(h: HubState, rawMs: number, o: { paused: boolean; hub: boolean }): void {
+  if (o.paused || !(rawMs > 0)) return;
+  const ms = Math.min(rawMs, FRAME_CAP_MS);
+  h.playMs += ms;
+  if (!o.hub || h.running) return;
+  h.idleMs += ms;
+  h.nudgeIdleMs += ms;
+  if (h.early !== null) h.earlyIdleMs += ms;
+}
+
+/** Past the place's cutoff: ride at `ride`, egg and shore at `egg`, every other place at `all`. */
+export function isPast(h: HubState, p: HubPlace): boolean {
+  const c = cutoffs(h.bedMs);
+  return h.playMs >= (p === 'ride' ? c.ride : p === 'egg' || p === 'shore' ? c.egg : c.all);
+}
+
+/**
+ * Bedtime may start: no place runs and the wardrobe is closed, and the play clock has reached bedtime, or she is done
+ * early and either no play bubble is left or done early's wait has passed with no place running. Nothing else starts
+ * bedtime before 30:00.
+ */
+export function bedtimeDue(h: HubState, o: { dressing: boolean }): boolean {
+  if (h.running || o.dressing) return false;
+  const c = cutoffs(h.bedMs);
+  if (h.playMs >= c.bed) return true;
+  return h.early !== null && (h.play.length === 0 || h.earlyIdleMs >= c.wait);
+}
+
+// ---- the refill and the play bubbles (5.2, 5.6; plan Task 2) -----------------------------------------------------
+
+/** How often each place can run in a play. A pond visit comes once per pond bubble, so the pond has no limit of its own. */
+export const PLACE_LIMIT: Record<HubPlace, number> = { egg: 1, shore: 1, wish: 2, picnic: 1, beads: 1, rack: 1, ride: 2, corner: 1, pond: Infinity };
+/** The places with reading or maths in them; the Corner and the pond are play places. */
+export const LEARNING: readonly HubPlace[] = ['egg', 'shore', 'ride', 'picnic', 'beads', 'rack', 'wish'];
+/** At most one bubble of each kind shows: the two eggs are one kind, and so are the two maths quests. */
+export const KIND: Record<HubPlace, 'egg' | 'wish' | 'picnic' | 'maths' | 'ride' | 'corner' | 'pond'> = {
+  egg: 'egg', shore: 'egg', wish: 'wish', picnic: 'picnic', beads: 'maths', rack: 'maths', ride: 'ride', corner: 'corner', pond: 'pond',
+};
+/** Each place's strands: an egg and a ride have sums and their newborn's naming and wish; the picnic and a wish are reading. */
+export const STRANDS: Record<HubPlace, readonly ('r' | 'm')[]> = {
+  egg: ['r', 'm'], shore: ['r', 'm'], wish: ['r'], picnic: ['r'], beads: ['m'], rack: ['m'], ride: ['r', 'm'], corner: [], pond: [],
+};
+/** The play line's sq letters (5.8). */
+export const LETTER: Record<HubPlace, string> = { egg: 'e', shore: 's', wish: 'w', picnic: 'p', beads: 'b', rack: 'k', ride: 'r', corner: 'c', pond: 'o' };
+
+/**
+ * What the refill reads besides the hub: this play's maths quest, whether a herd baby can wait with a wish, and the
+ * moments she has done this play per strand (reading counts spelling too).
+ */
+export interface HubCtx {
+  maths: 'beads' | 'rack';
+  wishBaby: boolean;
+  moments: { r: number; m: number };
+}
+
+const SLOTS = 3;
+const timesDone = (h: HubState, p: HubPlace): number => h.done.reduce((n, q) => n + (q === p ? 1 : 0), 0);
+
+/** The place could start now if the just-finished rule did not exist: under its limit, before its cutoff, landed, this play's. */
+function canRun(h: HubState, p: HubPlace, c: HubCtx): boolean {
+  if (timesDone(h, p) >= PLACE_LIMIT[p] || isPast(h, p)) return false;
+  if (p === 'shore' && !h.shoreLanded) return false;
+  if ((p === 'beads' || p === 'rack') && p !== c.maths) return false;
+  if (p === 'wish' && !c.wishBaby) return false;
+  return true;
+}
+
+/** Some learning place can still run this play (each other one is done, past its cutoff or not landed). */
+const learningLeft = (h: HubState, c: HubCtx, but: (p: HubPlace) => boolean = () => false): boolean =>
+  LEARNING.some((p) => !but(p) && canRun(h, p, c));
+
+/**
+ * Can start in this refill (5.2's "left"): under its limit, before its cutoff, the shore egg once it has landed, and
+ * not the kind just finished. That last rule gives way when it would leave no learning place, so ride 2 or wish 2
+ * comes back at once when it is the only learning place left. A play place is left while its bubble is earned.
+ */
+export function isLeft(h: HubState, p: HubPlace, c: HubCtx): boolean {
+  if (!canRun(h, p, c)) return false;
+  if (p === 'corner' || p === 'pond') return h.play.includes(p);
+  const last = h.done.at(-1);
+  if (!last || KIND[last] !== KIND[p]) return true;
+  return !learningLeft(h, c, (q) => KIND[q] === KIND[last]);
+}
+
+/**
+ * The bubbles after a refill: the shown learning bubbles that are still left stay where they are (nothing swaps while
+ * she decides), and each empty slot of three fills with the first place left that does not show yet, in 5.2's order:
+ * (1) a missing strand, maths first, from egg, shore, ride, the maths quest (or picnic), wish; (2) the egg; (3) the
+ * ride; (4) of the picnic and the maths quest, the one whose strand the bubbles lack, else the strand with fewer
+ * moments this play (a tie to reading); (5) a herd baby's wish. Then the play bubbles in their order. From the last
+ * cutoff (29:00) nothing. Pure.
+ */
+export function refill(h: HubState, c: HubCtx): HubPlace[] {
+  if (h.playMs >= cutoffs(h.bedMs).all) return [];
+  const out = h.shown.filter((p, i, all) => LEARNING.includes(p) && all.indexOf(p) === i && isLeft(h, p, c));
+  const has = (s: 'r' | 'm') => out.some((p) => STRANDS[p].includes(s));
+  const can = (p: HubPlace) => isLeft(h, p, c) && !out.some((q) => KIND[q] === KIND[p]);
+  const next = (): HubPlace | null => {
+    for (const s of ['m', 'r'] as const) {
+      if (has(s)) continue;
+      const list: HubPlace[] = s === 'm' ? ['egg', 'shore', 'ride', c.maths] : ['egg', 'shore', 'ride', 'picnic', 'wish'];
+      const p = list.find(can);
+      if (p) return p;
+    }
+    const first = (['egg', 'shore', 'ride'] as const).find(can);
+    if (first) return first;
+    const picnic = can('picnic');
+    const maths = can(c.maths);
+    if (picnic && maths) {
+      if (!has('r')) return 'picnic';
+      if (!has('m')) return c.maths;
+      return c.moments.m < c.moments.r ? c.maths : 'picnic';
+    }
+    if (picnic) return 'picnic';
+    if (maths) return c.maths;
+    return can('wish') ? 'wish' : null;
+  };
+  while (out.length < SLOTS) {
+    const p = next();
+    if (!p) break;
+    out.push(p);
+  }
+  return [...out, ...h.play.filter((p) => isLeft(h, p, c))];
+}
+
+/** The shore egg may still land: the nest egg is done, it has not landed, and its cutoff has not passed. */
+const shoreMayLand = (h: HubState): boolean => !h.shoreLanded && h.done.includes('egg') && !isPast(h, 'shore');
+
+/**
+ * The shore egg lands now, with no learning place ended (5.2's "at once after the nest egg when no other learning
+ * place is left"): the nest egg is done and no other learning place can run, because the last one passed its cutoff
+ * during a play place or while she waited. Without this done early would come with the shore egg still to do. Pure.
+ */
+export function shoreAlone(h: HubState, c: HubCtx): boolean {
+  return shoreMayLand(h) && !learningLeft(h, c, (q) => q === 'shore');
+}
+
+/**
+ * A place finished, in this order: it is done; the nudge's and done early's counts start again; the shore egg lands
+ * after the nest egg and one more learning place, or whenever no other learning place is left once the nest egg is
+ * done (never past its cutoff); the play bubble (5.2: a learning place earns one when none waits, the Corner's while
+ * she has not been, else the pond's; a waiting one swaps for the other while she has not been to the Corner; a visit
+ * uses its own); then done early's check (5.6), only here, only before its last check: when no learning place can run
+ * any more (each done or past its cutoff: a herd baby's wish counts as left while it is under its limit, even when no
+ * baby is free at this refill) she gets a last pond bubble (only after a learning place, or when one still waits) and
+ * the Corner's if she has not been.
+ */
+export function placeEnded(h: HubState, p: HubPlace, c: HubCtx): void {
+  h.done.push(p);
+  h.nudgeIdleMs = 0;
+  h.earlyIdleMs = 0;
+  const learning = LEARNING.includes(p);
+  if (shoreMayLand(h) && ((p !== 'egg' && learning) || !learningLeft(h, c, (q) => q === 'shore'))) h.shoreLanded = true;
+  const cornerDone = h.done.includes('corner');
+  if (p === 'pond' || p === 'corner') h.play = h.play.filter((q) => q !== p);
+  else if (learning && h.early === null) {
+    const waiting = h.play[0];
+    if (!waiting) h.play = [cornerDone ? 'pond' : 'corner'];
+    else if (!cornerDone) h.play = [waiting === 'corner' ? 'pond' : 'corner'];
+  }
+  if (h.early !== null || h.playMs >= cutoffs(h.bedMs).early || learningLeft(h, { ...c, wishBaby: true })) return;
+  h.early = h.playMs;
+  const pond = learning || h.play.includes('pond');
+  h.play = [...(pond ? (['pond'] as const) : []), ...(cornerDone ? [] : (['corner'] as const))];
+}
+
+/**
+ * The hub's wait, each frame: a bubble whose cutoff passed goes (from 29:00 every bubble), during a place too, and its
+ * slot stays empty while she decides (5.2: the slots refill after a place). Returns the bubbles that went. Pure.
+ */
+export function cutNow(h: HubState): HubPlace[] {
+  const all = h.playMs >= cutoffs(h.bedMs).all;
+  const gone = h.shown.filter((p) => all || isPast(h, p));
+  if (gone.length) h.shown = h.shown.filter((p) => !gone.includes(p));
+  return gone;
+}
+
+/**
+ * The hub's wait with no place running or asked, before 29:00: the shore egg lands when no other learning place can
+ * run ('land'), and when no learning bubble shows while a learning place can start the slots fill ('fill'; 5.2:
+ * "while a learning place can still start, the hub always shows one"), as after a cutoff took the last learning bubble
+ * or once a herd baby is free for a wish. Sets shown and shoreLanded; null when nothing changes. Pure.
+ */
+export function idleRefill(h: HubState, c: HubCtx): 'land' | 'fill' | null {
+  if (h.running || h.asked || h.playMs >= cutoffs(h.bedMs).all) return null;
+  if (shoreAlone(h, c)) {
+    h.shoreLanded = true;
+    h.shown = refill(h, c);
+    return 'land';
+  }
+  if (h.shown.some((p) => LEARNING.includes(p))) return null;
+  const next = refill(h, c);
+  if (!next.some((p) => LEARNING.includes(p))) return null;
+  h.shown = next;
+  return 'fill';
+}
+
 /** The hub for the test hook (__game.state().hub). */
 export function hubSnapshot(g: Game): {
   shown: HubPlace[];

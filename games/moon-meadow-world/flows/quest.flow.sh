@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
-# The afternoon's side quests (docs/v4/2.2.md section 5, 2.3.md sections 17 and 22.5) at W x H, with a fresh save
-# unless a step says otherwise.
-#   Free play: the picnic and this play's maths quest (the bead tree on a first play) offer bubbles; the budget at the
-#     Dressing Corner, the bead tree and the saddle sign in the follow view; a sign tap.
-#   ?quest=corner&box=20&phrases=all: two gate reads with one wrong (a two-word tag), the hair gift saved and worn,
+# The gift quests as hub places (docs/v4/2.2.md section 5, 2.3.md sections 17 and 22.5, 2.4.md section 8) at W x H,
+# with a fresh save unless a step says otherwise. 2.4.0: each starts with ?at=hub&place=<quest>, which asks it as the
+# hub opens (?at=free&quest= says the same); ?at=free is the hub with both home eggs done.
+#   ?at=free: the picnic and this play's maths quest (the bead tree on a first play) show their bubbles; the budget at
+#     the Dressing Corner, the bead tree and the saddle sign in the follow view; a sign tap.
+#   place=corner&box=20&phrases=all: two gate reads with one wrong (a two-word tag), the hair gift saved and worn,
 #     the trunk lid and its board, skip() never ends the wardrobe, the budget in the Corner wardrobe at 1080 x 810,
 #     1080 x 740 and 1024 x 690 before the 20 s music box ends it, a trunk tap after the visit.
-#   ?quest=corner without ?phrases= on a fresh device: every ok pair plays, Claude's checks too, so the gate plays two
+#   place=corner without ?phrases= on a fresh device: every ok pair plays, Claude's checks too, so the gate plays two
 #     phrase wishes.
-#   ?quest=corner&phrases=emma: only Emma's checks, so the gate plays two dress-up word wishes while no phrase has
+#   place=corner&phrases=emma: only Emma's checks, so the gate plays two dress-up word wishes while no phrase has
 #     her check.
-#   ?quest=beads: the ghost fills gap 1, two gaps with one wrong, results beads1 to beads3, the jewel gift.
-#   ?quest=picnic and ?quest=rack: as 2.2, with their gifts (a crown, shoes) saved and worn.
-#   The rotation over two loads, on a real save: the bead tree comes again until she finishes it, then the hay rack.
+#   place=beads: the ghost fills gap 1, two gaps with one wrong, results beads1 to beads3, the jewel gift, then the
+#     Corner's bubble.
+#   place=picnic and place=rack: as 2.2, with their gifts (a crown, shoes) saved and worn.
+#   The rotation over three loads, on a real save: a play that leaves the bead tree undone (only the picnic) gets the
+#     bead tree again next time; then the bead tree ends, the save's afternoon says so at once (it is written after each
+#     place), and the next load gets the hay rack.
 # Checks the results, the budget, missing clips and console errors.
 source "$(dirname "$0")/lib.sh"
 SEED="${SEED:-9}"
@@ -32,27 +36,10 @@ gift_check() {
   val "() => { const s = window.__game.state(); const sv = window.__game.save(); return JSON.stringify(s.quests.gifts.map((g) => { const [f, id] = g.split(':'); return g + ':' + (sv.owned[f] || []).includes(id) + ':' + (s.look[f] === id) + ':' + (sv.look[f] === id); })); }"
 }
 
-# End free play's wait until the level moves on to bedtime (the free-play wait is skippable once it runs).
-skip_free() {
-  local k
-  for k in $(seq 1 60); do
-    [ "$(field part)" = free ] || return 0
-    hook 'skip()' >/dev/null
-    sleep 0.5
-  done
-  fail "free play never ended"
-}
-
 # The answer item of the open wish onto the baby, then wait for its result line.
 answer_wish() {
   drag "$(hook 'answer()')" baby
   wait_for "() => window.__game.state().results.some((r) => r.part === $(jsq "$1"))" 30
-}
-
-# The gift picker after a quest (ui/gift.ts): tap a card once the cards take touches.
-pick_gift() {
-  wait_for "() => window.__game.targets().some((t) => t.name.startsWith('gift '))" "${1:-60}"
-  tap "$(val "() => window.__game.targets().filter((t) => t.name.startsWith('gift ')).pop().name")"
 }
 
 # Fill each open gap of the bead moment with the right bead until beads3 is logged (the ghost fills gap 1 on a first
@@ -69,11 +56,13 @@ answer_beads() {
   wait_for "() => window.__game.state().results.some((r) => r.part === 'beads3')" 30
 }
 
-# ---- Free play: the picnic and the bead tree bubbles; the new places in the follow view.
+# ---- The hub with both home eggs done (?at=free): the picnic and the bead tree bubbles; the new places in the follow
+# view.
 open_page "?seed=$SEED&fresh=1&at=free"
 press_play
 wait_for "() => window.__game.state().quests.offered.length === 2" 30
 expect_eq "$(val "() => JSON.stringify(window.__game.state().quests.offered)")" '["picnic","beads"]' 'the first play offers the picnic and the bead tree'
+expect_eq "$(val "() => JSON.stringify(window.__game.state().hub.shown)")" '["ride","picnic","beads"]' 'the hub after both home eggs'
 sleep 1
 shot quest-bubbles
 check_targets '["offer picnic","offer beads"]'
@@ -94,7 +83,7 @@ say "the sign shimmers on a tap (Lumi's line said: $(val "() => window.__game.st
 no_missing_clips
 
 # ---- The Dressing Corner with the phrase gate, on the busiest look.
-goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=20&phrases=all"
+goto_page "?seed=$SEED&fresh=1&at=hub&place=corner&box=20&phrases=all"
 hook "setOwned($BUSIEST_OWNED)" >/dev/null
 hook "setLook($BUSIEST_LOOK)" >/dev/null
 press_play
@@ -128,7 +117,7 @@ case "$gifts" in *'style:'*':true:true:true"]'|*'thing:'*':true:true:true"]') ;;
 wait_for "() => window.__game.state().wardrobe?.open" 30
 hook 'skip()' >/dev/null
 sleep 0.5
-expect_eq "$(val "() => { const s = window.__game.state(); return s.part + '/' + s.quests.running + '/' + !!s.wardrobe?.open; }")" 'free/corner/true' 'skip() keeps the Corner wardrobe open'
+expect_eq "$(val "() => { const s = window.__game.state(); return s.part + '/' + s.quests.running + '/' + !!s.wardrobe?.open; }")" 'hub/corner/true' 'skip() keeps the Corner wardrobe open'
 expect_eq "$(val "() => window.__game.state().quests.boards")" 1 'the board shows as the wardrobe opens'
 wait_for "() => window.__game.state().quests.lid > 0.9" 5
 sleep 1
@@ -165,9 +154,9 @@ no_missing_clips
 
 # ---- Without ?phrases= on a fresh device: every ok pair plays, Claude's checks too, so the gate plays two phrase
 # wishes. This device's picture check verdicts (check.html) are cleared first, so no cross from an earlier check counts.
-goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=5"
+goto_page "?seed=$SEED&fresh=1&at=hub&place=corner&box=5"
 val "() => { localStorage.removeItem('mmw.phrasecheck1'); return true; }" >/dev/null
-goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=5"
+goto_page "?seed=$SEED&fresh=1&at=hub&place=corner&box=5"
 press_play
 wait_moment wish 60
 wait_open 30
@@ -183,7 +172,7 @@ no_missing_clips
 
 # ---- ?phrases=emma: only the pairs Emma has checked, so before her picture check the gate plays two dress-up word
 # wishes.
-goto_page "?seed=$SEED&fresh=1&at=free&quest=corner&box=5&phrases=emma"
+goto_page "?seed=$SEED&fresh=1&at=hub&place=corner&box=5&phrases=emma"
 press_play
 wait_moment wish 60
 wait_open 30
@@ -205,7 +194,7 @@ say "gate $(val "() => JSON.stringify(window.__game.state().quests.gate)")"
 no_missing_clips
 
 # ---- The bead tree: the ghost's gap, two gaps with one wrong, the results and the jewel gift in the tree's frame.
-goto_page "?seed=$SEED&fresh=1&at=free&quest=beads"
+goto_page "?seed=$SEED&fresh=1&at=hub&place=beads"
 press_play
 wait_for "() => window.__game.state().quests.running === 'beads' || window.__game.state().quests.done.includes('beads')" 30
 if raw_eval "() => new Promise((ok, no) => { const t0 = Date.now(); const t = setInterval(() => { const m = window.__game.state().moment; if (m && m.kind === 'beads') { clearInterval(t); ok('ok'); } else if (Date.now() - t0 > 20000 || window.__game.state().quests.done.includes('beads')) { clearInterval(t); no(new Error('none')); } }, 100); })" >/dev/null 2>&1; then
@@ -250,7 +239,7 @@ check_targets '["offer corner"]'
 no_missing_clips
 
 # ---- The royal picnic: both babies on the rug, a wish each from the hamper, then a crown.
-goto_page "?seed=$SEED&fresh=1&at=free&quest=picnic"
+goto_page "?seed=$SEED&fresh=1&at=hub&place=picnic"
 press_play
 wait_for "() => window.__game.state().quests.running === 'picnic'" 30
 wait_moment wish 60
@@ -281,12 +270,14 @@ expect_eq "$(val "() => { const r = window.__game.state().results; return r[0].d
 expect_eq "$(val "() => JSON.stringify(window.__game.state().results.map((r) => r.detail.level + '/' + r.detail.size))")" '["2/5","2/5"]' 'picnic levels and sizes'
 gifts="$(gift_check)"
 case "$gifts" in *'crown:'*':true:true:true"]') ;; *) fail "the picnic's gift is not a saved, worn crown: $gifts" ;; esac
-# Back to free play: the bead tree's bubble is still there, and the trunk bubble has come.
+# Back in the hub: the bead tree's bubble, and the Corner's after her first learning place (the nest egg and the ride
+# too, which are not gift quests).
+wait_for "() => window.__game.state().quests.offered.length === 2" 20
 expect_eq "$(val "() => JSON.stringify(window.__game.state().quests.offered)")" '["beads","corner"]' 'the bubbles after the picnic'
 no_missing_clips
 
 # ---- The hay rack (this play's maths quest with ?quest=rack): the herd waits at it, one wrong pile, then shoes.
-goto_page "?seed=$SEED&fresh=1&at=free&quest=rack"
+goto_page "?seed=$SEED&fresh=1&at=hub&place=rack"
 press_play
 wait_for "() => window.__game.state().quests.running === 'rack'" 30
 wait_moment egg 60
@@ -313,24 +304,25 @@ expect_eq "$(val "() => window.__game.state().results[0].detail.band")" a 'the r
 gifts="$(gift_check)"
 case "$gifts" in *'shoes:'*':true:true:true"]') ;; *) fail "the rack's gift is not saved, worn shoes: $gifts" ;; esac
 
-# ---- The rotation over two loads, on a real save (cleared first and last).
-goto_page "?seed=$SEED&at=free"
+# ---- The rotation over three loads, on a real save (cleared first and last): a play with only the picnic leaves the
+# bead tree undone, so the next play gets it again (2.3's check); the bead tree ends, the save's afternoon says so at
+# once (2.4.0: written after each place), and the next load gets the hay rack.
+goto_page "?seed=$SEED&at=hub&place=picnic"
 hook 'clearSave()' >/dev/null
-goto_page "?seed=$SEED&at=free"
+goto_page "?seed=$SEED&at=hub&place=picnic"
 press_play
 expect_eq "$(val "() => window.__game.state().quests.maths")" beads 'a first play gets the bead tree'
-skip_free
-expect_eq "$(val "() => JSON.stringify(window.__game.save().afternoon)")" '{"maths":"beads","done":[]}' 'the afternoon saved'
-goto_page "?seed=$SEED&at=free"
+wait_for "() => window.__game.state().hub.running === 'picnic'" 30
+play_place 180
+expect_eq "$(val "() => JSON.stringify(window.__game.save().afternoon)")" '{"maths":"beads","done":["picnic"]}' 'the afternoon saved without the bead tree'
+goto_page "?seed=$SEED&at=hub&place=beads"
 press_play
 expect_eq "$(val "() => window.__game.state().quests.maths")" beads 'the bead tree again when she did not finish it'
-wait_target 'offer beads' 30
-tap 'offer beads'
 answer_beads
 pick_gift
-wait_for "() => window.__game.state().quests.done.includes('beads') && !window.__game.state().quests.running" 90
-skip_free
-goto_page "?seed=$SEED&at=free"
+wait_for "() => { const h = window.__game.state().hub; return !h.running && h.done.includes('beads'); }" 90
+expect_eq "$(val "() => JSON.stringify(window.__game.save().afternoon)")" '{"maths":"beads","done":["beads"]}' 'the afternoon saved after the place'
+goto_page "?seed=$SEED&at=hub"
 press_play
 expect_eq "$(val "() => window.__game.state().quests.maths")" rack 'the hay rack after she finished the bead tree'
 hook 'clearSave()' >/dev/null

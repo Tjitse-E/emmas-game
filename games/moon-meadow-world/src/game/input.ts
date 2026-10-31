@@ -3,22 +3,25 @@
 // Priority: a unicorn before the world. While a checked ui moment is open the world takes no taps; during a door
 // moment a door counts as the answer, and a waiting unicorn only hops and looks at its own door.
 // A tap never cuts the speech that plays: names wait their turn (sayAside).
-// In free play a tap on a quest's place (the picnic rug, the hay rack, the bead tree, the Dressing Corner's trunk,
-// mirror or step) starts that side quest when it is offered (quests.ts), and so does the gazebo while the trunk bubble
-// shows. After her Corner visit the trunk shows its treasure board (corner.ts trunkTap); the saddle sign shimmers and
-// Lumi says "Soon you can ride here!" once a play.
+// In the hub (2.4.0, hub-part.ts) a tap on a place (the nest or its egg, the shore egg, the picnic rug, the hay rack,
+// the bead tree, the Dressing Corner's trunk, mirror or step, the paddock, the slide) asks that place when its bubble
+// shows, and so does the gazebo while the Corner's bubble shows; otherwise she walks there. A tap on the herd baby whose
+// wish waits asks its wish; it is never carried and never follows. The slide runs only during a pond visit: while it
+// rests a tap makes the ducks bob, and a unicorn dropped on its top lands beside the ladder. After her Corner visit the
+// trunk shows its treasure board (corner.ts trunkTap); the saddle sign shimmers and Lumi says "The saddle is ready! Now
+// you can ride." once a play.
 // A touch is a press() (ui/press.ts): it also ends on a release only the window hears, a cancel, a lost capture or the
 // next touch. On her iPad the release does not always reach the canvas, and a touch waiting for it blocked every later
 // world tap. Only a real release taps; the other ends set a carried unicorn down where the finger last was.
 import * as THREE from 'three';
 import type { Egg3D, Vec2 } from '../contracts';
 import type { UnicornActor } from '../actors';
-import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, SLIDE, STABLE, WILD_EGG, dist2 } from '../layout';
+import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, RIDE, SLIDE, STABLE, WILD_EGG, dist2 } from '../layout';
 import { audio } from '../audio';
 import { press as pressable, type PressEnd } from '../ui/press';
 import { type Game, GOALS, doorPoint, flat, memberOf, princessAt, sayAside, walkTo } from './game';
 import { peekDoor } from './doors';
-import { askQuest } from './quests';
+import { BESIDE_LADDER, askPlace, slideOpen, slideTap } from './hub-part';
 import { trunkTap } from './corner';
 import { CLIPS } from '../content';
 import type { QuestId } from './options';
@@ -56,7 +59,7 @@ export function installInput(g: Game): void {
 
   /** May she pick this unicorn up now? Not during a moment, a door moment, bedtime or a cut scene. */
   const canCarry = (u: UnicornActor): boolean =>
-    g.free && !g.bedtime && !g.door && !momentOpen() && !['stall', 'hatching', 'slide'].includes(u.mode) && !isMount(u) && !g.ride;
+    g.free && !g.bedtime && !g.door && !momentOpen() && !['stall', 'hatching', 'slide'].includes(u.mode) && !isMount(u) && !g.ride && u !== g.waiting;
 
   /** The point under the finger at carrying height (falls back to the ground). */
   const carryPoint = (x: number, y: number): Vec2 | null => {
@@ -78,6 +81,12 @@ export function installInput(g: Game): void {
     const top = world.toScreen(SLIDE.top);
     // Over the slide (or near its top on screen) counts as the top of the slide, whatever ground lies behind it.
     if (p?.kind === 'slide' || (top.visible && Math.hypot(top.x - x, top.y - y) < 90)) {
+      // 2.4.0: while the slide rests it lands beside the ladder and grazes there, as a drop anywhere else does.
+      if (!slideOpen(g)) {
+        u.drop(BESIDE_LADDER);
+        setTimeout(() => g.followers.sync(), 50);
+        return;
+      }
       u.drop(SLIDE.dropZone.center);
       g.followers.sync();
       return;
@@ -147,8 +156,9 @@ export function installInput(g: Game): void {
     if (u) return tapUnicorn(u);
     const tapped = eggUnder(x, y);
     if (tapped === actors.egg) {
-      const egg = flat(actors.egg.position);
-      void walkTo(g, dist2(egg, NEST.center) < 2 ? NEST.stand : WILD_EGG.stand);
+      const nest = dist2(flat(actors.egg.position), NEST.center) < 2;
+      if (askPlace(g, nest ? 'egg' : 'shore')) return;
+      void walkTo(g, nest ? NEST.stand : WILD_EGG.stand);
       return;
     }
     // The trail egg shows only on a ride, which takes its taps above.
@@ -162,15 +172,21 @@ export function installInput(g: Game): void {
         if (!peekDoor(g, p.door)) void walkTo(g, world.nearestWalkable({ x: world.groundAt(x, y)?.x ?? 0, z: -11.4 }));
         return;
       case 'slide':
-        void actors.princess.rideSlide();
+        slideTap(g);
         return;
       case 'nest':
+        if (askPlace(g, 'egg')) return;
         void walkTo(g, NEST.stand);
+        return;
+      case 'paddock':
+        // While the ride's bubble shows the paddock asks the ride; otherwise she walks to her stand there.
+        if (askPlace(g, 'ride')) return;
+        void walkTo(g, world.nearestWalkable(RIDE.stand));
         return;
       case 'pond':
         void walkTo(g, world.nearestWalkable(p.at));
         return;
-      // A side quest's place: the quest starts when it is offered; otherwise she walks to its spot.
+      // A gift quest's place: it starts when its bubble shows; otherwise she walks to its spot.
       case 'corner':
         // After her visit the trunk opens on her treasure board; it never starts the Corner again.
         if (!g.bedtime && trunkTap(g)) return;
@@ -178,7 +194,7 @@ export function installInput(g: Game): void {
       case 'rack':
       case 'picnic':
       case 'beads':
-        if (askQuest(g, p.kind)) return;
+        if (askPlace(g, p.kind)) return;
         void walkTo(g, QUEST_STAND[p.kind]);
         return;
       case 'sign':
@@ -186,7 +202,7 @@ export function installInput(g: Game): void {
         return;
       case 'gazebo':
         // While the trunk bubble shows, the gazebo means the Dressing Corner at its step.
-        if (g.quests.offered.has('corner') && askQuest(g, 'corner')) return;
+        if (askPlace(g, 'corner')) return;
       // falls through
       case 'ground': {
         const at = p.kind === 'ground' ? p.at : world.groundAt(x, y);
@@ -202,9 +218,9 @@ export function installInput(g: Game): void {
   }
 
   /**
-   * The saddle sign at the moon mist (2.3.0): it shimmers with a sparkle and Lumi says "Soon you can ride here!" once
-   * a play (never over a line that plays). She does not walk there: a big tree stands between the follow camera and
-   * the sign, and the sign is only a look ahead.
+   * The saddle sign by the paddock (2.3.0): it shimmers with a sparkle and Lumi says "The saddle is ready! Now you can
+   * ride." once a play (2.4.0; it said "Soon you can ride here!"), never over a line that plays. She does not walk
+   * there: the sign only points at the paddock.
    */
   function signTap(): void {
     g.quests.signs++;
@@ -212,7 +228,7 @@ export function installInput(g: Game): void {
     actors.fx.sparkle(new THREE.Vector3(MIST.sign.x, 1.7, MIST.sign.z + 0.1), { count: 14, colour: '#e6dcff' });
     if (!g.quests.signSaid && !audio.speaking) {
       g.quests.signSaid = true;
-      void g.layer.lumi.speak(CLIPS.soon);
+      void g.layer.lumi.speak(CLIPS.saddleReady);
     }
   }
 
@@ -228,6 +244,12 @@ export function installInput(g: Game): void {
 
   function tapUnicorn(u: UnicornActor): void {
     if (isMount(u)) return mountTap(g, u);
+    // The herd baby whose wish waits: a tap asks its wish; it never follows while it waits.
+    if (u === g.waiting) {
+      void u.emote('hop');
+      askPlace(g, 'wish');
+      return;
+    }
     if (u.mode === 'stall') {
       const door = [...g.stalls].find(([, x]) => x === u)?.[0];
       if (door !== undefined) peekDoor(g, door);

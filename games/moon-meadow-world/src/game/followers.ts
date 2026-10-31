@@ -1,15 +1,19 @@
 // Who follows Princess Emma, in which slot. At most three; a fourth sends the oldest back to graze where it is.
 // The actors keep a follower's slot through slides and swims and drop it when she sets one down on the grass, so
-// the list re-reads followSlot before every change.
+// the list re-reads followSlot before every change. 2.4.0: a unicorn that may not follow now (`refuse`: the herd baby
+// whose wish waits, game.ts) is never added, and leaves the list at the next change.
 import type { UnicornActor } from '../actors';
 
 export const MAX_FOLLOWERS = 3;
 
 export class Followers {
   list: UnicornActor[] = [];
+  /** A unicorn that may not follow now: the herd baby whose wish waits (2.4.0). */
+  refuse: (u: UnicornActor) => boolean = () => false;
 
-  /** Forget the ones that stopped following (set down on the grass, sent to graze, into a stall). */
+  /** Forget the ones that stopped following (set down on the grass, sent to graze, into a stall, or refused now). */
   sync(): void {
+    for (const u of this.list) if (this.refuse(u)) u.followSlot = null;
     const kept = this.list.filter((u) => u.followSlot !== null);
     if (kept.length !== this.list.length) {
       this.list = kept;
@@ -17,9 +21,10 @@ export class Followers {
     }
   }
 
-  /** Follow her. `front` takes slot 0 (her own baby). Returns the follower that was sent back, if any. */
+  /** Follow her. `front` takes slot 0 (her own baby). Returns the follower that was sent back, if any. Refused: nothing. */
   add(u: UnicornActor, front = false): UnicornActor | null {
     this.sync();
+    if (this.refuse(u)) return null;
     const at = this.list.indexOf(u);
     if (at >= 0) {
       if (front && at > 0) {
@@ -51,7 +56,7 @@ export class Followers {
 
   /** Exactly these follow, in this order (jumps and bedtime). */
   set(us: UnicornActor[]): void {
-    this.list = us.slice(0, MAX_FOLLOWERS);
+    this.list = us.filter((u) => !this.refuse(u)).slice(0, MAX_FOLLOWERS);
     this.reslot();
   }
 

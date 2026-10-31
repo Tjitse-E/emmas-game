@@ -1,8 +1,8 @@
 // The Dressing Corner (docs/v4/2.3.md sections 3 and 17.4): once a play, after her first finished quest, at the south
 // step of Lumi's gazebo. Her two babies dress up first (two phrase reads, the gate), she picks a gift from the hair
-// set, then the wardrobe opens with the trunk lid's treasure board and the music box. The gate is quest time; the
-// music box's time is free-play time (quests.ts counts it through q.dressing), and free play cannot end while the
-// wardrobe is open, because the Corner is a running quest until it closes.
+// set, then the wardrobe opens with the trunk lid's treasure board and the music box. The gate is play time; the music
+// box's 60 s are off the play clock (2.4.0: hub-part.ts installPlayClock stands still while q.dressing), and bedtime
+// cannot start while the wardrobe is open, because the Corner is a running place until it closes.
 //
 // Like every quest in quests.ts's table it resolves while the camera is still framed and the babies, the followers
 // and the herd are still aside, with the function that releases them. The Corner runs its own gift picker (after the
@@ -17,7 +17,8 @@ import { PALETTE } from '../wardrobe';
 import { CLIPS, wishClipIds } from '../content';
 import { type Game, flat, frameAt, lumiSay, preload } from './game';
 import { crownKeep, gateKind, parkFollowers, planWish, runWish, wishExtraClipIds } from './moments';
-import { cornerLimitMs, giveGift, herdAsideAt, walkThere } from './quest-kit';
+import { giveGift, herdAsideAt, walkThere } from './quest-kit';
+import { CORNER_BOX_MS } from './hub';
 import { followAgain, guests } from './guests';
 import { dressUp } from './wardrobe-part';
 
@@ -116,14 +117,14 @@ export async function cornerQuest(g: Game): Promise<() => void> {
   await giveGift(g, 'corner');
 
   // The wardrobe at her spot, in the portrait frame. Her babies watch from the sides; Lumi's portrait steps away, as
-  // at the start mirror. The music box gets the free time that is left (30 to 60 s); its time is free-play time.
+  // at the start mirror. The music box plays 60 s (2.4.0: always, decision 1 of 2.3), off the play clock.
   babies.forEach((u, k) => {
     void u.goTo(world.route(flat(u.position), CORNER.watch[k])).then((there) => there && u.lookAt(flat(actors.princess.position)));
   });
   layer.lumi.show(false);
   q.boards++;
   void world.corner.lid(true);
-  const limitMs = g.options.boxMs ?? cornerLimitMs(q.freeMs);
+  const limitMs = g.options.boxMs ?? CORNER_BOX_MS;
   const { ms } = await dressUp(g, {
     at: 'corner',
     limitMs,

@@ -43,7 +43,7 @@ The 2D layer lives in `src/ui/`. Entry: `createLayer(root, deps)` in `src/ui/ind
 - Turning the iPad back to landscape replays the goal when a moment is open and not busy.
 - First-time memory (egg intro per kind, the egg drag demo, the bell tap and drag demos, the gem demo, the slider demo) lives in the layer. `reset()` clears it, so every new play is the first day again.
 - `reset()` closes the open moment, the arrow, the tags, the food tray, the curtain and any full screen, and stops all sound. A moment's promise stays pending after a reset; the game should drop its awaits with its own run token.
-- `ghost.tap` and `ghost.drag` never start while a finger is on the screen, and any touch hides the hand at once.
+- `ghost.tap`, `ghost.drag` and `ghost.glide` (2.4.0) never start while a finger is on the screen, and any touch hides the hand at once.
 - `foodBasket({ show, foods, drop })`: passing `foods` again with a new array rebuilds the tray; `{ show: false }` hides it and keeps the foods.
 - `arrow(goal, onTap)` follows `goal.at()` every frame. It hides while the point is on screen or less than 40 CSS px past an edge. Points behind the camera (not visible but projected inside the screen) point the other way. It keeps clear of Lumi, the home button and the food basket.
 - `tag(name, at, ms)` follows `at()` every frame and hides while `at().visible` is false. Several tags can show at once.
@@ -77,7 +77,14 @@ One or two cards of 220 x 260 design px, centred, 60 apart (`giftCards`). `clips
 
 ## Offer bubbles (2.2.0, `layer.offer`)
 
-`layer.offer(id, { pic, tint, badge, at, onTap })` shows a round picture bubble that follows `at()` every frame, above the point, kept on screen and out of the top corners. While the point is off screen (or behind the camera) the bubble waits at the screen edge in the point's direction, without its tail and clear of the food basket. It acts on pointerdown, then pops away by itself. `badge` (2.3.0) is a small round picture on the bubble's rim: `giftSwatchUrl(item, look)` of a gift the quest can still give. Calling `offer(id, …)` again replaces it. The bubbles sit under the moment panels; `reset()` removes them.
+`layer.offer(id, { pic, tint, badge, base, at, onTap })` shows a round picture bubble that follows `at()` every frame, above the point, kept on screen and out of the top corners. While the point is off screen (or behind the camera) the bubble waits at the screen edge in the point's direction, without its tail and clear of the food basket. It acts on pointerdown, then pops away by itself. `badge` (2.3.0) is a small round picture on the bubble's rim: `giftSwatchUrl(item, look)` of a gift the quest can still give. Calling `offer(id, …)` again replaces it. The bubbles sit under the moment panels; `reset()` removes them.
+
+2.4.0 (the hub, docs/v4/2.4.md section 5.2):
+
+- An edge bubble is small: 100 design px (90 on a screen under 760 CSS px high), no tail (`geometry.ts edgeSize`). On a side edge it stays between the top corner (Lumi on the left, the home button on the right) and, on the right, the food basket, and moves along the edge to the free spot nearest where it wants to be (`edgeBand`, `stackOnEdge`); four fit on the right edge at 1080 x 740 and 1080 x 810 (`edgeBubbles`, tested in 'placement'). On the top or the bottom edge it stays clear of the corners and moves along the edge (`apart`). On screen it keeps 132 px and its tail.
+- `base` draws a picture under `pic` (the nest under the moon egg); its CSS is the hub lane's block in `ui.css`.
+- `layer.offerBob(id, grow)` (`offers.bob`): a bubble bobs once (0.5 s), or with `grow` grows and bobs for about 3 s (the hub's nudge). Unknown ids do nothing.
+- `layer.ghost.glide(points)`: the open hand glides from point to point, 900 ms each, without a press (the first hub's bubbles; the hub passes the bubbles' boxes from `snapshot().targets`). Never under a finger; any touch ends it, as every demonstration.
 
 ## Extras for the test hook (optional members on the returned object)
 
