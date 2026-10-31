@@ -1,5 +1,7 @@
-// One unicorn's behaviour: a task (idle, graze, walk, follow, slide, swim, carried, stall, hatching) moves it about,
-// an emote plays on top, and the pose for drawing is worked out from both every frame.
+// One unicorn's behaviour: a task (idle, graze, walk, follow, slide, swim, carried, stall, hatching, and in 2.4.0 a
+// ridden path and a follower's track) moves it about, an emote plays on top, and the pose for drawing is worked out
+// from both every frame. The grown mounts (2.4.0) never follow, are never carried, never slide, swim or go into a
+// stall; they graze close to their spot and carry Princess Emma along set paths.
 import * as THREE from 'three';
 import type { Stage, Unicorn, UnicornEmote, UnicornLook, UnicornMode, Vec2 } from '../contracts';
 import { POND, SLIDE, dist2, doorFront, doorIsUpper, inPond, pondSpot, stallSpot } from '../layout';
@@ -11,7 +13,8 @@ import {
   RouteWalker, SlideQueue, type ActorDepsPlus, damp, exitLanding, followTarget, headingOf, keepInPond, lineWalkable, nearestExit, queueSpot, turnTowards, wrap,
 } from './motion';
 import { CLIMB_SPEED, CURVE_LEN, SEAT_U, SLIDE_V0, slideAt, slideDir, slideStep } from './ride';
-import { BUILDS, type Build, type Coat, type Pose, coatOf, drawUnicorn, headMatrix, restPose } from './unicornBody';
+import { BUILDS, type Build, type Coat, type Pose, coatOf, drawUnicorn, headMatrix, restPose, saddlePoint } from './unicornBody';
+import { ASIDE, Track, type TrackTurn } from './mount';
 
 export interface HerdCtx {
   deps: ActorDepsPlus;
@@ -34,7 +37,7 @@ type SlideStage = 'line' | 'ladder' | 'climb' | 'top' | 'sit' | 'slide';
 type Task =
   | { kind: 'idle' }
   | { kind: 'hatching'; t: number }
-  | { kind: 'graze'; home: Vec2; wait: number; target: Vec2 | null; nibble: boolean }
+  | { kind: 'graze'; home: Vec2; wait: number; target: Vec2 | null; nibble: boolean; radius?: number }
   | { kind: 'walk'; walker: RouteWalker; trot: boolean; done: (ok: boolean) => void }
   | { kind: 'follow'; walker: RouteWalker | null; replan: number }
   | {
@@ -49,7 +52,16 @@ type Task =
   | {
       kind: 'stall'; door: number; stage: 'walk' | 'in' | 'turn' | 'inside'; walker: RouteWalker | null; t: number;
       from: THREE.Vector3; to: THREE.Vector3; beam: Beam | null; resolve: () => void;
-    };
+    }
+  // 2.4.0: a set path by arc length (s metres along it, towards `to`; `face` +1 along the path, -1 against it), and a
+  // follower's place on its lead's travelled track.
+  | {
+      kind: 'path'; path: THREE.Curve<THREE.Vector3>; len: number; s: number; to: number; speed: number; face: 1 | -1;
+      backwards: boolean; done: (ok: boolean) => void;
+    }
+  // `turn` is the lead's last turn this follower has seen; `hold` where it waits beside the track while the lead turns
+  // round and passes it.
+  | { kind: 'track'; lead: UnicornActor; gap: number; turn: number; hold: Vec2 | null };
 
 interface Landing {
   t: number;
@@ -76,9 +88,9 @@ const TOY_SIZE = 0.5;
 const WEAR_SIZE = 0.4;
 
 export type Speeds = { readonly graze: number; readonly walk: number; readonly trot: number; readonly gallop: number; readonly swim: number };
-/** Walking speeds in m/s; foals are a little quicker. */
+/** Walking speeds in m/s; foals are a little quicker, and the grown mounts quicker still. */
 function speedsOf(look: UnicornLook): Speeds {
-  const k = look.stage === 'foal' ? 1.15 : 1;
+  const k = look.stage === 'grown' ? 1.25 : look.stage === 'foal' ? 1.15 : 1;
   return { graze: 0.45 * k, walk: 1.15 * k, trot: 2.3 * k, gallop: 5.0 * k, swim: 0.55 * k };
 }
 /** Where the head shows over the door of stall n while peeking (its feet). */
@@ -136,6 +148,8 @@ export class UnicornActor implements Unicorn {
   private toySprite: THREE.Sprite | null = null;
   /** Where the toy is: on the grass (or bobbing in the water) or worn on its head. */
   private toyOn: 'ground' | 'head' = 'ground';
+  /** The ground it has travelled on a ride (2.4.0): its followers trot along it. */
+  private readonly track = new Track();
   /** A command given in the water, done once it has climbed out. */
   private afterSwim: Task | null = null;
 
@@ -183,7 +197,15 @@ export class UnicornActor implements Unicorn {
         return 'carried';
       case 'stall':
         return t.stage === 'walk' ? 'walk' : 'stall';
+      case 'path':
+      case 'track':
+        return 'walk';
     }
+  }
+
+  /** A grown mount (2.4.0): it never follows, is never carried, never slides, swims or goes into a stall. */
+  get isMount(): boolean {
+    return this._look.stage === 'grown';
   }
 
   get isSwimming(): boolean {
@@ -219,28 +241,31 @@ export class UnicornActor implements Unicorn {
   }
 
   follow(slot: number): void {
+    if (this.isMount) return;
     this.followSlot = slot;
     if (this.task.kind === 'follow') return;
     this.setTask({ kind: 'follow', walker: null, replan: 0 });
   }
 
-  /** `o.radius` (2.4.0, the mounts' 0.6 m) is read by the mount lane; step 0 grazes as before. */
-  graze(home: Vec2, _o?: { radius?: number }): void {
+  /** `o.radius`: how far from home it wanders (2.4.0: the mounts graze within 0.6 m of their spot). */
+  graze(home: Vec2, o: { radius?: number } = {}): void {
     this.followSlot = null;
-    this.setTask({ kind: 'graze', home: { ...home }, wait: rand(0.3, 2), target: null, nibble: false });
+    this.setTask({ kind: 'graze', home: { ...home }, wait: rand(0.3, 2), target: null, nibble: false, radius: o.radius });
   }
 
   rideSlide(): Promise<void> {
+    if (this.isMount) return Promise.resolve();
     return this.startSlide(false);
   }
 
   /** Join the slide queue behind Princess Emma, ride, swim a short while, then follow her again. */
   rideAfterPrincess(): void {
+    if (this.isMount) return;
     void this.startSlide(true);
   }
 
   swim(): void {
-    if (this.task.kind === 'swim') return;
+    if (this.task.kind === 'swim' || this.isMount) return;
     if (inPond(this.flat(), -0.2)) return this.startSwim(rand(6, 12));
     // Not in the water yet: walk to the nearest shore, then hop in.
     const water = keepInPond(this.flat(), 0.9);
@@ -252,7 +277,7 @@ export class UnicornActor implements Unicorn {
   }
 
   lift(): void {
-    if (this.task.kind === 'carried') return;
+    if (this.task.kind === 'carried' || this.isMount) return;
     const beam = this.ctx.fx.beam(this.position, 0.5);
     this.setTask({ kind: 'carried', target: this.flat(), beam, land: null });
     this.height = Math.max(this.height, 0);
@@ -288,6 +313,7 @@ export class UnicornActor implements Unicorn {
   }
 
   enterStall(door: number): Promise<void> {
+    if (this.isMount) return Promise.resolve();
     this.followSlot = null;
     return new Promise((resolve) => {
       const route = this.ctx.deps.route(this.flat(), doorFront(door));
@@ -472,6 +498,12 @@ export class UnicornActor implements Unicorn {
       case 'stall':
         this.updateStall(task, dt);
         break;
+      case 'path':
+        this.updatePath(task, dt);
+        break;
+      case 'track':
+        this.updateTrack(task, dt);
+        break;
     }
     if (this.grounded) this.position.y = this.groundY();
     this.yaw = turnTowards(this.yaw, this.desiredYaw, 7 * dt);
@@ -523,7 +555,8 @@ export class UnicornActor implements Unicorn {
     g.wait -= dt;
     if (g.wait > 0) return;
     const a = rand(0, Math.PI * 2);
-    const r = rand(0.6, 3);
+    // A mount grazes close to its spot (radius 0.6): a step here and there, never off across the paddock.
+    const r = g.radius === undefined ? rand(0.6, 3) : rand(g.radius * 0.3, g.radius * 0.95);
     const p = { x: g.home.x + Math.cos(a) * r, z: g.home.z + Math.sin(a) * r };
     if (deps.isWalkable(p) && lineWalkable(this.flat(), p, deps.isWalkable)) {
       g.target = p;
@@ -826,6 +859,8 @@ export class UnicornActor implements Unicorn {
       case 'walk':
       case 'follow':
       case 'hatching':
+      case 'path':
+      case 'track':
         return true;
       case 'slide':
         return t.stage === 'line' || t.stage === 'ladder';
@@ -882,9 +917,10 @@ export class UnicornActor implements Unicorn {
     const lying = (inStall && !this.peekOn) || (hatching >= 0 && hatching < 1.7);
     this.tuck = damp(this.tuck, lying ? 1 : sitting ? 0.55 : 0, hatching >= 0 ? 4 : 8, dt);
 
-    // Walking legs: the phase advances with the distance walked.
+    // Walking legs: the phase advances with the distance walked (a grown mount's gallop has its own longer stride).
     const moving = !swimming && !carried && !climbing && !sitting ? this.speed : 0;
-    p.phase += ((moving * dt) / b.stride) * Math.PI * 2;
+    const stride = b.gallopStride && moving > this.speeds.trot ? b.gallopStride : b.stride;
+    p.phase += ((moving * dt) / stride) * Math.PI * 2;
     p.swing = Math.min(1.5, moving / this.speeds.walk);
     p.paddle = swimming ? 1 : 0;
     p.dangle = carried ? 1 : 0;
@@ -1049,26 +1085,196 @@ export class UnicornActor implements Unicorn {
     }
   }
 
-  // --- riding (2.4.0): step 0's stubs, filled by the mount lane (docs/v4/2.4-plan.md Tasks 21 and 23) -------------
+  // --- riding (2.4.0, docs/v4/2.4.md section 5.4) ---------------------------------------------------------------
 
-  /** The top of its saddle in world space, where Princess Emma sits: the feet point plus 0.85 m in step 0. */
+  /** The top of its saddle in world space, where Princess Emma sits (it rises and falls with the gait). */
   saddleTop(out = new THREE.Vector3()): THREE.Vector3 {
-    return out.copy(this.position).setY(this.position.y + 0.85);
+    return saddlePoint(this.pose, this.build, out);
   }
 
   /**
-   * Ride a set path by arc length from `fromM` to `toM` metres at `o.speed` (backing up with `backwards`). Resolves true
-   * on arrival, false when another command replaced it. Step 0 puts it at `toM` at once.
+   * Ride a set path by arc length from `fromM` to `toM` metres at `o.speed`: it eases off near the end and stops there.
+   * It faces along its way (back along the path when `toM` is behind `fromM`), or with `backwards` it backs up and
+   * keeps the heading it had. Resolves true on arrival, false when another command replaced it. The ground it covers
+   * is its track, which its followers trot along (trackBehind).
    */
-  ridePath(path: THREE.Curve<THREE.Vector3>, _fromM: number, toM: number, _o: { speed: number; backwards?: boolean }): Promise<boolean> {
+  ridePath(path: THREE.Curve<THREE.Vector3>, fromM: number, toM: number, o: { speed: number; backwards?: boolean }): Promise<boolean> {
     const len = path.getLength();
-    const p = path.getPointAt(len > 0 ? THREE.MathUtils.clamp(toM / len, 0, 1) : 0);
-    this.place({ x: p.x, z: p.z }, this.yaw);
-    return Promise.resolve(true);
+    const s = THREE.MathUtils.clamp(fromM, 0, len);
+    const to = THREE.MathUtils.clamp(toM, 0, len);
+    const dir = to >= s ? 1 : -1;
+    const backwards = !!o.backwards;
+    path.getPointAt(len > 0 ? s / len : 0, _pp);
+    // Before its first ride the track starts with a lead-in behind it, so followers line up there.
+    if (this.track.empty) {
+      path.getTangentAt(len > 0 ? s / len : 0, _pt).multiplyScalar(backwards ? -dir : dir);
+      this.track.seed([{ x: _pp.x - _pt.x * 5, z: _pp.z - _pt.z * 5 }, { x: _pp.x, z: _pp.z }]);
+    }
+    return new Promise((done) => {
+      this.followSlot = null;
+      this.setTask({ kind: 'path', path, len, s, to, speed: o.speed, face: (backwards ? -dir : dir) as 1 | -1, backwards, done });
+      this.position.x = _pp.x;
+      this.position.z = _pp.z;
+      if (s === to) {
+        this.task = { kind: 'idle' };
+        done(true);
+      }
+    });
   }
 
-  /** Follow the lead's travelled track `gapM` metres behind it (null stops). Step 0 does nothing. */
-  trackBehind(_lead: UnicornActor | null, _gapM: number): void {}
+  /**
+   * Trot along the lead's travelled track `gapM` metres behind it, walking onto the track first (outside the herd's
+   * separation and routes); null stops it where it is.
+   */
+  trackBehind(lead: UnicornActor | null, gapM: number): void {
+    this.followSlot = null;
+    this.playTarget = null;
+    if (!lead || this.isMount) {
+      if (this.task.kind === 'track') this.setTask({ kind: 'idle' });
+      return;
+    }
+    this.setTask({ kind: 'track', lead, gap: gapM, turn: 0, hold: null });
+  }
+
+  /**
+   * It turns round where it stands (a clearing), so its track folds back on itself there: each follower whose place is
+   * still on the way in steps ASIDE m out to `side` (a unit vector: the mount's free side once it has turned) and waits
+   * there until the mount has passed it, then falls in behind. With no track yet (a jump to the clearing) it starts one
+   * from the way it came.
+   */
+  turnRound(side: Vec2): void {
+    if (this.track.empty) {
+      const f = { x: Math.sin(this.yaw), z: Math.cos(this.yaw) };
+      this.track.seed([{ x: this.position.x - f.x * 5, z: this.position.z - f.z * 5 }, { x: this.position.x, z: this.position.z }]);
+    }
+    this.track.turn(this.position.x, this.position.z, side);
+  }
+
+  /** Its last turn on the track (turnRound), while the track still reaches past it. */
+  trackTurn(): Readonly<TrackTurn> | null {
+    return this.track.turned;
+  }
+
+  /** Metres along its travelled track, from its start to where it stands. */
+  get trackLength(): number {
+    return this.track.length;
+  }
+
+  /** Riding a set path (2.4.0): the others step aside for it. */
+  get onPath(): boolean {
+    return this.task.kind === 'path';
+  }
+
+  /** On its way somewhere (a path or a walk): another mount standing by gives way to it. */
+  get underWay(): boolean {
+    return this.task.kind === 'path' || this.task.kind === 'walk';
+  }
+
+  /** Stand still and turn to face a point (2.4.0: the mounts turn to her at the paddock, and to the signpost). */
+  faceTo(p: Vec2): void {
+    this.followSlot = null;
+    this.setTask({ kind: 'idle' });
+    const dx = p.x - this.position.x;
+    const dz = p.z - this.position.z;
+    if (dx * dx + dz * dz > 1e-6) this.desiredYaw = headingOf(dx, dz);
+  }
+
+  /** Start its track along these points (the ride's lead-in from her stand), or clear it with an empty list. */
+  seedTrack(points: readonly Vec2[]): void {
+    if (points.length) this.track.seed(points);
+    else this.track.clear();
+  }
+
+  /** The point `gapM` metres back along its travelled track, and the heading there. */
+  trackPoint(gapM: number, out = { x: 0, z: 0, heading: 0 }): { x: number; z: number; heading: number } {
+    if (this.track.empty) {
+      out.x = this.position.x;
+      out.z = this.position.z;
+      out.heading = this.yaw;
+      return out;
+    }
+    return this.track.pointBack(gapM, out);
+  }
+
+  private updatePath(t: Extract<Task, { kind: 'path' }>, dt: number): void {
+    const left = Math.abs(t.to - t.s);
+    // Ease off near the end: about 5 m/s² of braking, so a gallop stops in about a body length.
+    const want = Math.min(t.speed, Math.sqrt(10 * left) + 0.35);
+    this.speed = this.speed > want ? want : Math.min(want, damp(this.speed, want, 5, dt) + 0.02);
+    const was = t.s;
+    const step = Math.max(this.speed, 0.3) * dt;
+    t.s = t.to > t.s ? Math.min(t.to, t.s + step) : Math.max(t.to, t.s - step);
+    const u = t.len > 0 ? t.s / t.len : 0;
+    t.path.getPointAt(u, _pp);
+    t.path.getTangentAt(u, _pt);
+    this.position.x = _pp.x;
+    this.position.z = _pp.z;
+    if (_pt.x * _pt.x + _pt.z * _pt.z > 1e-8) this.desiredYaw = headingOf(_pt.x * t.face, _pt.z * t.face);
+    if (t.backwards) this.track.back(_pp.x, _pp.z, Math.abs(t.s - was));
+    else this.track.add(_pp.x, _pp.z);
+    if (t.s === t.to) {
+      const done = t.done;
+      this.task = { kind: 'idle' };
+      done(true);
+    }
+  }
+
+  private updateTrack(t: Extract<Task, { kind: 'track' }>, dt: number): void {
+    const turn = t.lead.trackTurn();
+    if (turn && turn.id !== t.turn) {
+      t.turn = turn.id;
+      // Its place is still on the way in: step out to the side, so the mount coming back passes beside it.
+      if (t.lead.trackLength - t.gap < turn.at) {
+        const out = Math.max(0, ASIDE - ((this.position.x - turn.x) * turn.sx + (this.position.z - turn.z) * turn.sz));
+        t.hold = { x: this.position.x + turn.sx * out, z: this.position.z + turn.sz * out };
+      }
+    }
+    const q = t.lead.trackPoint(t.gap, _tq);
+    if (t.hold) {
+      // It waits until its place has come round the turn and back level with it, then falls in behind.
+      const past = !!turn && t.lead.trackLength - t.gap >= turn.at;
+      const ahead = (this.position.x - q.x) * Math.sin(q.heading) + (this.position.z - q.z) * Math.cos(q.heading) > 0;
+      if (!turn || (past && !ahead)) t.hold = null;
+      else return this.waitAside(t.hold, t.lead, dt);
+    }
+    const dx = q.x - this.position.x;
+    const dz = q.z - this.position.z;
+    const d = Math.hypot(dx, dz);
+    const lead = t.lead.speed;
+    if (d < 0.03) {
+      this.position.x = q.x;
+      this.position.z = q.z;
+      this.speed = damp(this.speed, lead > 0.1 ? lead : 0, 8, dt);
+      if (lead > 0.1) this.desiredYaw = q.heading;
+      return;
+    }
+    // Catch up (a baby's gallop of 5.0 keeps up with the mount's 4.2), then keep its place on the track.
+    const want = Math.min(this.speeds.gallop, lead + d * 3 + (d > 0.8 ? 0.8 : 0));
+    this.speed = damp(this.speed, want, 6, dt);
+    const s = Math.min(d, Math.max(this.speed, 0.3) * dt);
+    this.position.x += (dx / d) * s;
+    this.position.z += (dz / d) * s;
+    this.desiredYaw = d > 0.25 ? headingOf(dx, dz) : q.heading;
+  }
+
+  /** Trot to its spot beside the track and stand there, watching the mount go by. */
+  private waitAside(at: Vec2, lead: UnicornActor, dt: number): void {
+    const dx = at.x - this.position.x;
+    const dz = at.z - this.position.z;
+    const d = Math.hypot(dx, dz);
+    if (d > 0.04) {
+      this.speed = damp(this.speed, Math.min(this.speeds.trot, d * 3 + 0.3), 8, dt);
+      const s = Math.min(d, Math.max(this.speed, 0.3) * dt);
+      this.position.x += (dx / d) * s;
+      this.position.z += (dz / d) * s;
+      this.desiredYaw = headingOf(dx, dz);
+      return;
+    }
+    this.speed = damp(this.speed, 0, 8, dt);
+    const lx = lead.position.x - this.position.x;
+    const lz = lead.position.z - this.position.z;
+    if (lx * lx + lz * lz > 0.01) this.desiredYaw = headingOf(lx, lz);
+  }
 
   /** Write this frame's parts (the herd decides who is drawn and in how much detail). */
   draw(full: boolean): void {
@@ -1106,7 +1312,7 @@ export class UnicornActor implements Unicorn {
 
 /** End a task that is replaced: settle its promise, leave the slide line, let its moonbeam fade. */
 function release(t: Task, ctx: HerdCtx, who?: UnicornActor): void {
-  if (t.kind === 'walk') t.done(false);
+  if (t.kind === 'walk' || t.kind === 'path') t.done(false);
   if (t.kind === 'slide') {
     if (who) ctx.queue.leave(who);
     t.resolve();
@@ -1123,3 +1329,6 @@ function release(t: Task, ctx: HerdCtx, who?: UnicornActor): void {
 
 const _hm = new Xf();
 const _v = new THREE.Vector3();
+const _pp = new THREE.Vector3();
+const _pt = new THREE.Vector3();
+const _tq = { x: 0, z: 0, heading: 0 };

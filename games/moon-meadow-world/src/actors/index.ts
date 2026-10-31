@@ -1,5 +1,5 @@
 // The actors: Princess Emma, the herd, the egg and the effects, all drawn through one shared set of instanced parts.
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import type { Actors, Vec2 } from '../contracts';
 import { START } from '../layout';
 import { Parts } from './parts';
@@ -42,6 +42,23 @@ export function createActors(scene: THREE.Scene, deps: ActorDepsPlus): ActorsImp
   const egg = createEgg(scene, fx);
   // 2.4.0: the trail's star egg, a second egg actor (2 calls and about 800 triangles, only while it shows).
   const trailEgg = createEgg(scene, fx);
+  // 2.4.0: what shows only later in a play (every dress shape and its side-saddle skirt, every crown, both eggs' shells
+  // and their textures, the effects' points and sprite atlas, and every empty batch of parts) is drawn in the first
+  // rendered frame, shrunk to nothing, and then taken out of the scene, so three.js counts its geometry and textures
+  // before the first place. The long play checks that those counts stay level from place to place. The world draws
+  // nothing behind the start screen, so this waits until the world has drawn a frame with them.
+  const warm = [...princess.warmables(), ...egg.warmables(), ...trailEgg.warmables(), ...fx.warmables()].map((w) => {
+    const m: THREE.Mesh | THREE.Points = 'points' in w ? new THREE.Points(w.geometry, w.material) : new THREE.Mesh(w.geometry, w.material);
+    m.name = 'actors-warm';
+    m.matrixAutoUpdate = false;
+    m.matrix.makeScale(0, 0, 0);
+    m.matrixWorld.makeScale(0, 0, 0);
+    m.frustumCulled = false;
+    m.onAfterRender = () => void (m.userData.drawn = true);
+    scene.add(m);
+    return m;
+  });
+  parts.prime = true;
 
   return {
     princess,
@@ -65,8 +82,17 @@ export function createActors(scene: THREE.Scene, deps: ActorDepsPlus): ActorsImp
       herd.setDetail(level);
     },
     update(dt, t) {
-      princess.update(dt, t);
-      herd.update(dt, t, parts.camera);
+      // The start-up draw is done once the world has drawn a frame with it (the empty batches too, parts.prime).
+      if (warm.length && warm.every((m) => m.userData.drawn)) for (const m of warm.splice(0)) scene.remove(m);
+      parts.prime = warm.length > 0;
+      // On a mount (2.4.0) she sits where its saddle is this frame, so the herd moves first.
+      if (princess.mountedOn) {
+        herd.update(dt, t, parts.camera);
+        princess.update(dt, t);
+      } else {
+        princess.update(dt, t);
+        herd.update(dt, t, parts.camera);
+      }
       egg.update(dt, t);
       trailEgg.update(dt, t);
       fx.update(dt, t);

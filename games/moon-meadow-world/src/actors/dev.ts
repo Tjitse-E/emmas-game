@@ -17,6 +17,7 @@ import { Parts } from './parts';
 import { SlideQueue } from './motion';
 import { PrincessActor } from './princess';
 import type { UnicornActor } from './unicorn';
+import { MOUNT_LOOKS } from './mount';
 
 // --- renderer, lights and the stage ------------------------------------------------------------------------------
 
@@ -434,6 +435,34 @@ section('Egg', [
     });
   }],
   ['hide', () => egg.hide()],
+]);
+// 2.4.0: Bella and Hazel side by side next to her, getting on side-saddle, a gallop down a straight path with the
+// selected unicorn trotting 1.6 m behind, and getting off.
+let mounts: UnicornActor[] = [];
+const mountLine = (u: UnicornActor) => {
+  const a = { x: u.position.x, z: u.position.z };
+  return new THREE.LineCurve3(new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(a.x, 0, a.z - 24));
+};
+section('Mounts (2.4.0)', [
+  ['add mounts', () => {
+    const p = princess.position;
+    mounts = (['bella', 'hazel'] as const).map((m, i) => {
+      const u = herd.add({ id: 'mount-' + m, name: m, look: MOUNT_LOOKS[m], at: { x: p.x + 1.2 + i * 1.8, z: p.z - 1 } });
+      u.graze({ x: u.position.x, z: u.position.z }, { radius: 0.6 });
+      return u;
+    });
+    selected = mounts[0];
+  }],
+  ['get on', () => mounts[0] && void princess.mount(mounts[0])],
+  ['gallop', () => {
+    const u = mounts[0];
+    if (!u) return;
+    for (const f of herd.all().filter((x) => x.mode === 'follow')) f.trackBehind(u, 1.6);
+    void u.ridePath(mountLine(u), 0, 24, { speed: 4.2 });
+  }],
+  ['back up', () => mounts[0] && void mounts[0].ridePath(mountLine(mounts[0]), 2, 0, { speed: 1, backwards: true })],
+  ['get off', () => mounts[0] && void princess.dismount({ x: mounts[0].position.x + 0.9, z: mounts[0].position.z })],
+  ['star egg', () => egg.place(new THREE.Vector3(princess.position.x + 1.2, 0, princess.position.z + 0.6), 'star')],
 ]);
 section('Effects', [
   ['sparkle', () => fx.sparkle(at(1.0))],

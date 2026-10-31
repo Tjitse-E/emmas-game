@@ -644,6 +644,19 @@ html.mmw-guarded body {
 .food-pic { width: calc(78 * var(--u)); height: calc(78 * var(--u)); object-fit: contain; }
 .food-word { font: 700 calc(28 * var(--u)) / 1.1 'Andika', sans-serif; color: var(--ink); }
 
+/* ---- saddle icons (2.4.0, mount lane, saddle.ts): v3's saddle in a round bubble over each mount's saddle ---------- */
+.saddle-icon { position: absolute; left: 0; top: 0; width: calc(120 * var(--u)); height: calc(120 * var(--u)); opacity: 0; visibility: hidden; transition: opacity 300ms, visibility 0s 300ms; }
+.saddle-icon.on { opacity: 1; visibility: visible; transition: opacity 300ms; }
+.saddle-bob { position: absolute; left: 0; top: 0; width: 100%; height: 100%; animation: mmw-float 2.6s ease-in-out infinite; }
+.saddle-ball {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%; box-sizing: border-box; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ffffff, #fff1f8 72%); border: calc(5 * var(--u)) solid #ffb3d1;
+  box-shadow: 0 0 0 calc(4 * var(--u)) rgba(255, 224, 138, 0.55), 0 calc(6 * var(--u)) 0 rgba(214, 120, 170, 0.45), 0 0 calc(22 * var(--u)) rgba(255, 214, 120, 0.8);
+  display: flex; align-items: center; justify-content: center;
+}
+.saddle-pic { width: 78%; height: 78%; object-fit: contain; }
+/* ---- end of the saddle icons block ---- */
+
 /* ---------------------------------------------------------------------------------------------- ghost hand */
 .ghost {
   position: absolute; left: 0; top: 0; width: calc(128 * var(--u)); height: calc(128 * var(--u)); opacity: 0; transition: opacity 220ms; pointer-events: none;

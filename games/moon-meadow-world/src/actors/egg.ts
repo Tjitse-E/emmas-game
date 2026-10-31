@@ -1,6 +1,7 @@
 // The egg: a smooth lathe shell (bottom and top halves, split along a zigzag crack line) with a painted canvas
 // texture, and a sleepy face drawn from the shared parts. It wobbles, steams, frosts and hatches, and glows more with
-// each of its three hearts (docs/v4/2.3.md sections 12 and 19.1).
+// each of its three hearts (docs/v4/2.3.md sections 12 and 19.1). 2.4.0: the trail's star egg has its own shell, a
+// night lilac with gold stars and a crescent moon, and glows a starry gold.
 import * as THREE from 'three';
 import type { Egg3D, EggKind } from '../contracts';
 import { B, PartList, Xf, col, rimLambert } from './parts';
@@ -64,8 +65,8 @@ function shellPiece(from: (th: number) => number, to: (th: number) => number, ro
   return g;
 }
 
-/** Paint the shell: a soft gradient with gold stars (warm) or snowflake dots (snow), plus cracks so far. */
-function paint(g: CanvasRenderingContext2D, kind: 'warm' | 'snow', cracks: number): void {
+/** Paint the shell: a soft gradient with gold stars (warm and star) or snowflake dots (snow), plus cracks so far. */
+function paint(g: CanvasRenderingContext2D, kind: EggKind, cracks: number): void {
   const W = g.canvas.width;
   const Hh = g.canvas.height;
   const grad = g.createLinearGradient(0, Hh, 0, 0);
@@ -73,6 +74,11 @@ function paint(g: CanvasRenderingContext2D, kind: 'warm' | 'snow', cracks: numbe
     grad.addColorStop(0, '#ffd2b8');
     grad.addColorStop(0.55, '#ffd0cf');
     grad.addColorStop(1, '#ffc0dc');
+  } else if (kind === 'star') {
+    // A night sky at dusk: deep lilac at the bottom to a soft periwinkle at the top.
+    grad.addColorStop(0, '#9f86e8');
+    grad.addColorStop(0.6, '#b9a6f4');
+    grad.addColorStop(1, '#d6ccff');
   } else {
     grad.addColorStop(0, '#bfe0fb');
     grad.addColorStop(1, '#e2f2ff');
@@ -80,7 +86,7 @@ function paint(g: CanvasRenderingContext2D, kind: 'warm' | 'snow', cracks: numbe
   g.fillStyle = grad;
   g.fillRect(0, 0, W, Hh);
   // Fixed pattern (a seeded walk), so the egg looks the same every time.
-  let seed = kind === 'warm' ? 7 : 11;
+  let seed = kind === 'warm' ? 7 : kind === 'star' ? 23 : 11;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   for (let i = 0; i < 26; i++) {
     const x = rnd() * W;
@@ -94,7 +100,7 @@ function paint(g: CanvasRenderingContext2D, kind: 'warm' | 'snow', cracks: numbe
     g.save();
     g.translate(x, y);
     g.rotate(rnd() * Math.PI);
-    if (kind === 'warm') {
+    if (kind === 'warm' || kind === 'star') {
       g.beginPath();
       for (let k = 0; k < 10; k++) {
         const r = k % 2 ? s * 0.45 : s;
@@ -102,10 +108,10 @@ function paint(g: CanvasRenderingContext2D, kind: 'warm' | 'snow', cracks: numbe
         g.lineTo(Math.cos(a) * r, Math.sin(a) * r);
       }
       g.closePath();
-      g.fillStyle = '#ffc93f';
+      g.fillStyle = kind === 'star' ? '#ffe27a' : '#ffc93f';
       g.fill();
       g.lineWidth = 1.5;
-      g.strokeStyle = '#e8a52a';
+      g.strokeStyle = kind === 'star' ? '#f0b53a' : '#e8a52a';
       g.stroke();
     } else {
       g.lineCap = 'round';
@@ -126,6 +132,17 @@ function paint(g: CanvasRenderingContext2D, kind: 'warm' | 'snow', cracks: numbe
       g.fillStyle = '#ffffff';
       g.fill();
     }
+    g.restore();
+  }
+  if (kind === 'star') {
+    // A small gold crescent moon on its back, away from the face.
+    g.save();
+    g.translate(W * 0.5, Hh * 0.5);
+    g.beginPath();
+    g.arc(0, 0, 18, 0, Math.PI * 2);
+    g.arc(7, -5, 15, 0, Math.PI * 2, true);
+    g.fillStyle = '#ffe27a';
+    g.fill('evenodd');
     g.restore();
   }
   // Cracks grow from the crack line: 1 small, 2 more, 3 all the way round.
@@ -151,6 +168,8 @@ function paint(g: CanvasRenderingContext2D, kind: 'warm' | 'snow', cracks: numbe
 export interface EggImpl extends Egg3D {
   readonly parts: PartList;
   update(dt: number, t: number): void;
+  /** Its two shell pieces with their material (and the shell's texture), for the actors' start-up draw (2.4.0). */
+  warmables(): { geometry: THREE.BufferGeometry; material: THREE.Material }[];
 }
 
 /**
@@ -159,7 +178,7 @@ export interface EggImpl extends Egg3D {
  * strength, `edge` how much of the warm egg's rim takes the glow colour, `rock` the idle rocking in radians.
  */
 export const HEART_GLOW = {
-  colour: { warm: '#ffb52e', snow: '#9fd6ff' },
+  colour: { warm: '#ffb52e', snow: '#9fd6ff', star: '#ffd86b' },
   glow: [0, 0.14, 0.26, 0.4],
   edge: [0, 0.25, 0.4, 0.55],
   rock: [0, 0.03, 0.055, 0.085],
@@ -205,7 +224,7 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
 
   const parts = new PartList(16);
   const position = new THREE.Vector3();
-  let kind: 'warm' | 'snow' = 'warm';
+  let kind: EggKind = 'warm';
   let shown = false;
   let cracks = 0;
   let wobbleAmp = 0;
@@ -238,12 +257,12 @@ export function createEgg(scene: THREE.Scene, fx: FxImpl): EggImpl {
   const egg: EggImpl = {
     parts,
     position,
+    warmables: () => [bottom, top].map((m) => ({ geometry: m.geometry, material: mat })),
     get visible() {
       return shown;
     },
     place(at, k: EggKind) {
-      // The star egg (2.4.0) wears the snow egg's shell until the mount lane paints its own.
-      kind = k === 'star' ? 'snow' : k;
+      kind = k;
       cracks = 0;
       popT = -1;
       burst = 1;

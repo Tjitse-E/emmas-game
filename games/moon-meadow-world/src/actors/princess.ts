@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import type { Princess, PrincessEmote, PrincessLook, PrincessMode, Vec2 } from '../contracts';
 import { POND, SLIDE } from '../layout';
-import { DEFAULT_LOOK, EYE_HEX, HAIR_HEX, PALETTE, crownOutline, normaliseLook, thingShade } from '../wardrobe';
+import { DEFAULT_LOOK, EYE_HEX, HAIR_HEX, OPTIONS, PALETTE, crownOutline, normaliseLook, thingShade } from '../wardrobe';
 import { B, CAPACITY, PartList, Xf, col, rimLambert, shapeTriangles, type BatchId } from './parts';
 import * as S from './shapes';
 import { Hair, crownForward, hairExtra } from './hair';
@@ -17,6 +17,12 @@ import {
 import { slideSounds } from './sounds';
 import type { FxImpl } from './fx';
 import type { UnicornActor } from './unicorn';
+import { HOP_S, HOP_UP, SEAT, drapeDress } from './mount';
+import { RIDE } from '../layout';
+
+/** The trail's gallop (RIDE.speed): her hair flies fully out at it. */
+const RIDE_GALLOP = RIDE.speed;
+import { BUILDS, bodyEllipsoids, mountShape } from './unicornBody';
 import { RouteWalker, SlideQueue, damp, exitLanding, headingOf, nearestExit, turnTowards, wrap, type ActorDepsPlus } from './motion';
 import { CLIMB_SPEED, CURVE_LEN, SEAT_U, SLIDE_V0, slideAt, slideDir, slideStep } from './ride';
 
@@ -36,6 +42,8 @@ export interface Leader {
   readonly still: number;
   /** On the ladder, the slide or in the water. */
   readonly riding: boolean;
+  /** On a mount (2.4.0): nobody is pushed away from her then, she sits on its back. */
+  readonly seated: boolean;
 }
 
 export interface PrincessCtx {
@@ -105,6 +113,14 @@ export class PrincessActor implements Princess {
   private gown: Gown3D = gownOf(DEFAULT_LOOK.gown, DEFAULT_LOOK.gownColour);
   /** Each dress shape's geometry, built the first time a gown needs it, and its radius table for the hair. */
   private readonly dresses = new Map<S.DressShape, { g: THREE.BufferGeometry; skirt: Float32Array }>();
+  /** Each dress shape's side-saddle skirt (2.4.0), built at start-up with every dress shape (warmables). */
+  private readonly drapes = new Map<S.DressShape, THREE.BufferGeometry>();
+  /** Sitting on a mount (2.4.0): hopping up, on its back, or hopping down to `to`. */
+  private seat: { u: UnicornActor; stage: 'up' | 'on' | 'down'; t: number; from: THREE.Vector3; to: THREE.Vector3; resolve: () => void } | null = null;
+  /** 0 standing to 1 sitting side-saddle (the legs, arms and dress ease between them). */
+  private saddleK = 0;
+  /** This frame the hair also keeps out of the mount's body (its matrices in _body and _bodyInv). */
+  private hairOnMount = false;
   /** Each crown shape, built the first time she wears it. */
   private readonly crowns = new Map<S.CrownShapeId, S.CrownBuild>();
   private crownNow: S.CrownBuild;
@@ -201,6 +217,8 @@ export class PrincessActor implements Princess {
   // --- the contract ---------------------------------------------------------------------------------------------
 
   walkTo(route: Vec2[], o: { run?: boolean } = {}): Promise<boolean> {
+    // On a mount she does not walk (2.4.0): the ride gets her off first.
+    if (this.seat) return Promise.resolve(false);
     if (this.ride && this.ride.stage !== 'toLadder' && this.ride.stage !== 'wait') {
       // Mid-ride she cannot turn back: she walks there once she has climbed out.
       const to = route[route.length - 1];
@@ -222,6 +240,7 @@ export class PrincessActor implements Princess {
   }
 
   stop(): void {
+    if (this.seat) return;
     if (this.ride && this.ride.stage !== 'toLadder' && this.ride.stage !== 'wait') return;
     this.cancelRide();
     this.endWalk(false);
@@ -229,6 +248,7 @@ export class PrincessActor implements Princess {
   }
 
   rideSlide(): Promise<void> {
+    if (this.seat) return Promise.resolve();
     if (this.ride) return new Promise((resolve) => this.whenRideEnds(resolve));
     this.endWalk(false);
     return new Promise((resolve) => {
@@ -353,6 +373,8 @@ export class PrincessActor implements Princess {
   private paintGown(): void {
     const g = this.gown;
     S.paintDress(this.dressFor(g.shape).g, g.shape, (role, k, out) => gownRowColour(g, role, k, out));
+    const drape = this.drapes.get(g.shape);
+    if (drape) S.paintDress(drape, g.shape, (role, k, out) => gownRowColour(g, role, k, out));
     const c = this.c;
     c.sleeve.set(g.sleeve);
     c.legs.set(g.legs === null || g.legs === 'skin' ? SKIN : g.legs);
@@ -419,7 +441,7 @@ export class PrincessActor implements Princess {
     return !!this.ride && this.ride.stage !== 'toLadder' && this.ride.stage !== 'wait';
   }
 
-  // --- riding a mount (2.4.0): step 0's stubs, filled by the mount lane (docs/v4/2.4-plan.md Task 22) --------------
+  // --- riding a mount (2.4.0, docs/v4/2.4.md section 5.4) -------------------------------------------------------
 
   /**
    * The mount she sits on, or null. Not `riding`: that name is the slide's (on the ladder, the slide or in the water),
@@ -427,18 +449,128 @@ export class PrincessActor implements Princess {
    */
   mountedOn: UnicornActor | null = null;
 
-  /** Hop up onto a mount with a sparkle and sit side-saddle (mode 'mounted'). Step 0 resolves at once. */
-  mount(_u: UnicornActor): Promise<void> {
-    return Promise.resolve();
+  /** On a mount, from the hop up to the hop down (Leader.seated: nobody is pushed away from her then). */
+  get seated(): boolean {
+    return this.mountedOn !== null;
   }
 
-  /** Hop down at a ground point with a sparkle. Step 0 resolves at once. */
-  dismount(_at: Vec2): Promise<void> {
-    return Promise.resolve();
+  /**
+   * Hop up onto a mount with a sparkle and sit side-saddle on its left (mode 'mounted'): both legs and the skirt on that
+   * side. Her place follows its saddle every frame. Resolves as she sits.
+   */
+  mount(u: UnicornActor): Promise<void> {
+    this.cancelRide();
+    this.endWalk(false);
+    this.pending?.resolve(false);
+    this.pending = null;
+    this.seat?.resolve();
+    this.ctx.fx.sparkle(_sp.copy(this.position).setY(this.position.y + 0.5), { count: 12 });
+    return new Promise((resolve) => {
+      this.seat = { u, stage: 'up', t: 0, from: this.position.clone(), to: new THREE.Vector3(), resolve };
+      this.mountedOn = u;
+      this.mode = 'mounted';
+      this.speed = 0;
+    });
+  }
+
+  /** Hop down to a ground point with a sparkle. Resolves when she stands there. */
+  dismount(at: Vec2): Promise<void> {
+    const s = this.seat;
+    if (!s) {
+      this.place(at, this.heading);
+      return Promise.resolve();
+    }
+    s.resolve();
+    this.ctx.fx.sparkle(_sp.copy(this.position).setY(this.position.y + 0.3), { count: 10 });
+    return new Promise((resolve) => {
+      this.seat = { u: s.u, stage: 'down', t: 0, from: this.position.clone(), to: new THREE.Vector3(at.x, this.groundY(at), at.z), resolve };
+    });
+  }
+
+  /** Where she sits on u now (her root, feet level as she sits) and her heading there. */
+  private seatOn(u: UnicornActor, out: THREE.Vector3): number {
+    u.saddleTop(out);
+    const yaw = u.yaw;
+    // Out to its left (+x when it faces +z) and a little forward.
+    out.x += Math.cos(yaw) * SEAT.side + Math.sin(yaw) * SEAT.forward;
+    out.z += -Math.sin(yaw) * SEAT.side + Math.cos(yaw) * SEAT.forward;
+    out.y -= SEAT.hips - SEAT.sink;
+    return wrap(yaw + SEAT.turn);
+  }
+
+  private updateSeat(dt: number): void {
+    const s = this.seat!;
+    s.t += dt;
+    this.speed = 0;
+    this.walker = null;
+    const k = Math.min(1, s.t / HOP_S);
+    if (s.stage === 'down') {
+      this.position.lerpVectors(s.from, s.to, ease(k));
+      this.position.y += Math.sin(Math.PI * k) * HOP_UP * 0.6;
+      if (k >= 1) {
+        this.position.copy(s.to);
+        this.seat = null;
+        this.mountedOn = null;
+        this.mode = 'idle';
+        this.still = 0;
+        this.ctx.fx.sparkle(_sp.copy(this.position).setY(0.2), { count: 8 });
+        s.resolve();
+      }
+      return;
+    }
+    const heading = this.seatOn(s.u, _seat);
+    this.targetHeading = heading;
+    if (s.stage === 'up') {
+      this.position.lerpVectors(s.from, _seat, ease(k));
+      this.position.y += Math.sin(Math.PI * k) * HOP_UP;
+      if (k >= 1) {
+        s.stage = 'on';
+        this.ctx.fx.sparkle(_sp.copy(_seat).setY(_seat.y + SEAT.hips), { count: 14, colour: '#ffe27a' });
+        s.resolve();
+      }
+      return;
+    }
+    this.position.copy(_seat);
+    this.heading = heading;
+  }
+
+  /**
+   * Every dress shape, its side-saddle skirt and every crown with their materials, built now (2.4.0). The actors draw
+   * them once in the first frame, so three.js counts their geometry before the first place and not at her first ride,
+   * her first gown of a new shape or her first new crown (the long play checks that the counts stay level from place
+   * to place).
+   */
+  warmables(): { geometry: THREE.BufferGeometry; material: THREE.Material }[] {
+    const material = this.dress.material as THREE.Material;
+    const crown = this.crownMesh.material as THREE.Material;
+    return [
+      ...(Object.keys(S.DRESS_ROWS) as S.DressShape[]).flatMap((shape) => [
+        { geometry: this.dressFor(shape).g, material },
+        { geometry: this.drapeFor(shape), material },
+      ]),
+      ...(OPTIONS.crown as readonly S.CrownShapeId[]).map((c) => ({ geometry: this.crownFor(c).geometry, material: crown })),
+    ];
+  }
+
+  /** The side-saddle skirt for a dress shape (cached; painted as the dress is). */
+  private drapeFor(shape: S.DressShape): THREE.BufferGeometry {
+    let d = this.drapes.get(shape);
+    if (!d) {
+      d = drapeDress(this.dressFor(shape).g, mountShape(BUILDS.grown));
+      this.drapes.set(shape, d);
+    }
+    return d;
   }
 
   /** Put her somewhere at once (jump() in the level script). */
   place(at: Vec2, heading = 0): void {
+    if (this.seat) {
+      const s = this.seat;
+      this.seat = null;
+      s.resolve();
+    }
+    this.mountedOn = null;
+    this.saddleK = 0;
     this.cancelRide();
     this.endWalk(false);
     this.position.set(at.x, this.groundY(at), at.z);
@@ -485,7 +617,8 @@ export class PrincessActor implements Princess {
   // --- behaviour -----------------------------------------------------------------------------------------------
 
   update(dt: number, t: number): void {
-    if (this.ride) this.updateRide(dt);
+    if (this.seat) this.updateSeat(dt);
+    else if (this.ride) this.updateRide(dt);
     else this.updateWalk(dt);
     if (this.easeBack && !this.walker && !this.ride) {
       // After the preview drag she eases back to face the camera instead of snapping round.
@@ -496,7 +629,7 @@ export class PrincessActor implements Princess {
       this.easeBack = false;
       this.heading = turnTowards(this.heading, this.targetHeading, 10 * dt);
     }
-    this.still = !this.ride && !this.walker && !this.emoteNow ? this.still + dt : 0;
+    this.still = !this.ride && !this.walker && !this.emoteNow && !this.seat ? this.still + dt : 0;
     this.crownScale = damp(this.crownScale, this.crownOn ? 1 : 0, 9, dt);
     this.pose(dt, t);
   }
@@ -646,7 +779,11 @@ export class PrincessActor implements Princess {
 
   private pose(dt: number, t: number): void {
     const stage = this.ride?.stage;
-    const sitting = stage === 'sit' || stage === 'slide';
+    // On a mount she sits from the top of the hop up to the start of the hop down.
+    const seat = this.seat;
+    const onMount = !!seat && (seat.stage === 'on' || (seat.stage === 'up' && seat.t > HOP_S * 0.5));
+    this.saddleK = seat ? (onMount ? (seat.stage === 'on' ? 1 : damp(this.saddleK, 1, 14, dt)) : seat.stage === 'down' ? damp(this.saddleK, 0, 14, dt) : this.saddleK) : 0;
+    const sitting = stage === 'sit' || stage === 'slide' || onMount;
     const swimming = stage === 'swim' || (stage === 'out' && (this.ride!.t < 0.45));
     this.sit = damp(this.sit, sitting ? 1 : 0, 12, dt);
     this.depth = damp(this.depth, swimming ? SWIM_DEPTH : 0, stage === 'out' ? 7 : 10, dt);
@@ -742,6 +879,20 @@ export class PrincessActor implements Princess {
         lean = -0.15;
       }
     }
+    // Side-saddle (2.4.0): both legs forward and down on the mount's left, her hands on the seat's front, no sway of
+    // her own (she rides the mount's gait).
+    const sk = this.saddleK;
+    if (sk > 0) {
+      for (let i = 0; i < 2; i++) {
+        const sg = i ? 1 : -1;
+        hip[i] = THREE.MathUtils.lerp(hip[i], -0.95 + sg * 0.05, sk);
+        armPitch[i] = THREE.MathUtils.lerp(armPitch[i], -0.75 + Math.sin(t * 3 + i) * 0.05, sk);
+        armRoll[i] = THREE.MathUtils.lerp(armRoll[i], sg * 0.22, sk);
+      }
+      bob *= 1 - sk;
+      roll *= 1 - sk;
+      lean *= 1 - sk;
+    }
     if (this.depth > 0.05 || stage === 'out') {
       const k = Math.min(1, this.depth / SWIM_DEPTH);
       for (let i = 0; i < 2; i++) {
@@ -836,6 +987,15 @@ export class PrincessActor implements Princess {
         happy = up > 0.5 ? 1 : 0;
       }
     }
+    // No twirl, turn, jump or knee bend of her own on a mount: her skirt lies over its flank, and her legs stay down
+    // its side whatever her arms do.
+    if (sk > 0) {
+      for (let i = 0; i < 2; i++) hip[i] = THREE.MathUtils.lerp(hip[i], -0.95 + (i ? 0.05 : -0.05), sk);
+      spin *= 1 - sk;
+      knees *= 1 - sk;
+      bob *= 1 - sk;
+      flare = THREE.MathUtils.lerp(flare, 1, sk);
+    }
     // The blink reaction owns her eyelids.
     const blinking = e?.kind === 'blink';
 
@@ -857,6 +1017,11 @@ export class PrincessActor implements Princess {
     const sq = SIT_SQUASH[g.shape];
     const sxz = THREE.MathUtils.lerp(1, sq.xz, this.sit);
     const ds = this.dressScale.set(flare * sxz + this.sit * 0.08 * sq.flare, 1 - this.sit * sq.y, flare * sxz + this.sit * 0.1 * sq.flare, this.sit * sq.lift);
+    // On a mount the dress is its side-saddle skirt (pressed out over the flank), not squashed as in the slide.
+    const draped = sk > 0.5;
+    if (draped) ds.set(1, 1, 1, 0);
+    const geometry = draped ? this.drapeFor(g.shape) : this.dressFor(g.shape).g;
+    if (this.dress.geometry !== geometry) this.dress.geometry = geometry;
     this.dress.matrix.copy(root).multiply(_t.makeScale(ds.x, ds.y, ds.z)).multiply(_t.makeTranslation(0, ds.w, 0));
     this.dress.matrixWorldNeedsUpdate = true;
 
@@ -999,7 +1164,17 @@ export class PrincessActor implements Princess {
     // The hanging hair: chains from the style's ties, kept out of her head and dress, drawn as tubes or plaits.
     const water = wet || this.depth > 0.2 ? POND.waterY : null;
     _inv.copy(root).invert();
-    hair.update(dt, head, this.collideFn, groundY, water);
+    // On a mount the hair also keeps out of its body and chest: it falls over its back and down its flank.
+    const mount = draped ? this.seat?.u ?? null : null;
+    if (mount) {
+      bodyEllipsoids(mount.pose, mount.build, _body);
+      _bodyInv[0].copy(_body[0]).invert();
+      _bodyInv[1].copy(_body[1]).invert();
+    }
+    this.hairOnMount = !!mount;
+    // Faster than a trot the tails fly out behind her: the wind takes up to 70% of their weight at a full gallop.
+    const fly = mount ? THREE.MathUtils.clamp((mount.speed - mount.speeds.trot) / (RIDE_GALLOP - mount.speeds.trot), 0, 1) * 0.7 : 0;
+    hair.update(dt, head, this.collideFn, groundY, water, fly);
 
     // The hair thing on both sides (today's bow spots), each with two ribbon tails in its colour.
     const thing = look.thing;
@@ -1020,6 +1195,14 @@ export class PrincessActor implements Princess {
 
   /** Keep a hair chain point out of her head and her dress (this frame's root, its inverse `_inv`, and head). */
   private collide(q: THREE.Vector3): void {
+    if (this.hairOnMount) {
+      // Out of the mount's body and chest (unit spheres in `_bodyInv`), a little past their surface.
+      for (let i = 0; i < 2; i++) {
+        _l.copy(q).applyMatrix4(_bodyInv[i]);
+        const r = _l.length();
+        if (r < 1.03 && r > 1e-5) q.copy(_l.multiplyScalar(1.03 / r).applyMatrix4(_body[i]));
+      }
+    }
     _hc.setFromMatrixPosition(_h);
     _d.subVectors(q, _hc);
     const dh = _d.length();
@@ -1132,4 +1315,7 @@ const _sp = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _sc = new THREE.Vector3();
 const _ep = new THREE.Vector3();
+const _seat = new THREE.Vector3();
+const _body: [THREE.Matrix4, THREE.Matrix4] = [new THREE.Matrix4(), new THREE.Matrix4()];
+const _bodyInv = [new THREE.Matrix4(), new THREE.Matrix4()];
 const _white = new THREE.Color(1, 1, 1);

@@ -160,8 +160,18 @@ class Batch {
     this.ext[k] = src.ext[i];
   }
 
-  commit(): void {
+  /** `prime`: an empty batch still draws one instance shrunk to nothing (the actors' start-up draw, 2.4.0). */
+  commit(prime = false): void {
     const m = this.mesh;
+    if (!this.n && prime) {
+      this.mat.fill(0, 0, 16);
+      m.count = 1;
+      m.visible = true;
+      this.mesh.instanceMatrix.clearUpdateRanges();
+      this.mesh.instanceMatrix.addUpdateRange(0, 16);
+      this.mesh.instanceMatrix.needsUpdate = true;
+      return;
+    }
     m.count = this.n;
     m.visible = this.n > 0;
     if (!this.n) return;
@@ -214,6 +224,12 @@ export class Parts {
   camera: THREE.Camera | null = null;
   /** The canvas size in CSS pixels at the last frame (for the herd's minimum tap size on screen). */
   readonly viewSize = new THREE.Vector2(1024, 768);
+  /**
+   * While true (until the world has drawn its first frame, 2.4.0), every empty batch draws one instance shrunk to
+   * nothing, so three.js counts each batch's geometry at start-up and not the first time a part of it shows (a
+   * moonbeam, an egg's face): the long play checks that the counts stay level from place to place.
+   */
+  prime = false;
 
   /** `scale` multiplies every batch's capacity (the harness's line-up of princesses; the game uses 1). */
   constructor(scale = 1) {
@@ -249,7 +265,7 @@ export class Parts {
   flush(lists: Iterable<PartList>): void {
     for (const b of this.batches) b.n = 0;
     for (const l of lists) for (let i = 0; i < l.n; i++) this.batches[l.id[i]].add(l, i);
-    for (const b of this.batches) b.commit();
+    for (const b of this.batches) b.commit(this.prime);
   }
 }
 

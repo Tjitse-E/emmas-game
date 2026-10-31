@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { LookField, PrincessLook, UnicornLook } from '../src/contracts';
-import { POND, SLIDE, dist2, inPond } from '../src/layout';
+import { POND, RIDE, SLIDE, dist2, inPond } from '../src/layout';
 import { COLOURS, DEFAULT_LOOK, GOWN_DRESS, HAIR_COLOURS, OPTIONS, PALETTE, crownOutline } from '../src/wardrobe';
 import { seeded } from '../src/content/rand';
 import {
@@ -15,12 +15,15 @@ import {
   turnTowards, wrap,
 } from '../src/actors/motion';
 import { B, CAPACITY, PartList, Parts, Xf, type BatchId } from '../src/actors/parts';
-import { DRESS_ROWS, dressGeometry, type DressShape } from '../src/actors/shapes';
+import { DRESS_ROWS, dressGeometry, limb, type DressShape } from '../src/actors/shapes';
 import { SLEEVE_MIX, accentOf, drawEarring, drawThing, mixHex, shoeExtras, skirtAt, skirtTable } from '../src/actors/looks3d';
 import { UnicornActor } from '../src/actors/unicorn';
 import { createEgg } from '../src/actors/egg';
 import { createHerd } from '../src/actors/herd';
 import { createHerdSounds } from '../src/actors/sounds';
+import { MOUNT_LOOKS } from '../src/actors/mount';
+import { BUILDS, bodyEllipsoids } from '../src/actors/unicornBody';
+import { createActors } from '../src/actors';
 import { fxStub, makePrincess, scenario, snapParts } from './princess-scenario';
 
 // The actors play their own whoosh, splashes and nickers; the audio module needs a browser. The fake records each
@@ -744,15 +747,17 @@ describe('the batches', () => {
     { stage: 'foal', breed: 'berry', body: '#e3d2ff', mane: '#d02a96', mane2: '#ff7cc4' },
   ];
 
-  it('hold the busiest look for each batch (portrait or not) plus 20 unicorns as the herd draws them (5 in full detail)', { timeout: 60000 }, () => {
+  it('keep every batch under its capacity with the busiest look (portrait or not), 20 unicorns (12 herd, 4 babies, 2 mounts, 2 spare) as the herd draws them (5 in full detail) and two eggs', { timeout: 60000 }, () => {
     const p = makePrincess();
     const ctx = {
       deps: { route: (_a: unknown, b: { x: number; z: number }) => [b], isWalkable: () => true, nearestWalkable: (q: { x: number; z: number }) => q },
       fx: fxStub, queue: new SlideQueue<object>(), leader: p, scene: new THREE.Scene(), sounds: () => false,
       swimmers: () => [], toyTexture: () => new THREE.Texture(),
     };
-    const herd = Array.from({ length: 20 }, (_, i) => {
-      const u = new UnicornActor({ id: 'u' + i, name: 'U', look: BREEDS[i % 4], at: { x: i, z: 0 } }, ctx);
+    // 2.4.0: Bella and Hazel with their saddles come first, so they are drawn in full detail as while riding.
+    const looks = [MOUNT_LOOKS.bella, MOUNT_LOOKS.hazel, ...Array.from({ length: 18 }, (_, i) => BREEDS[i % 4])];
+    const herd = looks.map((look, i) => {
+      const u = new UnicornActor({ id: 'u' + i, name: 'U', look, at: { x: i, z: 0 } }, ctx);
       u.nightcap(i % 2 === 0);
       return u;
     });
@@ -1140,5 +1145,497 @@ describe("the actors' sound effects", () => {
     // The hop in, then at least one spray.
     expect(small.mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(sound.fx.filter((f) => f.id.startsWith('splash'))).toEqual([]);
+  });
+});
+
+// ---- 2.4.0: the mounts, side-saddle and riding a path (docs/v4/2.4.md section 5.4, docs/v4/2.4-plan.md Tasks 21 to 23)
+
+/** A herd context for unicorns made one by one (no herd, no world): flat walkable ground, routes in a straight line. */
+function unicornCtx(leader = makePrincess()) {
+  return {
+    deps: { route: (_a: unknown, b: { x: number; z: number }) => [b], isWalkable: () => true, nearestWalkable: (q: { x: number; z: number }) => q },
+    fx: fxStub, queue: new SlideQueue<object>(), leader, scene: new THREE.Scene(), sounds: () => false,
+    swimmers: () => [], toyTexture: () => new THREE.Texture(),
+  };
+}
+const BABY: UnicornLook = { stage: 'baby', breed: 'moon', body: '#f7f8ff', mane: '#7d9cf0', mane2: '#b9c8f8' };
+const idsOf = (L: PartList) => Array.from(L.id.subarray(0, L.n));
+/** A straight ground path from a to b (a curve with arc length, as RIDE_PATHS are). */
+const line = (a: { x: number; z: number }, b: { x: number; z: number }) => new THREE.LineCurve3(new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z));
+
+describe('the grown mounts', () => {
+  it("stands a grown unicorn's back at about 0.85 m and draws its saddle in no new batch", () => {
+    const ctx = unicornCtx();
+    const b = BUILDS.grown;
+    expect(b.bodyY + b.body[1]).toBeGreaterThan(0.8);
+    expect(b.bodyY + b.body[1]).toBeLessThan(0.9);
+    for (const m of ['bella', 'hazel'] as const) {
+      const look = MOUNT_LOOKS[m];
+      const u = new UnicornActor({ id: `mount-${m}`, name: m, look, at: RIDE.mounts[m] }, ctx);
+      const foal = new UnicornActor({ id: 'foal', name: 'F', look: { ...look, stage: 'foal' }, at: RIDE.mounts[m] }, ctx);
+      u.update(1 / 60, 0);
+      foal.update(1 / 60, 0);
+      const top = u.saddleTop(new THREE.Vector3());
+      expect(top.y, m).toBeGreaterThanOrEqual(0.8);
+      expect(top.y, m).toBeLessThanOrEqual(0.9);
+      expect(Math.hypot(top.x - RIDE.mounts[m].x, top.z - RIDE.mounts[m].z), m).toBeLessThan(0.25);
+      for (const full of [true, false]) {
+        u.draw(full);
+        foal.draw(full);
+        const own = new Set(idsOf(foal.parts));
+        // The saddle adds parts, all in batches a foal already uses, and none in the Horn batch.
+        expect(u.parts.n, `${m} ${full}`).toBeGreaterThan(foal.parts.n);
+        expect(idsOf(u.parts).every((id) => own.has(id)), `${m} ${full}`).toBe(true);
+        expect(idsOf(u.parts).filter((id) => id === B.Horn)).toHaveLength(1);
+      }
+    }
+    expect(MOUNT_LOOKS.bella.body).not.toBe(MOUNT_LOOKS.hazel.body);
+  });
+
+  it('ranks the focus first for full detail: the mount and one follower at level 2', () => {
+    const p = makePrincess({ x: 0, z: 0 });
+    const herd = createHerd({
+      deps: { route: (_a, b) => [b], isWalkable: () => true, nearestWalkable: (q) => q }, fx: fxStub, queue: new SlideQueue<object>(),
+      leader: p, scene: new THREE.Scene(), sounds: () => false,
+    });
+    const bella = herd.add({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 9, z: 0 } });
+    const baby = herd.add({ id: 'baby-13', name: 'Pip', look: BABY, at: { x: 7, z: 2 } });
+    const near = [herd.add({ id: 'luna', name: 'Luna', look: BABY, at: { x: 1, z: 0 } }), herd.add({ id: 'evie', name: 'Evie', look: BABY, at: { x: 0, z: 1.5 } })];
+    const fine = (u: UnicornActor) => idsOf(u.parts).includes(B.Hi);
+    herd.setDetail(2);
+    herd.setFocus(['mount-bella', 'baby-13']);
+    herd.update(1 / 30, 0, null);
+    expect([fine(bella), fine(baby)]).toEqual([true, true]);
+    expect(near.map(fine)).toEqual([false, false]);
+    expect(herd.stats.full).toBe(2);
+    // An empty focus goes back to distance alone: the two nearest her.
+    herd.setFocus([]);
+    herd.update(1 / 30, 1 / 30, null);
+    expect(near.map(fine)).toEqual([true, true]);
+  });
+
+  it('grazes a mount within 0.6 m of its spot, and it never follows, is never lifted, never slides, swims or goes into a stall', async () => {
+    const ctx = unicornCtx();
+    const spot = RIDE.mounts.bella;
+    const u = new UnicornActor({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: spot }, ctx);
+    u.graze(spot, { radius: 0.6 });
+    let most = 0;
+    for (let k = 0; k < 120 * 30; k++) {
+      u.update(1 / 30, k / 30);
+      most = Math.max(most, Math.hypot(u.position.x - spot.x, u.position.z - spot.z));
+    }
+    expect(most).toBeLessThanOrEqual(0.6);
+    expect(most).toBeGreaterThan(0.1);
+    // A herd baby still grazes as wide as before.
+    const b = new UnicornActor({ id: 'b', name: 'B', look: BABY, at: spot }, ctx);
+    b.graze(spot);
+    let wide = 0;
+    for (let k = 0; k < 120 * 30; k++) {
+      b.update(1 / 30, k / 30);
+      wide = Math.max(wide, Math.hypot(b.position.x - spot.x, b.position.z - spot.z));
+    }
+    expect(wide).toBeGreaterThan(1);
+    u.follow(0);
+    expect(u.mode).toBe('graze');
+    u.lift();
+    expect(u.mode).toBe('graze');
+    await u.rideSlide();
+    u.swim();
+    await u.enterStall(5);
+    expect(u.mode).toBe('graze');
+  });
+
+  it('paints the star egg its own shell', () => {
+    const stops: string[] = [];
+    const ctx = new Proxy({}, {
+      get: (_t, k) => (k === 'createLinearGradient' ? () => ({ addColorStop: (_o: number, c: string) => stops.push(c) }) : k === 'canvas' ? { width: 512, height: 256 } : () => {}),
+      set: () => true,
+    });
+    vi.stubGlobal('document', { createElement: () => ({ width: 0, height: 0, getContext: () => ctx }) });
+    const scene = new THREE.Scene();
+    const egg = createEgg(scene, fxStub);
+    const mat = (scene.getObjectByName('actors-egg') as THREE.Mesh).material as THREE.MeshLambertMaterial;
+    const shell = (kind: 'warm' | 'snow' | 'star') => {
+      stops.length = 0;
+      egg.place(new THREE.Vector3(0, 0.3, 0), kind);
+      egg.hearts(3);
+      for (let k = 0; k < 120; k++) egg.update(1 / 60, k / 60);
+      return { stops: stops.join(','), glow: mat.emissive.getHexString() };
+    };
+    const warm = shell('warm');
+    const snow = shell('snow');
+    const star = shell('star');
+    vi.unstubAllGlobals();
+    expect(star.stops).not.toBe(snow.stops);
+    expect(star.stops).not.toBe(warm.stops);
+    expect(star.glow).not.toBe(snow.glow);
+    expect(star.glow).not.toBe(warm.glow);
+  });
+});
+
+describe('side-saddle', () => {
+  const _q = new THREE.Vector3();
+  /** The mount's body and chest ellipsoids now, as matrices that take a world point into each unit sphere. */
+  const unitOf = (u: UnicornActor) => bodyEllipsoids(u.pose, u.build).map((m) => m.clone().invert());
+  /** How far inside the body or the chest a world point is, as a fraction of its radius (0 outside). */
+  function inside(units: THREE.Matrix4[], v: THREE.Vector3): number {
+    let worst = 0;
+    for (const m of units) worst = Math.max(worst, 1 - _q.copy(v).applyMatrix4(m).length());
+    return worst;
+  }
+  const LIMB = limb().getAttribute('position');
+  const _v = new THREE.Vector3();
+  const _m = new THREE.Matrix4();
+
+  /** Mount a grown unicorn and wait until she sits. */
+  async function seat(p: ReturnType<typeof makePrincess>, u: UnicornActor, frame: () => void): Promise<void> {
+    let seated = false;
+    void p.mount(u).then(() => (seated = true));
+    for (let k = 0; k < 90 && !seated; k++) {
+      frame();
+      await Promise.resolve();
+    }
+    expect(seated).toBe(true);
+    expect(p.mode).toBe('mounted');
+    expect(p.mountedOn).toBe(u);
+  }
+
+  it('sits the busiest look side-saddle on a grown unicorn in all four gown shapes, nothing through the body', { timeout: 60000 }, async () => {
+    const busy = busiest((m) => m.triangles);
+    for (const gown of ['party', 'ball', 'gala', 'tutu'] as const) {
+      const scene = new THREE.Scene();
+      const p = makePrincess({ x: 0.9, z: 0 }, scene);
+      p.setLook({ ...busy, gown });
+      p.crown(true);
+      p.extra('rose');
+      const u = new UnicornActor({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } }, unicornCtx(p));
+      const dress = scene.getObjectByName('actors-dress') as THREE.Mesh;
+      let t = 0;
+      const dt = 1 / 60;
+      const worst = { dress: 0, legs: 0, hair: 0, feet: Infinity };
+      const check = () => {
+        const units = unitOf(u);
+        const pos = dress.geometry.getAttribute('position');
+        for (let i = 0; i < pos.count; i++) worst.dress = Math.max(worst.dress, inside(units, _v.fromBufferAttribute(pos, i).applyMatrix4(dress.matrix)));
+        const L = p.parts;
+        for (let i = 0; i < L.n; i++) {
+          if (L.id[i] !== B.Limb) continue;
+          _m.fromArray(L.mat, i * 16);
+          for (let k = 0; k < LIMB.count; k++) {
+            _v.fromBufferAttribute(LIMB, k).applyMatrix4(_m);
+            worst.legs = Math.max(worst.legs, inside(units, _v));
+            worst.feet = Math.min(worst.feet, _v.y);
+          }
+        }
+        worst.hair = Math.max(worst.hair, p.hairPenetration());
+      };
+      let k = 0;
+      const frame = () => {
+        t += dt;
+        u.update(dt, t);
+        p.update(dt, t);
+        if (p.mode === 'mounted' && p.mountedOn && k++ % 3 === 0 && t > 1.2) check();
+      };
+      await seat(p, u, frame);
+      const run = (s: number) => {
+        for (let i = 0; i < Math.round(s / dt); i++) frame();
+      };
+      run(1.5);
+      void u.goTo([{ x: 0, z: -5 }]);
+      run(2.5);
+      void u.goTo([{ x: 5, z: -5 }], { trot: true });
+      run(2.5);
+      void u.ridePath(line({ x: 5, z: -5 }, { x: 5, z: -40 }), 0, 35, { speed: 4.2 });
+      run(3);
+      // Her reactions on the mount (a right answer's twirl or jump) keep the skirt where it lies.
+      for (const e of ['twirl', 'jump', 'curtsy', 'show'] as const) {
+        void p.emote(e);
+        run(1.7);
+      }
+      const what = JSON.stringify({ gown, worst });
+      expect(worst.dress, what).toBeLessThan(0.01);
+      expect(worst.legs, what).toBeLessThan(0.01);
+      expect(worst.hair, what).toBeLessThan(0.02);
+      // Her feet are off the ground, and she sits on the saddle, not beside it.
+      expect(worst.feet, what).toBeGreaterThan(0.25);
+      const top = u.saddleTop(new THREE.Vector3());
+      expect(Math.hypot(p.position.x - top.x, p.position.z - top.z), what).toBeLessThan(0.35);
+    }
+  });
+
+  it('hops up and down with a sparkle, and refuses a walk or the slide while mounted', async () => {
+    const sparkles: unknown[] = [];
+    const p = makePrincess({ x: 0.9, z: 0 });
+    (p as unknown as { ctx: { fx: unknown } }).ctx.fx = { ...fxStub, sparkle: (at: unknown) => sparkles.push(at) };
+    const u = new UnicornActor({ id: 'mount-hazel', name: 'Hazel', look: MOUNT_LOOKS.hazel, at: { x: 0, z: 0 } }, unicornCtx(p));
+    let t = 0;
+    const frame = () => {
+      t += 1 / 60;
+      u.update(1 / 60, t);
+      p.update(1 / 60, t);
+    };
+    await seat(p, u, frame);
+    expect(sparkles.length).toBeGreaterThanOrEqual(1);
+    expect(await p.walkTo([{ x: 3, z: 3 }])).toBe(false);
+    await p.rideSlide();
+    expect(p.mode).toBe('mounted');
+    let down = false;
+    void p.dismount({ x: 1, z: 0.5 }).then(() => (down = true));
+    for (let k = 0; k < 90 && !down; k++) {
+      frame();
+      await Promise.resolve();
+    }
+    expect(down).toBe(true);
+    expect([p.mode, p.mountedOn]).toEqual(['idle', null]);
+    expect(p.position.x).toBeCloseTo(1, 2);
+    expect(p.position.y).toBeCloseTo(0, 2);
+    expect(sparkles.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('flies the ponytails while the mount moves faster than a trot', async () => {
+    // No look-around: her head faces where she sits, so the tails show the wind alone.
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const trail = async (speed: number) => {
+      const p = makePrincess({ x: 0.9, z: 0 });
+      p.setLook({ style: 'ponytails' });
+      const u = new UnicornActor({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } }, unicornCtx(p));
+      let t = 0;
+      const frame = () => {
+        t += 1 / 60;
+        u.update(1 / 60, t);
+        p.update(1 / 60, t);
+      };
+      await seat(p, u, frame);
+      void u.ridePath(line({ x: 0, z: 0 }, { x: 0, z: -80 }), 0, 80, { speed });
+      let sum = 0;
+      let n = 0;
+      for (let k = 0; k < 240; k++) {
+        frame();
+        if (k < 90) continue;
+        // Riding north (-z): how far the tails swing up from hanging, behind her (+z), in radians.
+        for (const c of p.hair.chains) {
+          const tip = c.p.at(-1)!;
+          sum += Math.atan2(tip.z - c.p[1].z, c.p[1].y - tip.y);
+          n++;
+        }
+      }
+      return sum / n;
+    };
+    const walk = await trail(1.4);
+    const trot = await trail(2.3);
+    const gallop = await trail(4.2);
+    expect(gallop).toBeGreaterThan(trot + 0.25);
+    expect(trot).toBeGreaterThan(walk);
+  });
+});
+
+describe('riding a path', () => {
+  async function until(u: UnicornActor[], p: Promise<boolean>, maxS: number): Promise<{ v: boolean | null; s: number }> {
+    let v: boolean | null = null;
+    void p.then((x) => (v = x));
+    let k = 0;
+    for (; k < maxS * 60 && v === null; k++) {
+      for (const x of u) x.update(1 / 60, k / 60);
+      await Promise.resolve();
+    }
+    return { v, s: k / 60 };
+  }
+
+  it('rides a path at its speed by arc length, forward or backing up', async () => {
+    const u = new UnicornActor({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } }, unicornCtx());
+    const path = line({ x: 0, z: 0 }, { x: 0, z: -10 });
+    const go = await until([u], u.ridePath(path, 0, 10, { speed: 4.2 }), 6);
+    expect(go.v).toBe(true);
+    expect(go.s).toBeGreaterThan(2.2);
+    expect(go.s).toBeLessThan(2.9);
+    expect(u.position.z).toBeCloseTo(-10, 2);
+    expect(Math.abs(wrap(u.yaw - Math.PI))).toBeLessThan(0.05);
+    // Two steps back: it keeps facing along the path.
+    const back = await until([u], u.ridePath(path, 10, 8, { speed: 1, backwards: true }), 6);
+    expect(back.v).toBe(true);
+    expect(u.position.z).toBeCloseTo(-8, 2);
+    expect(Math.abs(wrap(u.yaw - Math.PI))).toBeLessThan(0.05);
+    // Back along the path the other way it turns round; another command replaces the ride.
+    let r: boolean | null = null;
+    void u.ridePath(path, 8, 0, { speed: 4.2 }).then((x) => (r = x));
+    for (let k = 0; k < 40; k++) u.update(1 / 60, k / 60);
+    expect(Math.abs(wrap(u.yaw))).toBeLessThan(0.3);
+    u.graze({ x: 0, z: -5 });
+    await Promise.resolve();
+    expect(r).toBe(false);
+  });
+
+  it('keeps followers 1.6, 3.0 and 4.4 m behind the mount along its track', async () => {
+    const ctx = unicornCtx();
+    const lead = new UnicornActor({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } }, ctx);
+    // The lead-in behind it: where she stood with her babies when she got on.
+    lead.seedTrack([{ x: 0, z: 6 }, { x: 0, z: 0 }]);
+    const gaps = [1.6, 3.0, 4.4];
+    const fs = gaps.map((gap, i) => {
+      const b = new UnicornActor({ id: 'b' + i, name: 'B', look: BABY, at: { x: 1.5 + i, z: 3 } }, ctx);
+      b.trackBehind(lead, gap);
+      return b;
+    });
+    const path = new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -12), new THREE.Vector3(8, 0, -20), new THREE.Vector3(8, 0, -40)]);
+    void lead.ridePath(path, 0, path.getLength(), { speed: 4.2 });
+    const q = { x: 0, z: 0, heading: 0 };
+    for (let k = 0; k < 5 * 60; k++) {
+      lead.update(1 / 60, k / 60);
+      for (const f of fs) f.update(1 / 60, k / 60);
+    }
+    fs.forEach((f, i) => {
+      lead.trackPoint(gaps[i], q);
+      expect(Math.hypot(f.position.x - q.x, f.position.z - q.z), `gap ${gaps[i]}`).toBeLessThan(0.3);
+    });
+    // Off the herd's separation: they are not on the grass to be nudged, and they never count as following her.
+    expect(fs.every((f) => !f.onLand && f.mode !== 'follow')).toBe(true);
+    fs[0].trackBehind(null, 0);
+    expect(fs[0].mode).toBe('idle');
+  });
+
+  it('turns round at a clearing: the followers step aside, the mount passes them on its free side and they fall in behind', () => {
+    const ctx = unicornCtx();
+    const lead = new UnicornActor({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } }, ctx);
+    lead.seedTrack([{ x: 0, z: 6 }, { x: 0, z: 0 }]);
+    const [a, b] = [1.6, 3.0].map((gap, i) => {
+      const f = new UnicornActor({ id: 'b' + i, name: 'B', look: BABY, at: { x: 0, z: 1.6 + i * 1.4 } }, ctx);
+      f.trackBehind(lead, gap);
+      return f;
+    });
+    const road = line({ x: 0, z: 0 }, { x: 0, z: -12 });
+    const all = [lead, a, b];
+    let k = 0;
+    const run = (s: number, each?: () => void) => {
+      for (let i = 0; i < Math.round(s * 60); i++, k++) {
+        for (const u of all) u.update(1 / 60, k / 60);
+        each?.();
+      }
+    };
+    void lead.ridePath(road, 0, 12, { speed: 4.2 });
+    run(5);
+    // A newborn hatched on her side, a little ahead (she sits on the mount's left).
+    const left = { x: Math.cos(lead.yaw), z: -Math.sin(lead.yaw) };
+    const fwd = { x: Math.sin(lead.yaw), z: Math.cos(lead.yaw) };
+    const wild = new UnicornActor({ id: 'wild', name: 'W', look: BABY, at: { x: lead.position.x + fwd.x * 1.3 + left.x * 0.9, z: lead.position.z + fwd.z * 1.3 + left.z * 0.9 } }, ctx);
+    all.push(wild);
+    // The turn: the order reverses and the newborn goes last; the mount turns on the spot and rides back.
+    lead.turnRound(left);
+    b.trackBehind(lead, 1.6);
+    a.trackBehind(lead, 3.0);
+    wild.trackBehind(lead, 4.4);
+    lead.faceTo({ x: lead.position.x - fwd.x, z: lead.position.z - fwd.z });
+    let closest = Infinity;
+    let wrongSide = 0;
+    const watch = () => {
+      for (const f of [a, b, wild]) {
+        const dx = f.position.x - lead.position.x;
+        const dz = f.position.z - lead.position.z;
+        closest = Math.min(closest, Math.hypot(dx, dz));
+        // Level with the mount, a follower is out on the free side (the left it had at the clearing).
+        if (Math.abs(dx * fwd.x + dz * fwd.z) < 0.8 && dx * left.x + dz * left.z < 0.6) wrongSide++;
+      }
+    };
+    run(0.7, watch);
+    void lead.ridePath(road, 12, 0, { speed: 4.2 });
+    run(7, watch);
+    expect(closest).toBeGreaterThan(0.9);
+    expect(wrongSide).toBe(0);
+    const q = { x: 0, z: 0, heading: 0 };
+    for (const [f, gap] of [[b, 1.6], [a, 3.0], [wild, 4.4]] as const) {
+      lead.trackPoint(gap, q);
+      expect(Math.hypot(f.position.x - q.x, f.position.z - q.z), `${f.id} at ${gap}`).toBeLessThan(0.3);
+    }
+    // Backed up past the turn (13 m, a metre further than it came back), the track has no fold any more.
+    expect(lead.trackTurn()).not.toBeNull();
+    void lead.ridePath(line({ x: 0, z: -13 }, { x: 0, z: 0 }), 13, 0, { speed: 2, backwards: true });
+    run(9);
+    expect(lead.trackTurn()).toBeNull();
+  });
+
+  it('lets a mount standing by give way to the other mount on its path, and the herd step aside for it', () => {
+    const p = makePrincess({ x: 0, z: 8 });
+    const herd = createHerd({
+      deps: { route: (_a, b) => [b], isWalkable: () => true, nearestWalkable: (q) => q }, fx: fxStub, queue: new SlideQueue<object>(),
+      leader: p, scene: new THREE.Scene(), sounds: () => false,
+    });
+    const hazel = herd.add({ id: 'mount-hazel', name: 'Hazel', look: MOUNT_LOOKS.hazel, at: { x: 0.35, z: -3 } });
+    const baby = herd.add({ id: 'luna', name: 'Luna', look: BABY, at: { x: -0.3, z: -6 } });
+    const bella = herd.add({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } });
+    hazel.faceTo({ x: 5, z: -3 });
+    baby.faceTo({ x: 5, z: -6 });
+    void bella.ridePath(line({ x: 0, z: 0 }, { x: 0, z: -10 }), 0, 10, { speed: 2 });
+    let hazelNear = Infinity;
+    let babyNear = Infinity;
+    for (let k = 0; k < 6 * 30; k++) {
+      herd.update(1 / 30, k / 30, null);
+      hazelNear = Math.min(hazelNear, Math.hypot(hazel.position.x - bella.position.x, hazel.position.z - bella.position.z));
+      babyNear = Math.min(babyNear, Math.hypot(baby.position.x - bella.position.x, baby.position.z - bella.position.z));
+    }
+    // Bella keeps to her path; Hazel and the baby moved out of her way.
+    expect(Math.abs(bella.position.x)).toBeLessThan(1e-6);
+    expect(hazelNear).toBeGreaterThan(0.6);
+    expect(babyNear).toBeGreaterThan(0.45);
+  });
+});
+
+describe('the start-up draw', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('builds every side-saddle skirt and crown at start-up and draws them with both egg shells once, so a ride or a new crown adds no geometry', async () => {
+    const ctx2d = new Proxy({}, { get: (_t, k) => (k === 'createLinearGradient' || k === 'createRadialGradient' ? () => ({ addColorStop() {} }) : k === 'canvas' ? { width: 512, height: 256 } : k === 'measureText' ? () => ({ width: 10 }) : () => {}), set: () => true });
+    vi.stubGlobal('document', { createElement: () => ({ width: 0, height: 0, getContext: () => ctx2d }) });
+    const scene = new THREE.Scene();
+    const actors = createActors(scene, { route: (_a, b) => [b], isWalkable: () => true, nearestWalkable: (q) => q });
+    const warm = () => scene.children.filter((o) => o.name === 'actors-warm') as THREE.Mesh[];
+    const meshes = warm();
+    const drawn = new Set(meshes.map((m) => m.geometry));
+    const shapes = Object.keys(DRESS_ROWS).length;
+    // Every dress shape and its skirt, every crown, the two pieces of each egg's shell (with the shell's texture) and
+    // the effects' points (with their sprite atlas), which show only once something sparkles.
+    expect(meshes).toHaveLength(2 * shapes + OPTIONS.crown.length + 4 + 1);
+    const fxPoints = scene.getObjectByName('actors-fx') as THREE.Points;
+    expect(meshes.filter((m) => (m as unknown as THREE.Points).isPoints).map((m) => m.geometry)).toEqual([fxPoints.geometry]);
+    expect(new Set(meshes.map((m) => (m.material as THREE.MeshLambertMaterial).map).values()).size).toBeGreaterThanOrEqual(2);
+    // They stay until the world has drawn a frame with them (nothing is drawn behind the start screen), then go.
+    // Until then every batch of parts draws, an empty one with one instance shrunk to nothing (the moonbeam's, the
+    // closed eyes' arcs), so its geometry counts from the start too.
+    actors.update(1 / 60, 0);
+    expect(warm()).toHaveLength(meshes.length);
+    const batches = (scene.getObjectByName('actors-parts') as THREE.Group).children as THREE.InstancedMesh[];
+    expect(batches.length).toBeGreaterThan(10);
+    expect(batches.filter((b) => !b.visible || b.count < 1).map((b) => b.name)).toEqual([]);
+    const beam = scene.getObjectByName('actors-Beam') as THREE.InstancedMesh;
+    expect(Array.from(beam.instanceMatrix.array.subarray(0, 16)).every((v) => v === 0)).toBe(true);
+    for (const m of meshes) m.onAfterRender(null as never, scene, null as never, m.geometry, m.material as THREE.Material, null as never);
+    actors.update(1 / 60, 1 / 60);
+    expect(warm()).toHaveLength(0);
+    expect(beam.visible).toBe(false);
+    // Riding in each gown uses a skirt drawn at start-up.
+    const dress = scene.getObjectByName('actors-dress') as THREE.Mesh;
+    const u = actors.herd.add({ id: 'mount-bella', name: 'Bella', look: MOUNT_LOOKS.bella, at: { x: 0, z: 0 } });
+    for (const gown of ['party', 'ball', 'gala', 'tutu'] as const) {
+      actors.princess.setLook({ gown });
+      let seated = false;
+      void actors.princess.mount(u).then(() => (seated = true));
+      for (let k = 0; k < 120; k++) {
+        actors.update(1 / 60, k / 60);
+        await Promise.resolve();
+      }
+      expect(seated, gown).toBe(true);
+      expect(drawn.has(dress.geometry), gown).toBe(true);
+      let down = false;
+      void actors.princess.dismount({ x: 1, z: 0 }).then(() => (down = true));
+      for (let k = 0; k < 90 && !down; k++) {
+        actors.update(1 / 60, k / 60);
+        await Promise.resolve();
+      }
+      expect(drawn.has(dress.geometry), gown).toBe(true);
+    }
+    // And every crown she can wear.
+    const crownMesh = scene.getObjectByName('actors-crown') as THREE.Mesh;
+    for (const crown of OPTIONS.crown) {
+      actors.princess.setLook({ crown });
+      expect(drawn.has(crownMesh.geometry), crown).toBe(true);
+    }
   });
 });
