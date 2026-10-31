@@ -1,7 +1,7 @@
 // How the herd and the newborns look. Colours are v3's body and mane palettes (games/moon-meadow-home/src/art/
 // palette.ts), so every unicorn looks like a v3 baby: a pastel coat and saturated curly manes. Each breed keeps to
 // its own corner of the palette, so the four breeds read apart at a glance and the herd looks lovely together.
-import type { Breed, Stage, UnicornLook } from '../contracts.ts';
+import type { Breed, EggKind, Stage, UnicornLook } from '../contracts.ts';
 import { type Rand, pick } from './rand.ts';
 
 const BODY = {
@@ -46,12 +46,18 @@ export const HERD_LOOKS: readonly { name: string; look: UnicornLook }[] = [
 const lookKey = (l: Pick<UnicornLook, 'body' | 'mane' | 'mane2'>): string => `${l.body}/${l.mane}/${l.mane2}`;
 const HERD_KEYS = new Set(HERD_LOOKS.map((h) => lookKey(h.look)));
 
-/** The breeds a warm egg brings (v3: the moon egg, the small nest and the berry egg). The snow egg brings snow. */
+/**
+ * The breeds a warm egg brings (v3: the moon egg, the small nest and the berry egg). The snow egg brings snow, and a
+ * star egg on the trail (2.4.0) a moon baby: lavender or sky with the night's manes.
+ */
 export const WARM_BREEDS: readonly Breed[] = ['nestling', 'berry', 'moon'];
 
-/** A newborn's look: a baby of the egg's breed, in colours no unicorn of the herd has. `avoid` keeps two newborns apart. */
-export function babyLook(kind: 'warm' | 'snow', rand: Rand, avoid: UnicornLook[] = []): UnicornLook {
-  const breed: Breed = kind === 'snow' ? 'snow' : pick(rand, WARM_BREEDS);
+/**
+ * A newborn's look: a baby of the egg's breed, in colours no unicorn of the herd has. `avoid` keeps the play's newborns
+ * apart (2.4.0: every earlier baby of the play, up to three).
+ */
+export function babyLook(kind: EggKind, rand: Rand, avoid: UnicornLook[] = []): UnicornLook {
+  const breed: Breed = kind === 'snow' ? 'snow' : kind === 'star' ? 'moon' : pick(rand, WARM_BREEDS);
   const p = BREED_PALETTE[breed];
   const taken = new Set([...HERD_KEYS, ...avoid.map(lookKey)]);
   const options: UnicornLook[] = [];

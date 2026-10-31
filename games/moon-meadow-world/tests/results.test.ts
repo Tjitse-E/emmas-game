@@ -50,6 +50,19 @@ describe('diag lines', () => {
   });
 });
 
+// 2.4.0 (docs/v4/2.4.md section 5.8): the signpost's own line; pl stays the answer's place on maths lines.
+describe('the sign line (2.4.0)', () => {
+  it('logs a sign line with its words, trip and sign, and keeps pl the answer\'s place on maths lines', () => {
+    expect(resultFields({ part: 'sign-1', strand: 'r', outcome: 'miss', misses: 1, ms: 4000, pn: 2, detail: { kind: 'sign', word: 'pond', words: ['sand', 'barn', 'pond'], level: 1, tried: ['barn'], trip: 1, read: 1 } }))
+      .toMatchObject({ k: 'sign', w: 'pond', ws: 'sand,barn,pond', lv: 1, tp: 1, sn: 1, tried: 'barn' });
+    const q = Object.fromEntries(new URLSearchParams(diagQuery(resultFields({ part: 'sign-2', strand: 'r', outcome: 'first', misses: 0, ms: 2100, pn: 7, detail: { kind: 'sign', word: 'shed', words: ['shed', 'bench', 'pool'], level: 2, tried: [], trip: 2, read: 2 } }))));
+    expect(q).toEqual({ kind: 'result', part: 'sign-2', pn: '7', s: 'r', o: 'first', ms: '2100', mi: '0', k: 'sign', lv: '2', w: 'shed', ws: 'shed,bench,pool', tp: '2', sn: '2' });
+    expect(resultFields({ ...egg, pn: 2 })).toMatchObject({ pn: 2, pl: 3 });
+    // A wish keeps its own fields, with no sign fields.
+    expect(resultFields(wish)).not.toHaveProperty('ws');
+  });
+});
+
 describe('the kind=play line (2.3 section 17.5)', () => {
   const play: PlayLine = {
     v: '2.3.0', plays: 3, playMs: 21.4 * 60_000, checkedMs: 571_000, mirrorMs: 45_000, cornerDressMs: 60_000, cornerMs: 74_000,

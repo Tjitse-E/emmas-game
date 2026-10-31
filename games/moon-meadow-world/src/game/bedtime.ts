@@ -1,20 +1,24 @@
-// Bedtime and goodnight (moved out of level.ts in 2.4.0, unchanged, so the babies lane owns them; docs/v4/2.4-plan.md
-// Task 10 gives bedtime 0 to 4 babies): the bell and the dusk, the herd and her babies to the stable yard, the roll call,
-// everyone in while the newborns move in, a newborn's visit to a teen door; then the night, the count under the stars,
-// Lumi's ribbons, the kind=play line and the end screen. 2.3.0 added the effects of the bedtime bell and the goodnight
-// owl (each line waits for its effect, at most 1 s).
+// Bedtime and goodnight (moved out of level.ts in 2.4.0, so the babies lane owns them): the bell and the dusk, the herd
+// and her babies to the stable yard, the roll call, everyone in while the newborns move in, a newborn's visit to a teen
+// door; then the night, the count under the stars, Lumi's ribbons, the kind=play line and the end screen. 2.3.0 added
+// the effects of the bedtime bell and the goodnight owl (each line waits for its effect, at most 1 s). 2.4.0
+// (docs/v4/2.4.md section 5.6): no baby up to four. With none "The stable is this way." replaces "Walk to the stable
+// with your babies.", the roll call asks 3 doors and there is no visit; with n the roll call asks 2, the babies move in
+// at 13 to 12 + n, one visits a door from 11 to 12 + n, and goodnight counts 12 + n. Babies that follow her keep
+// following; the others walk to the yard as the herd does. Bedtime writes the play clock's minute it began.
 import * as THREE from 'three';
 import type { EndMember, Vec2 } from '../contracts';
 import { NIGHT_SKY, STABLE, STABLE_FRAME, doorFront, doorIsUpper } from '../layout';
 import { PALETTE, RIBBON_COLOUR, nextRibbon } from '../wardrobe';
 import { audio } from '../audio';
-import { CLIPS, doorClipIds, doorVisit, moveIn, rollCall } from '../content';
+import { CLIPS, doorClipIds, moveIn } from '../content';
+import { bedtimeDoors } from '../content/doors';
 import { type Game, GOALS, doorPoint, flat, frameAt, lumiSay, memberOfDoor, preload, princessAt, say, setGoal, setTime, waitToReach, walkTo } from './game';
 import { doorMoment, heartsBetween } from './doors';
 import { ownedRibbons } from './save';
 import { hideOffers } from './quests';
 import { diagQuery, playFields, sendDiag } from './results';
-import { playOf } from './report';
+import { mergeLast, playOf, todayOf } from './report';
 
 /** The ribbons close-up: her chest at `frac` of the height, both door rows with their peeking heads behind her. */
 const RIBBONS = { width: 8.6, pitch: 24, frac: 0.64 };
@@ -30,11 +34,49 @@ export function waitSpot(door: number): Vec2 {
   return doorIsUpper(door) ? { x: f.x + 0.45, z: f.z + 2.4 } : { x: f.x - 0.2, z: f.z + 1.3 };
 }
 
+/**
+ * Bedtime's lines and count for `babies` named babies: the walk line (with none "The stable is this way.", else "Walk
+ * to the stable with your babies."), the count under the stars and the end screen's herd, 12 + n.
+ */
+export function bedtimeLines(babies: number): { walk: string[]; count: string[]; herd: number } {
+  const herd = 12 + babies;
+  return { walk: babies > 0 ? CLIPS.toStable : CLIPS.herdWay, count: CLIPS.herdCount(herd), herd };
+}
+
+/** Her named babies, in hatch order. */
+const namedBabies = (g: Game) => g.babies.filter((b) => b.member);
+
+/**
+ * Everyone to the stable yard: the herd walks to its doors' waiting spots and stops following her; her babies that
+ * follow her keep following, the others walk to the yard as the herd does.
+ */
+export function toTheYard(g: Game): void {
+  const { actors, world } = g;
+  for (const h of g.herd) {
+    const u = actors.herd.get(h.id);
+    if (!u || u.mode === 'stall') continue;
+    g.followers.remove(u);
+    void u.goTo(world.route(flat(u.position), waitSpot(h.door)));
+  }
+  g.followers.sync();
+  const following = g.babies.map((b) => b.unicorn).filter((u) => g.followers.list.includes(u));
+  g.followers.set(following);
+  for (const b of g.babies) {
+    const u = b.unicorn;
+    if (following.includes(u) || u.mode === 'stall') continue;
+    void u.goTo(world.route(flat(u.position), waitSpot(b.door)));
+  }
+}
+
 export async function bedtime(g: Game): Promise<void> {
   const { actors, layer, world } = g;
   const stable = world.stable;
   g.free = true;
   g.bedtime = true;
+  // The play clock's time when bedtime began (the play line's bt).
+  if (g.hub.bedtimeAt === null) g.hub.bedtimeAt = g.hub.playMs;
+  const named = namedBabies(g);
+  const lines = bedtimeLines(named.length);
   layer.foodBasket({ show: false });
   hideOffers(g);
   stable.lanterns(true);
@@ -43,16 +85,10 @@ export async function bedtime(g: Game): Promise<void> {
   // follows the fade and never cuts the bell's second ring (2.3 section 20).
   await g.run.w(Promise.all([setTime(g, 0.5, 3000), g.run.sleep(1000).then(() => audio.fx('bedtime-bell'))]));
   await say(g, CLIPS.dusk);
-  // The herd walks to the yard; her two babies come with her.
-  for (const h of g.herd) {
-    const u = actors.herd.get(h.id);
-    if (!u || u.mode === 'stall') continue;
-    g.followers.remove(u);
-    void u.goTo(world.route(flat(u.position), waitSpot(h.door)));
-  }
-  g.followers.set(g.babies.map((b) => b.unicorn));
+  // The herd walks to the yard; the babies that follow her come with her.
+  toTheYard(g);
   setGoal(g, GOALS.stable);
-  await say(g, CLIPS.toStable);
+  await say(g, lines.walk);
   await waitToReach(g, GOALS.stable);
   setGoal(g, null);
   g.free = false;
@@ -60,12 +96,11 @@ export async function bedtime(g: Game): Promise<void> {
   actors.princess.face({ x: 0, z: STABLE.frontZ });
   await g.run.w(world.frame(STABLE_FRAME.center, STABLE_FRAME.width, { ms: 1000 }));
 
-  // 1. Roll call: two doors from 7 to 12 of unicorns still outside. The next door is asked while the last walks in.
+  // 1. Roll call: two doors from 7 to 12 of unicorns still outside (three with no baby). The next door is asked while
+  // the last walks in. The visit is drawn with them, so its lines load now too.
   const outside = g.herd.filter((h) => !g.stalls.has(h.door)).map((h) => h.door);
-  const calls = rollCall(outside, g.randFor('rollcall'), 2);
-  // Her named babies, in hatch order: none, one or more (2.4.0: a play may skip an egg; Task 10 sets the doors by count).
-  const named = g.babies.filter((b) => b.member);
-  await preload(g, [...doorClipIds(calls), ...named.flatMap((b) => moveIn(b.member!))]);
+  const { calls, visit } = bedtimeDoors(named.length, outside, g.randFor('rollcall'), named.map((b) => b.member!));
+  await preload(g, [...doorClipIds(visit ? [...calls, visit] : calls), ...named.flatMap((b) => moveIn(b.member!)), ...lines.count]);
   const walking: Promise<void>[] = [];
   for (const spec of calls) {
     const r = await doorMoment(g, spec, 'roll call', async () => {
@@ -80,13 +115,9 @@ export async function bedtime(g: Game): Promise<void> {
   await say(g, CLIPS.herdIn);
   for (let i = 0; i < g.babies.length; i++) await moveInBaby(g, i);
   await g.run.w(Promise.all([herdIn, ...walking]));
-  // 3. The visit (checked): one of the newborns visits a teen door, 11 to 14. No named baby, no visit. With two, the
-  // same draw as 2.3.3 (under 0.5 the first).
-  if (!named.length) return;
-  const visiting = g.randFor('visit');
-  const visitor = named[Math.min(named.length - 1, Math.floor(visiting() * named.length))].member!;
-  const visit = doorVisit(visitor, [...g.stalls.keys()], visiting, calls.map((c) => c.door));
-  await preload(g, doorClipIds([visit]));
+  // 3. The visit (checked): one of the newborns visits a door from 11 to 12 + n. No named baby, no visit.
+  if (!visit) return;
+  const visitor = named.map((b) => b.member!).find((m) => m.clip === visit.goal[0]) ?? named[0].member!;
   const r = await doorMoment(g, visit, 'visit', async () => {
     const u = g.stalls.get(visit.door);
     if (u) {
@@ -153,9 +184,10 @@ export async function goodnight(g: Game): Promise<void> {
   const inside = [...g.stalls.values()];
   inside.forEach((u, k) => setTimeout(() => void u.emote('yawn'), k * 140));
   await say(g, CLIPS.yawn);
-  // "Fourteen unicorns!": the camera tilts up to the stars and the castle over the stable roofs.
+  // "Fourteen unicorns!" (12 and her babies): the camera tilts up to the stars and the castle over the stable roofs.
+  const lines = bedtimeLines(namedBabies(g).length);
   const sky = world.frame(NIGHT_SKY.center, NIGHT_SKY.width, { ms: 2200, pitch: NIGHT_SKY.pitch, shiftY: NIGHT_SKY.shiftY });
-  await say(g, CLIPS.herdCount(14));
+  await say(g, lines.count);
   await g.run.w(sky);
   await g.run.sleep(800);
   // An owl hoots after the sky shot, while the camera comes down to her; Lumi's ribbons line waits for it.
@@ -189,13 +221,15 @@ export async function goodnight(g: Game): Promise<void> {
   inside.forEach((u, k) => setTimeout(() => u.peek(false), k * 90));
   await lumiSay(g, CLIPS.goodnight);
   g.part = 'end';
-  // This play's targets and totals: the next play leaves them out while it can.
+  // This play's targets and totals added to the ones it started with (as after each place): the next play leaves them
+  // out while it can, and a short play never drops the last full play's words.
+  const last = mergeLast(g.start.last, todayOf(g));
   g.save.write((s) => {
-    s.last = { words: [...g.today.words], totals: [...g.maths.used.totals] };
+    s.last = last;
   });
   // One kind=play line per play, before the end screen and its reload (2.3 section 17.5).
   sendDiag(diagQuery(playFields(playOf(g))));
-  const end = layer.theEnd({ herd: 14, members: endMembers(g) });
+  const end = layer.theEnd({ herd: lines.herd, members: endMembers(g) });
   // Once the end screen covers the world, the world stops drawing.
   const pause = setTimeout(() => world.setPaused(true), 1100);
   g.run.defer(() => clearTimeout(pause));

@@ -200,6 +200,22 @@ describe('wishes', () => {
     }
   });
 
+  // 2.4.0 (docs/v4/2.4.md section 5.3): every kind leaves out its earlier basket words this play, the picnic too.
+  it('a second wish of a kind shows none of the first one\'s words, at every level, and still meets its basket rules', () => {
+    for (const kind of ['picnic', 'dress', 'bath'] as const) {
+      for (const s of seeds) {
+        const level = ((s % 3) + 1) as 1 | 2 | 3;
+        const first = C.wishSpec(kind, C.seeded(s), [], { level });
+        const seen = [first.target.word, ...first.basket.map((b) => b.word)];
+        const second = C.wishSpec(kind, C.seeded(s + 1000), [first.target.word], { level, avoid: seen });
+        const words = [second.target.word, ...second.basket.map((b) => b.word)];
+        expect(words.filter((w) => seen.includes(w)), `${kind} ${s}`).toEqual([]);
+        expect(second.basket).toHaveLength(second.level === 1 ? 4 : 5);
+        expect(second.basket.map((b) => b.word)).toContain(second.target.word);
+      }
+    }
+  });
+
   it('?contrast=0 drops clips.again, so a miss keeps v3\'s rule', () => {
     const spec = C.wishSpec('dress', C.seeded(1), [], { contrast: false });
     expect(spec.clips.again).toBeUndefined();
@@ -315,9 +331,14 @@ describe('names', () => {
       const r = C.seeded(s);
       const warm: UnicornLook = C.babyLook('warm', r);
       const snow: UnicornLook = C.babyLook('snow', r, [warm]);
+      // 2.4.0: a star egg on the trail brings a moon baby; two in a play never look alike, nor like the others.
+      const star: UnicornLook = C.babyLook('star', r, [warm, snow]);
+      const star2: UnicornLook = C.babyLook('star', r, [warm, snow, star]);
       expect(['nestling', 'berry', 'moon']).toContain(warm.breed);
       expect(snow.breed).toBe('snow');
-      for (const l of [warm, snow]) {
+      expect([star.breed, star2.breed]).toEqual(['moon', 'moon']);
+      expect(new Set([warm, snow, star, star2].map((l) => `${l.body}${l.mane}${l.mane2}`)).size).toBe(4);
+      for (const l of [warm, snow, star, star2]) {
         expect(l.stage).toBe('baby');
         expect(l.mane).not.toBe(l.mane2);
         expect(herdKeys.has(`${l.body}${l.mane}${l.mane2}`)).toBe(false);
@@ -388,6 +409,21 @@ describe('doors', () => {
     // The roll call's doors are avoided while another door is left.
     for (const s of seeds) expect(C.doorVisit(pip, occupied, C.seeded(s), [11, 12]).door).toBe(14);
     expect(C.doorVisit(pip, [11, 13], C.seeded(1), [11]).door).toBe(11);
+  });
+
+  // 2.4.0 (docs/v4/2.4.md section 5.6): up to four babies, at doors 13 to 16, and 12 + n at goodnight.
+  it('has every clip of a stable with no baby up to four: moving in at 13 to 16, the visits, and 12 to 16 at goodnight', () => {
+    expect([...C.NEWBORN_DOORS]).toEqual([13, 14, 15, 16]);
+    for (let n = 0; n <= 4; n++) expect(clipExists(C.CLIPS.herdCount(12 + n)[0]), `herd ${12 + n}`).toBe(true);
+    for (const d of C.NEWBORN_DOORS) {
+      expect(clipExists(`num-movein-${d}`), `move in ${d}`).toBe(true);
+      expect(clipExists(`num-visit-${d}`), `visit ${d}`).toBe(true);
+    }
+    for (const id of [...C.CLIPS.herdWay, ...C.CLIPS.toStable]) expect(clipExists(id), id).toBe(true);
+    // With four babies in, the visit reaches doors 15 and 16 too.
+    const tam = C.newborn({ name: 'Tam', gpcs: ['t', 'a', 'm'], clip: 'name-tam', distractors: [] }, C.babyLook('star', C.seeded(1)), 16);
+    const doors = new Set(seeds.map((s) => C.doorVisit(tam, [...occupied, 15, 16], C.seeded(s)).door));
+    expect([...doors].sort((a, b) => a - b)).toEqual([11, 12, 13, 14, 15]);
   });
 
   it('roll call asks different doors from 7 to 12, never one excluded', () => {

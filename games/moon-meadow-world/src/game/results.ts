@@ -3,7 +3,9 @@
 // exist; Emma's home server logs every request), so a play on her iPad leaves its results on the Mac: for wishes the
 // level, basket size, word, what she tried and why it was in the basket, a print touch and a quick pick; for maths the
 // band, the stones, the answer's place, the decoys and a quick pick (docs/v4/2.2.md 7.2); 2.3.0 adds an egg sum's
-// grade and heart, a pattern gap's line, and one kind=play line per play (docs/v4/2.3.md section 17).
+// grade and heart, a pattern gap's line, and one kind=play line per play (docs/v4/2.3.md section 17). 2.4.0 (docs/v4/2.4.md
+// section 5.8): every result line carries the play number (pn), a signpost logs its words, trip and sign, the play line
+// gets the mix of the play, and a short kind=hub line goes out as each place ends.
 import type { MomentResult } from '../contracts';
 
 export type Strand = 'm' | 's' | 'r';
@@ -60,6 +62,11 @@ function triedWith(tried: unknown, why: unknown): string {
 export function resultFields(line: ResultLine): Record<string, Field> {
   const d = line.detail;
   const base: Record<string, Field> = { kind: 'result', part: line.part, pn: line.pn, s: line.strand, o: line.outcome, ms: Math.round(line.ms), mi: line.misses };
+  // A signpost (2.4.0): its level, the target, the three card words in arm order, the trip, the sign of the trip (1 or
+  // 2) and the cards she tapped first.
+  if (line.strand === 'r' && d.kind === 'sign') {
+    return { ...base, k: 'sign', lv: d.level as Field, w: d.word as Field, ws: list(d.words), tp: d.trip as Field, sn: d.read as Field, tried: list(d.tried) };
+  }
   if (line.strand === 'r') {
     return {
       ...base, lv: d.level as Field, n: d.size as Field, w: d.word as Field, pt: d.printTouched as Field, q: d.quick as Field,

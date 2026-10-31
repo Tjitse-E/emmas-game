@@ -49,16 +49,23 @@ export interface Save {
   phrases: { level: ReadingLevel; recent: Outcome[] };
   /** The bead tree's own pattern level (game/beads.ts), the same fold as the reading level. */
   patterns: { level: ReadingLevel; recent: Outcome[] };
-  /** The last finished play's wish, picnic and phrase targets and maths totals, kept out of the next play while it can. */
+  /**
+   * The last plays' wish, picnic and phrase targets and maths totals, kept out of the next play while it can. 2.4.0:
+   * written after each place and at goodnight, as the copy the play read at its start with its own added, newest last,
+   * the last 16 of each (report.ts mergeLast), so a play left early never drops the last full play's words.
+   */
   last: { words: string[]; totals: number[] };
-  /** The last finished play's afternoon: its maths quest and the quests she finished (the rotation, quests.ts). */
+  /**
+   * The last play's afternoon: its maths quest and the gift quests she finished (the rotation, quest-kit.ts). 2.4.0:
+   * written after each place.
+   */
   afternoon: { maths: 'rack' | 'beads' | null; done: QuestId[] };
   /** 2.4.0: the signposts' own level (starts at 1), the same fold as the reading level, folded after each trip. */
   signs: { level: ReadingLevel; recent: Outcome[] };
 }
 
 /** How many words and totals `last` keeps. */
-const LAST_MAX = 16;
+export const LAST_MAX = 16;
 const OUTCOMES: readonly Outcome[] = ['first', 'miss', 'helped'];
 
 export function defaultSave(): Save {
