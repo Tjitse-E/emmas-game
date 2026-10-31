@@ -10,6 +10,8 @@ export { planTrip, allSignClipIds, goalClip, setKey, signSets, SIGN_WORDS, type 
 
 Why: the ride (mount lane) adds each trip's two sets to `g.signUse.sets`; `setKey` is the planner's own key (the words sorted and joined with commas), so the two never drift.
 
+**Done** (integrator, at the signs-star merge).
+
 ## 2. `src/content/index.ts`: export the star egg's and "no sum twice" helpers
 
 ```ts
@@ -20,3 +22,5 @@ export {
 ```
 
 Why: optional, for lanes and tests that read the content through the index; nothing in this lane needs it.
+
+**Done** (integrator, at the signs-star merge).
