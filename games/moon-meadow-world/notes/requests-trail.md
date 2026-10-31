@@ -20,6 +20,11 @@ in place of the frame that puts `arm(1)` at 0.36 of the screen height. Why: that
 `RIDE.forkFrame` holds the mount and its rider at `forkStop`, the three cards and the road starts with no slot on
 screen at both sizes (tests/world-trail.test.ts, 25 px or more to spare on every rule).
 
+**Held for the mount merge** (integrator, trail merge): `src/game/ride.ts` is the mount lane's file and the mount lane
+merges next, so nothing changes on main now. `lane/mount`'s `forkFrame()` already frames with `RIDE.forkFrame` when it
+exists, and main has it since this merge, so the integrator checks at the mount merge that its stop is
+`RIDE.forkStop` on both signs.
+
 ## 2. `src/game/ride.ts` (mount lane): the mount at home holds its spot while the other leaves or comes back
 
 ```ts
@@ -32,6 +37,10 @@ Why: Hazel's way out passes 1.2 m from Bella's spot, between it and the trough, 
 Grazing 0.6 m round its spot, Bella can stand in the riding mount's way. Held at its spot and turned to her stand, its
 body clears the riding mount and Emma's side-saddle skirt by 0.08 m or more (tests/world-trail.test.ts). The paths
 cannot move further from Bella's spot: the trough is on the other side.
+
+**Held for the mount merge** (integrator, trail merge): `src/game/ride.ts` is the mount lane's file and the mount lane
+merges next. `lane/mount` still lets the other mount graze at `{ radius: 0.6 }` while the ride runs, so the integrator
+applies this change at the mount merge.
 
 ## For the merge (no request, things to know)
 
