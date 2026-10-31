@@ -4,6 +4,10 @@
 // Emma names it. The verdicts stay on this device (phrase-device.ts, never the game's save), and the game's phrase
 // rule reads them at once: every ok picture plays until it has a cross (a tick counts only with ?phrases=emma). The
 // page has no sound: hearing the phrase would tell her the answer.
+//
+// 2.4.0 adds the 13 sign words (docs/v4/2.4.md section 5.5) under the phrase grid: each v3 picture in the same cell,
+// its word small under it, no buttons and no sound. Tjitse tells Claude which ones Emma does not name; such a word
+// becomes 'drop' on its own `sign:<word>` entry in tools/picture-check.json and leaves the trail in a patch.
 import '@fontsource/andika/400.css';
 import '@fontsource/andika/700.css';
 import './check.css';
@@ -54,6 +58,17 @@ const cards = order.map(([c, t]) => {
   return { key, card, yes: button('yes', 'tick', TICK, 'Right'), no: button('no', 'cross', CROSS, 'Not right') };
 });
 
+el('h2', '', root).textContent = 'Sign words';
+el('p', 'note', root).textContent = 'Ask Emma what each picture is. These have no buttons: tell Claude which words she does not name. '
+  + 'Such a word leaves the trail\'s signposts in a patch.';
+const signGrid = el('div', 'grid signs', root);
+for (const w of DATA.signWords) {
+  const card = el('div', 'card', signGrid);
+  card.dataset.sign = w.word;
+  wordPicEl(w, 'pic', el('div', 'cell', card));
+  el('div', 'words', card).textContent = w.word;
+}
+
 const foot = el('div', 'foot', root);
 const clear = el('button', '', foot);
 clear.type = 'button';
@@ -101,4 +116,4 @@ function render(): void {
   list.textContent = right.length ? `Right on this iPad: ${right.join(', ')}.` : '';
 }
 render();
-(window as unknown as { __check?: unknown }).__check = { pairs: cards.length, verdicts: () => ({ ...verdicts }), on: () => phraseTargets({ device: verdicts }).length };
+(window as unknown as { __check?: unknown }).__check = { pairs: cards.length, signs: DATA.signWords.map((w) => w.word), verdicts: () => ({ ...verdicts }), on: () => phraseTargets({ device: verdicts }).length };

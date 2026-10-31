@@ -107,6 +107,34 @@ export interface AskedSums {
   answers: Record<EggKind, Record<SumGrade, number[]>>;
   /** Every take-away fact line said this play, by a snow or a star egg ('num-take-9-5'). */
   facts: string[];
+  /**
+   * Per kind, the sums asked this play as 'need/have' (the hay rack's under warm): what a grade leaves out when leaving
+   * out its asked answers misses a guess bound (eggPlan's fallback).
+   */
+  sums?: Record<EggKind, string[]>;
+}
+
+/** Nothing asked yet: a play's start. */
+export function emptyAsked(): AskedSums {
+  const grades = (): Record<SumGrade, number[]> => ({ easy: [], middle: [], hard: [] });
+  return { answers: { warm: grades(), snow: grades(), star: grades() }, facts: [], sums: { warm: [], snow: [], star: [] } };
+}
+
+/** A sum's grade by its total, the eggs' grades and the hay rack's: 7 or 8 easy, 9 middle, 10 hard. */
+export function gradeOfTotal(total: number): SumGrade {
+  return total >= 10 ? 'hard' : total === 9 ? 'middle' : 'easy';
+}
+
+const sumKey = (c: { need: number; have: number }): string => `${c.need}/${c.have}`;
+
+/**
+ * Note a sum this play asked (game/band.ts useSum): its answer under its kind and grade (the hay rack's as a warm sum
+ * of its grade), the sum itself, and the take-away fact a snow or star sum says.
+ */
+export function noteAsked(a: AskedSums, spec: Pick<EggSpec, 'kind' | 'need' | 'have' | 'answer'>): void {
+  a.answers[spec.kind][gradeOfTotal(totalOf(spec))].push(spec.answer);
+  (a.sums ??= { warm: [], snow: [], star: [] })[spec.kind].push(sumKey(spec));
+  if (spec.kind !== 'warm') a.facts.push(factClip(spec.kind, spec));
 }
 
 /** A play's first maths moment is band A; a first try moves to B and a helped answer back to A (4.2). */
@@ -120,13 +148,18 @@ export function nextBand(band: Band, outcome: Outcome): Band {
  * The sums still fresh (the hay rack's): none with the total and the answer of a sum this play asked, so the rack
  * never asks a fact she just did, in either direction (5 + 4 = 9 after 9 - 4 = 5 or 4 + 5 = 9 with the answer 4).
  * Within 10 every play asks the totals 9 and 10 in both eggs, so the rack's total or answer alone may come again
- * (docs/v4/2.3.md section 19.1). When nothing is fresh, every sum is.
+ * (docs/v4/2.3.md section 19.1). When nothing is fresh, every sum that is not the same sum of `kind` asked this play
+ * (o.asked, 2.4.0); when nothing is left of those either, every sum.
  */
-export function freshCombos(all: readonly EggCombo[], o: MathsPick = {}): EggCombo[] {
+export function freshCombos(all: readonly EggCombo[], o: MathsPick = {}, kind: EggKind = 'warm'): EggCombo[] {
   const answers = o.used?.answers ?? [];
   const asked = new Set((o.used?.totals ?? []).map((t, i) => `${t} ${answers[i]}`));
-  const pool = all.filter((c) => !asked.has(`${totalOf(c)} ${c.answer}`));
-  return pool.length ? pool : all.slice();
+  // 2.4.0: never a sum of this kind the play asked (for the hay rack: an egg's or the rack's warm sum), even when every
+  // fact was asked (section 5.3).
+  const sums = new Set(o.asked?.sums?.[kind] ?? []);
+  const notAsked = all.filter((c) => !sums.has(sumKey(c)));
+  const pool = notAsked.filter((c) => !asked.has(`${totalOf(c)} ${c.answer}`));
+  return pool.length ? pool : notAsked.length ? notAsked : all.slice();
 }
 
 // ------------------------------------------------------------------------------------------------ the stones
@@ -334,7 +367,7 @@ export function placePlan(kind: EggKind, band: Band): Map<EggCombo, number[]> {
 export function pickSum(kind: EggKind, rand: Rand, o: MathsPick = {}): { band: Band; combo: EggCombo } & Tray {
   const band = o.band ?? 'a';
   const plan = placePlan(kind, band);
-  const combo = pick(rand, freshCombos([...plan.keys()], o));
+  const combo = pick(rand, freshCombos([...plan.keys()], o, kind));
   const weights = plan.get(combo) ?? [];
   const place = weighted(rand, weights.map((_, p) => p), (p) => weights[p]);
   return { band, combo, ...trayFor(kind, combo, TRAY[band], place, rand) };
@@ -491,10 +524,10 @@ const PLACE_CAP: Record<4 | 5, number> = { 4: 0.3, 5: 0.25 };
  * 20%, 30%, 30% and 20%, as the warm one. In 2.3.0 it had three, and the lower middle place, which all three reach,
  * would have got 37.5%, over the tests' 35%. The cap stays as a guard.
  */
-export function gradePlaces(kind: EggKind, grade: SumGrade, band: Band = 'a'): number[] {
+export function gradePlaces(kind: EggKind, grade: SumGrade, band: Band = 'a', combos: readonly EggCombo[] = gradeCombos(kind, grade, band)): number[] {
   const n = gradeTray(grade, band);
   const sums = Array.from({ length: n }, () => 0);
-  for (const c of gradeCombos(kind, grade, band)) for (const p of placesFor(kind, c, n)) sums[p]++;
+  for (const c of combos) for (const p of placesFor(kind, c, n)) sums[p]++;
   const w = sums.map((k) => Math.min(1, k / 3));
   const total = w.reduce((t, v) => t + v, 0);
   const share = w.map((v) => v / total);
@@ -502,14 +535,16 @@ export function gradePlaces(kind: EggKind, grade: SumGrade, band: Band = 'a'): n
   for (let round = 0; round < n && share.some((v) => v > cap + 1e-12); round++) {
     const over = share.reduce((t, v) => t + Math.max(0, v - cap), 0);
     const room = share.reduce((t, v) => t + (v < cap ? v : 0), 0);
+    // 2.4.0: a grade left with too few places to stay under the cap (a sum or two after "no sum twice") keeps its shares.
+    if (room <= 0) break;
     for (let p = 0; p < n; p++) share[p] = share[p] >= cap ? cap : share[p] + (over * share[p]) / room;
   }
   return share;
 }
 
-function gradePlan(kind: EggKind, grade: SumGrade, band: Band): GradePlan {
+function gradePlan(kind: EggKind, grade: SumGrade, band: Band, out: readonly string[] = []): GradePlan {
   const n = gradeTray(grade, band);
-  const combos = gradeCombos(kind, grade, band);
+  const combos = gradeCombos(kind, grade, band).filter((c) => !out.includes(sumKey(c)));
   const cells: Cell[] = [];
   for (const combo of combos) {
     for (const place of placesFor(kind, combo, n)) {
@@ -519,7 +554,7 @@ function gradePlan(kind: EggKind, grade: SumGrade, band: Band): GradePlan {
   }
   const sameAs = (c: Cell) => `${c.place} ${c.combo.answer} ${heardOf(kind, c.combo) === c.combo.answer}`;
   const alike = new Map(cells.map((c) => [c, cells.filter((d) => sameAs(d) === sameAs(c))]));
-  return { n, combos, cells, places: gradePlaces(kind, grade, band), alike };
+  return { n, combos, cells, places: gradePlaces(kind, grade, band, combos), alike };
 }
 
 /**
@@ -543,6 +578,12 @@ const PLAN_HEARD_CAP: Record<4 | 5, number> = { 4: 0.21, 5: 0.15 };
  */
 const PLAN_LIVE_CAP: Record<4 | 5, number> = { 4: 0.29, 5: 0.24 };
 const PLAN_SUM_SPREAD = 1.4;
+/**
+ * How far a place of a missed refit may drift from its share (2.4.0: 1/n for the hard sum, the full grade's for easy
+ * and middle): a second egg's grade left with a few sums cannot keep its places exactly even and its guesses under
+ * their caps at once (notes/maths.md); the tests' room is 7 points.
+ */
+const PLAN_PLACE_SLACK = 0.06;
 /** The fitting stops when every place and bound is within this, or after this many rounds. */
 const FIT_TOLERANCE = 1e-5;
 const FIT_ROUNDS = 3000;
@@ -552,12 +593,14 @@ interface Bound {
   cells: Cell[];
   part: number[];
   cap: number;
+  /** The spread bound of one sum (variety), which a missed refit's last rounds let go of for the guess caps. */
+  spread?: boolean;
 }
 
 interface EggPlan {
   grades: GradePlan[];
-  /** The fitting's rounds and its largest miss when it stopped (for the tests). */
-  fit: { rounds: number; off: number };
+  /** The fitting's rounds, its largest miss when it stopped and each grade's (for the tests and the fallback). */
+  fit: { rounds: number; off: number; offs: number[] };
 }
 
 const eggPlanCache = new Map<string, EggPlan>();
@@ -592,58 +635,206 @@ function othersFor(w: number[][], i: number): number[] {
  * place in the egg, whatever came before. A grade's share of a cell is its factor times the weight of the other two
  * grades' different answers (othersFor), so a round costs a few thousand steps and the fitting a few milliseconds.
  */
-function eggPlan(kind: EggKind, band: Band): EggPlan {
-  const key = `${kind} ${band}`;
+function eggPlan(kind: EggKind, band: Band, out: readonly (readonly string[])[] = [[], [], []]): EggPlan {
+  const key = `${kind} ${band}${out.some((o) => o.length) ? ` ${out.map((o) => o.join(',')).join('|')}` : ''}`;
   const cached = eggPlanCache.get(key);
   if (cached) return cached;
-  const grades = SUM_GRADES.map((grade) => gradePlan(kind, grade, band));
+  const grades = SUM_GRADES.map((grade, i) => gradePlan(kind, grade, band, out[i]));
+  const boundOf = (g: GradePlan, part: (c: Cell) => number, cap: number): Bound => {
+    const cells = g.cells.filter((c) => part(c) > 0);
+    return { cells, part: cells.map(part), cap };
+  };
   const bounds = grades.map((g, i): Bound[] => {
-    const bound = (part: (c: Cell) => number, cap: number): Bound => {
-      const cells = g.cells.filter((c) => part(c) > 0);
-      return { cells, part: cells.map(part), cap };
-    };
+    const bound = (part: (c: Cell) => number, cap: number): Bound => boundOf(g, part, cap);
     return [
       bound((c) => c.five, PLAN_FIVE_CAP[g.n]),
       ...(SUM_GRADES[i] === 'hard' ? [bound((c) => c.low, PLAN_LIVE_CAP[g.n]), bound((c) => c.high, PLAN_LIVE_CAP[g.n])] : []),
       bound((c) => Number(heardOf(kind, c.combo) === c.combo.answer), PLAN_HEARD_CAP[g.n]),
-      ...g.combos.map((x) => bound((c) => Number(c.combo === x), PLAN_SUM_SPREAD / g.combos.length)),
+      ...g.combos.map((x) => ({ ...bound((c) => Number(c.combo === x), PLAN_SUM_SPREAD / g.combos.length), spread: true })),
     ];
   });
+  /**
+   * A missed refit's places (2.4.0): each place its sums still reach within PLAN_PLACE_SLACK of the full grade's share
+   * (1/n for the hard sum, the 19.1 rule), as two caps (on the place and on the other places), so the guess rounds
+   * below keep the places near even instead of letting them go.
+   */
+  const placeBounds = grades.map((g, i): Bound[] => {
+    const full = gradePlaces(kind, SUM_GRADES[i], band);
+    return g.places.flatMap((t, p) => {
+      if (t <= 0) return [];
+      const at = SUM_GRADES[i] === 'hard' ? 1 / g.n : full[p];
+      return [boundOf(g, (c) => Number(c.place === p), at + PLAN_PLACE_SLACK), boundOf(g, (c) => Number(c.place !== p), 1 - at + PLAN_PLACE_SLACK)];
+    });
+  });
   const w = grades.map(answerWeights);
-  const fit = { rounds: 0, off: 1 };
-  while (fit.rounds < FIT_ROUNDS && fit.off > FIT_TOLERANCE) {
-    fit.rounds++;
+  /**
+   * One round over the three grades: each grade's places, then its bounds; each grade's miss. A missed refit's rounds
+   * ('near') keep its places near even by caps and let go of the spread of its few sums; 'guesses' keeps the guess caps
+   * alone.
+   */
+  const round = (mode: 'even' | 'near' | 'guesses'): number[] => grades.map((g, i) => {
+    const places = mode === 'even';
     let off = 0;
-    grades.forEach((g, i) => {
-      const others = othersFor(w, i);
-      const mass = (c: Cell) => c.f * others[answerAt(c)];
-      const total = () => g.cells.reduce((t, c) => t + mass(c), 0);
-      let z = total();
+    const others = othersFor(w, i);
+    const mass = (c: Cell) => c.f * others[answerAt(c)];
+    const total = () => g.cells.reduce((t, c) => t + mass(c), 0);
+    let z = total();
+    if (places) {
       const at = g.places.map(() => 0);
       for (const c of g.cells) at[c.place] += mass(c) / z;
       for (const c of g.cells) c.f *= g.places[c.place] / at[c.place];
       off = Math.max(off, ...at.map((v, p) => Math.abs(v - g.places[p])));
-      for (const b of bounds[i]) {
-        z = total();
-        const share = b.cells.reduce((t, c, j) => t + b.part[j] * mass(c), 0) / z;
-        if (share <= b.cap) continue;
-        off = Math.max(off, share - b.cap);
-        b.cells.forEach((c, j) => (c.f *= 1 + b.part[j] * (b.cap / share - 1)));
-      }
-      const sum = g.cells.reduce((t, c) => t + c.f, 0);
-      for (const c of g.cells) c.f /= sum;
-      w[i] = answerWeights(g);
-    });
-    fit.off = off;
+    }
+    for (const b of [...(mode === 'near' ? placeBounds[i] : []), ...bounds[i]]) {
+      if (!places && b.spread) continue;
+      z = total();
+      const share = b.cells.reduce((t, c, j) => t + b.part[j] * mass(c), 0) / z;
+      if (share <= b.cap) continue;
+      off = Math.max(off, share - b.cap);
+      b.cells.forEach((c, j) => (c.f *= 1 + b.part[j] * (b.cap / share - 1)));
+    }
+    const sum = g.cells.reduce((t, c) => t + c.f, 0);
+    for (const c of g.cells) c.f /= sum;
+    w[i] = answerWeights(g);
+    return off;
+  });
+  // A left-out set whose bounds cannot all be met (2.4.0) can drive some factors towards 0: the fitting then stops at
+  // the last round whose factors were all usable, as a miss.
+  let kept = grades.map((g) => g.cells.map((c) => c.f));
+  const usable = () => grades.every((g) => g.cells.every((c) => Number.isFinite(c.f) && c.f > 1e-200));
+  const restore = () => {
+    grades.forEach((g, i) => g.cells.forEach((c, j) => (c.f = kept[i][j])));
+    grades.forEach((g, i) => (w[i] = answerWeights(g)));
+  };
+  const fit = { rounds: 0, off: 1, offs: [1, 1, 1] };
+  const refit = out.some((o) => o.length);
+  while (fit.rounds < FIT_ROUNDS && fit.off > FIT_TOLERANCE) {
+    fit.rounds++;
+    const offs = round('even');
+    if (!usable()) {
+      restore();
+      fit.offs = fit.offs.map((o) => (o > FIT_TOLERANCE ? Math.max(o, 1) : o));
+      fit.off = Math.max(...fit.offs);
+      break;
+    }
+    kept = grades.map((g) => g.cells.map((c) => c.f));
+    fit.offs = offs;
+    fit.off = Math.max(...fit.offs);
   }
-  const out = { grades, fit };
-  eggPlanCache.set(key, out);
-  return out;
+  // A refit that missed lets the caps on the guesses win over exactly even places and over the spread of its few sums
+  // (2.4.0): rounds of the guess caps with each place kept within PLAN_PLACE_SLACK of its share, and where those cannot
+  // all hold, rounds of the guess caps alone, so the guesses come before the places. The miss stays in `fit`, so the
+  // fallback of plannedFor still sees it.
+  if (fit.off > FIT_TOLERANCE && refit) {
+    for (const mode of ['near', 'guesses'] as const) {
+      let met = false;
+      for (let r = 0; r < 600; r++) {
+        const offs = round(mode);
+        if (!usable()) {
+          restore();
+          break;
+        }
+        kept = grades.map((g) => g.cells.map((c) => c.f));
+        if (Math.max(...offs) <= FIT_TOLERANCE) {
+          met = true;
+          break;
+        }
+      }
+      if (met) break;
+    }
+  }
+  const plan = { grades, fit };
+  eggPlanCache.set(key, plan);
+  return plan;
 }
 
-/** How the egg plan's fitting ended for a kind and band (for the tests): its rounds and its largest miss. */
-export function eggPlanFit(kind: EggKind, band: Band): { rounds: number; off: number } {
-  return { ...eggPlan(kind, band).fit };
+/** How a grade leaves out what the play asked: its asked answers (the rule), only its asked sums (the fallback), none. */
+type LeaveOut = 'answers' | 'sums' | 'none';
+
+/** The sums of each grade an egg leaves out for what the play asked, and the grades that fell back (section 5.3). */
+interface Planned { plan: EggPlan; relaxed: SumGrade[] }
+const plannedCache = new Map<string, Planned>();
+
+/**
+ * The egg plan for what the play has asked (2.4 section 5.3, "no sum twice"): each grade without the sums whose answer
+ * this kind asked in that grade (leaving out an answer leaves out every sum with it), and a snow or star egg without
+ * the sums whose take-away fact was said, whichever egg said it. The plan of a left-out set is fitted as eggPlan fits
+ * the full one and cached. A grade whose fit misses a bound (fit.offs over FIT_TOLERANCE) leaves out only the sums
+ * asked and the facts said, not their answers, so an answer can come again with its other total; a grade left with no
+ * sum, or an egg left without three different answers, lets go of what it can (sums, then everything) until one fits.
+ */
+function plannedFor(kind: EggKind, band: Band, asked?: AskedSums): Planned {
+  if (!asked) return { plan: eggPlan(kind, band), relaxed: [] };
+  const answers = asked.answers[kind];
+  const sums = asked.sums?.[kind] ?? [];
+  const facts = kind === 'warm' ? [] : asked.facts;
+  const key = `${kind} ${band} ${SUM_GRADES.map((g) => answers[g].join(',')).join('|')} ${sums.join(',')} ${facts.join(',')}`;
+  const hit = plannedCache.get(key);
+  if (hit) return hit;
+  const mode: LeaveOut[] = ['answers', 'answers', 'answers'];
+  const outOf = (i: number): string[] => gradeCombos(kind, SUM_GRADES[i], band).filter((c) => {
+    if (mode[i] === 'none') return false;
+    if (facts.includes(factClip(kind, c))) return true;
+    return mode[i] === 'answers' ? answers[SUM_GRADES[i]].includes(c.answer) : sums.includes(sumKey(c));
+  }).map(sumKey);
+  const looser = (m: LeaveOut): LeaveOut => (m === 'answers' ? 'sums' : 'none');
+  let planned: Planned | null = null;
+  for (let round = 0; round < 7 && !planned; round++) {
+    const out = [0, 1, 2].map(outOf);
+    // Three different answers must still fit. An answer that is in no triple of different answers can never be picked
+    // (pickCells), so its sums go too, and the fitting never meets a place no sum can fill.
+    const left = [0, 1, 2].map((i) => new Set(gradeCombos(kind, SUM_GRADES[i], band).filter((c) => !out[i].includes(sumKey(c))).map((c) => c.answer)));
+    for (let changed = true; changed;) {
+      changed = false;
+      for (const i of [0, 1, 2]) {
+        const [j, k] = [0, 1, 2].filter((x) => x !== i);
+        for (const a of [...left[i]]) {
+          if ([...left[j]].some((b) => b !== a && [...left[k]].some((c) => c !== a && c !== b))) continue;
+          left[i].delete(a);
+          changed = true;
+        }
+      }
+    }
+    const triple = left.every((l) => l.size > 0);
+    if (triple) {
+      [0, 1, 2].forEach((i) => {
+        for (const c of gradeCombos(kind, SUM_GRADES[i], band)) if (!left[i].has(c.answer) && !out[i].includes(sumKey(c))) out[i].push(sumKey(c));
+      });
+    }
+    if (!triple) {
+      const i = [0, 1, 2].filter((k) => mode[k] !== 'none').sort((x, y) => left[x].size - left[y].size)[0];
+      if (i === undefined) break;
+      mode[i] = looser(mode[i]);
+      continue;
+    }
+    const plan = eggPlan(kind, band, out);
+    const failing = [0, 1, 2].filter((i) => plan.fit.offs[i] > FIT_TOLERANCE && mode[i] === 'answers' && out[i].length > 0);
+    if (plan.fit.off <= FIT_TOLERANCE || !failing.length) {
+      planned = { plan, relaxed: SUM_GRADES.filter((_, i) => mode[i] !== 'answers') };
+      break;
+    }
+    for (const i of failing) mode[i] = 'sums';
+  }
+  planned ??= { plan: eggPlan(kind, band), relaxed: [...SUM_GRADES] };
+  plannedCache.set(key, planned);
+  return planned;
+}
+
+/**
+ * Fit the plan of an egg of `kind` for what the play has asked now (2.4.0: the hub calls it at each refill, through
+ * game/maths.ts prepareEggPlans), so a refit never runs on the walk to the egg.
+ */
+export function prepareEggPlan(kind: EggKind, band: Band, asked?: AskedSums): void {
+  plannedFor(kind, band, asked);
+}
+
+/**
+ * How the egg plan's fitting ended for a kind and band, for what a play asked (for the tests): its rounds, its largest
+ * miss, and the grades that fell back from leaving out the answers asked.
+ */
+export function eggPlanFit(kind: EggKind, band: Band, asked?: AskedSums): { rounds: number; off: number; relaxed: SumGrade[] } {
+  const { plan, relaxed } = plannedFor(kind, band, asked);
+  return { rounds: plan.fit.rounds, off: plan.fit.off, relaxed: [...relaxed] };
 }
 
 /** One egg's three cells (easy, middle, hard) from its plan: first the three answers, then each grade's cell. */
@@ -686,11 +877,20 @@ export function fitEggPlans(): void {
 /** Every egg kind: the nest egg's warm, the shore egg's snow and the trail's star (2.4.0). */
 export const EGG_KINDS: readonly EggKind[] = ['warm', 'snow', 'star'];
 
+type Compare = 'more' | 'fewer';
+/** The six orders of an egg's three questions that ask both "more" and "fewer". */
+const STAR_ORDERS: readonly [Compare, Compare, Compare][] = [
+  ['more', 'more', 'fewer'], ['more', 'fewer', 'more'], ['fewer', 'more', 'more'],
+  ['more', 'fewer', 'fewer'], ['fewer', 'more', 'fewer'], ['fewer', 'fewer', 'more'],
+];
+
 /**
- * The star egg's question per sum of an egg, in the order asked (2.4.0): step 0 asks "more", "fewer", "more", so every
- * star egg asks both. The signs-star lane draws them from the egg's stream (Task 15, starCompares).
+ * The star egg's question per sum, in the order asked (2.4.0, section 5.5): one of the six orders that ask both "How
+ * many more has the moon?" and "How many fewer has the egg?", drawn evenly from the egg's stream.
  */
-const STAR_COMPARES = ['more', 'fewer', 'more'] as const;
+export function starCompares(rand: Rand): [Compare, Compare, Compare] {
+  return [...pick(rand, STAR_ORDERS)];
+}
 
 /**
  * An egg's three sums (2.3 section 19.1), all planned when the egg opens, from the egg's own stream: easy first, then
@@ -703,16 +903,18 @@ const STAR_COMPARES = ['more', 'fewer', 'more'] as const;
  */
 export function eggSums(kind: EggKind, rand: Rand, o: MathsPick & { first?: boolean } = {}): EggSpec[] {
   const band = o.band ?? 'a';
-  const { grades } = eggPlan(kind, band);
+  const { grades } = plannedFor(kind, band, o.asked).plan;
   const order = rand() < 0.5 ? [0, 1, 2] : [0, 2, 1];
   const planned = pickCells(grades, rand);
   const used = [...(o.used?.totals ?? [])];
+  // Drawn after the sums, so a star egg's questions never shift its sums, and only for the star egg.
+  const compares = kind === 'star' ? starCompares(rand) : null;
   return order.map((g, index): EggSpec => {
     const grade = SUM_GRADES[g];
     const { combo, place } = freshCell(grades[g], planned[g], used, rand);
     used.push(totalOf(combo));
     const { stones, decoys } = trayFor(kind, combo, grades[g].n, place, rand);
-    const compare = kind === 'star' ? STAR_COMPARES[index] : undefined;
+    const compare = compares?.[index];
     return {
       kind, ...combo, stones, ...(grade === 'hard' ? { band } : {}), decoys, skin: 'egg', grade, ...(compare ? { compare } : {}),
       round: { index: index as 0 | 1 | 2, of: 3 }, clips: sumClips(kind, combo, (o.first ?? false) && index === 0, index, compare),
@@ -757,11 +959,12 @@ export function count(n: number): string[] {
 function eggClips(kind: EggKind, c: EggCombo, first: boolean, compare?: 'more' | 'fewer'): EggSpec['clips'] {
   const { need, have, answer } = c;
   if (kind === 'star') {
-    // 2.4.0: the moon's stars and the egg's, then the question; neither group changes, she drags the difference.
+    // 2.4.0: the moon's stars and the egg's, then the question; neither group changes, she drags the difference. The
+    // question ends the goal, so the stones wake after it (2.4-plan Task 16): a stone grabbed on the wake chime never
+    // cuts "How many more has the moon?", the point of this form.
     return {
       intro: first ? ['g4-star-egg'] : [],
-      goal: [`num-moon-${have}`, `num-eggstar-${need}`],
-      ask: [compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon'],
+      goal: [`num-moon-${have}`, `num-eggstar-${need}`, compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon'],
       right: ['fb-yes', factClip('star', c)],
       tooBig: (k) => [`num-over-${clampK(k, MISS_MAX.over)}`],
       tooSmall: (k) => [`num-more-${clampK(k, MISS_MAX.more)}`],

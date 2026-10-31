@@ -305,6 +305,83 @@ html.mmw-guarded body {
   transition: opacity 400ms ease, transform 400ms ease; opacity: 0;
 }
 
+/* ---------------------------------------------------------------------------------------------- the signpost moment */
+/* 2.4.0 (docs/v4/2.4.md section 5.5): three print cards on the signpost's arms, placed by sign.ts (geometry.ts
+   signCardBoxes) with left, top, width and height. A painted board in the normal print ink, no picture, a point on the
+   side of its road. Asleep while Elizabeth says the goal; the right card glows gold; a wrong card's differing letters
+   glow as the wish's contrast does. The whole card takes the tap. */
+.sign-card {
+  position: absolute; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(#fff8ea, #f6e4c4); border: calc(5 * var(--u)) solid #b9824a; border-radius: calc(18 * var(--u));
+  box-shadow: inset 0 calc(4 * var(--u)) 0 rgba(255, 255, 255, 0.7), 0 calc(6 * var(--u)) 0 #8f5c2c, 0 calc(12 * var(--u)) calc(22 * var(--u)) rgba(70, 40, 15, 0.3);
+  font: 700 calc(58 * var(--u)) / 1 'Andika', sans-serif; color: var(--ink); white-space: nowrap;
+  transition: opacity 320ms ease-out, filter 320ms ease-out, transform 320ms ease-out;
+}
+.sign-moment { position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; animation: mmw-sign-in 420ms ease-out both; }
+@keyframes mmw-sign-in { from { opacity: 0; } }
+.sign-card.asleep { opacity: 0.6; filter: saturate(0.4); }
+.sign-card.resting { opacity: 0.8; }
+.sign-print { display: flex; align-items: baseline; padding-bottom: calc(6 * var(--u)); pointer-events: none; }
+.sign-unit { display: block; padding: 0 calc(1 * var(--u)); border-radius: calc(10 * var(--u)); }
+.sign-unit.diff { color: #b25a00; background: rgba(255, 214, 102, 0.55); box-shadow: 0 0 calc(10 * var(--u)) rgba(255, 200, 70, 0.8); animation: mmw-diff-glow 1.1s ease-in-out 3; }
+/* The point of the board, on the side of its road: west left, east right, north up. */
+.sign-point {
+  position: absolute; width: 0; height: 0; pointer-events: none;
+  border: calc(24 * var(--u)) solid transparent;
+}
+.sign-card.arm-west .sign-point { left: calc(-29 * var(--u)); top: 50%; margin-top: calc(-24 * var(--u)); border-left: 0; border-right-color: #b9824a; }
+.sign-card.arm-east .sign-point { right: calc(-29 * var(--u)); top: 50%; margin-top: calc(-24 * var(--u)); border-right: 0; border-left-color: #b9824a; }
+.sign-card.arm-north .sign-point { top: calc(-29 * var(--u)); left: 50%; margin-left: calc(-24 * var(--u)); border-top: 0; border-bottom-color: #b9824a; }
+.sign-card.right { border-color: #f0b52e; animation: mmw-glow-ring 1.1s ease-in-out 2; }
+.sign-card.right .sign-print { color: #8a3fc0; text-shadow: 0 0 calc(12 * var(--u)) #fff1b8; }
+.sign-card.wrong .sign-print { animation: mmw-hum 400ms ease-in-out 2; }
+.sign-moment.leaving .sign-card { transition: opacity 400ms ease, transform 400ms ease; opacity: 0; transform: translateY(calc(-14 * var(--u))); }
+
+/* ---------------------------------------------------------------------------------------------- the star panel */
+/* 2.4.0 (docs/v4/2.4.md section 5.5): the star egg's panel where the egg's cups panel sits (860 x 172 design px,
+   geometry.ts STAR_PANEL), the moon's stars on a night sky under Lumi's crescent, the egg's beside the star egg. stars.ts
+   places every picture with left and top; lined up, the stars glide into two rows of pairs. */
+.egg-moment .star-panel {
+  position: absolute; bottom: calc(18 * var(--u)); left: 0; right: calc(192 * var(--u)); margin: 0 auto;
+  width: calc(860 * var(--u)); height: calc(172 * var(--u)); box-sizing: content-box;
+  background: rgba(255, 250, 242, 0.92); border: calc(5 * var(--u)) solid var(--lilac); border-radius: calc(40 * var(--u));
+  box-shadow: 0 calc(7 * var(--u)) 0 rgba(172, 146, 214, 0.45), 0 calc(14 * var(--u)) calc(30 * var(--u)) rgba(90, 60, 130, 0.18);
+  animation: mmw-pop-in 500ms cubic-bezier(.3, 1.3, .5, 1) both;
+}
+.star-panel.next-in { animation: mmw-cups-next 380ms ease-out both; }
+.egg-moment.leaving .star-panel { transition: opacity 400ms ease, transform 400ms ease; opacity: 0; }
+.star-sky, .star-nest, .star-moon, .star-egg, .star, .star-links, .star-link { position: absolute; pointer-events: none; }
+.star-sky { border-radius: calc(28 * var(--u)); background: linear-gradient(180deg, #2f3478 0%, #4b3f92 100%); box-shadow: inset 0 calc(4 * var(--u)) calc(10 * var(--u)) rgba(10, 10, 40, 0.35); }
+.star-nest { border-radius: calc(28 * var(--u)); background: linear-gradient(180deg, #f3eaff 0%, #e6d8fb 100%); box-shadow: inset 0 0 0 calc(3 * var(--u)) #d6c4f2; }
+.star-moon, .star-egg { object-fit: contain; }
+.star-moon { filter: drop-shadow(0 0 calc(10 * var(--u)) rgba(255, 226, 140, 0.8)); }
+.star-links { left: 0; top: 0; width: 100%; height: 100%; }
+.star-link { border-radius: calc(3 * var(--u)); background: rgba(255, 226, 140, 0.75); animation: mmw-link-in 500ms 450ms ease-out both; }
+@keyframes mmw-link-in { from { opacity: 0; transform: scaleY(0.2); } }
+.star {
+  width: calc(40 * var(--u)); height: calc(40 * var(--u)); object-fit: contain;
+  transition: left 650ms cubic-bezier(.4, 0, .2, 1), top 650ms cubic-bezier(.4, 0, .2, 1), filter 300ms;
+  filter: drop-shadow(0 0 calc(4 * var(--u)) rgba(255, 230, 150, 0.7));
+}
+.star.egg-star { filter: drop-shadow(0 0 calc(3 * var(--u)) rgba(170, 120, 230, 0.7)); }
+/* Lined up, the moon's extra stars stand out; with a sparkle they glow; a short stone leaves the others shaking. */
+.star-panel.lined .star.extra { filter: drop-shadow(0 0 calc(8 * var(--u)) rgba(255, 214, 102, 0.95)); }
+.star.extra.marked { filter: drop-shadow(0 0 calc(12 * var(--u)) calc(2 * var(--u)) #ffd25e) brightness(1.12); }
+.star.extra.short { animation: mmw-hum 150ms linear 8; }
+.star.pulse { animation: mmw-pulse 520ms ease-out; }
+.star.counted { filter: drop-shadow(0 0 calc(6 * var(--u)) #ffd25e) drop-shadow(0 0 calc(12 * var(--u)) #ffffff); transform: scale(1.18); }
+.star.glad { animation: mmw-glad 900ms ease-in-out; }
+.star-panel.wrong { animation: mmw-hum 160ms linear 4; }
+.star-panel.done { border-color: #ffe08a; box-shadow: 0 0 0 calc(4 * var(--u)) rgba(255, 224, 138, 0.6), 0 calc(14 * var(--u)) calc(34 * var(--u)) rgba(255, 190, 120, 0.5); }
+.fly-dot.star-spark { width: calc(34 * var(--u)); height: calc(34 * var(--u)); }
+.fly-dot.star-spark img { width: 100%; height: 100%; }
+.fly-dot.star-spark.spare { filter: drop-shadow(0 0 calc(8 * var(--u)) rgba(255, 110, 140, 0.9)); animation: mmw-spare 500ms ease-in-out infinite alternate; }
+.kind-star .egg-heart.lit svg { filter: drop-shadow(0 0 calc(7 * var(--u)) rgba(255, 214, 102, 0.95)); }
+/* The star egg's stones: the snow stones in gold. */
+.stone-cell.star-stone .stone { background: radial-gradient(circle at 35% 30%, #fffbe6, #ffe08a 55%, #f0b52e); border-color: #e0a12a; }
+.stone-cell.star-stone .stone-dots i { background: radial-gradient(circle at 35% 30%, #8a63dc, #4b3f92); }
+.stone-cell.star-stone .stone-num { border-color: #f0c35a; }
+
 /* ---------------------------------------------------------------------------------------------- the naming moment */
 .bells { position: absolute; bottom: calc(26 * var(--u)); left: 50%; transform: translateX(-50%); display: flex; gap: calc(54 * var(--u)); align-items: flex-end; }
 .bells.leaving { transition: opacity 380ms, transform 380ms; opacity: 0; transform: translate(-50%, calc(40 * var(--u))); }

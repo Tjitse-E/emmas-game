@@ -16,6 +16,7 @@ body {
 }
 main { max-width: 1120px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 16px 40px; }
 h1 { font-size: 24px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 26px 0 4px; }
 .note { font-size: 14px; color: var(--soft); margin: 0 0 10px; max-width: 760px; }
 .status { font-size: 15px; background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 8px 12px; margin: 0 0 14px; }
 .status.warn { background: #fff4d6; border-color: #f2d58a; }
@@ -31,6 +32,7 @@ h1 { font-size: 24px; margin: 0 0 4px; }
   display: flex; align-items: center; justify-content: center; }
 .cell .pic { width: 82%; height: 82%; }
 .words { font-size: 13px; color: var(--soft); margin: 6px 0 8px; min-height: 18px; }
+.signs .words { font-size: 15px; color: var(--ink); margin-bottom: 0; }
 .words .file { display: inline-block; font-size: 11px; background: #ffe0f0; color: #a0306a; border-radius: 6px; padding: 0 5px; margin-left: 4px; }
 .buttons { display: flex; gap: 10px; justify-content: center; }
 .buttons button {

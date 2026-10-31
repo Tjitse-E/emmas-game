@@ -1,8 +1,9 @@
 // The maths side of the checked moments (moved out of moments.ts in 2.3.0, so the eggs lane owns it): what eggSums and
 // rackSpec read beyond `first`, planning an egg's three sums (or the hay rack's one) from its own stream in the
 // current band, and noting a maths result (the results log with the tray, and the band move).
-import type { EggSpec, MomentResult } from '../contracts';
-import { eggSums, fitEggPlans } from '../content/eggs';
+import type { EggKind, EggSpec, MomentResult } from '../contracts';
+import { type AskedSums, eggSums, fitEggPlans, prepareEggPlan } from '../content/eggs';
+import type { HubPlace } from './options';
 import type { Game } from './game';
 import type { MomentLog } from './moments';
 import { type Band, noteBand, useSum } from './band';
@@ -21,19 +22,65 @@ export interface EggAsk {
   used: { totals: number[]; answers: number[] };
   /** The last play's totals. Nothing reads them since the sums stay within 10 (every play asks 9 and 10). */
   lastTotals: number[];
+  /**
+   * What this play asked (2.4.0, "no sum twice", docs/v4/2.4.md section 5.3): an egg leaves out the answers its kind
+   * asked per grade and, for snow and star, every take-away fact said; the hay rack leaves out the warm sums asked.
+   */
+  asked: AskedSums;
 }
 
 export function eggAsk(g: Game, first = false): EggAsk {
   const used = { totals: [...g.maths.used.totals], answers: [...g.maths.used.answers] };
   // The last play's totals as this play read them at its start (2.4.0: the save's `last` is written after each place).
-  return { first, band: g.maths.band, used, lastTotals: [...(g.start ?? g.save.data).last.totals] };
+  return { first, band: g.maths.band, used, lastTotals: [...(g.start ?? g.save.data).last.totals], asked: g.maths.asked };
+}
+
+/** The egg a hub place can start: the nest egg is warm, the shore egg snow, a ride's trail egg a star egg. */
+const EGG_OF: Partial<Record<HubPlace, EggKind>> = { egg: 'warm', shore: 'snow', ride: 'star' };
+
+/** In a browser the fitting waits until the bubbles have popped in (4 bubbles 0.4 s apart), so it never stalls a pop. */
+const PREPARE_DELAY_MS = 1800;
+/** While she walks or a place runs, the next fit waits this long and looks again. */
+const PREPARE_RETRY_MS = 700;
+/** The latest refill's fits: a newer refill drops the older one's queue. */
+let prepareToken = 0;
+
+/** A task when the page is idle (Safari without requestIdleCallback: a short timeout). */
+function whenIdle(fn: () => void): void {
+  const idle = (window as { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+  if (idle) idle.call(window, fn, { timeout: 1000 });
+  else setTimeout(fn, 50);
 }
 
 /**
  * Fit the egg plans the shown bubbles can start, with what this play has asked left out (2.4.0: the hub calls it at
- * each refill, never during a walk). Step 0's stub does nothing; the signs-star lane fills it (Task 15).
+ * each refill, and the fitting never runs during a walk, docs/v4/2.4.md section 5.3). In a browser: one kind per idle
+ * task, the first after the bubbles have popped in, each only while she stands and no place runs (else it looks again
+ * a little later), with what the play has asked and the band at that time. A plan fitted once is cached, so a later
+ * refill costs nothing; an egg that starts before its plan was fitted fits its own as it opens, after the walk.
  */
-export function prepareEggPlans(_g: Game): void {}
+export function prepareEggPlans(g: Game): void {
+  // A test's small game may have no maths state or no hub; there is then nothing to prepare.
+  if (!g.maths) return;
+  const kinds = [...new Set((g.hub?.shown ?? []).map((p) => EGG_OF[p]).filter((k) => k !== undefined))];
+  if (!kinds.length) return;
+  const fit = (kind: EggKind) => prepareEggPlan(kind, g.maths.band, g.maths.asked ? structuredClone(g.maths.asked) : undefined);
+  if (typeof window === 'undefined') {
+    kinds.forEach(fit);
+    return;
+  }
+  const token = ++prepareToken;
+  const next = () => {
+    if (token !== prepareToken || !kinds.length) return;
+    if (g.actors?.princess?.moving || g.hub?.running) {
+      setTimeout(() => whenIdle(next), PREPARE_RETRY_MS);
+      return;
+    }
+    fit(kinds.shift()!);
+    if (kinds.length) whenIdle(next);
+  };
+  setTimeout(() => whenIdle(next), PREPARE_DELAY_MS);
+}
 
 /**
  * An egg's three sums from the stream `label` (2.3 section 19.1), all planned when the egg opens: the hard sum takes

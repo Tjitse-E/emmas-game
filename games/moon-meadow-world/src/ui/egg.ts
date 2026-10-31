@@ -20,6 +20,10 @@
 // first warm egg's "Drag one stone") plays with the stones awake. Between sums the heart lights as Elizabeth says the
 // fact, the one line after a right stone, and no effect plays. The third sum keeps the praise, the fact and the
 // heart-glow before the panel leaves. The hearts line is said once per layer (each play), before the first egg.
+//
+// 2.4.0 (docs/v4/2.4.md section 5.5): the star egg on the trail has its own panel (src/ui/stars.ts): the moon's stars
+// and the egg's, loose, and a stone of the difference. Its goal says both numbers, then the question ("How many more
+// has the moon?" or "How many fewer has the egg?"), and the stones wake after the question (2.4-plan Task 16).
 import type { EggSpec, MomentHooks, MomentResult } from '../contracts';
 import { audio } from '../audio';
 import { FX_WAIT_MS } from '../audio/sound';
@@ -29,6 +33,7 @@ import { draggable, lift, type Flyer } from './drag';
 import { boxOf, centreOf, el, html, img, play, sleep, u } from './dom';
 import { hayPileEl, haySkin } from './hay';
 import { pulse, type Skin } from './skin';
+import { starSkin } from './stars';
 import { Life, QUICK_MS, effectFirst, leave, target, type LayerCtx, type OpenMoment } from './moment';
 import { PIC, sparkleBurst, stoneEl } from './parts';
 
@@ -84,12 +89,11 @@ const WAKE_CAP_MS = 20_000;
 /** The stones hop awake one after another, this far apart. */
 const WAKE_STEP_MS = 60;
 
-/** The cups and stones a kind draws: the star egg takes the snow egg's until its own panel comes (2.4.0). */
+/** The stones a kind draws: the star egg's are the snow egg's stones in gold (ui.css .stone-cell.star-stone, 2.4.0). */
 const cupKind = (spec: EggSpec): 'warm' | 'snow' => (spec.kind === 'warm' ? 'warm' : 'snow');
 
 /** The egg's cups: one or two nests of ten, empty places shown as sockets so the ten-frame reads. */
 function cupsSkin(ctx: LayerCtx, spec: EggSpec, root: HTMLElement, life: Life): Skin {
-  // The star egg plays on the snow egg's cups until its own star panel comes (2.4.0, the signs-star lane).
   const kind = cupKind(spec);
   const snow = kind === 'snow';
   type Cup = { el: HTMLElement; state: CupState | 'cooled' };
@@ -274,7 +278,8 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
     if (!reuse) frame.own(() => root.remove());
     for (const e of reuse?.stale ?? []) e.remove();
     const hearts = reuse?.hearts ?? (round ? heartsEl(root, round.index, round.of) : null);
-    const skin = hay ? haySkin(ctx, spec, root, life) : cupsSkin(ctx, spec, root, life);
+    // 2.4.0: the star egg compares the moon's stars with the egg's (src/ui/stars.ts).
+    const skin = hay ? haySkin(ctx, spec, root, life) : spec.kind === 'star' ? starSkin(ctx, spec, root, life) : cupsSkin(ctx, spec, root, life);
     const panel = skin.panel;
     // The next sum's cups come in on the panel that stayed, without its pop-in. The shake of a wrong stone (.hot,
     // .cold) still wins over it, as over the first sum's pop-in (ui.css).
@@ -287,6 +292,7 @@ export function runEgg(ctx: LayerCtx, spec: EggSpec, hooks: MomentHooks, setOpen
       const s = hay ? hayPileEl(v) : stoneEl(v, cupKind(spec));
       // On the cell itself, so the flyer (a copy outside the tray) keeps the size.
       if (n >= 5) s.classList.add('s5');
+      if (spec.kind === 'star') s.classList.add('star-stone');
       tray.appendChild(s);
       return s;
     });

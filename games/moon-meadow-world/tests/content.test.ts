@@ -139,7 +139,7 @@ describe('eggs', () => {
   it('every clip an egg\'s three sums can say is in allClipIds and exists or has a line', () => {
     const all = new Set(C.allClipIds());
     for (const s of seeds) {
-      for (const kind of ['warm', 'snow'] as const) {
+      for (const kind of ['warm', 'snow', 'star'] as const) {
         for (const e of eggSums(kind, C.seeded(s), { first: s % 2 === 0, band: s % 3 === 0 ? 'b' : 'a' })) {
           for (const id of C.eggClipIds(e)) {
             expect(all.has(id), id).toBe(true);
@@ -151,6 +151,60 @@ describe('eggs', () => {
     // "A happy heart!" is said no more (2.3.2); tools/build-lines.ts keeps its clip in the pack.
     expect(all.has('g4-heart')).toBe(false);
     expect(all.has('g4-snow')).toBe(true);
+  });
+
+  // 2.4.0 (docs/v4/2.4.md section 5.5): the star egg on the trail.
+  it('the star egg says its intro once, the moon\'s and the egg\'s stars, its question, and the take-away fact', () => {
+    for (const s of seeds.slice(0, 200)) {
+      const [a, b, c] = eggSums('star', C.seeded(s), { first: true });
+      expect(a.clips.intro).toEqual(['g4-star-egg', 'g4-hearts']);
+      for (const e of [b, c]) expect(e.clips.intro).toEqual([]);
+      for (const e of [a, b, c]) {
+        expect(e.clips.goal).toEqual([`num-moon-${e.have}`, `num-eggstar-${e.need}`, e.compare === 'fewer' ? 'g4-fewer-egg' : 'g4-more-moon']);
+        expect(e.clips.ask).toBeUndefined();
+        expect(e.clips.hint).toEqual(['h4-line-up']);
+        expect(e.clips.tooBig(2)).toEqual(['num-over-2']);
+        expect(e.clips.tooSmall(2)).toEqual(['num-more-2']);
+        expect(C.factClip('star', e)).toBe(`num-take-${e.have}-${e.need}`);
+      }
+      expect(c.clips.right).toEqual(['fb-yes', `num-take-${c.have}-${c.need}`]);
+      // The fact is one of the 14 the snow egg already has.
+      expect(clipExists(C.factClip('star', a))).toBe(true);
+    }
+  });
+});
+
+// The signposts' place words (2.4.0, docs/v4/2.4.md section 5.5); the planner is in tests/signs.test.ts.
+describe('signs', () => {
+  it('has the 13 sign words from v3\'s packs with their tiers, pictures, clips and graphemes', () => {
+    expect(DATA.signWords.map((w) => `${w.word}:${w.tier}:${w.group}`)).toEqual([
+      'sand:2:s', 'stump:2:s', 'swing:1:s', 'stone:3:s', 'shed:1:sh', 'ship:1:sh', 'shell:2:sh', 'barn:2:b', 'bench:2:b', 'beach:3:b', 'pond:2:p', 'pool:2:p', 'pines:3:p']);
+    expect(DATA.signWords.find((w) => w.word === 'pines')).toMatchObject({ gpcs: ['p', 'i-e', 'n', 's'], sounds: ['p', 'i-e', 'n', 'z'], clip: 'word-pines', pic: expect.stringContaining('words/pine.webp') });
+    for (const w of DATA.signWords) {
+      expect(clipExists(w.clip), w.word).toBe(true); expect(w.word.length).toBeLessThanOrEqual(5);
+      expect((w.sounds ?? w.gpcs).every((g) => phonics.has(g)), w.word).toBe(true);
+      expect(spell(w.gpcs), w.word).toBe(w.word);
+      expect(w.gpcs.filter(isVowel), w.word).toHaveLength(1);
+    }
+  });
+
+  it('keeps the sign words\' picture checks apart from the wish words\'', () => {
+    const checks = JSON.parse(readFileSync(join(repo, 'games/moon-meadow-world/tools/picture-check.json'), 'utf8'));
+    for (const w of DATA.signWords) expect(checks[`sign:${w.word}`]?.verdict, w.word).toBe('ok');
+    for (const w of ['sand', 'ship', 'shell', 'pool']) expect(checks[w]?.verdict, w).toBe('ok');   // the wish words keep their own entries
+    for (const [k, c] of Object.entries(checks) as [string, { by: string; why: string }][]) if (k.startsWith('sign:')) expect(c.by && c.why, k).toBeTruthy();
+  });
+
+  it('every sign clip is in allClipIds and exists or has a line, and every sign letter sound is in allGraphemes', () => {
+    const all = new Set(C.allClipIds());
+    const sounds = new Set(C.allGraphemes());
+    for (const w of DATA.signWords) {
+      for (const id of [w.clip, C.goalClip('bella', w.word), C.goalClip('hazel', w.word)]) {
+        expect(all.has(id), id).toBe(true);
+        expect(clipExists(id) || !!lineFor(id), id).toBe(true);
+      }
+      for (const g of w.sounds ?? w.gpcs) expect(sounds.has(g), `${w.word} ${g}`).toBe(true);
+    }
   });
 });
 

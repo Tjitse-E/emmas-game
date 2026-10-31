@@ -136,6 +136,182 @@ export function blanketPatches(have: number, f: number, pad = 7): Box[] {
   return out;
 }
 
+// ------------------------------------------------------------------------------------------------ sign cards
+
+/**
+ * The signpost's print cards (2.4.0, docs/v4/2.4.md section 5.5), in design px: one word in Andika at `font` on a card
+ * `h` high, at least 64 CSS px at every iPad size, wide enough for five letters. They keep `palm` CSS px off the left,
+ * right and bottom edges, where a palm rests while she taps (docs/v4/2.4-plan.md Review Focus 2), and below `top`, clear
+ * of Lumi's moon and the home button.
+ */
+export const SIGN_CARD = { h: 92, font: 58, letter: 36, pad: 26, gap: 18, palm: 100, top: 170 } as const;
+
+/**
+ * The hud's food basket in design px (ui.css .food-btn: 112 wide and high, 18 from the right and the bottom). It sits
+ * above the moments layer, so a sign card keeps off it as off a palm band.
+ */
+export const FOOD_BTN = { size: 112, edge: 18 } as const;
+
+/** The food basket's box on screen, in CSS px. */
+export function foodBtnBox(screen: { w: number; h: number }, unit = unitFor(screen.w, screen.h)): Box {
+  const size = FOOD_BTN.size * unit;
+  return { x: screen.w - (FOOD_BTN.edge * unit + size), y: screen.h - (FOOD_BTN.edge * unit + size), w: size, h: size };
+}
+
+/** A card's size in CSS px for a word. */
+export function signCardSize(word: string, unit: number): { w: number; h: number } {
+  return {
+    w: Math.round((SIGN_CARD.pad * 2 + Math.max(3, word.length) * SIGN_CARD.letter) * unit),
+    h: Math.max(64, Math.round(SIGN_CARD.h * unit)),
+  };
+}
+
+/**
+ * The three cards on screen in arm order, west, north and east, each centred on the end of its arm (`anchors`, the
+ * arms' ends on screen), kept inside the palm bands and apart: the west and east cards side by side when they meet,
+ * the north card above them when it meets either, and as a last resort all three in a row in arm order. Pure.
+ */
+export function signCardBoxes(anchors: readonly Point[], words: readonly string[], screen: { w: number; h: number }): Box[] {
+  const unit = unitFor(screen.w, screen.h);
+  const gap = Math.round(SIGN_CARD.gap * unit);
+  const minX = SIGN_CARD.palm;
+  const maxX = screen.w - SIGN_CARD.palm;
+  const minY = Math.round(SIGN_CARD.top * unit);
+  const maxY = screen.h - SIGN_CARD.palm;
+  const near = (a: Box, b: Box) => overlaps({ x: a.x - gap, y: a.y - gap, w: a.w + 2 * gap, h: a.h + 2 * gap }, b);
+  // A card in the bottom-right corner moves up off the food basket (or left, when up has no room).
+  const basket = foodBtnBox(screen, unit);
+  const fit = (b: Box): Box => {
+    const c = { ...b, x: clamp(b.x, minX, maxX - b.w), y: clamp(b.y, minY, maxY - b.h) };
+    if (!near(c, basket)) return c;
+    const up = basket.y - gap - c.h;
+    return up >= minY ? { ...c, y: up } : { ...c, x: Math.max(minX, basket.x - gap - c.w) };
+  };
+  const sizes = [0, 1, 2].map((i) => signCardSize(words[i] ?? '', unit));
+  // An arm behind the camera can come back without a usable point: the card then starts at the screen's middle.
+  const usable = (p: Point | undefined): p is Point => !!p && Number.isFinite(p.x) && Number.isFinite(p.y);
+  const at = [0, 1, 2].map((i) => (usable(anchors[i]) ? anchors[i] : usable(anchors[0]) ? anchors[0] : { x: screen.w / 2, y: screen.h / 2 }));
+  let [w, n, e] = sizes.map((s, i) => fit({ x: at[i].x - s.w / 2, y: at[i].y - s.h / 2, ...s }));
+  // Side by side around the middle of the two, at their own heights.
+  const pairUp = () => {
+    const mid = (w.x + w.w / 2 + e.x + e.w / 2) / 2;
+    const total = w.w + gap + e.w;
+    const x0 = clamp(mid - total / 2, minX, maxX - total);
+    w = fit({ ...w, x: x0 });
+    e = fit({ ...e, x: x0 + w.w + gap });
+  };
+  if (near(w, e) || w.x + w.w / 2 > e.x + e.w / 2) pairUp();
+  if (near(n, w) || near(n, e)) {
+    const y = Math.min(w.y, e.y) - n.h - gap;
+    if (y >= minY) n = fit({ ...n, y });
+    else {
+      n = fit({ ...n, y: minY });
+      const below = minY + n.h + gap;
+      w = fit({ ...w, y: Math.max(w.y, below) });
+      e = fit({ ...e, y: Math.max(e.y, below) });
+    }
+  }
+  let boxes = [w, n, e];
+  if (boxes.some((a, i) => boxes.some((b, j) => i < j && near(a, b)))) {
+    // One row in arm order, centred on the arms, at their mean height.
+    const total = sizes.reduce((s, b) => s + b.w, 0) + 2 * gap;
+    const cx = at.reduce((s, p) => s + p.x, 0) / 3;
+    const cy = at.reduce((s, p) => s + p.y, 0) / 3;
+    let x = clamp(cx - total / 2, minX, maxX - total);
+    boxes = sizes.map((s) => {
+      const b = fit({ x, y: cy - s.h / 2, ...s });
+      x += s.w + gap;
+      return b;
+    });
+  }
+  return boxes.map((b) => ({ x: Math.round(b.x), y: Math.round(b.y), w: b.w, h: b.h }));
+}
+
+// ------------------------------------------------------------------------------------------------ stars
+
+/**
+ * The star egg's panel (2.4.0, docs/v4/2.4.md section 5.5), in design px: the moon's stars on a night sky under Lumi's
+ * crescent on the left, the egg's stars beside the star egg on the right. A zone is where star centres may lie; the two
+ * zones are more than a star apart. `lines` is where the stars pair up: the moon's in a row, each egg star under one.
+ */
+export const STAR_PANEL = {
+  w: 860, h: 172, star: 40,
+  moonPic: { x: 10, y: 38, w: 96, h: 96 },
+  moonZone: { x: 134, y: 28, w: 372, h: 118 },
+  eggZone: { x: 554, y: 28, w: 178, h: 118 },
+  eggPic: { x: 750, y: 20, w: 100, h: 132 },
+  lines: { x0: 150, pitch: 58, moonY: 50, eggY: 124 },
+} as const;
+
+/** One group scattered in a zone, every centre a star apart, or null when the tries run out. */
+function scatter(rand: () => number, n: number, z: Box, gap: number): Point[] | null {
+  const out: Point[] = [];
+  for (let tries = 0; out.length < n && tries < 4000; tries++) {
+    const p = { x: Math.round(z.x + rand() * z.w), y: Math.round(z.y + rand() * z.h) };
+    if (out.every((q) => Math.hypot(p.x - q.x, p.y - q.y) >= gap)) out.push(p);
+  }
+  return out.length === n ? out : null;
+}
+
+/** Rows of a scatter in percent of its zone: heights within 6 of the one before share a row. */
+function rowsIn(ps: readonly Point[], z: Box): number {
+  const ys = ps.map((p) => ((p.y - z.y) / z.h) * 100).sort((a, b) => a - b);
+  return ys.reduce((rows, y, i) => rows + (i > 0 && y - ys[i - 1] > 6 ? 1 : 0), 1);
+}
+
+/** The last resort: three staggered rows (never a ten-frame's two rows of five). */
+function staggered(n: number, z: Box): Point[] {
+  const rows = [0, 1, 2].map((r) => Math.ceil((n - r) / 3));
+  return Array.from({ length: n }, (_, i) => {
+    const r = i % 3;
+    const k = Math.floor(i / 3);
+    const cols = rows[r];
+    const x = z.x + ((k + (r === 1 ? 0.5 : 0.15 * r)) / Math.max(1, cols)) * z.w;
+    return { x: Math.round(Math.min(z.x + z.w, x)), y: Math.round(z.y + (r / 2) * z.h) };
+  });
+}
+
+/**
+ * The moon's `moon` stars and the egg's `egg` stars, loose, on the panel in design px (2.4.0): scattered in their
+ * zones, a star apart, in more than two rows (three or more for five egg stars or more), so the difference never shows
+ * at a glance in rows or a ten-frame. The same seed gives the same stars. Pure.
+ */
+export function starSpots(moon: number, egg: number, seed: number): { moon: Point[]; egg: Point[] } {
+  const rand = seeded(seed * 7919 + moon * 31 + egg);
+  const { moonZone, eggZone, star } = STAR_PANEL;
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const m = scatter(rand, moon, moonZone, star);
+    const e = scatter(rand, egg, eggZone, star);
+    if (m && e && rowsIn(m, moonZone) > 2 && rowsIn(e, eggZone) > (egg >= 5 ? 2 : 1)) return { moon: m, egg: e };
+  }
+  return { moon: staggered(moon, moonZone), egg: staggered(egg, eggZone) };
+}
+
+/** starSpots in percent of each group's zone (0 to 100), for the tests of the scatter. Pure. */
+export function starGroups(moon: number, egg: number, seed: number): { moon: Point[]; egg: Point[] } {
+  const s = starSpots(moon, egg, seed);
+  const pct = (z: Box) => (p: Point): Point => ({ x: ((p.x - z.x) / z.w) * 100, y: ((p.y - z.y) / z.h) * 100 });
+  return { moon: s.moon.map(pct(STAR_PANEL.moonZone)), egg: s.egg.map(pct(STAR_PANEL.eggZone)) };
+}
+
+/** Where the stars pair up, in design px: the moon's in a row, each egg star under the moon star it pairs with. Pure. */
+export function starLines(moon: number, egg: number): { moon: Point[]; egg: Point[] } {
+  const { x0, pitch, moonY, eggY } = STAR_PANEL.lines;
+  return {
+    moon: Array.from({ length: moon }, (_, i) => ({ x: x0 + i * pitch, y: moonY })),
+    egg: Array.from({ length: egg }, (_, i) => ({ x: x0 + i * pitch, y: eggY })),
+  };
+}
+
+/** The pairs (moon star i with egg star i) and the moon's extra stars: the difference the stone must show. Pure. */
+export function pairsAfter(moon: number, egg: number): { pairs: [number, number][]; extra: number[] } {
+  const n = Math.min(moon, egg);
+  return {
+    pairs: Array.from({ length: n }, (_, i) => [i, i] as [number, number]),
+    extra: Array.from({ length: Math.max(0, moon - n) }, (_, i) => n + i),
+  };
+}
+
 // ------------------------------------------------------------------------------------------------ gems and slots
 
 /** A vowel gem is pink, a consonant gem blue, y both (v3's gem colours). */

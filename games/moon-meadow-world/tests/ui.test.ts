@@ -1,12 +1,13 @@
 // The 2D layer's pure helpers (src/ui/geometry.ts, ladder.ts). 2.3.0 splits this file by describe block, as
 // content.test.ts is split (docs/v4/2.3.md section 22.2): eggs owns 'stones', 'moon cups' and 'the blanket'; reading
 // owns 'gems and slots', 'print', 'hint ladder', 'hint runner', 'hint runner timing' and 'colour'; wardrobe-ui owns
-// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own.
+// 'unit', 'placement', 'home' and 'sky and end screen'. A lane adds a new block right after one of its own. 2.4.0's
+// signs-star lane adds 'sign cards' (after 'print') and 'stars' (after 'the egg opening').
 import { describe, expect, it, vi } from 'vitest';
 import {
   CUP_GRID, apart, blanketPatches, bubbleBox, capitalOf, clearOf, eggOpening, overlaps, cupStates, dicePoints, edgeArrow, endRows, gemKind, hintCups, judgeBuild, luminance,
-  menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, planTray, printUnits, safeTint, seeded, shuffle, skyWash, stoneEffect, tintedPicStyle,
-  unitFor,
+  foodBtnBox, menuUrl, mixWhite, nameGems, nearestIndex, nestsFor, pairsAfter, planTray, printUnits, safeTint, seeded, shuffle, signCardBoxes, skyWash,
+  STAR_PANEL, starGroups, starLines, starSpots, stoneEffect, tintedPicStyle, unitFor,
 } from '../src/ui/geometry';
 import { HintRunner, bellIdleDelay, onIdle, onMiss, onTouch, openLadder, outcomeOf, idleDelay, remindDelay } from '../src/ui/ladder';
 
@@ -126,6 +127,56 @@ describe('the egg opening', () => {
   });
 });
 
+// 2.4.0 (docs/v4/2.4.md section 5.5): the star egg's panel, the moon's stars and the egg's, loose until they pair up.
+describe('stars', () => {
+  type P = { x: number; y: number };
+  /** Rows of a group: stars whose heights are within 6 of the one before share a row. */
+  const rowsOf = (ps: readonly P[]): number => {
+    const ys = ps.map((p) => p.y).sort((a, b) => a - b);
+    return ys.reduce((rows, y, i) => rows + (i > 0 && y - ys[i - 1] > 6 ? 1 : 0), 1);
+  };
+  const minGap = (ps: readonly P[]): number => Math.min(...ps.flatMap((a, i) => ps.slice(i + 1).map((b) => Math.hypot(a.x - b.x, a.y - b.y))));
+  const inside = (p: P, z: { x: number; y: number; w: number; h: number }) => p.x >= z.x && p.x <= z.x + z.w && p.y >= z.y && p.y <= z.y + z.h;
+
+  it('scatters the two groups so they never line up or form a ten-frame', () => {
+    for (let s = 1; s <= 500; s++) for (const [m, e] of [[7, 3], [9, 5], [10, 7]]) {
+      const g = starGroups(m, e, s); expect([g.moon.length, g.egg.length]).toEqual([m, e]);
+      expect(rowsOf(g.moon)).toBeGreaterThan(2); expect(minGap([...g.moon])).toBeGreaterThanOrEqual(8);
+      expect(rowsOf(g.egg)).toBeGreaterThan(e >= 5 ? 2 : 1); expect(minGap([...g.egg])).toBeGreaterThanOrEqual(8);
+      for (const p of [...g.moon, ...g.egg]) expect(p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100).toBe(true);
+    }
+  });
+
+  it('puts every star on its own spot in its zone on the panel, a star apart, the same for the same seed', () => {
+    for (let s = 1; s <= 300; s++) for (const [m, e] of [[7, 3], [8, 4], [9, 6], [10, 3], [10, 7]]) {
+      const g = starSpots(m, e, s);
+      for (const p of g.moon) expect(inside(p, STAR_PANEL.moonZone)).toBe(true);
+      for (const p of g.egg) expect(inside(p, STAR_PANEL.eggZone)).toBe(true);
+      expect(minGap([...g.moon, ...g.egg])).toBeGreaterThanOrEqual(STAR_PANEL.star);
+      expect(starSpots(m, e, s)).toEqual(g);
+    }
+    expect(starSpots(9, 5, 1)).not.toEqual(starSpots(9, 5, 2));
+  });
+
+  it('pairs the stars and marks the extra moon stars after the right stone', () => {
+    expect(pairsAfter(9, 5)).toEqual({ pairs: [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]], extra: [5, 6, 7, 8] });
+    expect(pairsAfter(7, 3).extra).toHaveLength(4);
+    expect(pairsAfter(10, 7)).toMatchObject({ extra: [7, 8, 9] });
+  });
+
+  it('lines the stars up in two rows on the panel, each egg star under its moon star', () => {
+    for (const [m, e] of [[7, 3], [10, 7], [10, 3]]) {
+      const l = starLines(m, e);
+      expect(new Set(l.moon.map((p) => p.y)).size).toBe(1);
+      expect(new Set(l.egg.map((p) => p.y)).size).toBe(1);
+      expect(l.egg[0].y - l.moon[0].y).toBeGreaterThanOrEqual(STAR_PANEL.star);
+      l.egg.forEach((p, i) => expect(p.x).toBe(l.moon[i].x));
+      expect(minGap(l.moon)).toBeGreaterThanOrEqual(STAR_PANEL.star);
+      for (const p of [...l.moon, ...l.egg]) expect(p.x - STAR_PANEL.star / 2 >= 0 && p.x + STAR_PANEL.star / 2 <= STAR_PANEL.w && p.y + STAR_PANEL.star / 2 <= STAR_PANEL.h).toBe(true);
+    }
+  });
+});
+
 describe('gems and slots', () => {
   it('colours vowels pink and consonants blue', () => {
     expect(gemKind('i')).toBe('vowel');
@@ -219,6 +270,64 @@ describe('print', () => {
       expect(body, name).not.toMatch(/(?:^|[{;\s])color:/);
     }
     for (const r of phraseDiff.filter((x) => /animation:/.test(x.body))) expect(r.body, r.sel).toMatch(/mmw-phrase-/);
+  });
+});
+
+// 2.4.0 (docs/v4/2.4.md section 5.5): the signpost's print cards on the ends of its arms.
+describe('sign cards', () => {
+  /** The arms' ends on screen at the fork frame (west, north, east), and the cases a camera or a stub can give. */
+  const FORK_ANCHORS: Record<string, { x: number; y: number }[][]> = Object.fromEntries([[1080, 740], [1080, 810]].map(([w, h]) => [`${w}x${h}`, [
+    [{ x: w / 2 - 170, y: h / 2 - 40 }, { x: w / 2, y: h / 2 - 150 }, { x: w / 2 + 170, y: h / 2 - 40 }],
+    [{ x: w / 2 - 90, y: h / 2 }, { x: w / 2, y: h / 2 - 30 }, { x: w / 2 + 90, y: h / 2 }],
+    [{ x: w / 2, y: h / 2 }, { x: w / 2, y: h / 2 }, { x: w / 2, y: h / 2 }],     // step 0's stub: every arm at the fork
+    [{ x: 30, y: h - 20 }, { x: 60, y: h - 60 }, { x: 120, y: h - 10 }],           // the fork low on the left, into the palm bands
+    [{ x: w - 300, y: h - 20 }, { x: w - 200, y: h - 200 }, { x: w - 20, y: h - 10 }], // low on the right, into the food basket's corner
+    [{ x: w - 40, y: 40 }, { x: w - 10, y: 10 }, { x: w + 200, y: 60 }],          // high on the right, one off screen
+    [{ x: -300, y: h / 2 }, { x: w / 2, y: -200 }, { x: w + 300, y: h + 300 }],   // all off screen
+    [{ x: NaN, y: NaN }, { x: Infinity, y: 10 }, { x: w / 2, y: h / 2 }],           // arms behind the camera
+  ]]));
+  const SETS = [['stump', 'stone', 'swing'], ['shed', 'barn', 'pines'], ['bench', 'beach', 'barn']];
+
+  it('cards keep clear of the palm bands', () => {   // Review Focus 2: 100 px from the left, right and bottom edges
+    for (const [w, h] of [[1080, 740], [1080, 810]]) for (const anchors of FORK_ANCHORS[`${w}x${h}`]) {
+      for (const b of signCardBoxes(anchors, ['stump', 'stone', 'swing'], { w, h })) {
+        expect(b.h).toBeGreaterThanOrEqual(64); expect(b.x).toBeGreaterThanOrEqual(100);
+        expect(b.x + b.w).toBeLessThanOrEqual(w - 100); expect(b.y + b.h).toBeLessThanOrEqual(h - 100);
+      }
+    }
+  });
+
+  it('keeps every card off the food basket, which sits above the moments layer', () => {
+    for (const [w, h] of [[1080, 740], [1080, 810], [1024, 690], [1366, 1024]]) {
+      const basket = foodBtnBox({ w, h });
+      // ui.css .food-btn: 112 design px, 18 from the right and the bottom (about 117 px in at 1080 x 740).
+      expect(Math.round(w - basket.x)).toBe(Math.round(130 * unitFor(w, h)));
+      for (const anchors of FORK_ANCHORS[`${w}x${h}`] ?? FORK_ANCHORS['1080x810']) for (const words of SETS) {
+        for (const b of signCardBoxes(anchors, words, { w, h })) expect(overlaps(b, basket), `${w}x${h} ${words} ${JSON.stringify(b)}`).toBe(false);
+      }
+    }
+  });
+
+  it('never lets two cards touch, and keeps the west card left of the east card, below Lumi and the home button', () => {
+    for (const [w, h] of [[1080, 740], [1080, 810], [1024, 690], [1366, 1024]]) {
+      const all = [...(FORK_ANCHORS[`${w}x${h}`] ?? FORK_ANCHORS['1080x810'])];
+      for (const anchors of all) for (const words of SETS) {
+        const boxes = signCardBoxes(anchors, words, { w, h });
+        expect(boxes.some((a, i) => boxes.some((b, j) => i < j && overlaps(a, b))), `${w}x${h} ${words}`).toBe(false);
+        expect(boxes[0].x).toBeLessThan(boxes[2].x);
+        for (const b of boxes) expect(b.y).toBeGreaterThanOrEqual(Math.round(160 * unitFor(w, h)));
+        for (const [i, word] of words.entries()) expect(boxes[i].w).toBeGreaterThanOrEqual(word.length * 30 * unitFor(w, h));
+      }
+    }
+  });
+
+  it('puts each card on the end of its arm when they are apart', () => {
+    const anchors = FORK_ANCHORS['1080x810'][0];
+    const boxes = signCardBoxes(anchors, ['sand', 'barn', 'pond'], { w: 1080, h: 810 });
+    boxes.forEach((b, i) => {
+      expect(Math.abs(b.x + b.w / 2 - anchors[i].x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(b.y + b.h / 2 - anchors[i].y)).toBeLessThanOrEqual(1);
+    });
   });
 });
 

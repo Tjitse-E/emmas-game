@@ -15,6 +15,10 @@
 // minus the ones crossed on her iPad's picture check (check.html, src/content/phrase-device.ts), which needs no
 // rebuild. ?phrases=emma plays only Emma's pairs: "by": "emma" here and the ones ticked on her iPad. Fewer than 6
 // strong phrases is a warning, not a stop: the Corner's gate then plays word wishes.
+//
+// 2.4.0 adds the signposts' 13 place words (docs/v4/2.4.md section 5.5, SIGN_LIST below), checked like the wish
+// words, each with its own picture check entry `sign:<word>`. A word with 'drop' there leaves data.json, the trip
+// planner and the clip lists; a group left with two words plays at sign levels 1 and 2 only.
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { LOOK_ALIKE, UNICORN_FOODS } from '../../moon-meadow-home/src/core/heartbeat/feed.ts';
@@ -369,6 +373,69 @@ for (const c of phraseColours) {
   }
 }
 
+// Signs (docs/v4/2.4.md section 5.5) ----------------------------------------------------------------------------
+
+/**
+ * The signposts' place words: 13 words in four first-sound groups, in this order (the game's SIGN_WORDS). Each comes
+ * from v3's word packs, its tier the pack's, and is checked as a wish word is: an ok clip, a picture, one syllable, at
+ * most five letters, every letter sound in shared/audio/phonics. Each needs its own entry `sign:<word>` in
+ * tools/picture-check.json, 'ok' or 'drop' (a word crossed on check.html leaves the kit): sand, ship, shell and pool
+ * are wish words too, and a crossed sign word must not drop a wish word, nor the other way. Pines is in v3 only as the
+ * plural of pine: it takes pine's picture, its own clip word-pines from pine's pack, and graphemes written here in
+ * v3's notation, the last s said z (v3's endingSound for pine, plurals.ts).
+ */
+const SIGN_LIST: { word: string; group: 's' | 'sh' | 'b' | 'p'; plural?: { of: string; gpcs: string[] } }[] = [
+  { word: 'sand', group: 's' }, { word: 'stump', group: 's' }, { word: 'swing', group: 's' }, { word: 'stone', group: 's' },
+  { word: 'shed', group: 'sh' }, { word: 'ship', group: 'sh' }, { word: 'shell', group: 'sh' },
+  { word: 'barn', group: 'b' }, { word: 'bench', group: 'b' }, { word: 'beach', group: 'b' },
+  { word: 'pond', group: 'p' }, { word: 'pool', group: 'p' }, { word: 'pines', group: 'p', plural: { of: 'pine', gpcs: ['p', 'i-e', 'n', 's.z'] } },
+];
+const signKey = (w: string): string => `sign:${w}`;
+for (const key of Object.keys(checks).filter((k) => k.startsWith('sign:'))) {
+  if (!SIGN_LIST.some((s) => signKey(s.word) === key)) problems.push(`picture check: ${key} is not a sign word`);
+  if (!['ok', 'drop'].includes(checks[key].verdict)) problems.push(`picture check: ${key} has verdict '${checks[key].verdict}', not ok or drop`);
+}
+
+const signWords = SIGN_LIST.map(({ word, group, plural }) => {
+  const check = checks[signKey(word)];
+  if (!check) {
+    notes.push(`sign ${word}: no picture check entry ${signKey(word)}, left out`);
+    return null;
+  }
+  if (check.verdict === 'drop') {
+    notes.push(`sign ${word}: dropped by the picture check (${check.by})`);
+    return null;
+  }
+  const found = bank.get(plural ? plural.of : word);
+  if (!found) {
+    problems.push(`sign: ${plural ? plural.of : word} is not in v3's word packs`);
+    return null;
+  }
+  const { entry, pack } = found;
+  // A plural keeps to v3's own: the singular's graphemes plus the written s of its plural.
+  if (plural && (entry as WordEntry & { plural?: { w: string } }).plural?.w !== word) problems.push(`sign: v3's ${plural.of} has no plural ${word}`);
+  if (plural && plural.gpcs.slice(0, -1).join(' ') !== entry.gpcs.join(' ')) problems.push(`sign: ${word}'s graphemes do not start with v3's ${plural.of} (${entry.gpcs.join(' ')})`);
+  const gpcs = plural ? plural.gpcs : entry.gpcs;
+  const print = gpcs.map(written);
+  const sounds = gpcs.map(sounded);
+  const pic = entry.pic ?? (plural ? plural.of : word);
+  const clip = `word-${word}`;
+  if (!pictures.has(pic)) problems.push(`sign: ${word} has no picture art/words/${pic}.webp`);
+  if (tints.has(pic)) problems.push(`sign: ${word}'s picture art/words/${pic}.webp is greyscale; the kit and the check page draw it untinted`);
+  if (!usableClip(`words-${pack}`, wordManifests.get(pack)!, clip)) problems.push(`sign: ${word} has no usable clip ${clip} in words-${pack}`);
+  if (!oneSyllable(print)) problems.push(`sign: ${word} is not one syllable (${print.join(' ')})`);
+  if (word.length > MAX_LETTERS) problems.push(`sign: ${word} has more than ${MAX_LETTERS} letters`);
+  if (missingSounds(sounds).length) problems.push(`sign: ${word} has graphemes without a letter sound: ${missingSounds(sounds).join(' ')}`);
+  const first = print[0];
+  if (group === 'sh' ? first !== 'sh' : first !== group) problems.push(`sign: ${word} starts with ${first}, not its group's ${group}`);
+  const differs = sounds.some((s, i) => s !== print[i]);
+  return { word, gpcs: print, ...(differs ? { sounds } : {}), clip, pic, tier: TIER[pack], group };
+}).filter((s) => s !== null);
+// The trip needs a level 1 set: one s or sh word, one b and one p word (section 5.5).
+for (const [label, groups] of [['s or sh', ['s', 'sh']], ['b', ['b']], ['p', ['p']]] as const) {
+  if (!signWords.some((w) => (groups as readonly string[]).includes(w.group))) problems.push(`sign: no ${label} word is left, so no level 1 set fits`);
+}
+
 if (problems.length) {
   console.error(`build-content: ${problems.length} problem(s), data.json not written:\n  ` + problems.join('\n  '));
   process.exit(1);
@@ -398,6 +465,8 @@ const data = {
   phraseThings,
   /** Every ok pair ("colour thing") and who checked its tinted picture. */
   phrasePairs: pairs,
+  /** The signposts' place words that passed the picture check (section 5.5), in SIGN_LIST's order. */
+  signWords,
 };
 // One entry per line, so a change to a name or word is a one-line diff.
 const body = Object.entries(data).map(([key, value]) => {
@@ -410,7 +479,8 @@ const body = Object.entries(data).map(([key, value]) => {
 writeFileSync(OUT, `{\n${body.join(',\n')}\n}\n`);
 for (const n of notes) console.log(`  note: ${n}`);
 console.log(`build-content: wrote ${OUT.slice(here.length + 1)}: ${herd.length} herd names, ${bells.length} bell names, ${words.length} wish words; `
-  + Object.entries(kinds).map(([k, v]) => `${k} ${v.pool.length} words, ${v.targets.length} targets (level 1: ${v.level1.length}, level 3: ${v.level3.length})`).join('; '));
+  + Object.entries(kinds).map(([k, v]) => `${k} ${v.pool.length} words, ${v.targets.length} targets (level 1: ${v.level1.length}, level 3: ${v.level3.length})`).join('; ')
+  + `; ${signWords.length} sign words`);
 
 // The strong phrases, by the game's own rule (src/content/phrases.ts). It imports src/assets.ts, which reads the
 // page location when it loads, so it gets a stand-in first. The rule takes the tables as arguments, so the data.json

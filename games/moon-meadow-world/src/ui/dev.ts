@@ -198,6 +198,9 @@ async function threeSums(kind: EggSpec['kind'], band: 'a' | 'b', seed: number) {
 const eggRuns: Record<string, () => Promise<unknown> | void> = {
   'egg warm 3': () => threeSums('warm', 'a', 4),
   'egg snow 3': () => threeSums('snow', 'b', 5),
+  // 2.4.0: the star egg on the trail, more and fewer (src/ui/stars.ts), in band A and B.
+  'egg star 3': () => threeSums('star', 'a', 6),
+  'egg star 3 b': () => threeSums('star', 'b', 7),
   'egg warm': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(warmEgg, hooks); results.push({ egg: 'warm', ...r }); log(`egg warm ${JSON.stringify(r)}`); },
   'egg snow': async () => { show('egg', { x: 0.5 - (96 * unit()) / innerWidth, y: 0.36 }); const r = await layer.egg(snowEgg, hooks); results.push({ egg: 'snow', ...r }); log(`egg snow ${JSON.stringify(r)}`); },
   'hay rack': async () => { show(null); const r = await layer.egg(hayRack, hooks); results.push({ egg: 'hay', ...r }); log(`hay rack ${JSON.stringify(r)}`); },
@@ -251,7 +254,33 @@ const phraseRun = (level: 1 | 2 | 3) => async () => {
   results.push({ wish: 'phrase', word: spec.target.word, level: spec.level, ...r });
   log(`wish phrase ${JSON.stringify(r)}`);
 };
+/**
+ * 2.4.0: a trip's two signposts from the real planner (src/content/signs.ts) at a level, the cards on three arm ends
+ * around the screen's middle; a wrong card's step onto its road and back takes 1.5 s. Loaded on the tap.
+ */
+const signRun = (level: 1 | 2 | 3) => async () => {
+  const { planTrip } = await import('../content/signs');
+  show(null);
+  const plan = planTrip(seeded(60 + level + results.length), { level, mount: 'bella', trip: 1, used: { sets: [], targets: [] } });
+  const arms = [{ x: 0.34, y: 0.5 }, { x: 0.5, y: 0.34 }, { x: 0.66, y: 0.5 }];
+  for (const spec of plan.signs) {
+    log(`sign ${spec.sign} level ${spec.level}: ${spec.cards.map((c) => c.word).join(', ')} (${spec.target.word})`);
+    const r = await layer.sign(spec, {
+      ...hooks,
+      cardAt: (i) => ({ x: innerWidth * arms[i].x, y: innerHeight * arms[i].y, visible: true }),
+      road: async (i, right) => {
+        log(`road ${i} ${right ? 'right' : 'wrong'}`);
+        await new Promise((ok) => setTimeout(ok, right ? 400 : 1500));
+      },
+    });
+    results.push({ sign: spec.sign, word: spec.target.word, level: spec.level, ...r });
+    log(`sign ${JSON.stringify(r)}`);
+  }
+};
 const readingRuns: Record<string, () => Promise<unknown> | void> = {
+  'sign 1': signRun(1),
+  'sign 2': signRun(2),
+  'sign 3': signRun(3),
   'wish phrase 1': phraseRun(1),
   'wish phrase 2': phraseRun(2),
   'wish phrase 3': phraseRun(3),
