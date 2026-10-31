@@ -108,10 +108,15 @@ while [ "$(field part)" = hub ]; do
     running="$(val "() => window.__game.state().hub.running || window.__game.state().hub.asked")"
     say "$(val "() => (window.__game.state().hub.playMs / 60000).toFixed(1)") min: $running"
     if [ "$running" = pond ] && [ "$LONG" = pond ]; then
-      # The pond-lover slides until the visit ends by itself (3 minutes or 6 slides).
+      # The pond-lover stays until the visit ends by itself at 3 minutes (docs/v4/2.4.md section 8): a slide about
+      # every 40 s, so the visit's time runs out before its 6 slides.
       while [ "$(val "() => window.__game.state().hub.running")" = pond ]; do
-        [ "$(val "() => window.__game.targets().some((t) => t.name === 'slide') && window.__game.state().princess.mode === 'idle'")" = true ] && tap slide
-        sleep 4
+        if [ "$(val "() => window.__game.targets().some((t) => t.name === 'slide') && window.__game.state().princess.mode === 'idle'")" = true ]; then
+          tap slide
+          sleep 36
+        else
+          sleep 4
+        fi
       done
     else
       play_place 900
@@ -129,7 +134,10 @@ while [ "$(field part)" = hub ]; do
         tap slide
         slides=$((slides + 1))
       else
-        tap_ground 1.2 1.8
+        # Walk to the pond round the nest (a walk that ends within 2.5 m of a glowing place starts it): through
+        # (-6, 7) and (-1, 7), tapping the farthest point on screen on the way to the next waypoint.
+        xz="$(val "() => { const g = window.__game, s = g.state().princess, way = [[-6, 7], [-1, 7], [1.2, 1.8]]; const w = way.find(([x]) => x > s.x + 0.5) || way[2]; let best = ''; for (let k = 1; k <= 20; k++) { const x = s.x + (w[0] - s.x) * k / 20, z = s.z + (w[1] - s.z) * k / 20; if (g.screenOf(x, z).visible) best = x.toFixed(2) + ' ' + z.toFixed(2); } return best; }")"
+        [ -n "$xz" ] && tap_ground $xz
       fi
       sleep 20
       ;;
