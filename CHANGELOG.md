@@ -9,6 +9,24 @@ show the newest version, bottom right. `scripts/deploy.sh` refuses to deploy a v
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.4.0] - 2026-10-31
+
+Moon Meadow World lets Emma choose where to go, and she can ride a unicorn. Still open, all for the morning: Emma names the pictures of the 13 signpost words on the picture check page, Tjitse looks at the clearings along the trail, and he checks the game on her iPad (speed while galloping, memory over a whole play, a palm on the screen). A signpost word she does not know is taken out in a patch.
+
+### Added
+- Moon Meadow World: Emma chooses where to go. After Lumi's welcome, bubbles glow over three or four places and she picks one: an egg, a baby with a wish, the royal picnic, the bead tree or the hay rack. When she finishes a place where she reads or counts, a bubble opens the pond or the Dressing Corner.
+- Moon Meadow World: riding. In the paddock in the north-east she taps the saddle on Bella or Hazel and rides out along a trail, with her babies behind. She rides at most twice a play.
+- Moon Meadow World: signposts on the trail. Elizabeth says where the unicorn wants to go, and Emma reads the signs to choose the road, with words such as sand, ship, bench and pool.
+- Moon Meadow World: the star egg at the end of the trail, a new kind of sum within 10. She compares the moon's stars with the egg's: how many more, and how many fewer. The egg hatches into a baby she names, with its own wish.
+- Moon Meadow World: up to four babies a play, two from the eggs at home and two from the trail. When she has no babies yet, the picnic, the bead tree and the Corner borrow babies from the herd.
+- Moon Meadow World: a pond visit lasts 3 minutes or 6 slides. Then the slide rests while the ducks have their swim, until she earns the next pond bubble.
+
+### Changed
+- Moon Meadow World: after the welcome there is no fixed order any more. Each egg, wish and side quest starts when she chooses it.
+- Moon Meadow World: bedtime starts after 30 minutes of play. The start mirror and the Dressing Corner's music box do not count, so a whole play with goodnight is about 36 minutes. When she has done every place earlier, she gets a last pond visit and then bedtime.
+- Moon Meadow World: the Dressing Corner's music box always plays for 60 seconds.
+- Moon Meadow World: the game saves after each place, not only at goodnight.
+
 ## [2.3.3] - 2026-10-30
 
 A patch for Moon Meadow Home, after Emma got stuck at a nest egg on 30 October. Tjitse approved Moon Meadow World's new clips and sound effects without listening to them yet; what sounds wrong in a play gets a retake.
