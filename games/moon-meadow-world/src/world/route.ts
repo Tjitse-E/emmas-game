@@ -1,6 +1,6 @@
 // Walking routes over the meadow: A* on a 0.5 m grid, then string-pulled by line of sight so routes are short and
 // straight. No rendering code here, so it runs in Vitest (node).
-import { BOUNDS, OBSTACLES, POND, STABLE, inPond, type Vec2 } from '../layout';
+import { BOUNDS, OBSTACLES, POND, RIDE, STABLE, inPond, type Vec2 } from '../layout';
 
 export const CELL = 0.5;
 /** Clearance kept from round obstacles, the water and the stable walls, so bodies do not clip into them. */
@@ -29,6 +29,24 @@ function inStableArea(p: Vec2, margin = BUILDING_MARGIN): boolean {
   if (p.z < BEHIND_Z) return true;
   return p.z < STABLE_BLOCK.frontZ + margin && Math.abs(p.x) < STABLE_BLOCK.halfX + margin;
 }
+/**
+ * The paddock's back rail (2.4.0, RIDE.rail) for walking: its two sections, west and east of the ride path's gap, with
+ * OBSTACLE_MARGIN round them, from the rail's south side back to the stables' back line (BEHIND_Z). The gap stays
+ * open: it leads only to the back line, where nobody walks. So a tap on the gate or the trail beyond it ends in front
+ * of the rail or in its gap, never behind the rail.
+ */
+export const RAIL_BLOCK = {
+  maxZ: RIDE.rail.z + OBSTACLE_MARGIN,
+  sections: [
+    { minX: RIDE.rail.minX - OBSTACLE_MARGIN, maxX: RIDE.rail.gapX - RIDE.rail.gapWidth / 2 + OBSTACLE_MARGIN },
+    { minX: RIDE.rail.gapX + RIDE.rail.gapWidth / 2 - OBSTACLE_MARGIN, maxX: RIDE.rail.maxX + OBSTACLE_MARGIN },
+  ],
+} as const;
+/** The rail section that holds p, between the rail's margin and the back line (null outside it). */
+function railSection(p: Vec2): { minX: number; maxX: number } | null {
+  if (p.z >= RAIL_BLOCK.maxZ || p.z < BEHIND_Z) return null;
+  return RAIL_BLOCK.sections.find((s) => p.x > s.minX && p.x < s.maxX) ?? null;
+}
 /** Projections out of a blocked area land this far past the edge, so the result tests as walkable. */
 const EDGE = 0.03;
 /** Line-of-sight sample step in metres. */
@@ -36,7 +54,7 @@ const LOS_STEP = 0.1;
 
 export function isWalkable(p: Vec2): boolean {
   if (p.x < BOUNDS.minX || p.x > BOUNDS.maxX || p.z < BOUNDS.minZ || p.z > BOUNDS.maxZ) return false;
-  if (inPond(p, POND_MARGIN) || inStableArea(p) || inSlide(p)) return false;
+  if (inPond(p, POND_MARGIN) || inStableArea(p) || inSlide(p) || railSection(p)) return false;
   for (const o of OBSTACLES) {
     if (Math.hypot(p.x - o.center.x, p.z - o.center.z) < o.radius + OBSTACLE_MARGIN) return false;
   }
@@ -101,11 +119,21 @@ function escapes(p: Vec2): Vec2[] {
         out.push({ x: Math.sign(p.x) * side, z });
       }
     } else {
-      // Behind the stables but off to the side: step south onto the meadow.
-      out.push({ x: p.x, z: BEHIND_Z + EDGE });
+      // Behind the stables but off to the side: step south onto the meadow, past the paddock's rail where it stands.
+      const q = { x: p.x, z: BEHIND_Z + EDGE };
+      out.push(...(railSection(q) ? railEscapes(q) : [q]));
     }
   }
+  out.push(...railEscapes(p));
   return out;
+}
+
+/** Out of a rail section: south in front of the rail, or sideways into its gap or past its end (inside BOUNDS). */
+function railEscapes(p: Vec2): Vec2[] {
+  const s = railSection(p);
+  if (!s) return [];
+  const side = [{ x: s.minX - EDGE, z: p.z }, { x: s.maxX + EDGE, z: p.z }].filter((q) => q.x >= BOUNDS.minX && q.x <= BOUNDS.maxX);
+  return [{ x: p.x, z: RAIL_BLOCK.maxZ + EDGE }, ...side];
 }
 
 /** The walkable point nearest to p (p itself when it is walkable). */

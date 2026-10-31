@@ -191,15 +191,11 @@ export const BEAD_TREE = {
 } as const;
 
 /**
- * The moon mist in the north-east corner, with a saddle sign in front of it: what opens in 2.4 (2.3.md section 17.1). The mist
- * bank lies behind the stables' back line (z below -16.7), where nobody walks, so it needs no obstacle and the routes
- * do not change; the sign stands on the grass in front of it. Its post is a small obstacle (`signRadius`); `signStand`
- * is the grass in front of it, where she reads it.
+ * The saddle sign in the north-east corner (2.3.0), now by the paddock's west side (2.4.0). Its post is a small
+ * obstacle (`signRadius`); `signStand` is the grass in front of it, where she reads it. The moon mist that stood behind
+ * it (2.3.md section 17.1) went in 2.4.0: the paddock's gate stands where it was.
  */
 export const MIST = {
-  center: v2(21.5, -19.8),
-  rx: 4.5,
-  rz: 2.8,
   sign: v2(19.4, -15.6),
   signRadius: 0.25,
   signStand: v2(19.4, -14.2),
@@ -211,17 +207,31 @@ export const MIST = {
  * towards her stand), the back rail with its gap for the ride path, the trough and the tub at the back, the gate in
  * the north fence where the moon mist was, the fork with its signpost, the three clearing slots (west, north, east),
  * the trail speed, the followers' gaps behind the mount, the ride camera's clamp and its look-ahead. The trough and the
- * tub become obstacles with the trail lane.
+ * tub are round obstacles (OBSTACLES); the back rail's two sections block walking too (world/route.ts RAIL_BLOCK), as
+ * the rail stands 0.2 m inside the walkable ground (the stables' back line is z -16.7).
  */
 export const RIDE = {
   paddock: { minX: 21, maxX: 25.5, minZ: -16.3, maxZ: -10 },
   stand: v2(22.0, -11.2),
   mounts: { bella: v2(22.9, -13.6), hazel: v2(24.7, -12.6) },
-  rail: { z: -16.5, minX: 21, maxX: 26, gapX: 22.5 },
+  rail: { z: -16.5, minX: 21, maxX: 26, gapX: 22.5, gapWidth: 1.6 },
   trough: { center: v2(24.0, -15.7), radius: 0.5 },
   tub: { center: v2(25.2, -15.0), radius: 0.5 },
   gate: v2(21.5, -22.7),
   fork: v2(21.5, -29),
+  /** The signpost at the fork, in the wedge between the north and the east roads (world/trail.ts builds its arms). */
+  post: v2(23.0, -30.8),
+  /**
+   * Where the mount stops at the fork for both signs, facing the signpost: 2.2 m short of RIDE.fork, on the last
+   * straight of both ways out and the first straight of the way home (x 21.5, z -25.5 to -29).
+   */
+  forkStop: v2(21.5, -26.8),
+  /**
+   * The fork frame, `world.frame(center, width, { shiftY })`: it holds the mount and its rider at `forkStop`, the
+   * signpost with its three cards and the three road starts at 1080 x 810 and 1080 x 740, with no slot's kit in view
+   * (tests/world-trail.test.ts).
+   */
+  forkFrame: { center: v2(22.0, -29.25), width: 10, shiftY: 0.1 },
   slots: [v2(11.5, -31), v2(21.5, -40), v2(31.5, -31)],
   speed: 4.2,
   gaps: [1.6, 3.0, 4.4],
@@ -235,9 +245,16 @@ function groundPath(points: readonly Vec2[]): THREE.CatmullRomCurve3 {
 }
 
 /**
+ * The way through the back rail and the gate, shared by every path in and out: straight across the rail's gap and the
+ * gate, so neither the rail's ends nor the gate's posts touch a mount or a follower.
+ */
+const RIDE_WAY: readonly Vec2[] = [v2(RIDE.rail.gapX, RIDE.rail.z), v2(22.3, -17.8), v2(21.75, -21.2), RIDE.gate, v2(RIDE.gate.x, -25.5), RIDE.fork];
+
+/**
  * The set paths of a trip, arc-length curves at y 0: each mount's spot to the fork through the rail gap and the gate,
- * the fork to each slot (west, north, east), and the fork home to her stand. Step 0's curves are straight-ish
- * polylines through the points of RIDE; the trail lane gives them their bends.
+ * the fork to each slot (west, north, east), and the fork home to her stand. Hazel's way out passes between Bella's
+ * spot and the trough, and the way home passes west of Bella's spot, so the mount that stays at home is never in the
+ * way. The north road bends west round the signpost (RIDE.post), the west and east roads bend a little north.
  */
 export const RIDE_PATHS: {
   out: { bella: THREE.CatmullRomCurve3; hazel: THREE.CatmullRomCurve3 };
@@ -245,15 +262,15 @@ export const RIDE_PATHS: {
   home: THREE.CatmullRomCurve3;
 } = {
   out: {
-    bella: groundPath([RIDE.mounts.bella, v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.gate, RIDE.fork]),
-    hazel: groundPath([RIDE.mounts.hazel, v2(RIDE.rail.gapX, RIDE.rail.z + 0.6), v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.gate, RIDE.fork]),
+    bella: groundPath([RIDE.mounts.bella, v2(22.78, -15.2), ...RIDE_WAY]),
+    hazel: groundPath([RIDE.mounts.hazel, v2(24.1, -14.05), v2(23.2, -15.15), ...RIDE_WAY]),
   },
   roads: [
-    groundPath([RIDE.fork, v2(16.5, -30.5), RIDE.slots[0]]),
-    groundPath([RIDE.fork, v2(21.5, -34.5), RIDE.slots[1]]),
-    groundPath([RIDE.fork, v2(26.5, -30.5), RIDE.slots[2]]),
+    groundPath([RIDE.fork, v2(18.0, -28.75), v2(14.8, -29.7), RIDE.slots[0]]),
+    groundPath([RIDE.fork, v2(20.45, -31.85), v2(20.4, -35.6), RIDE.slots[1]]),
+    groundPath([RIDE.fork, v2(25.0, -28.75), v2(28.2, -29.7), RIDE.slots[2]]),
   ],
-  home: groundPath([RIDE.fork, RIDE.gate, v2(RIDE.rail.gapX, RIDE.rail.z), RIDE.stand]),
+  home: groundPath([...RIDE_WAY.slice().reverse(), v2(22.1, -15.2), v2(21.65, -13.9), RIDE.stand]),
 };
 
 /**
@@ -278,7 +295,7 @@ export const TREES: { center: Vec2; radius: number }[] = [
 
 /**
  * Round obstacles for walking (the gazebo, the nest, the trees, the hay rack, the Corner's trunk and mirror, the bead
- * tree, the saddle sign's post). The pond is handled by inPond.
+ * tree, the saddle sign's post, the paddock's trough and tub). The pond is handled by inPond.
  */
 export const OBSTACLES: { center: Vec2; radius: number }[] = [
   { center: GAZEBO.center, radius: GAZEBO.radius },
@@ -289,6 +306,8 @@ export const OBSTACLES: { center: Vec2; radius: number }[] = [
   { center: CORNER.mirror, radius: CORNER.radius },
   { center: BEAD_TREE.center, radius: BEAD_TREE.radius },
   { center: MIST.sign, radius: MIST.signRadius },
+  { center: RIDE.trough.center, radius: RIDE.trough.radius },
+  { center: RIDE.tub.center, radius: RIDE.tub.radius },
 ];
 
 /** Stable buildings as rectangles (obstacles): x from centerX - 3.9 to + 3.9, z from frontZ - depth to frontZ. */

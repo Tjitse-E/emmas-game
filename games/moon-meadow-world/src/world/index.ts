@@ -13,7 +13,7 @@ import { wordPic } from '../assets';
 import { isWalkable, nearestWalkable, route } from './route';
 import { FOG_FAR, buildSky } from './sky';
 import { buildStable } from './stable';
-import { buildTrail } from './trail';
+import { buildTrail, occludersOf } from './trail';
 import { buildFence, buildGround, buildGrowth, buildHedges, buildOverlays, buildTrees, groundHeight, moundHeight, type HedgeFlowers } from './terrain';
 
 /** Optional extras on top of the World contract. */
@@ -50,7 +50,10 @@ export interface WorldExtras {
     slots(): { word: SignWord | null; onScreen: boolean }[];
     arm(i: 0 | 1 | 2): THREE.Vector3;
     gate(open: boolean, ms?: number): Promise<void>;
-    /** The roads, the slots and the kit: drawn only during a ride (shown at getting on, hidden at getting off). Hidden at load. */
+    /**
+     * The roads, the slots and the kit: drawn only during a ride (shown at getting on, hidden at getting off). Hidden at
+     * load. Hiding bares the slots, so each ride starts with bare clearings.
+     */
     show(on: boolean): void;
     readonly shown: boolean;
   };
@@ -118,9 +121,10 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
   const stable = buildStable(scene, scenery, material);
   const sky = buildSky(scene, scenery, hemi, sun);
   buildGrowth(scenery, hedgeFlowers, nestFlowerSpots());
-  // 2.4.0: the paddock, the gate, the trail, the fork and the slots (named regions of their own; step 0's stub adds none).
+  // 2.4.0: the paddock, the gate, the trail, the fork and the slots: named regions of their own (world/trail.ts).
   const trail = buildTrail(scene, scenery);
   for (const mesh of scenery.build(material, 'scenery')) scene.add(mesh);
+  trail.attach({ scene, material, camera, rig, occluders: () => occludersOf(scene), ducks: pond.ducks });
   const lid = cornerLid(scenery);
   scene.add(sign.mesh);
   for (const mesh of buildTrees(material)) scene.add(mesh);
@@ -270,6 +274,8 @@ export function createWorld(container: HTMLElement): WorldWithExtras {
       return () => void callbacks.delete(fn);
     },
     start() {
+      // The ride's roads, slots and kit go to the GPU now, hidden, so a ride adds no geometry later (2.4.0).
+      trail.warm(renderer);
       renderer.setAnimationLoop(frame);
     },
     follow(target) {

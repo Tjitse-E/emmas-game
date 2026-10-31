@@ -1,7 +1,7 @@
 // The raised camera: behind and above at a fixed angle, looking north. It follows a target with soft damping, eases
 // to frame a spot for a moment, and opens the level with a sweep from high over the meadow.
 import * as THREE from 'three';
-import { START, type Vec2 } from '../layout';
+import { RIDE, START, type Vec2 } from '../layout';
 
 export const FOV = 38;
 /** Degrees below the horizon in follow mode. */
@@ -17,7 +17,9 @@ const FOLLOW_ASPECT = 4 / 3;
  * The follow target stays inside this box: near the fence she is almost centred, and the edge of the view shows the
  * hedges and the first trees of the woods beyond, never further out.
  */
-const CLAMP = { minX: -23, maxX: 23, minZ: -19.5, maxZ: 13.5 };
+export const CLAMP = { minX: -23, maxX: 23, minZ: -19.5, maxZ: 13.5 } as const;
+/** The follow target's box per kind: the meadow's, or the wide one of a ride out along the trail (2.4.0, RIDE.clamp). */
+export const CLAMPS = { meadow: CLAMP, ride: RIDE.clamp } as const;
 const DAMP = 3.2;
 /**
  * A frame with a pitch of SKY_PITCH or less and no shiftY is a sky shot: the camera stays where the pitch puts it and
@@ -66,6 +68,7 @@ export class CameraRig {
   private holdGoal: (() => Pose) | null = null;
   private appliedShift = 0;
   private size = { w: 1, h: 1 };
+  private clamp: { minX: number; maxX: number; minZ: number; maxZ: number } = CLAMP;
 
   constructor(camera: THREE.PerspectiveCamera) {
     this.camera = camera;
@@ -88,11 +91,16 @@ export class CameraRig {
     this.target = target;
   }
 
+  /** Swap the follow target's box: the meadow's, or the ride's (2.4.0). The camera eases there as it follows. */
+  setClamp(kind: keyof typeof CLAMPS): void {
+    this.clamp = CLAMPS[kind];
+  }
+
   followPose(): Pose {
     const p = this.target();
     return {
-      x: THREE.MathUtils.clamp(p.x, CLAMP.minX, CLAMP.maxX),
-      z: THREE.MathUtils.clamp(p.z, CLAMP.minZ, CLAMP.maxZ),
+      x: THREE.MathUtils.clamp(p.x, this.clamp.minX, this.clamp.maxX),
+      z: THREE.MathUtils.clamp(p.z, this.clamp.minZ, this.clamp.maxZ),
       // Narrower than 4:3 (portrait, behind the turn picture) keeps at least FOLLOW_WIDTH across.
       dist: this.distFor(FOLLOW_WIDTH, Math.min(this.camera.aspect, FOLLOW_ASPECT)),
       pitch: PITCH,

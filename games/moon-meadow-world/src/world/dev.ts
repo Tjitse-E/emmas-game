@@ -1,10 +1,15 @@
 // The world lane's harness (dev/world.html): the whole world, a cone that walks routes to taps, buttons for every
 // world call and a stats box. window.__world and window.__dev are there for playwright-cli.
 import * as THREE from 'three';
-import { BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, PICNIC, PLACES, POND, SLIDE, STABLE, START, type Place, type Vec2 } from '../layout';
+import {
+  BEAD_TREE, CORNER, HAY_RACK, MIST, NEST, NIGHT_SKY, PICNIC, PLACES, POND, RIDE, SLIDE, STABLE, STABLE_FRAME as BEDTIME_FRAME, START,
+  type Place, type Vec2,
+} from '../layout';
 import { createWorld } from './index';
 import { createActors, type ActorsImpl } from '../actors';
-import type { UnicornLook } from '../contracts';
+import type { SignWord, UnicornLook } from '../contracts';
+import { EARTH, ellipse, patch } from './beds';
+import { KIT, KIT_RADIUS } from './kit';
 
 const world = createWorld(document.getElementById('world')!);
 
@@ -79,6 +84,8 @@ const button = (label: string, fn: () => void): void => {
   panel.append(b);
 };
 const STABLE_FRAME: Vec2 = { x: 0, z: -11.8 };
+/** The ride's fork frame (2.4.0, RIDE.forkFrame): 10 m, the mount at RIDE.forkStop, the signpost and the road starts. */
+const FORK_FRAME = RIDE.forkFrame;
 
 /**
  * The game's frameAt (src/game/game.ts): frame `center` at `width` metres so that `point` shows at `frac` of the
@@ -154,6 +161,22 @@ section('Dressing Corner and sign (2.3.0)');
 button('lid open', () => void world.corner.lid(true));
 button('lid close', () => void world.corner.lid(false));
 button('sign shimmer', () => world.sign.shimmer());
+section('Paddock and trail (2.4.0)');
+button('paddock stand', () => void walkTo(RIDE.stand));
+button('trail show', () => world.trail.show(true));
+button('trail hide', () => world.trail.show(false));
+button('gate open', () => void world.trail.gate(true));
+button('gate shut', () => void world.trail.gate(false));
+button('dress sand barn pond', () => world.trail.dress(['sand', 'barn', 'pond']));
+button('dress stump bench pool', () => world.trail.dress(['stump', 'bench', 'pool']));
+button('bare', () => world.trail.dress(null));
+button('ride clamp', () => world.cameraClamp('ride'));
+button('meadow clamp', () => world.cameraClamp('meadow'));
+button('fork', () => void world.frame(FORK_FRAME.center, FORK_FRAME.width, { shiftY: FORK_FRAME.shiftY }));
+for (const [i, n] of ['slot w', 'slot n', 'slot e'].entries()) button(n, () => (world.cameraClamp('ride'), place(RIDE.slots[i].x, RIDE.slots[i].z)));
+button('ducks far', () => world.ducks.set('far'));
+button('ducks chute', () => world.ducks.set('chute'));
+button('ducks bob', () => world.ducks.bob());
 section('Hay rack');
 button('hay 0', () => world.stable.hay(0));
 button('hay ½', () => world.stable.hay(0.5));
@@ -294,10 +317,63 @@ function measure(): Record<string, unknown> {
     }
   }
   out.worstFollow = worst;
+  out.trail = trailMeasure();
   world.stable.hay(hayWas, 0);
   at(START);
   world.releaseFrame();
   world.snapCamera();
+  return out;
+}
+
+/**
+ * The trail's budget (2.4.0, docs/v4/2.4-plan.md Task 20). At night, outside a ride: the bedtime stable frame and the
+ * goodnight sky shot measured with the paddock's and the trail's meshes as they are, then with every one of them off;
+ * `same` says they add no call and no triangle there. In the day, on a ride (the roads, slots and kit shown, the wide
+ * clamp): the paddock stand, the gallop at the gate, the fork frame and each slot with tall kit, at this window size.
+ */
+function trailMeasure(): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const mine = world.scene.children.filter((o) => /^(scenery-(paddock|trail-gate|fork|roads|slot-[wne])|kit-)/.test(o.name));
+  out.meshes = mine.length;
+  const todWas = world.timeOfDay;
+  void world.setTimeOfDay(1, 0);
+  const night: [string, () => void][] = [
+    ['stableNight', () => void world.frame(BEDTIME_FRAME.center, BEDTIME_FRAME.width, { ms: 0 })],
+    ['skyNight', () => void world.frame(NIGHT_SKY.center, NIGHT_SKY.width, { ms: 0, pitch: NIGHT_SKY.pitch, shiftY: NIGHT_SKY.shiftY })],
+  ];
+  for (const [name, set] of night) {
+    set();
+    world.snapCamera();
+    const withTrail = measureNow();
+    const was = mine.map((m) => m.visible);
+    for (const m of mine) m.visible = false;
+    const without = measureNow();
+    mine.forEach((m, i) => (m.visible = was[i]));
+    out[name] = { with: withTrail, without, same: withTrail.calls === without.calls && withTrail.triangles === without.triangles };
+  }
+  void world.setTimeOfDay(todWas, 0);
+  world.releaseFrame();
+  // A ride: the tallest kit in the slots.
+  world.cameraClamp('ride');
+  world.trail.show(true);
+  world.trail.dress(['pines', 'barn', 'shed']);
+  const at = (x: number, z: number): void => place(x, z);
+  const ride: [string, () => void][] = [
+    ['paddockStand', () => at(RIDE.stand.x, RIDE.stand.z)],
+    ['gallopGate', () => at(RIDE.gate.x, RIDE.gate.z - 1)],
+    ['forkFrame', () => (void world.frame(FORK_FRAME.center, FORK_FRAME.width, { ms: 0, shiftY: FORK_FRAME.shiftY }), world.snapCamera())],
+    ['slotW', () => at(RIDE.slots[0].x, RIDE.slots[0].z)],
+    ['slotN', () => at(RIDE.slots[1].x, RIDE.slots[1].z)],
+    ['slotE', () => at(RIDE.slots[2].x, RIDE.slots[2].z)],
+  ];
+  for (const [name, set] of ride) {
+    set();
+    out[name] = measureNow();
+  }
+  world.trail.dress(null);
+  world.trail.show(false);
+  world.cameraClamp('meadow');
+  world.releaseFrame();
   return out;
 }
 
@@ -329,5 +405,67 @@ function place(x: number, z: number): void {
   world.snapCamera();
 }
 
-Object.assign(window, { __world: world, __dev: { marker, walkTo, measure, numerals, place, stalled, frameAt, picnicFrame, rackFrame, cornerFrame, beadFrame, portrait, THREE } });
+Object.assign(window, { __world: world, __dev: { marker, walkTo, measure, trailMeasure, numerals, place, stalled, frameAt, picnicFrame, rackFrame, cornerFrame, beadFrame, portrait, THREE } });
 world.start();
+
+/**
+ * ?view=clearings: the contact sheet of the 13 clearing kinds (2.4.0, docs/v4/2.4.md 5.5 and 9 step 4), each on a bare
+ * clearing in a grid with its word under it, in the world's light and from the follow camera's angle, for Tjitse's
+ * look. The world stops drawing; the sheet draws with its renderer.
+ */
+function clearingsSheet(): void {
+  world.setPaused(true);
+  document.body.classList.add('clean');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#d6f0ff');
+  const sun = new THREE.DirectionalLight('#fff3df', 1.7);
+  sun.position.set(-8, 14, 6);
+  scene.add(new THREE.HemisphereLight('#eaf6ff', '#a8d48f', 1.6), sun, sun.target);
+  const material = new THREE.MeshLambertMaterial({ vertexColors: true });
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 60), new THREE.MeshLambertMaterial({ color: '#a3d97b' }));
+  ground.rotation.x = -Math.PI / 2;
+  scene.add(ground);
+  const words = Object.keys(KIT) as SignWord[];
+  const cols = 5;
+  const gap = 4.6;
+  const rowGap = 6;
+  const labels: { el: HTMLElement; at: THREE.Vector3 }[] = [];
+  words.forEach((w, i) => {
+    const x = ((i % cols) - (cols - 1) / 2) * gap;
+    const z = (Math.floor(i / cols) - 1) * rowGap;
+    scene.add(new THREE.Mesh(patch(ellipse({ x, z }, KIT_RADIUS + 0.3, KIT_RADIUS + 0.3, 28), { x, z }, 0.3, 0.01, EARTH), material));
+    const m = new THREE.Mesh(KIT[w](), material);
+    m.position.set(x, 0, z);
+    scene.add(m);
+    const el = document.createElement('div');
+    el.textContent = w;
+    el.style.cssText = 'position:fixed;transform:translate(-50%,0);font:600 18px system-ui,sans-serif;color:#3a2a4a;background:rgba(255,255,255,0.8);padding:1px 8px;border-radius:8px;pointer-events:none';
+    document.body.append(el);
+    labels.push({ el, at: new THREE.Vector3(x, 0, z + KIT_RADIUS + 0.2) });
+  });
+  const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.5, 200);
+  const place = (): void => {
+    camera.aspect = innerWidth / innerHeight;
+    // About the follow camera's pitch, far enough back for the whole grid.
+    const pitch = THREE.MathUtils.degToRad(42);
+    const dist = 26 / (2 * Math.tan(THREE.MathUtils.degToRad(19)) * Math.min(camera.aspect, 4 / 3));
+    camera.position.set(0, Math.sin(pitch) * dist, 0.6 + Math.cos(pitch) * dist);
+    camera.lookAt(0, 0.6, 0.6);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
+  };
+  const v = new THREE.Vector3();
+  const draw = (): void => {
+    place();
+    world.renderer.setSize(innerWidth, innerHeight, false);
+    world.renderer.render(scene, camera);
+    for (const l of labels) {
+      v.copy(l.at).project(camera);
+      l.el.style.left = `${((v.x + 1) / 2) * innerWidth}px`;
+      l.el.style.top = `${((1 - v.y) / 2) * innerHeight}px`;
+    }
+    requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+}
+if (new URLSearchParams(location.search).get('view') === 'clearings') clearingsSheet();
