@@ -249,6 +249,8 @@ export function snapTo(g: Game, start: StartAt): void {
   g.stalls.clear();
   world.setPaused(false);
   world.releaseFrame();
+  // A trip snapped by an earlier jump that no ride carried on yet: its roads go (a snapped trip shows them again below).
+  world.trail.show(false);
   world.nestGlow(false);
   world.stable.glow(null);
   world.stable.glowRow(null);

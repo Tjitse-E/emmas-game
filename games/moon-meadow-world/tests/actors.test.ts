@@ -1214,6 +1214,21 @@ describe('the grown mounts', () => {
     expect(near.map(fine)).toEqual([true, true]);
   });
 
+  it('counts the toy pictures it has loaded, each picture once (the long play leaves them out of its level check)', () => {
+    vi.spyOn(THREE.TextureLoader.prototype, 'load').mockImplementation(() => new THREE.Texture());
+    const herd = createHerd({
+      deps: { route: (_a, b) => [b], isWalkable: () => true, nearestWalkable: (q) => q }, fx: fxStub, queue: new SlideQueue<object>(),
+      leader: makePrincess({ x: 0, z: 0 }), scene: new THREE.Scene(), sounds: () => false,
+    });
+    const u = herd.add({ id: 'luna', name: 'Luna', look: BABY, at: { x: 1, z: 0 } });
+    expect(herd.stats.toys).toBe(0);
+    u.showToy('duck.webp');
+    u.showToy('boat.webp');
+    u.showToy('duck.webp', { on: 'head' });
+    u.showToy(null);
+    expect(herd.stats.toys).toBe(2);
+  });
+
   it('grazes a mount within 0.6 m of its spot, and it never follows, is never lifted, never slides, swims or goes into a stall', async () => {
     const ctx = unicornCtx();
     const spot = RIDE.mounts.bella;

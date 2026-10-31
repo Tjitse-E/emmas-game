@@ -24,7 +24,7 @@ export interface ActorsImpl extends Actors {
   /** Put Princess Emma somewhere at once, facing `heading` (0 = south), for jump(). */
   placePrincess(at: Vec2, heading?: number): void;
   /** How many unicorns were drawn in full detail, cheaply, or culled last frame. */
-  stats(): { full: number; cheap: number; culled: number };
+  stats(): { full: number; cheap: number; culled: number; toys: number };
 }
 
 /**

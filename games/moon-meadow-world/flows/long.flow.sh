@@ -52,7 +52,8 @@ go_to() {
 # Level from place to place (section 8): one page load and the same deferred cleanups as after the first place, always.
 # Geometries and textures may grow only at the first place of a kind (a gift she wears, a newborn's look: first
 # loads), never after a kind she has done before (a second ride or wish, every pond visit after the first), where a
-# leak would show.
+# leak would show. Toy pictures are left out: each new one is a texture the herd keeps for the play (perf().toys), and
+# the first toy draws the sprite's shared geometry once.
 LEVEL=''
 MAXG=0
 MAXT=0
@@ -61,12 +62,12 @@ FIRSTG=''
 FIRSTT=''
 GROWN=''
 check_level() {
-  local now loads geo tex def kind
-  now="$(val "() => { const p = window.__game.perf(); return [window.__mmwLoads, p.geometries, p.textures, window.__game.state().run.deferred].join(' '); }")"
-  read -r loads geo tex def <<<"$now"
+  local now loads geo tex def toys kind
+  now="$(val "() => { const p = window.__game.perf(); const toys = p.toys || 0; return [window.__mmwLoads, p.geometries - (toys ? 1 : 0), p.textures - toys, window.__game.state().run.deferred, toys].join(' '); }")"
+  read -r loads geo tex def toys <<<"$now"
   kind="${1:-none}"
   case "$kind" in shore) kind=egg ;; rack) kind=beads ;; esac
-  say "after $1: loads $loads, geometries $geo, textures $tex, deferred $def"
+  say "after $1: loads $loads, geometries $geo, textures $tex (without $toys toy pictures), deferred $def"
   expect_eq "$loads" 1 'one page load'
   if [ -z "$LEVEL" ]; then
     LEVEL="$def"

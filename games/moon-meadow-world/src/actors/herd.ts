@@ -34,8 +34,11 @@ export interface HerdImpl extends Herd {
   visibleParts(): PartList[];
   /** Princess Emma starts a slide ride: her followers queue up behind her. */
   followersRide(): void;
-  /** How many unicorns were posed in full detail last frame (for the harness). */
-  readonly stats: { full: number; cheap: number; culled: number };
+  /**
+   * How many unicorns were posed in full detail last frame (for the harness), and how many toy pictures are loaded
+   * (each one a texture, kept for the play; the long play's level check leaves them out).
+   */
+  readonly stats: { full: number; cheap: number; culled: number; toys: number };
   /** Make the herd cheaper on a slow iPad: 0 full, 1 and 2 fewer full-detail unicorns, cheap ones posed less often. */
   setDetail(level: 0 | 1 | 2): void;
   /**
@@ -57,7 +60,7 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
   const sphere = new THREE.Sphere();
   const tmp = new THREE.Vector3();
   const camPos = new THREE.Vector3();
-  const stats = { full: 0, cheap: 0, culled: 0 };
+  const stats = { full: 0, cheap: 0, culled: 0, toys: 0 };
   const tapNdc = new THREE.Vector3();
   const hitNdc = new THREE.Vector3();
   /** Reused every frame: the unicorns and their squared distance to the camera, sorted in place. */
@@ -85,6 +88,7 @@ export function createHerd(base: Omit<HerdCtx, 'toyTexture' | 'swimmers'>, view?
         t = loader.load(url);
         t.colorSpace = THREE.SRGBColorSpace;
         textures.set(url, t);
+        stats.toys = textures.size;
       }
       return t;
     },

@@ -16,10 +16,11 @@ PART="${MMW_RIDE_PART:-all}"
 
 # Watch the trip in the page, every frame: the steps it passes, the frame budget 1.5 s into the gallop out, every
 # frame where a signpost is up and a slot with a word is on screen (5.5: dressed only out of view), and where she
-# crosses the line of the north fence on the way out and home (the gate is at x 21.5, z -22.7: docs/v4/2.4.md 5.4).
+# crosses the line of the north fence on the way out and home (the gate is at x 21.5, z -22.7: docs/v4/2.4.md 5.4). A
+# crossing counts when she changes side: state() rounds z to 2 decimals, so a frame can sit exactly on the line.
 # The flow reads window.__trip at the end.
 watch_trip() {
-  val "() => { if (window.__trip) return 'ok'; const w = window.__trip = { steps: [], frames: 0, bad: [], gallop: null, outAt: 0, gate: [], lastZ: null }; const f = () => { const s = window.__game.state(); const r = s.ride; const step = r ? r.step : null; if (step && w.steps[w.steps.length - 1] !== step) { w.steps.push(step); if (step === 'out') w.outAt = performance.now(); } if (step === 'out' && !w.gallop && performance.now() - w.outAt > 1500) w.gallop = window.__game.perf(); if (step === 'sign1' || step === 'sign2') { w.frames++; r.slots.forEach((x, i) => { if (x.word && x.onScreen && w.bad.length < 5) w.bad.push(step + ' slot ' + i + ' ' + x.word); }); } const z = s.princess.z; if (r && w.lastZ !== null && (w.lastZ - -22.7) * (z - -22.7) <= 0 && w.lastZ !== z) w.gate.push(Math.round(s.princess.x * 100) / 100); w.lastZ = r ? z : null; requestAnimationFrame(f); }; requestAnimationFrame(f); return 'ok'; }" >/dev/null
+  val "() => { if (window.__trip) return 'ok'; const w = window.__trip = { steps: [], frames: 0, bad: [], gallop: null, outAt: 0, gate: [], side: 0 }; const f = () => { const s = window.__game.state(); const r = s.ride; const step = r ? r.step : null; if (step && w.steps[w.steps.length - 1] !== step) { w.steps.push(step); if (step === 'out') w.outAt = performance.now(); } if (step === 'out' && !w.gallop && performance.now() - w.outAt > 1500) w.gallop = window.__game.perf(); if (step === 'sign1' || step === 'sign2') { w.frames++; r.slots.forEach((x, i) => { if (x.word && x.onScreen && w.bad.length < 5) w.bad.push(step + ' slot ' + i + ' ' + x.word); }); } const z = s.princess.z; const side = z > -22.7 ? 1 : z < -22.7 ? -1 : 0; if (!r) w.side = 0; else if (side) { if (w.side && side !== w.side) w.gate.push(Math.round(s.princess.x * 100) / 100); w.side = side; } requestAnimationFrame(f); }; requestAnimationFrame(f); return 'ok'; }" >/dev/null
 }
 
 # The slots show the open sign's words, in arm order (5.5: a right card leads to the clearing of its word).

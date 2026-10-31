@@ -65,8 +65,6 @@ export const CLIPS = {
   cornerOpen: ['lumi-dressing-open'],
   /** Lumi, at the Corner before the gate. */
   corner: ['lumi4-corner'],
-  /** Lumi, at the saddle sign. */
-  soon: ['lumi4-soon'],
   /** When the basket opens: "Tap a food to hear its name. Then give it to a baby." */
   tray: ['g-tray'],
   // 2.4.0 (docs/v4/2.4.md section 6): the hub, the pond's resting slide, riding and the signposts
