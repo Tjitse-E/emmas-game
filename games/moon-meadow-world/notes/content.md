@@ -15,7 +15,7 @@
 | `tools/phrase-check.json` | The tinted picture check (2.3.0): one entry per colour on a thing ("green sock"), `ok` or `drop`, `by` (`claude` or `emma`) and `why`. 30 entries; a pair without one is left out. |
 | `tools/lines.ts` | The demo's own sentences and number patterns (`SENTENCES`, `lineFor(id)`), with no side effects, so tests can ask whether a clip that is not generated yet has a line. |
 | `tools/build-lines.ts` | Writes `public/audio/v4demo/lines.json` from `allClipIds()` minus v3's ok clips. Run it when the clip list changes. |
-| `tools/audio/gen.sh`, `budget.json`, `ledger.jsonl` | The demo's audio budget (cap 4,000, floor 10,000). |
+| `tools/audio/gen.sh`, `budget.json`, `ledger.jsonl` | The demo's audio budget (cap 7,277 since 2026-10-28, floor 10,000). |
 | `public/audio/v4demo/` | The demo's own clips, `manifest.json`, `overrides.json`. |
 | `src/ui/contrast.ts` | `diffUnits()`: which printed units of two words differ (the miss contrast). Pure. |
 | `dev/content.html` | A check page: the herd, newborns, eggs, name bells with their wrong gems, the picture-check contact sheets (every wish word with its picture, verdict and reason, tap to hear), the phrase contact sheet (30 tinted pictures with a yellow row to compare gold with, and a button that hides the words for Emma), sample baskets per kind and reading level (phrases too), doors, and a check of every clip, letter sound and picture through the real audio packs. |
@@ -24,19 +24,19 @@
 
 ## Wiring
 
-- One seed per play. Each moment draws from its own stream: `stream(seed, 'wish1')` and so on (`g.randFor()`).
+- One seed per play. Each moment draws from its own stream: `stream(seed, 'wish-1')` and so on (`g.randFor()`; 2.4.0 names them by place and count, notes/game.md).
 - Start: `herd()` gives 12 `HerdMember`s in doors 1 to 12.
 - Eggs, hatch and doors: see `eggs.ts`, `looks.ts` and `doors.ts`, and Maths below for the eggs.
 - Naming 1: `namingSpec(rand, [], 3)`. Naming 2: `namingSpec(rand, [firstName], 4)`. The count can also be `{ decoys: 4 }`; the default is 3. After the moment, `newborn(choice, look, 13)` (and 14) makes the `HerdMember`.
 - Wishes: `wishSpec(kind, rand, exclude, { level, contrast })`.
-  - `kind`: `'dress'` (wish 1 at the nest), `'bath'` (the pond wish, and wish 2 while free play offers the picnic, 2.3.2), `'picnic'` (both picnic guests, and wish 2 in a play without the picnic). `'food'` still works: the picnic pool with only foods as targets and v3's hungry lines.
+  - `kind`: `'dress'`, `'bath'` (pond toys) or `'picnic'` (both picnic guests too). 2.3 gave wish 1 at the nest dress, the pond wish bath and wish 2 bath or picnic; since 2.4.0 a baby's wish takes the kind the play has read least (`wishKindFor`, notes/babies.md), so the first baby still wants to dress up like her. `'food'` still works: the picnic pool with only foods as targets and v3's hungry lines.
   - `exclude`: words that cannot be the target (the last play's targets, `save.last.words`, plus the targets used earlier in this play). It can also go inside the options as `{ exclude }`. When every target is excluded, the wish still comes from the whole list.
   - `level`: the hidden reading level, 1 to 3 (default 2). Level 1 gives 4 items and asks only tier 1 and 2 words. Levels 2 and 3 give 5 items. Level 3 asks only words with a twin or a frame word; with none left it plays as level 2 and `spec.level` says 2. The warm-up (the first wish of a play one level lower) is the caller's: pass the lower level.
   - `avoid` (2.3.2): the words of the play's earlier wish of this kind (wish 2 passes the pond wish's target and basket). None of them is the target or in the basket while others are left, and the target is one whose basket still meets 3.1 without them. Level 3 without such a target, and level 1 with every level 1 target avoided, play as level 2. Without `avoid` the draws are as before.
   - `contrast: false` (`?contrast=0`) leaves out `clips.again`, and the ui then keeps v3's rule (one miss gives the focused hint at once).
 - Each `WishItem` has `tier`, `tint` (a greyscale picture only) and `react`: `wear` (every dress-up word), `munch` (picnic foods), `play` (pond toys, picnic dishes). `spec.decoys` gives why each wrong item is in the basket: `twin`, `frame`, `onset`, `rhyme`, `ending`, `length` or `other`.
 - Before a dress-up wish the level says `CLIPS.dressUp` ("Your baby wants to dress up like you!"). Before a picnic wish it says nothing, also before the royal picnic's first guest: `CLIPS.hungry` or Lumi's "Who is hungry?" before a food only would give the answer away. After the wish: `foal-pretty` for `wear`, `foal-yum` for `munch`, `foal-yay` for `play`.
-- Free play: `foods()` (plum, corn, cake, peach; react `munch`).
+- The food basket in the hub (free play's until 2.3): `foods()` (plum, corn, cake, peach; react `munch`).
 - Every other line: `CLIPS` (see `src/content/clips.ts`). `wayTo(place)` gives the "this way" line for a `Place` (none for the gazebo, the rack and the picnic).
 - The phrase wish (2.3.0): `planWish(g, 'phrase', 'gate1', { wish: false })` in `game/moments.ts`. See "Phrases" below.
 - Preloading: `allClipIds()` lists every clip the level can use. Preload `CLIPS` and the herd names at start, and each moment's own clips just before it with `eggClipIds(spec)`, `namingClipIds(spec)`, `wishClipIds(spec)` and `doorClipIds(specs)`. `wishClipIds` includes every basket word, so the contrast's word clip and `fb-letters` are ready. `allGraphemes()` lists the letter sounds for `audio.preloadSounds()`, including the capitals' sounds.
@@ -237,8 +237,9 @@ Within 10 every kind and band reaches every place. The test checks evenness over
 
 - `fb-letters` and every pool word's clip are ok v3 clips. The 13 new lines of 2.2.0 are generated and 12 are used; the demo's pack has 79 clips, and `dev/content.html` reports none missing.
 - The clips of sail, pail, reed, pie, leek and mat passed speech-to-text only as homophones (Sale, Pale, Read, Pi, Leak, Matt). Tjitse listens to them once.
-- 2.3.0 added 72 lines (docs/v4/2.3.md section 21), all passing speech-to-text after two retakes. The sums within 10 added four more (section 19.1), and 2.3.1 added num-take-9-6 after Tjitse accepted its take, so the pack has 156 clips. num-take-9-6 came from the raw cache without a speech-to-text check.
-- Booked so far: 5,272.1 credits in `tools/audio/ledger.jsonl` (speech and sound effects) against the cap of 7,277.
+- 2.3.0 added 72 lines (docs/v4/2.3.md section 21), all passing speech-to-text after two retakes. The sums within 10 added four more (section 19.1), and 2.3.1 added num-take-9-6 after Tjitse accepted its take, so the pack had 156 clips. num-take-9-6 came from the raw cache without a speech-to-text check.
+- 2.4.0 added 51 lines (docs/v4/2.4.md section 6) in one run on 30 October 2026: 1,462 characters and 51 speech-to-text checks, all passed on the first take, 1,479.34 credits (`budget.json` runs `v2.4.0`). The pack has 207 clips. The 13 sign words use v3's clips, and num-take-9-6 still has no speech-to-text record.
+- Booked so far: 6,788.78 credits in `tools/audio/ledger.jsonl` (speech and sound effects, `ledgerAfter2.4.0`) against the cap of 7,277: 488.22 left.
 
 ## Sign words (2.4.0, docs/v4/2.4.md section 5.5)
 

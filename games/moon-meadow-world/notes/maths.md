@@ -34,7 +34,7 @@ The eggs and the hay rack. 2.3.0 gives each egg three sums (docs/v4/2.3.md secti
 - Easy comes first; middle and hard follow in an order drawn from the egg's stream (`round.index` 0, 1, 2).
 - The hard sum takes the band at the egg's start, so all three are planned when the egg opens. Easy and middle have no `band`.
 - Only the hard sum and the hay rack move the band (`movesBand`). `?maths=a|b` fixes it.
-- A jump to `egg2` plans egg 1's sums first (without asking them), so `?at=egg2&seed=5` asks what a whole play with seed 5 asks, when the band is the same.
+- 2.4.0: a jump plans none of the places it skips (the 2.3 shortcut that planned egg 1's sums for `?at=egg2` is gone, notes/babies.md). So `?at=egg2&seed=5` asks the shore egg from its stream `egg-shore` as if no sum came before it; in a whole play the sums asked before it can change it (see "no sum twice" below and the fresh sums).
 
 ## The egg plan (Claude's call)
 
